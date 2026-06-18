@@ -68,6 +68,58 @@ else
     fi
 fi
 
+# 3.2. Sinh file cấu hình thực tế từ template dựa trên .env
+echo -e "${YELLOW}[3.2] Đồng bộ và sinh file cấu hình thực tế từ template...${NC}"
+if [ -f .env ]; then
+  # Load các biến môi trường từ .env một cách an toàn
+  while IFS= read -r line || [ -n "$line" ]; do
+    if [[ ! "$line" =~ ^# ]] && [[ "$line" =~ = ]]; then
+      key=$(echo "$line" | cut -d'=' -f1 | xargs)
+      val=$(echo "$line" | cut -d'=' -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//" | xargs)
+      export "$key"="$val"
+    fi
+  done < .env
+fi
+
+# Đảm bảo thư mục config tồn tại
+mkdir -p config
+
+# Hàm sinh file cấu hình an toàn
+generate_config() {
+    local template="$1"
+    local output="$2"
+    
+    # Kiểm tra xem có bị lỗi Docker tự động tạo thư mục rỗng hay không
+    if [ -d "$output" ]; then
+        echo -e "${YELLOW}Cảnh báo: Phát hiện lỗi Docker biến file $output thành một thư mục. Tiến hành xóa thư mục rỗng và phục hồi nâng cấp thành dạng file...${NC}"
+        sudo rm -rf "$output"
+    fi
+
+    echo -e "${GREEN}Đang cấu hình: $output...${NC}"
+    cp "$template" "$output"
+    
+    # Thay thế các biến từ file .env sang cấu hình thực tế
+    for var in SERVER_IP POSTGRES_PASSWORD ORTHANC_ADMIN_USER ORTHANC_ADMIN_PASSWORD; do
+        val="${!var}"
+        # Thoát các ký tự đặc biệt cho sed trước khi thế vào
+        escaped_val=$(echo "$val" | sed 's/[\/&]/\\&/g')
+        sed -i "s/\${$var}/$escaped_val/g" "$output"
+        sed -i "s/\$$var/$escaped_val/g" "$output"
+    done
+}
+
+if [ -f config_templates/app-config.js.template ]; then
+    generate_config config_templates/app-config.js.template config/app-config.js
+else
+    echo -e "${RED}LỖI: Không tìm thấy config_templates/app-config.js.template${NC}"
+fi
+
+if [ -f config_templates/orthanc.json.template ]; then
+    generate_config config_templates/orthanc.json.template config/orthanc.json
+else
+    echo -e "${RED}LỖI: Không tìm thấy config_templates/orthanc.json.template${NC}"
+fi
+
 # 3.5. Kiểm tra và Tự động phục hồi Frontend Dashboard (Self-Healing)
 echo -e "${YELLOW}[3.5] Kiểm tra cấu trúc thư mục dashboard (Next.js)...${NC}"
 if [ ! -f ./dashboard/package.json ] || [ ! -f ./dashboard/Dockerfile ] || ! grep -q "legacy-peer-deps" ./dashboard/Dockerfile; then
