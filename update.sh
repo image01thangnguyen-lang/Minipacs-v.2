@@ -27,8 +27,56 @@ git fetch origin
 git reset --hard origin/main
 echo "Đã lấy mã nguồn thành công."
 
-# 3. Gỡ bỏ container cũ (Giữ lại Data Volumes)
-echo -e "${GREEN}[2/4] Dọn dẹp container cũ đang chạy...${NC}"
+# 3. Đồng bộ và sinh lại file cấu hình từ template nếu có cập nhật từ .env (Day 2+)
+echo -e "${YELLOW}[2/5] Đồng bộ và sinh file cấu hình thực tế từ template...${NC}"
+if [ -f .env ]; then
+  # Load các biến môi trường từ .env một cách an toàn
+  while IFS= read -r line || [ -n "$line" ]; do
+    if [[ ! "$line" =~ ^# ]] && [[ "$line" =~ = ]]; then
+      key=$(echo "$line" | cut -d'=' -f1 | xargs)
+      val=$(echo "$line" | cut -d'=' -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//" | xargs)
+      export "$key"="$val"
+    fi
+  done < .env
+fi
+
+# Đảm bảo thư mục config tồn tại
+mkdir -p config
+
+# Hàm sinh file cấu hình an toàn
+generate_config() {
+    local template="$1"
+    local output="$2"
+    
+    # Kiểm tra xem có bị lỗi Docker tự động tạo thư mục rỗng hay không
+    if [ -d "$output" ]; then
+        echo -e "${YELLOW}Cảnh báo: Phát hiện lỗi Docker biến file $output thành một thư mục. Tiến hành xóa thư mục rỗng và phục hồi nâng cấp thành dạng file...${NC}"
+        sudo rm -rf "$output"
+    fi
+
+    echo -e "${GREEN}Đang cấu hình: $output...${NC}"
+    cp "$template" "$output"
+    
+    # Thay thế các biến từ file .env sang cấu hình thực tế
+    for var in SERVER_IP POSTGRES_PASSWORD ORTHANC_ADMIN_USER ORTHANC_ADMIN_PASSWORD; do
+        val="${!var}"
+        # Thoát các ký tự đặc biệt cho sed trước khi thế vào
+        escaped_val=$(echo "$val" | sed 's/[\/&]/\\&/g')
+        sed -i "s/\${$var}/$escaped_val/g" "$output"
+        sed -i "s/\$$var/$escaped_val/g" "$output"
+    done
+}
+
+if [ -f config_templates/app-config.js.template ]; then
+    generate_config config_templates/app-config.js.template config/app-config.js
+fi
+
+if [ -f config_templates/orthanc.json.template ]; then
+    generate_config config_templates/orthanc.json.template config/orthanc.json
+fi
+
+# 4. Gỡ bỏ container cũ (Giữ lại Data Volumes)
+echo -e "${GREEN}[3/5] Dọn dẹp container cũ đang chạy...${NC}"
 if docker compose version &> /dev/null; then
     docker compose down
 else
@@ -36,8 +84,8 @@ else
 fi
 echo "Đã hạ các container cũ."
 
-# 4. Build và khởi động lại container với code mới
-echo -e "${GREEN}[3/4] Build lại Image và tái khởi động hệ thống...${NC}"
+# 5. Build và khởi động lại container với code mới
+echo -e "${GREEN}[4/5] Build lại Image và tái khởi động hệ thống...${NC}"
 if docker compose version &> /dev/null; then
     docker compose up -d --build
 else
@@ -45,8 +93,8 @@ else
 fi
 echo "Hệ thống đã khởi chạy thành công."
 
-# 5. Dọn dẹp rác Docker
-echo -e "${GREEN}[4/4] Dọn dẹp tài nguyên dư thừa...${NC}"
+# 6. Dọn dẹp rác Docker
+echo -e "${GREEN}[5/5] Dọn dẹp tài nguyên dư thừa...${NC}"
 docker image prune -f
 echo "Đã giải phóng ổ cứng."
 
