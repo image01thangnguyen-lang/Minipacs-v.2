@@ -1,0 +1,40 @@
+{
+  "Name": "Mini PACS Orthanc",
+  "StorageDirectory": "/var/lib/orthanc/db",
+  "IndexDirectory": "/var/lib/orthanc/db",
+  "Plugins": [ 
+    "/usr/share/orthanc/plugins/libOrthancPostgreSQLIndex.so",
+    "/usr/share/orthanc/plugins/libOrthancPostgreSQLStorage.so",
+    "/usr/share/orthanc/plugins/libOrthancDicomWeb.so"
+  ],
+  "HttpServerEnabled": true,
+  "HttpPort": 8042,
+  "DicomServerEnabled": true,
+  "DicomPort": 4242,
+  "DicomAet": "ORTHANC",
+  "DefaultEncoding": "Utf8",
+  "PostgreSQL": {
+    "EnableIndex": true,
+    "EnableStorage": true,
+    "Host": "db",
+    "Port": 5432,
+    "Database": "orthanc_db",
+    "Username": "orthanc",
+    "Password": "${POSTGRES_PASSWORD}"
+  },
+  "DicomWeb": {
+    "Enable": true,
+    "Root": "/dicom-web/"
+  },
+  "AuthenticationEnabled": true,
+  "RegisteredUsers": {
+    "${ORTHANC_ADMIN_USER}": "${ORTHANC_ADMIN_PASSWORD}"
+  },
+  "RemoteAccessAllowed": true,
+  "HttpExtraHeaders": {
+    "Access-Control-Allow-Origin": "http://${SERVER_IP}",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Origin, Accept, Content-Type, Authorization, X-Requested-With",
+    "Access-Control-Allow-Credentials": "true"
+  }
+}

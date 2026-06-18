@@ -1,0 +1,6 @@
+{
+  "name": "Mini PACS System",
+  "description": "A Docker-based Mini PACS system using Orthanc, PostgreSQL, and OHIF Viewer for clinics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
