@@ -32,6 +32,25 @@ model Report {
   @@map("reports")
 }
 
+enum Role {
+  ADMIN
+  DOCTOR
+  RECEPTION
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  fullName  String
+  role      Role     @default(DOCTOR)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
 model PrintTemplate {
   id          String   @id @default(uuid())
   name        String
@@ -42,5 +61,25 @@ model PrintTemplate {
   updatedAt   DateTime @updatedAt
 
   @@map("print_templates")
+}
+
+model WorklistOrder {
+  id               String   @id @default(uuid())
+  patientName      String
+  patientId        String
+  dob              DateTime?
+  gender           String?   // M, F, O
+  referringPhysician String?
+  modality         String
+  accessionNumber  String   @unique
+  scheduledDate    DateTime @default(now())
+  
+  // Status tracking: Pending, Completed, Error, etc
+  status           String   @default("PENDING")
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("worklist_orders")
 }
 

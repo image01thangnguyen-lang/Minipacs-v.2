@@ -27,7 +27,7 @@ export default defineConfig(() => {
           },
           configure: (proxy, _options) => {
             proxy.on('error', (err, _req, res) => {
-              if (res && res.writeHead) {
+              if (res && res.writeHead && !res.headersSent) {
                 res.writeHead(503, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ error: 'Orthanc server not running (Sandbox Mode)' }));
               }

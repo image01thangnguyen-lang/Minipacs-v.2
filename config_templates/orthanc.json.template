@@ -5,8 +5,13 @@
   "Plugins": [ 
     "/usr/share/orthanc/plugins/libOrthancPostgreSQLIndex.so",
     "/usr/share/orthanc/plugins/libOrthancPostgreSQLStorage.so",
-    "/usr/share/orthanc/plugins/libOrthancDicomWeb.so"
+    "/usr/share/orthanc/plugins/libOrthancDicomWeb.so",
+    "/usr/share/orthanc/plugins/libOrthancWorklists.so"
   ],
+  "Worklists" : {
+    "Enable": true,
+    "Database": "/worklists"
+  },
   "HttpServerEnabled": true,
   "HttpPort": 8042,
   "DicomServerEnabled": true,

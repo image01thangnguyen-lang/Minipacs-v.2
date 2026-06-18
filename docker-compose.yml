@@ -31,6 +31,7 @@ services:
     volumes:
       - ./config/orthanc.json:/etc/orthanc/orthanc.json:ro
       - ./pacs_data/orthanc:/var/lib/orthanc/db
+      - ./pacs_data/worklists:/worklists
     depends_on:
       db:
         condition: service_healthy
@@ -59,6 +60,7 @@ services:
       - DATABASE_URL=postgresql://orthanc:${POSTGRES_PASSWORD}@db:5432/orthanc_db?schema=public
     volumes:
       - ./pacs_data/report_images:/app/pacs_data/report_images
+      - ./pacs_data/worklists:/app/pacs_data/worklists
     depends_on:
       - orthanc
       - db
