@@ -84,3 +84,39 @@ export async function upsertReport(studyInstanceUid: string, data: {
     return { success: false, error: 'Database error' };
   }
 }
+
+export async function getDefaultTemplate() {
+  try {
+    // Attempt to find the default template or the first one available
+    // Need to use any to bypass type issues if DB isn't updated yet in this sandbox
+    const template = await (prisma as any).printTemplate?.findFirst({
+      where: { isDefault: true },
+      orderBy: { createdAt: 'desc' }
+    });
+    if (template) return template.htmlContent;
+
+    const anyTemplate = await (prisma as any).printTemplate?.findFirst({
+      orderBy: { createdAt: 'desc' }
+    });
+    if (anyTemplate) return anyTemplate.htmlContent;
+    
+    // Fallback HTML if nothing in DB
+    return `
+      <div style="text-align: center;">
+        <h1>PHÒNG KHÁM AI DEFAULT</h1>
+        <hr />
+      </div>
+      <h2>KẾT QUẢ CHẨN ĐOÁN HÌNH ẢNH</h2>
+      <p><strong>Bệnh nhân:</strong> {{PATIENT_NAME}} - {{PATIENT_ID}}</p>
+      <hr />
+      <h3>MÔ TẢ (FINDINGS)</h3>
+      <p>{{REPORT_CONTENT}}</p>
+      <br />
+      <h3>KẾT LUẬN (CONCLUSION)</h3>
+      <p>{{CONCLUSION}}</p>
+    `;
+  } catch (err) {
+    console.error("Failed to fetch template:", err);
+    return null;
+  }
+}

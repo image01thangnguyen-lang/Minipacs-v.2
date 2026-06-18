@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Save, CheckCircle, Loader2 } from 'lucide-react';
+import { ChevronLeft, Save, CheckCircle, Loader2, Printer } from 'lucide-react';
 import TiptapEditor from './components/TiptapEditor';
-import { getStudyDetails, getReport, upsertReport } from './actions';
+import { PrintTemplateViewer, PrintContext } from './components/PrintTemplateViewer';
+import { getStudyDetails, getReport, upsertReport, getDefaultTemplate } from './actions';
+import { useReactToPrint } from 'react-to-print';
 
 // Helpers
 const formatPatientName = (name?: string) => {
@@ -32,6 +34,7 @@ export default function ReportPage({ params }: { params: Promise<{ studyInstance
   const [conclusion, setConclusion] = useState('');
   const [recommendation, setRecommendation] = useState('');
   const [reportStatus, setReportStatus] = useState<'UNREAD' | 'DRAFTING' | 'COMPLETED'>('UNREAD');
+  const [templateHtml, setTemplateHtml] = useState<string>('');
 
   const ohifUrl = process.env.NEXT_PUBLIC_OHIF_URL || 'http://localhost:3000';
   const viewerLink = `${ohifUrl}/viewer?StudyInstanceUIDs=${studyInstanceUid}`;
@@ -54,6 +57,11 @@ export default function ReportPage({ params }: { params: Promise<{ studyInstance
         if (studyInfo) {
           setPatientDetails(studyInfo);
         }
+
+        const tmpl = await getDefaultTemplate();
+        if (tmpl) {
+          setTemplateHtml(tmpl);
+        }
       } catch (err) {
         console.error("Failed to load report data", err);
       } finally {
@@ -62,6 +70,12 @@ export default function ReportPage({ params }: { params: Promise<{ studyInstance
     }
     loadData();
   }, [studyInstanceUid]);
+
+  const printRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Ket_Qua_CDHA_${studyInstanceUid}`,
+  });
 
   const handleSave = async (status: 'DRAFTING' | 'COMPLETED') => {
     setIsSaving(true);
@@ -187,25 +201,54 @@ export default function ReportPage({ params }: { params: Promise<{ studyInstance
         </div>
 
         {/* Footer Actions */}
-        <div className="flex-none p-4 border-t border-slate-800 bg-slate-900/40 flex items-center justify-end gap-3">
-           <button
-             onClick={() => handleSave('DRAFTING')}
-             disabled={isSaving}
-             className="px-4 py-2 border border-amber-500/50 text-amber-500 hover:bg-amber-500/10 font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
-           >
-             <Save className="h-4 w-4" />
-             Lưu nháp
-           </button>
-           <button
-             onClick={() => handleSave('COMPLETED')}
-             disabled={isSaving}
-             className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
-           >
-             <CheckCircle className="h-4 w-4" />
-             Hoàn tất & Ký
-           </button>
+        <div className="flex-none p-4 border-t border-slate-800 bg-slate-900/40 flex items-center justify-between">
+           <div>
+             <button
+               onClick={() => handlePrint()}
+               className="px-4 py-2 border border-blue-500/50 text-blue-400 hover:bg-blue-500/10 font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+             >
+               <Printer className="h-4 w-4" />
+               In Kết Quả
+             </button>
+           </div>
+           <div className="flex items-center gap-3">
+             <button
+               onClick={() => handleSave('DRAFTING')}
+               disabled={isSaving}
+               className="px-4 py-2 border border-amber-500/50 text-amber-500 hover:bg-amber-500/10 font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+             >
+               <Save className="h-4 w-4" />
+               Lưu nháp
+             </button>
+             <button
+               onClick={() => handleSave('COMPLETED')}
+               disabled={isSaving}
+               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-emerald-900/20 disabled:opacity-50"
+             >
+               <CheckCircle className="h-4 w-4" />
+               Hoàn tất & Ký
+             </button>
+           </div>
         </div>
       </div>
+
+      {/* Hidden Print Template */}
+      <div className="hidden">
+        <PrintTemplateViewer 
+          ref={printRef}
+          templateHtml={templateHtml}
+          context={{
+            patientName: patientName,
+            patientId: patientId,
+            studyDate: studyDate,
+            studyDesc: studyDesc,
+            reportContent: findings,
+            conclusion: conclusion,
+            recommendation: recommendation
+          }}
+        />
+      </div>
+
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }

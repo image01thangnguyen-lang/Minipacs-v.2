@@ -4,7 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import { Bold, Italic, List, ListOrdered } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 
 export default function TiptapEditor({ 
   value, 
@@ -97,6 +97,13 @@ export default function TiptapEditor({
     },
   });
 
+  // Keep editor content in sync with external value, e.g. on initial async load
+  useEffect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value, { emitUpdate: false });
+    }
+  }, [value, editor]);
+
   if (!editor) return null;
 
   return (
@@ -105,7 +112,7 @@ export default function TiptapEditor({
       <div className="flex items-center gap-1 p-2 border-b border-slate-700/60 bg-slate-800/50">
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`p-1.5 rounded \${editor.isActive('bold') ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+          className={`p-1.5 rounded ${editor.isActive('bold') ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
           type="button"
           title="Bold"
         >
@@ -113,7 +120,7 @@ export default function TiptapEditor({
         </button>
         <button
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`p-1.5 rounded \${editor.isActive('italic') ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+          className={`p-1.5 rounded ${editor.isActive('italic') ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
           type="button"
           title="Italic"
         >
@@ -122,7 +129,7 @@ export default function TiptapEditor({
         <div className="w-px h-4 bg-slate-700 mx-1"></div>
         <button
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-1.5 rounded \${editor.isActive('bulletList') ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+          className={`p-1.5 rounded ${editor.isActive('bulletList') ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
           type="button"
           title="Bullet List"
         >
@@ -130,7 +137,7 @@ export default function TiptapEditor({
         </button>
         <button
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-1.5 rounded \${editor.isActive('orderedList') ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+          className={`p-1.5 rounded ${editor.isActive('orderedList') ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
           type="button"
           title="Ordered List"
         >

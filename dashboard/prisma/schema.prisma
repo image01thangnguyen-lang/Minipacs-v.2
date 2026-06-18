@@ -31,3 +31,16 @@ model Report {
 
   @@map("reports")
 }
+
+model PrintTemplate {
+  id          String   @id @default(uuid())
+  name        String
+  htmlContent String   @db.Text
+  isDefault   Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("print_templates")
+}
+
