@@ -146,6 +146,7 @@ export default function TiptapEditor({
       </div>
 
       <div className="p-4 flex-1">
+        {/* @ts-ignore: React 18/19 type conflict with Tiptap */}
         <EditorContent editor={editor} />
       </div>
     </div>

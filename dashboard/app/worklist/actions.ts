@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "@/dashboard/app/db"; // Assuming this exports Prisma client
+import { prisma } from "@/app/db"; // Assuming this exports Prisma client
 import fs from "fs/promises";
 import path from "path";
 import { z } from "zod";
