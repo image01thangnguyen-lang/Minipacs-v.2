@@ -97,7 +97,7 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 # Cài đặt dependency
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copy toàn bộ mã nguồn
 COPY . .
