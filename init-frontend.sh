@@ -59,6 +59,9 @@ cat << 'EOF' > "$DASHBOARD_DIR/package.json"
   "dependencies": {
     "@hookform/resolvers": "^3.4.0",
     "@prisma/client": "^5.22.0",
+    "@tiptap/react": "^3.27.0",
+    "@tiptap/starter-kit": "^3.27.0",
+    "@tiptap/extension-image": "^3.27.0",
     "bcryptjs": "^2.4.3",
     "lucide-react": "^0.378.0",
     "next": "^14.2.3",
@@ -66,6 +69,7 @@ cat << 'EOF' > "$DASHBOARD_DIR/package.json"
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.51.4",
+    "react-to-print": "^3.3.0",
     "zod": "^3.23.8",
     "tailwindcss": "3.4.3",
     "postcss": "8.4.38",
