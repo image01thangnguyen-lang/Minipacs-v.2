@@ -70,9 +70,9 @@ fi
 
 # 3.5. Kiểm tra và Tự động phục hồi Frontend Dashboard (Self-Healing)
 echo -e "${YELLOW}[3.5] Kiểm tra cấu trúc thư mục dashboard (Next.js)...${NC}"
-if [ ! -f ./dashboard/package.json ]; then
-    echo -e "${YELLOW}Phát hiện thư mục dashboard trống hoặc thiếu package.json.${NC}"
-    echo -e "${YELLOW}Bắt đầu tự động khôi phục toàn bộ mã nguồn Next.js PACS Dashboard...${NC}"
+if [ ! -f ./dashboard/package.json ] || [ ! -f ./dashboard/Dockerfile ] || ! grep -q "legacy-peer-deps" ./dashboard/Dockerfile; then
+    echo -e "${YELLOW}Phát hiện thiếu cấu hình hoặc Dockerfile chưa tối ưu (vẫn dùng kiểu cài của cũ).${NC}"
+    echo -e "${YELLOW}Bắt đầu chạy kịch bản Tự động khôi phục / Đồng bộ cấu hình Next.js mới nhất...${NC}"
     if [ -f ./init-frontend.sh ]; then
         chmod +x ./init-frontend.sh
         bash ./init-frontend.sh
@@ -81,7 +81,7 @@ if [ ! -f ./dashboard/package.json ]; then
         exit 1
     fi
 else
-    echo -e "${GREEN}Mã nguồn UI Dashboard đã đầy đủ.${NC}"
+    echo -e "${GREEN}Mã nguồn và cấu hình Docker của Dashboard đã đầy đủ & tối ưu.${NC}"
 fi
 
 # 4. Khởi chạy hệ thống bằng Docker Compose

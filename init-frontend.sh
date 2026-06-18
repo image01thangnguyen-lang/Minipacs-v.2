@@ -43,10 +43,9 @@ mkdir -p "$DASHBOARD_DIR/app/report/[studyInstanceUid]"
 mkdir -p "$DASHBOARD_DIR/app/worklist/new"
 mkdir -p "$DASHBOARD_DIR/prisma"
 
-# 2. Tạo file package.json
-if [ ! -f "$DASHBOARD_DIR/package.json" ]; then
-    echo -e "${GREEN}  -> Khởi tạo package.json...${NC}"
-    cat << 'EOF' > "$DASHBOARD_DIR/package.json"
+# 2. Tạo / Đồng bộ cấu hình package.json (Đảm bảo React 18 sạch sẽ và tương thích)
+echo -e "${GREEN}  -> Kiểm tra và đồng bộ package.json...${NC}"
+cat << 'EOF' > "$DASHBOARD_DIR/package.json"
 {
   "name": "minipacs-dashboard",
   "version": "1.0.0",
@@ -82,13 +81,11 @@ if [ ! -f "$DASHBOARD_DIR/package.json" ]; then
   }
 }
 EOF
-fi
 
-# 3. Tạo Dockerfile
-if [ ! -f "$DASHBOARD_DIR/Dockerfile" ]; then
-    echo -e "${GREEN}  -> Khởi tạo Dockerfile...${NC}"
-    cat << 'EOF' > "$DASHBOARD_DIR/Dockerfile"
-FROM node:20-alpine
+# 3. Tạo / Đồng bộ Dockerfile (Đảm bảo có --legacy-peer-deps và node:18-alpine / node:20-alpine)
+echo -e "${GREEN}  -> Kiểm tra và đồng bộ Dockerfile...${NC}"
+cat << 'EOF' > "$DASHBOARD_DIR/Dockerfile"
+FROM node:18-alpine
 
 WORKDIR /app
 
@@ -96,7 +93,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Cài đặt dependency
+# Cài đặt dependency tránh xung đột peer deps
 RUN npm install --legacy-peer-deps
 
 # Copy toàn bộ mã nguồn
@@ -110,7 +107,6 @@ EXPOSE 3000
 
 CMD ["npm", "start"]
 EOF
-fi
 
 # 4. Tạo tsconfig.json
 if [ ! -f "$DASHBOARD_DIR/tsconfig.json" ]; then
