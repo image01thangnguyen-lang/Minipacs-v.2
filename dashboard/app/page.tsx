@@ -57,12 +57,8 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (selectedStudy) {
-      document.title = `PACS - Đang đọc: ${fmtName(selectedStudy.PatientMainDicomTags?.PatientName)}`;
-    } else {
-      document.title = "PACS - Danh sách ca chụp";
-    }
-  }, [selectedStudy]);
+    document.title = "Mini PACS - Danh sách ca chụp";
+  }, []);
 
   // ── Derived data ──
   const modalities = useMemo(() => {
@@ -105,7 +101,8 @@ export default function DashboardPage() {
 
   const openViewer = (study: any) => {
     const uid = study.MainDicomTags?.StudyInstanceUID;
-    if (uid) window.open(`${ohifUrl}/viewer?StudyInstanceUIDs=${uid}`, '_blank');
+    const patientName = fmtName(study.PatientMainDicomTags?.PatientName);
+    if (uid) window.open(`${ohifUrl}/viewer?StudyInstanceUIDs=${uid}&patientName=${encodeURIComponent(patientName)}`, '_blank');
   };
 
   const handleSave = async (status: 'DRAFTING' | 'COMPLETED') => {
@@ -165,7 +162,7 @@ export default function DashboardPage() {
           {/* Bảng chính */}
           <div className="flex-1 overflow-y-auto scr-dark">
             <table className="w-full text-left">
-              <thead className="text-[9px] font-bold text-zinc-600 uppercase bg-[#070809] border-b border-white/[0.03] sticky top-0 z-10">
+              <thead className="text-[9px] font-semibold text-zinc-400 uppercase tracking-wider bg-[#070809] border-b border-white/[0.03] sticky top-0 z-10">
                 <tr>
                   <th className="pl-2 pr-1 py-1 w-6">#</th>
                   <th className="px-1 py-1">Bệnh Nhân</th>
@@ -188,12 +185,12 @@ export default function DashboardPage() {
                       title="Click: đọc KQ · Dbl-click: OHIF">
                       <td className="pl-2 pr-1 py-1 text-[10px] font-mono text-zinc-700">{(currentPage-1)*rowsPerPage+i+1}</td>
                       <td className="px-1 py-1">
-                        <div className={`text-[11px] font-semibold truncate max-w-[140px] ${isSel?'text-white':'text-zinc-200'}`}>{fmtName(s.PatientMainDicomTags?.PatientName)}</div>
-                        <div className="text-[9px] font-mono text-zinc-600">{s.PatientMainDicomTags?.PatientID||'—'}</div>
+                        <div className={`text-[11px] font-bold truncate max-w-[140px] ${isSel?'text-white':'text-zinc-100'}`}>{fmtName(s.PatientMainDicomTags?.PatientName)}</div>
+                        <div className="text-[9px] font-mono text-zinc-400">{s.PatientMainDicomTags?.PatientID||'—'}</div>
                       </td>
                       <td className="px-1 py-1 text-center"><ModBadge m={s.EnrichedModality||'?'}/></td>
-                      <td className="px-1 py-1 text-[10px] text-zinc-500 truncate max-w-[140px]">{s.MainDicomTags?.StudyDescription||'—'}</td>
-                      <td className="px-1 py-1 text-[10px] font-mono text-zinc-600 whitespace-nowrap">{fmtDt(s.MainDicomTags?.StudyDate,s.MainDicomTags?.StudyTime)}</td>
+                      <td className="px-1 py-1 text-[10px] text-zinc-300 truncate max-w-[140px]">{s.MainDicomTags?.StudyDescription||'—'}</td>
+                      <td className="px-1 py-1 text-[10px] font-mono text-zinc-300 whitespace-nowrap">{fmtDt(s.MainDicomTags?.StudyDate,s.MainDicomTags?.StudyTime)}</td>
                       <td className="pr-2 pl-1 py-1 text-center">
                         <span className={`inline-block w-1.5 h-1.5 rounded-full ${(s.IsStable??true)?'bg-emerald-500':'bg-amber-500 animate-pulse'}`}/>
                       </td>
@@ -219,7 +216,7 @@ export default function DashboardPage() {
               <div className="h-full flex items-center justify-center text-[11px] text-zinc-700">Không có lịch sử</div>
             ) : (
               <table className="w-full text-left">
-                <thead className="text-[9px] font-bold text-zinc-600 uppercase bg-[#070809] border-b border-white/[0.03] sticky top-0 z-10">
+                <thead className="text-[9px] font-semibold text-zinc-400 uppercase tracking-wider bg-[#070809] border-b border-white/[0.03] sticky top-0 z-10">
                   <tr>
                     <th className="pl-2 pr-1 py-1">Ngày chụp</th>
                     <th className="px-1 py-1 w-10 text-center">Mod</th>
@@ -234,7 +231,7 @@ export default function DashboardPage() {
                     return (
                       <tr key={h.ID}
                         onClick={()=>handleSelect(h)} onDoubleClick={()=>openViewer(h)}
-                        className={`cursor-pointer select-none transition-colors ${isCurrent ? 'bg-blue-950/30 text-blue-300' : 'hover:bg-white/[0.015] even:bg-[#0e1322]/20 text-zinc-400'}`}
+                        className={`cursor-pointer select-none transition-colors ${isCurrent ? 'bg-blue-950/30 text-blue-300' : 'hover:bg-white/[0.015] even:bg-[#0e1322]/20 text-zinc-300'}`}
                         title="Click: chọn · Dbl-click: OHIF">
                         <td className="pl-2 pr-1 py-1 text-[10px] font-mono whitespace-nowrap">{fmtDt(h.MainDicomTags?.StudyDate, h.MainDicomTags?.StudyTime)}</td>
                         <td className="px-1 py-1 text-center"><ModBadge m={h.EnrichedModality||'?'}/></td>
@@ -276,9 +273,9 @@ export default function DashboardPage() {
                 }`}>{reportStatus}</span>
               </div>
               <div className="grid grid-cols-3 gap-x-3 text-[10px]">
-                <div><span className="text-zinc-600">Mã BN:</span> <span className="text-zinc-300 font-semibold">{pI}</span></div>
-                <div><span className="text-zinc-600">Ngày:</span> <span className="text-zinc-300 font-semibold">{sDt}</span></div>
-                <div><span className="text-zinc-600">Chỉ định:</span> <span className="text-zinc-300 font-semibold">{sD}</span></div>
+                <div><span className="text-zinc-400">Mã BN:</span> <span className="text-zinc-200 font-semibold">{pI}</span></div>
+                <div><span className="text-zinc-400">Ngày:</span> <span className="text-zinc-200 font-semibold">{sDt}</span></div>
+                <div><span className="text-zinc-400">Chỉ định:</span> <span className="text-zinc-200 font-semibold">{sD}</span></div>
               </div>
             </div>
 
@@ -288,7 +285,7 @@ export default function DashboardPage() {
               {/* Mô tả (Findings) */}
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-semibold text-zinc-500">Mô tả (Findings)</label>
+                  <label className="text-[11px] font-medium text-zinc-300">Mô tả (Findings)</label>
                   <span className="text-[9px] text-zinc-700 font-mono bg-zinc-900/50 px-1.5 py-0.5 rounded">Paste/Drop ảnh</span>
                 </div>
                 <div className="bg-[#131929] text-zinc-100 border border-zinc-800/60 shadow-inner rounded-xl p-4 min-h-[350px]">
@@ -298,16 +295,16 @@ export default function DashboardPage() {
 
               {/* Kết luận */}
               <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-zinc-500">Kết luận (Conclusion)</label>
+                <label className="text-[11px] font-medium text-zinc-300">Kết luận (Conclusion)</label>
                 <textarea value={conclusion} onChange={e=>setConclusion(e.target.value)} rows={3}
-                  className="w-full bg-[#131929] border border-zinc-800/60 rounded-lg p-2.5 text-[12px] text-zinc-100 placeholder-zinc-700 focus:outline-none focus:border-zinc-600 transition-all resize-none scr-dark"/>
+                  className="w-full bg-[#131929] border border-zinc-800/60 rounded-lg p-2.5 text-[12px] text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-all resize-none scr-dark"/>
               </div>
 
               {/* Đề nghị */}
               <div className="space-y-1">
-                <label className="text-[11px] font-semibold text-zinc-500">Đề nghị (Recommendation)</label>
+                <label className="text-[11px] font-medium text-zinc-300">Đề nghị (Recommendation)</label>
                 <textarea value={recommendation} onChange={e=>setRecommendation(e.target.value)} rows={2}
-                  className="w-full bg-[#131929] border border-zinc-800/60 rounded-lg p-2.5 text-[12px] text-zinc-100 placeholder-zinc-700 focus:outline-none focus:border-zinc-600 transition-all resize-none scr-dark"/>
+                  className="w-full bg-[#131929] border border-zinc-800/60 rounded-lg p-2.5 text-[12px] text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-all resize-none scr-dark"/>
               </div>
             </div>
 
