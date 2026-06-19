@@ -28,13 +28,13 @@
     "Enable": true,
     "Root": "/dicom-web/"
   },
-  "AuthenticationEnabled": true,
+  "AuthenticationEnabled": false,
   "RegisteredUsers": {
     "${ORTHANC_ADMIN_USER}": "${ORTHANC_ADMIN_PASSWORD}"
   },
   "RemoteAccessAllowed": true,
   "HttpExtraHeaders": {
-    "Access-Control-Allow-Origin": "http://${SERVER_IP}",
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Origin, Accept, Content-Type, Authorization, X-Requested-With",
     "Access-Control-Allow-Credentials": "true"
