@@ -1,8 +1,9 @@
 window.config = {
   routerBasename: '/',
+  showStudyList: true,
   extensions: [],
   modes: [],
-  showStudyList: true,
+  defaultDataSourceName: 'dicomweb',
   dataSources: [
     {
       friendlyName: 'Orthanc DICOMweb',
@@ -10,15 +11,19 @@ window.config = {
       sourceName: 'dicomweb',
       configuration: {
         name: 'Orthanc',
-        wadoUriRoot: 'http://localhost:8042/dicom-web',
-        qidoRoot: 'http://localhost:8042/dicom-web',
-        wadoRoot: 'http://localhost:8042/dicom-web',
+        // CHUẨN KIẾN TRÚC PROXY CỦA NGINX (Không có IP, Không có Port)
+        wadoUriRoot: '/dicom-web',
+        qidoRoot: '/dicom-web',
+        wadoRoot: '/dicom-web',
         qidoSupportsIncludeField: false,
-        omitQuotationForMultipartRequest: true,
         imageRendering: 'wadors',
         thumbnailRendering: 'wadors',
+        enableStudyLazyLoad: true,
+        supportsFuzzyMatching: false,
+        supportsWildcard: true,
+        singlepart: 'bulkdata,video',
+        omitQuotationForMultipartRequest: true
       },
     },
   ],
-  defaultDataSourceName: 'dicomweb',
 };
