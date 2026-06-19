@@ -3,10 +3,7 @@
   "StorageDirectory": "/var/lib/orthanc/db",
   "IndexDirectory": "/var/lib/orthanc/db",
   "Plugins": [ 
-    "/usr/share/orthanc/plugins/libOrthancPostgreSQLIndex.so",
-    "/usr/share/orthanc/plugins/libOrthancPostgreSQLStorage.so",
-    "/usr/share/orthanc/plugins/libOrthancDicomWeb.so",
-    "/usr/share/orthanc/plugins/libOrthancWorklists.so"
+    "/usr/share/orthanc/plugins"
   ],
   "Worklists" : {
     "Enable": true,

@@ -43,6 +43,7 @@ services:
       - "3000:80"
     volumes:
       - ./config/app-config.js:/usr/share/nginx/html/app-config.js:ro
+    entrypoint: ["/bin/sh", "-c", "sed -i 's|https://polyfill.io[^'\"]*|https://cdnjs.cloudflare.com/ajax/libs/polyfill/3.41.0/polyfill.min.js|g' /usr/share/nginx/html/index.html && nginx -g 'daemon off;'"]
     depends_on:
       - orthanc
 
@@ -52,6 +53,7 @@ services:
     restart: always
     ports:
       - "80:3000"
+    command: sh -c "npx prisma db push && npm start"
     environment:
       - NEXT_PUBLIC_OHIF_URL=http://${SERVER_IP}:3000
       - ORTHANC_API_URL=http://orthanc:8042
@@ -62,6 +64,8 @@ services:
       - ./pacs_data/report_images:/app/pacs_data/report_images
       - ./pacs_data/worklists:/app/pacs_data/worklists
     depends_on:
-      - orthanc
-      - db
+      db:
+        condition: service_healthy
+      orthanc:
+        condition: service_started
 
