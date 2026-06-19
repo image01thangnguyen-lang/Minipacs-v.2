@@ -2,29 +2,19 @@
   "Name": "Mini PACS Orthanc",
   "StorageDirectory": "/var/lib/orthanc/db",
   "IndexDirectory": "/var/lib/orthanc/db",
-  "Plugins": ["/usr/share/orthanc/plugins"],
-  "Worklists": { "Enable": true, "Database": "/worklists" },
-  "ConcurrentJobs": 10,
+  "Plugins": [ 
+    "/usr/share/orthanc/plugins"
+  ],
+  "Worklists" : {
+    "Enable": true,
+    "Database": "/worklists"
+  },
   "HttpServerEnabled": true,
   "HttpPort": 8042,
-  "HttpDescribeErrors": true,
-  "HttpCompressionEnabled": true,
   "DicomServerEnabled": true,
-  "DicomAet": "ORTHANC",
   "DicomPort": 4242,
+  "DicomAet": "ORTHANC",
   "DefaultEncoding": "Utf8",
-  "DeflatedTransferSyntaxAccepted": true,
-  "JpegTransferSyntaxAccepted": true,
-  "LosslessJpegTransferSyntaxAccepted": true,
-  "Mpeg2TransferSyntaxAccepted": true,
-  "RleTransferSyntaxAccepted": true,
-  "UnknownSopClassAccepted": true,
-  "DicomAlwaysAllowEcho": true,
-  "DicomAlwaysAllowStore": true,
-  "DicomAlwaysAllowFind": true,
-  "DicomAlwaysAllowGet": true,
-  "DicomAlwaysAllowMove": true,
-  "DicomCheckCalledAet": false,
   "PostgreSQL": {
     "EnableIndex": true,
     "EnableStorage": true,
@@ -32,20 +22,19 @@
     "Port": 5432,
     "Database": "orthanc_db",
     "Username": "orthanc",
-    "Password": "orthanc_password",
-    "Lock": false
+    "Password": "${POSTGRES_PASSWORD}"
   },
   "DicomWeb": {
     "Enable": true,
-    "Root": "/dicom-web/",
-    "EnableWado": true,
-    "WadoRoot": "/wado",
-    "Ssl": false
+    "Root": "/dicom-web/"
   },
   "AuthenticationEnabled": false,
   "RemoteAccessAllowed": true,
-  "SslEnabled": false,
-  "RegisteredUsers": {},
-  "StableAge": 60,
-  "StoreDicom": true
+  "CorsEnabled": true,
+  "CorsAllowOrigin": "*",
+  "CorsAllowCredentials": true,
+  "CorsAllowHeaders": ["Origin", "Accept", "Content-Type", "X-Requested-With", "Authorization"],
+  "RegisteredUsers": {
+    "${ORTHANC_ADMIN_USER}": "${ORTHANC_ADMIN_PASSWORD}"
+  }
 }

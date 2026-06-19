@@ -29,14 +29,12 @@
     "Root": "/dicom-web/"
   },
   "AuthenticationEnabled": false,
+  "RemoteAccessAllowed": true,
+  "CorsEnabled": true,
+  "CorsAllowOrigin": "*",
+  "CorsAllowCredentials": true,
+  "CorsAllowHeaders": ["Origin", "Accept", "Content-Type", "X-Requested-With", "Authorization"],
   "RegisteredUsers": {
     "${ORTHANC_ADMIN_USER}": "${ORTHANC_ADMIN_PASSWORD}"
-  },
-  "RemoteAccessAllowed": true,
-  "HttpExtraHeaders": {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Origin, Accept, Content-Type, Authorization, X-Requested-With",
-    "Access-Control-Allow-Credentials": "true"
   }
 }

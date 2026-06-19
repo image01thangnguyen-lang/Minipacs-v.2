@@ -14,6 +14,7 @@ window.config = {
         qidoRoot: 'http://localhost:8042/dicom-web',
         wadoRoot: 'http://localhost:8042/dicom-web',
         qidoSupportsIncludeField: false,
+        omitQuotationForMultipartRequest: true,
         imageRendering: 'wadors',
         thumbnailRendering: 'wadors',
       },
