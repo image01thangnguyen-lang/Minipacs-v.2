@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
@@ -43,7 +41,12 @@ services:
       - "3000:80"
     volumes:
       - ./config/app-config.js:/usr/share/nginx/html/app-config.js:ro
-    entrypoint: ["/bin/sh", "-c", "sed -i 's|https://polyfill.io[^'\"]*|https://cdnjs.cloudflare.com/ajax/libs/polyfill/3.41.0/polyfill.min.js|g' /usr/share/nginx/html/index.html && nginx -g 'daemon off;'"]
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        sed -i "s|https://[^\"']*polyfill\.io[^\"']*|https://cdnjs.cloudflare.com/ajax/libs/polyfill/3.41.0/polyfill.min.js|g" /usr/share/nginx/html/index.html &&
+        nginx -g 'daemon off;'
     depends_on:
       - orthanc
 
