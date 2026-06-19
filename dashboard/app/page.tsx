@@ -56,6 +56,14 @@ export default function DashboardPage() {
     })();
   }, []);
 
+  useEffect(() => {
+    if (selectedStudy) {
+      document.title = `PACS - Đang đọc: ${fmtName(selectedStudy.PatientMainDicomTags?.PatientName)}`;
+    } else {
+      document.title = "PACS - Danh sách ca chụp";
+    }
+  }, [selectedStudy]);
+
   // ── Derived data ──
   const modalities = useMemo(() => {
     const s = new Set<string>(); studies.forEach(x => { if (x.EnrichedModality) s.add(x.EnrichedModality); }); return Array.from(s).sort();

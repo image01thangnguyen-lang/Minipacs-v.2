@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Dark background with subtle gradient -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0e17"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </linearGradient>
+    <!-- Cyan Neon Glow -->
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="15" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <rect width="512" height="512" rx="120" fill="url(#bgGrad)"/>
+  
+  <!-- Outer Frame (X-Ray detector frame concept) -->
+  <rect x="96" y="96" width="320" height="320" rx="40" fill="none" stroke="#1e293b" stroke-width="24"/>
+  
+  <!-- Glowing Medical Cross -->
+  <path d="M216 160 h80 v56 h56 v80 h-56 v56 h-80 v-56 h-56 v-80 h56 z" fill="#06b6d4" filter="url(#neonGlow)"/>
+  
+  <!-- Inner bright cross to enhance neon effect -->
+  <path d="M228 172 h56 v44 h44 v56 h-44 v44 h-56 v-44 h-44 v-56 h44 z" fill="#cffafe"/>
+</svg>
