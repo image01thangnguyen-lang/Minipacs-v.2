@@ -11,6 +11,8 @@ datasource db {
 }
 
 enum ReportStatus {
+  DRAFT
+  FINAL
   UNREAD
   DRAFTING
   COMPLETED
@@ -19,12 +21,16 @@ enum ReportStatus {
 model Report {
   id               String       @id @default(uuid())
   studyInstanceUid String       @unique
-  status           ReportStatus @default(UNREAD)
+  status           ReportStatus @default(DRAFT)
   
   // Rich text HTML bindings
   findings         String?      @db.Text
   conclusion       String?      @db.Text
   recommendation   String?      @db.Text
+
+  // Foreign key for Doctor/User (1-N Relationship)
+  doctorId         String?
+  doctor           User?        @relation("DoctorReports", fields: [doctorId], references: [id])
 
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
@@ -44,6 +50,9 @@ model User {
   password  String
   fullName  String
   role      Role     @default(DOCTOR)
+  
+  // Relation back to reports
+  reports   Report[] @relation("DoctorReports")
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

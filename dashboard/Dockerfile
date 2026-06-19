@@ -1,5 +1,8 @@
 FROM node:18-alpine
 
+# Install system dependencies required by Prisma in Alpine Linux
+RUN apk add --no-cache libc6-compat openssl
+
 # Set working directory
 WORKDIR /app
 

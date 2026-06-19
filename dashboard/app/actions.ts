@@ -1,5 +1,7 @@
 'use server'
 
+import { prisma } from './db';
+
 /**
  * Server Action: Lấy danh sách bệnh nhân/studies từ Orthanc.
  * BẢO MẬT: Fetch từ backend, không làm lộ mật khẩu Orthanc ra frontend.
@@ -85,4 +87,71 @@ export async function getStudies() {
     return [];
   }
 }
+
+/**
+ * Server Action: Lưu kết quả chẩn đoán (RIS Report) vào Database Postgres thông qua Prisma.
+ * Thực hiện cơ chế UPSERT thông minh: Tạo mới nếu ca chụp chưa có báo cáo, ngược lại cập nhật đè lên bản cũ.
+ */
+export async function saveReportAction(data: {
+  studyInstanceUid: string;
+  findings: string;
+  conclusion: string;
+  recommendation: string;
+  status: 'DRAFT' | 'FINAL';
+  doctorId?: string;
+}) {
+  // 1. Kiểm tra và lọc dữ liệu (Data Validation)
+  if (!data.studyInstanceUid || typeof data.studyInstanceUid !== 'string' || data.studyInstanceUid.trim() === '') {
+    return {
+      success: false,
+      error: 'Mã ca chụp (StudyInstanceUID) không hợp lệ hoặc bị trống.'
+    };
+  }
+
+  const validStatuses = ['DRAFT', 'FINAL'];
+  if (!validStatuses.includes(data.status)) {
+    return {
+      success: false,
+      error: 'Trạng thái báo cáo không đúng định dạng. Chỉ chấp nhận DRAFT hoặc FINAL.'
+    };
+  }
+
+  try {
+    // 2. Tiến hành UPSERT thông tin báo cáo
+    const report = await prisma.report.upsert({
+      where: {
+        studyInstanceUid: data.studyInstanceUid
+      },
+      update: {
+        findings: data.findings || '',
+        conclusion: data.conclusion || '',
+        recommendation: data.recommendation || '',
+        status: data.status,
+        // Nếu truyền doctorId thì liên kết với tài khoản bác sĩ tương ứng
+        ...(data.doctorId ? { doctorId: data.doctorId } : {})
+      },
+      create: {
+        studyInstanceUid: data.studyInstanceUid,
+        findings: data.findings || '',
+        conclusion: data.conclusion || '',
+        recommendation: data.recommendation || '',
+        status: data.status,
+        ...(data.doctorId ? { doctorId: data.doctorId } : {})
+      }
+    });
+
+    return {
+      success: true,
+      message: data.status === 'FINAL' ? 'Duyệt và ký số kết quả chẩn đoán thành công!' : 'Đã lưu nháp kết quả chẩn đoán thành công.',
+      report
+    };
+  } catch (error: any) {
+    console.error('Critical database error in saveReportAction:', error);
+    return {
+      success: false,
+      error: 'Lỗi ghi nhận kết quả chẩn đoán vào cơ sở dữ liệu Postgres. Chi tiết: ' + (error.message || error)
+    };
+  }
+}
+
 
