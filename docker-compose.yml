@@ -61,7 +61,7 @@ services:
       - ORTHANC_API_URL=http://orthanc:8042
       - ORTHANC_USERNAME=${ORTHANC_ADMIN_USER}
       - ORTHANC_PASSWORD=${ORTHANC_ADMIN_PASSWORD}
-      - DATABASE_URL=postgresql://orthanc:${POSTGRES_PASSWORD}@db:5432/orthanc_db?schema=public
+      - DATABASE_URL=postgresql://orthanc:${POSTGRES_PASSWORD}@db:5432/orthanc_db?schema=dashboard
     volumes:
       - ./pacs_data/report_images:/app/pacs_data/report_images
       - ./pacs_data/worklists:/app/pacs_data/worklists

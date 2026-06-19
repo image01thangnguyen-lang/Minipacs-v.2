@@ -6,8 +6,10 @@ YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# Đọc file .env nếu có để lấy IP Server thực tế
+# Đọc file .env nếu có để lấy cấu hình
 SERVER_IP="localhost"
+ORTHANC_ADMIN_USER="admin"
+ORTHANC_ADMIN_PASSWORD="admin_password"
 if [ -f .env ]; then
   while IFS= read -r line || [ -n "$line" ]; do
     if [[ ! "$line" =~ ^# ]] && [[ "$line" =~ = ]]; then
@@ -15,20 +17,24 @@ if [ -f .env ]; then
       val=$(echo "$line" | cut -d'=' -f2- | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//" | xargs)
       if [ "$key" == "SERVER_IP" ]; then
         SERVER_IP="$val"
+      elif [ "$key" == "ORTHANC_ADMIN_USER" ]; then
+        ORTHANC_ADMIN_USER="$val"
+      elif [ "$key" == "ORTHANC_ADMIN_PASSWORD" ]; then
+        ORTHANC_ADMIN_PASSWORD="$val"
       fi
     fi
   done < .env
 fi
 
 print_ports() {
-  echo -e "\n${CYAN}======================================================${NC}"
-  echo -e "${GREEN}      CÁC DỊCH VỤ PACS/RIS ĐANG CHẠY TRÊN CỔNG:${NC}"
-  echo -e "${CYAN}======================================================${NC}"
+  echo -e "\n${CYAN}====================================================================================================${NC}"
+  echo -e "${GREEN}                             CÁC DỊCH VỤ PACS/RIS ĐANG CHẠY TRÊN CỔNG:${NC}"
+  echo -e "${CYAN}====================================================================================================${NC}"
   echo -e " 🚀 ${GREEN}RIS Dashboard (Next.js)  : http://${SERVER_IP}${NC} (Cổng 80)"
   echo -e " 👁️  ${GREEN}OHIF Viewer (DICOM)      : http://${SERVER_IP}:3000${NC} (Cổng 3000)"
-  echo -e " ⚙️  ${GREEN}Orthanc Web Interface    : http://${SERVER_IP}:8042${NC} (Cổng 8042)"
+  echo -e " ⚙️  ${GREEN}Orthanc Web Interface    : http://${SERVER_IP}:8042${NC} (Cổng 8042) - Tài khoản: ${YELLOW}${ORTHANC_ADMIN_USER}${NC} / Mật khẩu: ${YELLOW}${ORTHANC_ADMIN_PASSWORD}${NC}"
   echo -e " 📦 ${GREEN}Orthanc DICOM Server     : Cổng 4242${NC}"
-  echo -e "${CYAN}======================================================${NC}\n"
+  echo -e "${CYAN}====================================================================================================${NC}\n"
 }
 
 ACTION=$1
