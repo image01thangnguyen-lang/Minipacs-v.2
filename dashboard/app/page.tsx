@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, ExternalLink, Loader2 } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { ChevronLeft, ChevronRight, Loader2, Save, CheckCircle, Printer } from "lucide-react";
 import { getStudies } from './actions';
+import { getStudyDetails, getReport, upsertReport, getDefaultTemplate } from './report/[studyInstanceUid]/actions';
+import TiptapEditor from './report/[studyInstanceUid]/components/TiptapEditor';
+import { PrintTemplateViewer } from './report/[studyInstanceUid]/components/PrintTemplateViewer';
+import { useReactToPrint } from 'react-to-print';
 
 // 1. Xử lý Tên Bệnh Nhân
 const formatPatientName = (name?: string) => {
@@ -41,6 +45,17 @@ export default function DashboardPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(20);
   
+  // -- Report State --
+  const [selectedStudy, setSelectedStudy] = useState<any>(null);
+  const [patientDetails, setPatientDetails] = useState<any>(null);
+  const [findings, setFindings] = useState('');
+  const [conclusion, setConclusion] = useState('');
+  const [recommendation, setRecommendation] = useState('');
+  const [reportStatus, setReportStatus] = useState<string>('UNREAD');
+  const [templateHtml, setTemplateHtml] = useState<string>('');
+  const [isReportLoading, setIsReportLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  
   const ohifUrl = process.env.NEXT_PUBLIC_OHIF_URL || 'http://localhost:3000';
 
   useEffect(() => {
@@ -58,11 +73,243 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
+  const handleReadReport = async (study: any) => {
+    setSelectedStudy(study);
+    const studyInstanceUid = study.MainDicomTags?.StudyInstanceUID;
+    
+    if (!studyInstanceUid) return;
+    
+    try {
+      setIsReportLoading(true);
+      
+      // Reset form
+      setFindings('');
+      setConclusion('');
+      setRecommendation('');
+      setReportStatus('UNREAD');
+      
+      // Load report from PostgreSQL
+      const report = await getReport(studyInstanceUid);
+      if (report) {
+        setFindings(report.findings || '');
+        setConclusion(report.conclusion || '');
+        setRecommendation(report.recommendation || '');
+        setReportStatus(report.status);
+      }
+
+      // Load Patient info from Orthanc
+      const studyInfo = await getStudyDetails(studyInstanceUid);
+      if (studyInfo) {
+        setPatientDetails(studyInfo);
+      }
+
+      const tmpl = await getDefaultTemplate();
+      if (tmpl) {
+        setTemplateHtml(tmpl);
+      }
+    } catch (err) {
+      console.error("Failed to load report data", err);
+    } finally {
+      setIsReportLoading(false);
+    }
+  };
+
+  const handleSave = async (status: 'DRAFTING' | 'COMPLETED') => {
+    if (!selectedStudy?.MainDicomTags?.StudyInstanceUID) return;
+    const studyInstanceUid = selectedStudy.MainDicomTags.StudyInstanceUID;
+    setIsSaving(true);
+    try {
+      const res = await upsertReport(studyInstanceUid, {
+        status,
+        findings,
+        conclusion,
+        recommendation
+      });
+      if (res.success) {
+        setReportStatus(status);
+        // Also update the local studies list so the stable status updates immediately
+        setStudies(prev => prev.map(s => {
+          if (s.MainDicomTags?.StudyInstanceUID === studyInstanceUid) {
+             return { ...s, IsStable: true }; // Optionally mark stable or read
+          }
+          return s;
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to save report", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const printRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Ket_Qua_CDHA_${selectedStudy?.MainDicomTags?.StudyInstanceUID || ''}`,
+  });
+
   const totalStudies = studies.length;
   const totalPages = Math.ceil(totalStudies / rowsPerPage) || 1;
   const startIndex = (currentPage - 1) * rowsPerPage;
   const currentStudies = studies.slice(startIndex, startIndex + rowsPerPage);
 
+  // === RENDER: REPORT SPLIT VIEW ===
+  if (selectedStudy) {
+    if (isReportLoading) {
+      return (
+        <div className="h-screen w-full bg-[#020203] flex items-center justify-center">
+           <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
+        </div>
+      );
+    }
+
+    const patientName = formatPatientName(patientDetails?.PatientMainDicomTags?.PatientName || selectedStudy?.PatientMainDicomTags?.PatientName);
+    const patientId = patientDetails?.PatientMainDicomTags?.PatientID || selectedStudy?.PatientMainDicomTags?.PatientID || "N/A";
+    const studyDesc = patientDetails?.MainDicomTags?.StudyDescription || selectedStudy?.MainDicomTags?.StudyDescription || "N/A";
+    const studyDate = formatDicomDateTime(patientDetails?.MainDicomTags?.StudyDate || selectedStudy?.MainDicomTags?.StudyDate, patientDetails?.MainDicomTags?.StudyTime || selectedStudy?.MainDicomTags?.StudyTime);
+    const studyInstanceUid = selectedStudy.MainDicomTags?.StudyInstanceUID;
+    
+    // OHIF Fix URL
+    const viewerLink = `${ohifUrl}/viewer?StudyInstanceUIDs=${studyInstanceUid}`;
+
+    return (
+      <div className="h-screen w-full bg-[#020203] text-zinc-300 overflow-hidden flex flex-col sm:flex-row">
+        {/* BÊN TRÁI (7 phần): Khu vực OHIF Viewer */}
+        <div className="w-full sm:w-7/12 h-[50vh] sm:h-full bg-black relative border-b sm:border-b-0 sm:border-r border-white/[0.04]">
+           <iframe 
+             src={viewerLink}
+             title="OHIF Viewer"
+             className="w-full h-full border-none"
+             allowFullScreen
+           />
+        </div>
+
+        {/* BÊN PHẢI (5 phần): Khu vực RIS Report Form */}
+        <div className="w-full sm:w-5/12 h-[50vh] sm:h-full flex flex-col bg-[#0A0A0C]">
+          {/* Header Thông tin bệnh nhân */}
+          <div className="flex-none p-4 border-b border-white/[0.04] bg-[#070708]">
+             <div className="flex items-start justify-between">
+                <div>
+                  <button 
+                    onClick={() => setSelectedStudy(null)}
+                    className="flex items-center gap-1 text-sm font-medium text-zinc-500 hover:text-zinc-300 transition-colors mb-2"
+                  >
+                    <ChevronLeft className="h-4 w-4" /> Quay lại danh sách
+                  </button>
+                  <h2 className="text-xl font-bold text-zinc-200 tracking-wide">{patientName}</h2>
+                  <div className="text-xs font-mono text-zinc-500 flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                     <span>PID: <span className="text-zinc-400">{patientId}</span></span>
+                     <span>Study: <span className="text-zinc-400">{studyDesc}</span></span>
+                  </div>
+                </div>
+                <div className="text-right">
+                   <span className={`px-2 py-1 rounded text-[10px] font-bold tracking-widest uppercase border ${
+                     reportStatus === 'COMPLETED' || reportStatus === 'FINAL' ? 'bg-emerald-950/20 text-emerald-400 border-emerald-950/30' : 
+                     reportStatus === 'DRAFTING' || reportStatus === 'DRAFT' ? 'bg-amber-950/20 text-amber-400 border-amber-950/30' : 
+                     'bg-[#020203] text-zinc-500 border-white/[0.04]'
+                   }`}>
+                     {reportStatus}
+                   </span>
+                   <div className="text-xs font-mono text-zinc-500 mt-2">{studyDate}</div>
+                </div>
+             </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+             {/* Section 1: Findings (Rich Text Editor) */}
+             <div className="space-y-2 flex-1 flex flex-col">
+                <label className="text-sm font-semibold text-zinc-400 flex items-center justify-between">
+                   Mô tả (Findings)
+                   <span className="text-[10px] text-zinc-500 font-mono font-normal">Hỗ trợ Paste/Drop Ảnh</span>
+                </label>
+                <TiptapEditor value={findings} onChange={setFindings} />
+             </div>
+
+             {/* Section 2: Conclusion */}
+             <div className="space-y-2">
+                <label className="text-sm font-semibold text-zinc-400">Kết luận (Conclusion)</label>
+                <textarea 
+                  value={conclusion}
+                  onChange={(e) => setConclusion(e.target.value)}
+                  rows={3}
+                  className="w-full bg-[#070708] border border-white/[0.04] rounded-xl p-3 text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-all resize-none custom-scrollbar"
+                  placeholder="Nhập kết luận ngắn gọn..."
+                />
+             </div>
+
+             {/* Section 3: Recommendation */}
+             <div className="space-y-2">
+                <label className="text-sm font-semibold text-zinc-400">Đề nghị (Recommendation)</label>
+                <textarea 
+                  value={recommendation}
+                  onChange={(e) => setRecommendation(e.target.value)}
+                  rows={2}
+                  className="w-full bg-[#070708] border border-white/[0.04] rounded-xl p-3 text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-all resize-none custom-scrollbar"
+                  placeholder="Đề nghị các chỉ định lâm sàng tiếp theo..."
+                />
+             </div>
+          </div>
+
+          {/* Footer Actions */}
+          <div className="flex-none p-4 border-t border-white/[0.04] bg-[#070708] flex items-center justify-between">
+             <div>
+               <button
+                 onClick={() => handlePrint()}
+                 className="px-4 py-2 border border-white/[0.04] text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200 font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+               >
+                 <Printer className="h-4 w-4" />
+                 In Kết Quả
+               </button>
+             </div>
+             <div className="flex items-center gap-3">
+               <button
+                 onClick={() => handleSave('DRAFTING')}
+                 disabled={isSaving}
+                 className="px-4 py-2 border border-white/[0.04] text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200 font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+               >
+                 <Save className="h-4 w-4" />
+                 Lưu nháp
+               </button>
+               <button
+                 onClick={() => handleSave('COMPLETED')}
+                 disabled={isSaving}
+                 className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-800 font-semibold text-sm rounded-lg transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
+               >
+                 <CheckCircle className="h-4 w-4" />
+                 Hoàn tất & Ký
+               </button>
+             </div>
+          </div>
+        </div>
+
+        {/* Hidden Print Template */}
+        <div className="hidden">
+          <PrintTemplateViewer 
+            ref={printRef}
+            templateHtml={templateHtml}
+            context={{
+              patientName: patientName,
+              patientId: patientId,
+              studyDate: studyDate,
+              studyDesc: studyDesc,
+              reportContent: findings,
+              conclusion: conclusion,
+              recommendation: recommendation
+            }}
+          />
+        </div>
+
+        <style>{`
+          .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+          .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background: #18181B; border-radius: 10px; }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #27272A; }
+        `}</style>
+      </div>
+    );
+  }
+
+  // === RENDER: DASHBOARD ===
   return (
     <div className="min-h-screen bg-[#020203] text-zinc-300 p-8 sm:p-12 font-sans selection:bg-zinc-800 flex flex-col">
       <div className="w-full h-full flex flex-col flex-1">
@@ -153,7 +400,6 @@ export default function DashboardPage() {
                   </tr>
                 ) : (
                   currentStudies.map((study) => {
-                    // Mapping Fields according to spec
                     const acc = study.MainDicomTags?.AccessionNumber || null;
                     const patientName = formatPatientName(study.PatientMainDicomTags?.PatientName);
                     const patientId = study.PatientMainDicomTags?.PatientID || "N/A";
@@ -162,8 +408,6 @@ export default function DashboardPage() {
                     const studyDateTime = formatDicomDateTime(study.MainDicomTags?.StudyDate, study.MainDicomTags?.StudyTime);
                     const modality = study.EnrichedModality || "UNKNOWN";
                     const instances = study.EnrichedInstancesCount || 0;
-
-                    const viewerLink = `${ohifUrl}/viewer?StudyInstanceUIDs=${study.MainDicomTags?.StudyInstanceUID}`;
 
                     return (
                       <tr key={study.ID} className="hover:bg-white/[0.02] transition-colors group">
@@ -204,12 +448,12 @@ export default function DashboardPage() {
                            </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <a 
-                            href={`/report/${study.MainDicomTags?.StudyInstanceUID}`}
+                          <button 
+                            onClick={() => handleReadReport(study)}
                             className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 text-zinc-100 border border-zinc-800 hover:bg-zinc-800 hover:text-white rounded-lg transition-all font-medium text-xs shadow-sm active:scale-95 outline-none whitespace-nowrap"
                           >
                             Đọc kết quả
-                          </a>
+                          </button>
                         </td>
                       </tr>
                     );
@@ -223,4 +467,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
