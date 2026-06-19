@@ -102,7 +102,11 @@ export default function DashboardPage() {
   const openViewer = (study: any) => {
     const uid = study.MainDicomTags?.StudyInstanceUID;
     const patientName = fmtName(study.PatientMainDicomTags?.PatientName);
-    if (uid) window.open(`${ohifUrl}/viewer?StudyInstanceUIDs=${uid}&patientName=${encodeURIComponent(patientName)}`, '_blank');
+    if (uid) {
+      const currentHost = window.location.hostname;
+      const viewerUrl = `http://${currentHost}:3000/viewer?StudyInstanceUIDs=${uid}&patientName=${encodeURIComponent(patientName)}`;
+      window.open(viewerUrl, '_blank');
+    }
   };
 
   const handleSave = async (status: 'DRAFTING' | 'COMPLETED') => {
