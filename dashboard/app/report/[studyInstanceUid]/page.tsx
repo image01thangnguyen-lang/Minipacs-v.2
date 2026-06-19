@@ -21,8 +21,8 @@ const formatDicomDateTime = (dateStr?: string, timeStr?: string) => {
   return t ? `${d} ${t}` : d;
 };
 
-export default function ReportPage({ params }: { params: Promise<{ studyInstanceUid: string }> }) {
-  const { studyInstanceUid } = use(params);
+export default function ReportPage({ params }: { params: { studyInstanceUid: string } }) {
+  const { studyInstanceUid } = params;
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(true);
