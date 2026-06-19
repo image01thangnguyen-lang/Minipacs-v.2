@@ -10,6 +10,9 @@ import { useReactToPrint } from 'react-to-print';
 
 // ── Helpers ──
 const fmtName = (n?: string) => n ? n.replace(/\^/g, ' ') : "Unknown Patient";
+const fmtPhys = (n?: string) => n ? n.replace(/\^/g, ' ') : "—";
+const fmtSex = (s?: string) => s === 'M' ? 'Nam' : s === 'F' ? 'Nữ' : s || '?';
+const fmtAge = (a?: string) => a ? a.replace(/\D/g, '') : '?';
 const fmtDt = (d?: string, t?: string) => {
   if (!d) return "—";
   const ds = d.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
@@ -166,14 +169,14 @@ export default function DashboardPage() {
           {/* Bảng chính */}
           <div className="flex-1 overflow-y-auto scr-dark">
             <table className="w-full text-left">
-              <thead className="text-[9px] font-semibold text-zinc-400 uppercase tracking-wider bg-[#070809] border-b border-white/[0.03] sticky top-0 z-10">
+              <thead className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider bg-[#070809] border-b border-white/[0.03] sticky top-0 z-10">
                 <tr>
-                  <th className="pl-2 pr-1 py-1 w-6">#</th>
-                  <th className="px-1 py-1">Bệnh Nhân</th>
-                  <th className="px-1 py-1 w-10 text-center">Mod</th>
-                  <th className="px-1 py-1">Mô tả</th>
-                  <th className="px-1 py-1">Ngày</th>
-                  <th className="pr-2 pl-1 py-1 w-6 text-center">TT</th>
+                  <th className="pr-2 pl-1 py-2 w-8 text-center">TT</th>
+                  <th className="px-2 py-2">Bệnh Nhân</th>
+                  <th className="px-2 py-2 w-48">Chỉ định</th>
+                  <th className="px-2 py-2 w-[28%]">Mô tả dịch vụ</th>
+                  <th className="px-2 py-2 w-16 text-center">Ảnh</th>
+                  <th className="px-2 py-2 w-32">Ngày chụp</th>
                 </tr>
               </thead>
               <tbody>
@@ -183,20 +186,37 @@ export default function DashboardPage() {
                   <tr><td colSpan={6} className="py-10 text-center text-zinc-700 text-[11px]">Không có ca chụp nào.</td></tr>
                 ) : pageStudies.map((s, i) => {
                   const isSel = selUid === s.MainDicomTags?.StudyInstanceUID;
+                  const pSex = fmtSex(s.PatientMainDicomTags?.PatientSex);
+                  const pAge = fmtAge(s.PatientMainDicomTags?.PatientAge);
+                  const pId = s.PatientMainDicomTags?.PatientID || '—';
+                  const refPhys = fmtPhys(s.MainDicomTags?.ReferringPhysicianName);
+                  const accNum = s.MainDicomTags?.AccessionNumber || '—';
                   return (
                     <tr key={s.ID} onClick={()=>handleSelect(s)} onDoubleClick={()=>openViewer(s)}
-                      className={`cursor-pointer select-none transition-colors ${isSel ? 'bg-blue-950/40 border-l-2 border-l-blue-500' : 'border-l-2 border-l-transparent hover:bg-white/[0.015] even:bg-[#0e1322]/30'}`}
+                      className={`cursor-pointer select-none transition-colors ${isSel ? 'bg-blue-950/40 border-l-2 border-l-blue-500' : 'border-l-2 border-l-transparent hover:bg-zinc-800/50 even:bg-[#0e1322]/30'}`}
                       title="Click: đọc KQ · Dbl-click: OHIF">
-                      <td className="pl-2 pr-1 py-1 text-[10px] font-mono text-zinc-700">{(currentPage-1)*rowsPerPage+i+1}</td>
-                      <td className="px-1 py-1">
-                        <div className={`text-[11px] font-bold truncate max-w-[140px] ${isSel?'text-white':'text-zinc-100'}`}>{fmtName(s.PatientMainDicomTags?.PatientName)}</div>
-                        <div className="text-[9px] font-mono text-zinc-400">{s.PatientMainDicomTags?.PatientID||'—'}</div>
+                      <td className="pr-2 pl-1 py-2 text-center">
+                        <span className={`inline-block w-2 h-2 rounded-full ${(s.IsStable??true)?'bg-emerald-500':'bg-amber-500 animate-pulse'}`}/>
                       </td>
-                      <td className="px-1 py-1 text-center"><ModBadge m={s.EnrichedModality||'?'}/></td>
-                      <td className="px-1 py-1 text-[10px] text-zinc-300 truncate max-w-[140px]">{s.MainDicomTags?.StudyDescription||'—'}</td>
-                      <td className="px-1 py-1 text-[10px] font-mono text-zinc-300 whitespace-nowrap">{fmtDt(s.MainDicomTags?.StudyDate,s.MainDicomTags?.StudyTime)}</td>
-                      <td className="pr-2 pl-1 py-1 text-center">
-                        <span className={`inline-block w-1.5 h-1.5 rounded-full ${(s.IsStable??true)?'bg-emerald-500':'bg-amber-500 animate-pulse'}`}/>
+                      <td className="px-2 py-2">
+                        <div className={`text-sm font-medium truncate max-w-[200px] ${isSel?'text-white':'text-zinc-100'}`}>{fmtName(s.PatientMainDicomTags?.PatientName)}</div>
+                        <div className="text-xs text-zinc-500 mt-0.5">{pId} <span className="mx-1 text-zinc-700">|</span> {pSex} <span className="mx-1 text-zinc-700">|</span> {pAge}T</div>
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="text-xs text-zinc-500 font-mono truncate max-w-[150px]">{accNum}</div>
+                        <div className="text-xs text-zinc-500 truncate max-w-[150px] mt-0.5">{refPhys}</div>
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="flex items-center gap-2">
+                          <ModBadge m={s.EnrichedModality||'?'}/>
+                          <span className="text-sm text-zinc-100 font-medium truncate max-w-[250px]">{s.MainDicomTags?.StudyDescription||'—'}</span>
+                        </div>
+                      </td>
+                      <td className="px-2 py-2 text-center text-xs text-zinc-500 font-mono">
+                        {s.EnrichedInstancesCount || 0}
+                      </td>
+                      <td className="px-2 py-2 text-xs font-mono text-zinc-500 whitespace-nowrap">
+                        {fmtDt(s.MainDicomTags?.StudyDate,s.MainDicomTags?.StudyTime)}
                       </td>
                     </tr>
                   );
