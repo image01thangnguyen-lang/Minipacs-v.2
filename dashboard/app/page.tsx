@@ -21,12 +21,12 @@ const formatDicomDateTime = (dateStr?: string, timeStr?: string) => {
 // 3. Component Badge Modality
 const ModalityBadge = ({ type }: { type: string }) => {
   const modality = type || "UNKNOWN";
-  let colors = "bg-slate-800 text-slate-300 border-slate-700";
+  let colors = "bg-zinc-900/50 text-zinc-400 border-white/[0.04]";
   
-  if (modality === 'CT') colors = "bg-teal-500/10 text-teal-400 border-teal-500/20";
-  else if (modality === 'MR') colors = "bg-cyan-500/10 text-cyan-400 border-cyan-500/20";
-  else if (['CR', 'DX'].includes(modality)) colors = "bg-orange-500/10 text-orange-400 border-orange-500/20";
-  else if (modality === 'US') colors = "bg-green-500/10 text-green-400 border-green-500/20";
+  if (modality === 'CT') colors = "bg-teal-950/20 text-teal-500/90 border-teal-950/40";
+  else if (modality === 'MR') colors = "bg-blue-950/20 text-blue-500/90 border-blue-950/40";
+  else if (['CR', 'DX'].includes(modality)) colors = "bg-orange-950/20 text-orange-500/90 border-orange-950/40";
+  else if (modality === 'US') colors = "bg-emerald-950/20 text-emerald-500/90 border-emerald-950/40";
 
   return (
     <span className={`px-2 py-0.5 rounded font-mono text-xs font-semibold border ${colors}`}>
@@ -64,18 +64,18 @@ export default function DashboardPage() {
   const currentStudies = studies.slice(startIndex, startIndex + rowsPerPage);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-slate-200 p-8 sm:p-12 font-sans selection:bg-blue-500/30 flex flex-col">
+    <div className="min-h-screen bg-[#020203] text-zinc-300 p-8 sm:p-12 font-sans selection:bg-zinc-800 flex flex-col">
       <div className="w-full h-full flex flex-col flex-1">
         {/* Header Component - 1 Line, No Description */}
-        <div className="flex flex-col sm:flex-row items-center justify-between pb-4 border-b border-slate-800 mb-6 gap-4">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-100">
+        <div className="flex flex-col sm:flex-row items-center justify-between pb-4 border-b border-white/[0.04] mb-6 gap-4">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-200">
             Danh sách Ca chụp
           </h1>
           
           {/* Pagination Controls Sát vào lề phải */}
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <label htmlFor="rows" className="text-sm text-slate-400 font-medium whitespace-nowrap">
+              <label htmlFor="rows" className="text-sm text-zinc-500 font-medium whitespace-nowrap">
                 Rows per page:
               </label>
               <select
@@ -85,7 +85,7 @@ export default function DashboardPage() {
                   setRowsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none min-w-[4rem] text-center cursor-pointer"
+                className="bg-[#0A0A0C] border border-white/[0.04] text-zinc-300 text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-zinc-700 appearance-none min-w-[4rem] text-center cursor-pointer"
               >
                 <option value={20}>20</option>
                 <option value={50}>50</option>
@@ -93,24 +93,24 @@ export default function DashboardPage() {
               </select>
             </div>
 
-            <div className="w-px h-6 bg-slate-800 hidden sm:block"></div>
+            <div className="w-px h-6 bg-white/[0.04] hidden sm:block"></div>
 
             <div className="flex items-center gap-4">
-              <span className="text-sm text-slate-400 font-medium whitespace-nowrap">
+              <span className="text-sm text-zinc-500 font-medium whitespace-nowrap">
                 Page {currentPage} of {totalPages}
               </span>
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1 || isLoading}
-                  className="p-1.5 border border-slate-700/60 rounded-lg bg-slate-900/50 text-slate-300 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="p-1.5 border border-white/[0.04] rounded-lg bg-[#070708] text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages || isLoading || totalStudies === 0}
-                  className="p-1.5 border border-slate-700/60 rounded-lg bg-slate-900/50 text-slate-300 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  className="p-1.5 border border-white/[0.04] rounded-lg bg-[#070708] text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
@@ -120,10 +120,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Client-Side Data Table */}
-        <div className="bg-[#0d0d0f] border border-slate-800 rounded-xl overflow-hidden shadow-xl flex-1 flex flex-col">
+        <div className="bg-[#0A0A0C] border border-white/[0.04] rounded-xl overflow-hidden shadow-2xl flex-1 flex flex-col">
           <div className="overflow-x-auto min-h-[400px]">
             <table className="w-full text-sm text-left whitespace-nowrap">
-              <thead className="text-xs text-slate-400 uppercase bg-slate-900/50 border-b border-slate-800 sticky top-0 z-10">
+              <thead className="text-xs text-zinc-500 uppercase bg-[#070708] border-b border-white/[0.04] sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-4 font-medium tracking-wider text-left">Accession</th>
                   <th className="px-6 py-4 font-medium tracking-wider text-left">Bệnh Nhân</th>
@@ -135,12 +135,12 @@ export default function DashboardPage() {
                   <th className="px-6 py-4 font-medium tracking-wider text-right">Hành động</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-white/[0.04]">
                 {isLoading ? (
                   <tr>
                     <td colSpan={8} className="px-6 py-24 text-center">
-                      <div className="flex flex-col items-center justify-center gap-4 text-slate-400">
-                        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+                      <div className="flex flex-col items-center justify-center gap-4 text-zinc-500">
+                        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
                         <span className="font-medium text-sm">Đang tải dữ liệu ca chụp từ PACS...</span>
                       </div>
                     </td>
@@ -166,47 +166,47 @@ export default function DashboardPage() {
                     const viewerLink = `${ohifUrl}/viewer?StudyInstanceUIDs=${study.MainDicomTags?.StudyInstanceUID}`;
 
                     return (
-                      <tr key={study.ID} className="hover:bg-slate-800/50 transition-colors group">
+                      <tr key={study.ID} className="hover:bg-white/[0.02] transition-colors group">
                         <td className="px-6 py-4 text-left">
-                          <span className={acc ? "text-cyan-400 font-mono text-xs font-semibold" : "text-slate-500 font-mono text-xs"}>
+                          <span className={acc ? "text-zinc-300 font-mono text-xs font-semibold" : "text-zinc-600 font-mono text-xs"}>
                             {acc || "N/A"}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-left">
                           <div className="flex flex-col gap-0.5">
-                            <span className="text-white font-bold text-sm tracking-wide">{patientName}</span>
-                            <span className="text-slate-500 font-mono text-xs font-medium">PID-{patientId}</span>
+                            <span className="text-zinc-200 font-bold text-sm tracking-wide">{patientName}</span>
+                            <span className="text-zinc-500 font-mono text-xs font-medium">PID-{patientId}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-left">
                           <ModalityBadge type={modality} />
                         </td>
-                        <td className="px-6 py-4 text-slate-300 text-sm max-w-[200px] truncate" title={desc}>
+                        <td className="px-6 py-4 text-zinc-400 text-sm max-w-[200px] truncate" title={desc}>
                           {desc}
                         </td>
-                        <td className="px-6 py-4 text-slate-400 text-sm font-mono whitespace-nowrap">
+                        <td className="px-6 py-4 text-zinc-500 text-sm font-mono whitespace-nowrap">
                           {studyDateTime}
                         </td>
                         <td className="px-6 py-4 text-left">
                           {isStable ? (
-                            <span className="inline-flex items-center bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-xs font-medium tracking-wide">
+                            <span className="inline-flex items-center bg-emerald-950/20 text-emerald-400 border border-emerald-950/30 px-2 py-0.5 rounded text-xs font-medium tracking-wide">
                               Hoàn tất
                             </span>
                           ) : (
-                            <span className="inline-flex items-center bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded text-xs font-medium tracking-wide">
+                            <span className="inline-flex items-center bg-amber-950/20 text-amber-400 border border-amber-950/30 px-2 py-0.5 rounded text-xs font-medium tracking-wide">
                               Đang nhận
                             </span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-center">
-                           <span className="text-slate-300 bg-slate-900 border border-slate-700/50 px-2 py-0.5 rounded font-mono text-xs">
+                           <span className="text-zinc-400 bg-zinc-900 border border-white/[0.04] px-2 py-0.5 rounded font-mono text-xs">
                              {instances}
                            </span>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <a 
                             href={`/report/${study.MainDicomTags?.StudyInstanceUID}`}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 border border-blue-500/40 text-blue-400 hover:bg-blue-500/10 hover:border-blue-400 rounded-lg transition-all font-medium text-xs shadow-sm hover:shadow-blue-500/10 focus:ring-2 focus:ring-blue-500/40 outline-none whitespace-nowrap"
+                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-900 text-zinc-100 border border-zinc-800 hover:bg-zinc-800 hover:text-white rounded-lg transition-all font-medium text-xs shadow-sm active:scale-95 outline-none whitespace-nowrap"
                           >
                             Đọc kết quả
                           </a>
