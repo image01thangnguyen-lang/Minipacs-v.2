@@ -33,7 +33,7 @@ export default function ReportPage({ params }: { params: Promise<{ studyInstance
   const [findings, setFindings] = useState('');
   const [conclusion, setConclusion] = useState('');
   const [recommendation, setRecommendation] = useState('');
-  const [reportStatus, setReportStatus] = useState<'UNREAD' | 'DRAFTING' | 'COMPLETED'>('UNREAD');
+  const [reportStatus, setReportStatus] = useState<string>('UNREAD');
   const [templateHtml, setTemplateHtml] = useState<string>('');
 
   const ohifUrl = process.env.NEXT_PUBLIC_OHIF_URL || 'http://localhost:3000';
@@ -148,8 +148,8 @@ export default function ReportPage({ params }: { params: Promise<{ studyInstance
               </div>
               <div className="text-right">
                  <span className={`px-2 py-1 rounded text-[10px] font-bold tracking-widest uppercase border ${
-                   reportStatus === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-                   reportStatus === 'DRAFTING' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 
+                   reportStatus === 'COMPLETED' || reportStatus === 'FINAL' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
+                   reportStatus === 'DRAFTING' || reportStatus === 'DRAFT' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 
                    'bg-slate-800 text-slate-400 border-slate-700'
                  }`}>
                    {reportStatus}
