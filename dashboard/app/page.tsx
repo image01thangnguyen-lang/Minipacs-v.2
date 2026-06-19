@@ -173,9 +173,9 @@ export default function DashboardPage() {
     const viewerLink = `${ohifUrl}/viewer?StudyInstanceUIDs=${studyInstanceUid}`;
 
     return (
-      <div className="h-screen w-full bg-[#020203] text-zinc-300 overflow-hidden flex flex-col sm:flex-row">
+      <div className="h-screen w-full bg-[#0a0e17] text-zinc-300 overflow-hidden flex flex-col sm:flex-row">
         {/* BÊN TRÁI (7 phần): Khu vực OHIF Viewer */}
-        <div className="w-full sm:w-7/12 h-[50vh] sm:h-full bg-black relative border-b sm:border-b-0 sm:border-r border-white/[0.04]">
+        <div className="w-full sm:w-7/12 h-[50vh] sm:h-full bg-[#0a0e17] relative border-b sm:border-b-0">
            <iframe 
              src={viewerLink}
              title="OHIF Viewer"
@@ -184,78 +184,80 @@ export default function DashboardPage() {
            />
         </div>
 
-        {/* BÊN PHẢI (5 phần): Khu vực RIS Report Form */}
-        <div className="w-full sm:w-5/12 h-[50vh] sm:h-full flex flex-col bg-[#0A0A0C]">
+        {/* BÊN PHẢI (5 phần): Khu vực RIS Report Form (SÁNG) */}
+        <div className="w-full sm:w-5/12 h-[50vh] sm:h-full flex flex-col bg-[#f1f5f9] sm:border-l sm:border-zinc-800">
           {/* Header Thông tin bệnh nhân */}
-          <div className="flex-none p-4 border-b border-white/[0.04] bg-[#070708]">
+          <div className="flex-none p-4 border-b border-slate-200 bg-white">
              <div className="flex items-start justify-between">
                 <div>
                   <button 
                     onClick={() => setSelectedStudy(null)}
-                    className="flex items-center gap-1 text-sm font-medium text-zinc-500 hover:text-zinc-300 transition-colors mb-2"
+                    className="flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors mb-2"
                   >
                     <ChevronLeft className="h-4 w-4" /> Quay lại danh sách
                   </button>
-                  <h2 className="text-xl font-bold text-zinc-200 tracking-wide">{patientName}</h2>
-                  <div className="text-xs font-mono text-zinc-500 flex flex-wrap gap-x-4 gap-y-1 mt-1">
-                     <span>PID: <span className="text-zinc-400">{patientId}</span></span>
-                     <span>Study: <span className="text-zinc-400">{studyDesc}</span></span>
+                  <h2 className="text-xl font-bold text-slate-900 tracking-wide">{patientName}</h2>
+                  <div className="text-xs font-mono text-slate-500 flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                     <span>PID: <span className="text-slate-700">{patientId}</span></span>
+                     <span>Study: <span className="text-slate-700">{studyDesc}</span></span>
                   </div>
                 </div>
                 <div className="text-right">
                    <span className={`px-2 py-1 rounded text-[10px] font-bold tracking-widest uppercase border ${
-                     reportStatus === 'COMPLETED' || reportStatus === 'FINAL' ? 'bg-emerald-950/20 text-emerald-400 border-emerald-950/30' : 
-                     reportStatus === 'DRAFTING' || reportStatus === 'DRAFT' ? 'bg-amber-950/20 text-amber-400 border-amber-950/30' : 
-                     'bg-[#020203] text-zinc-500 border-white/[0.04]'
+                     reportStatus === 'COMPLETED' || reportStatus === 'FINAL' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 
+                     reportStatus === 'DRAFTING' || reportStatus === 'DRAFT' ? 'bg-amber-100 text-amber-700 border-amber-200' : 
+                     'bg-slate-100 text-slate-600 border-slate-200'
                    }`}>
                      {reportStatus}
                    </span>
-                   <div className="text-xs font-mono text-zinc-500 mt-2">{studyDate}</div>
+                   <div className="text-xs font-mono text-slate-500 mt-2">{studyDate}</div>
                 </div>
              </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar text-slate-900">
              {/* Section 1: Findings (Rich Text Editor) */}
              <div className="space-y-2 flex-1 flex flex-col">
-                <label className="text-sm font-semibold text-zinc-400 flex items-center justify-between">
+                <label className="text-sm font-semibold text-slate-600 flex items-center justify-between">
                    Mô tả (Findings)
-                   <span className="text-[10px] text-zinc-500 font-mono font-normal">Hỗ trợ Paste/Drop Ảnh</span>
+                   <span className="text-[10px] text-slate-400 font-mono font-normal">Hỗ trợ Paste/Drop Ảnh</span>
                 </label>
-                <TiptapEditor value={findings} onChange={setFindings} />
+                <div className="bg-white border border-slate-200 text-black shadow-sm rounded-xl p-6 min-h-[350px]">
+                   <TiptapEditor value={findings} onChange={setFindings} />
+                </div>
              </div>
 
              {/* Section 2: Conclusion */}
              <div className="space-y-2">
-                <label className="text-sm font-semibold text-zinc-400">Kết luận (Conclusion)</label>
+                <label className="text-sm font-semibold text-slate-600">Kết luận (Conclusion)</label>
                 <textarea 
                   value={conclusion}
                   onChange={(e) => setConclusion(e.target.value)}
                   rows={3}
-                  className="w-full bg-[#070708] border border-white/[0.04] rounded-xl p-3 text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-all resize-none custom-scrollbar"
+                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none custom-scrollbar shadow-sm"
                   placeholder="Nhập kết luận ngắn gọn..."
                 />
              </div>
 
              {/* Section 3: Recommendation */}
              <div className="space-y-2">
-                <label className="text-sm font-semibold text-zinc-400">Đề nghị (Recommendation)</label>
+                <label className="text-sm font-semibold text-slate-600">Đề nghị (Recommendation)</label>
                 <textarea 
                   value={recommendation}
                   onChange={(e) => setRecommendation(e.target.value)}
                   rows={2}
-                  className="w-full bg-[#070708] border border-white/[0.04] rounded-xl p-3 text-sm text-zinc-300 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 transition-all resize-none custom-scrollbar"
+                  className="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none custom-scrollbar shadow-sm"
                   placeholder="Đề nghị các chỉ định lâm sàng tiếp theo..."
                 />
              </div>
           </div>
 
           {/* Footer Actions */}
-          <div className="flex-none p-4 border-t border-white/[0.04] bg-[#070708] flex items-center justify-between">
+          <div className="flex-none p-4 border-t border-slate-200 bg-white flex items-center justify-between">
              <div>
                <button
                  onClick={() => handlePrint()}
-                 className="px-4 py-2 border border-white/[0.04] text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200 font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 shadow-sm"
                >
                  <Printer className="h-4 w-4" />
                  In Kết Quả
@@ -265,7 +267,7 @@ export default function DashboardPage() {
                <button
                  onClick={() => handleSave('DRAFTING')}
                  disabled={isSaving}
-                 className="px-4 py-2 border border-white/[0.04] text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200 font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                 className="px-4 py-2 border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 shadow-sm"
                >
                  <Save className="h-4 w-4" />
                  Lưu nháp
@@ -273,7 +275,7 @@ export default function DashboardPage() {
                <button
                  onClick={() => handleSave('COMPLETED')}
                  disabled={isSaving}
-                 className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-800 font-semibold text-sm rounded-lg transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
+                 className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-lg transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50 shadow-sm"
                >
                  <CheckCircle className="h-4 w-4" />
                  Hoàn tất & Ký
@@ -300,10 +302,10 @@ export default function DashboardPage() {
         </div>
 
         <style>{`
-          .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+          .custom-scrollbar::-webkit-scrollbar { width: 6px; }
           .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-          .custom-scrollbar::-webkit-scrollbar-thumb { background: #18181B; border-radius: 10px; }
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #27272A; }
+          .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         `}</style>
       </div>
     );
@@ -311,11 +313,11 @@ export default function DashboardPage() {
 
   // === RENDER: DASHBOARD ===
   return (
-    <div className="min-h-screen bg-[#020203] text-zinc-300 p-8 sm:p-12 font-sans selection:bg-zinc-800 flex flex-col">
+    <div className="min-h-screen bg-[#0a0e17] text-zinc-300 p-8 sm:p-12 font-sans selection:bg-zinc-800 flex flex-col">
       <div className="w-full h-full flex flex-col flex-1">
         {/* Header Component - 1 Line, No Description */}
         <div className="flex flex-col sm:flex-row items-center justify-between pb-4 border-b border-white/[0.04] mb-6 gap-4">
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-200">
+          <h1 className="text-2xl font-bold tracking-tight text-white">
             Danh sách Ca chụp
           </h1>
           
