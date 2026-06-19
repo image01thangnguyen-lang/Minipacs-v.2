@@ -1,6 +1,14 @@
+const urlParams = new URLSearchParams(window.location.search);
+const patientName = urlParams.get('patientName');
+if (patientName) {
+  document.title = decodeURIComponent(patientName) + " | PACS Viewer";
+}
+
 window.config = {
   routerBasename: '/',
   showStudyList: true,
+  extensions: [],
+  modes: [],
   dataSources: [
     {
       friendlyName: 'Orthanc DICOMweb',
