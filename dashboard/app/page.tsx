@@ -15,6 +15,14 @@ import {
 } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import { AppSidebar } from "./components/AppSidebar";
+import {
+  appendTemplateHtml,
+  appendTemplateText,
+  normalizeTemplateHtml,
+  ReportTemplateOption,
+  ReportTemplatePicker,
+  TemplateApplyMode,
+} from "./components/ReportTemplatePicker";
 import { getStudies } from "./actions";
 import {
   getDefaultTemplate,
@@ -22,6 +30,7 @@ import {
   getStudyDetails,
   upsertReport,
 } from "./report/[studyInstanceUid]/actions";
+import { getReportTemplateSuggestions } from "./settings/report-templates/actions";
 import TiptapEditor from "./report/[studyInstanceUid]/components/TiptapEditor";
 import { PrintTemplateViewer } from "./report/[studyInstanceUid]/components/PrintTemplateViewer";
 
@@ -122,6 +131,7 @@ export default function DashboardPage() {
   const [studyStatus, setStudyStatus] = useState("READY_TO_READ");
   const [doctorPrintInfo, setDoctorPrintInfo] = useState<Record<string, string>>({});
   const [templateHtml, setTemplateHtml] = useState("");
+  const [reportTemplates, setReportTemplates] = useState<ReportTemplateOption[]>([]);
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -196,6 +206,7 @@ export default function DashboardPage() {
       setRecommendation("");
       setStudyStatus(study.WorkflowStatus || "READY_TO_READ");
       setDoctorPrintInfo({});
+      setReportTemplates([]);
 
       const [report, details, template] = await Promise.all([
         getReport(uid),
@@ -216,6 +227,12 @@ export default function DashboardPage() {
         if (details.WorkflowStatus) setStudyStatus(details.WorkflowStatus);
       }
       if (template) setTemplateHtml(template);
+
+      const cannedTemplates = await getReportTemplateSuggestions({
+        modality: study.EnrichedModality || study.MainDicomTags?.Modality,
+        bodyPart: study.MainDicomTags?.BodyPartExamined,
+      });
+      setReportTemplates(cannedTemplates || []);
     } catch (error) {
       console.error(error);
     } finally {
@@ -228,6 +245,19 @@ export default function DashboardPage() {
     if (!uid) return;
     const currentHost = window.location.hostname;
     window.open(`http://${currentHost}:3000/viewer/${encodeURIComponent(uid)}`, "_blank");
+  };
+
+  const applyReportTemplate = (template: ReportTemplateOption, mode: TemplateApplyMode) => {
+    if (mode === "replace") {
+      setFindings(normalizeTemplateHtml(template.findings));
+      setConclusion(template.conclusion || "");
+      setRecommendation(template.recommendation || "");
+      return;
+    }
+
+    setFindings(current => appendTemplateHtml(current, template.findings));
+    setConclusion(current => appendTemplateText(current, template.conclusion));
+    setRecommendation(current => appendTemplateText(current, template.recommendation));
   };
 
   const handleSave = async (status: "DRAFTING" | "COMPLETED") => {
@@ -543,6 +573,11 @@ export default function DashboardPage() {
                   <label className="text-[11px] font-semibold text-vin-text2">Mô tả (Findings)</label>
                   <span className="rounded bg-vin-shell px-2 py-0.5 font-mono text-[9px] text-vin-muted">Paste/Drop ảnh</span>
                 </div>
+                <ReportTemplatePicker
+                  disabled={isSaving}
+                  templates={reportTemplates}
+                  onApply={applyReportTemplate}
+                />
                 <TiptapEditor value={findings} onChange={setFindings} />
               </div>
 

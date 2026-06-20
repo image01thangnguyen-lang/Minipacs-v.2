@@ -7,6 +7,15 @@ import { useReactToPrint } from "react-to-print";
 import TiptapEditor from "./components/TiptapEditor";
 import { PrintTemplateViewer } from "./components/PrintTemplateViewer";
 import { getDefaultTemplate, getReport, getStudyDetails, upsertReport } from "./actions";
+import {
+  appendTemplateHtml,
+  appendTemplateText,
+  normalizeTemplateHtml,
+  ReportTemplateOption,
+  ReportTemplatePicker,
+  TemplateApplyMode,
+} from "@/app/components/ReportTemplatePicker";
+import { getReportTemplateSuggestions } from "@/app/settings/report-templates/actions";
 
 const formatPatientName = (name?: string) => (name ? name.replace(/\^/g, " ") : "Unknown Patient");
 
@@ -79,6 +88,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
   const [studyStatus, setStudyStatus] = useState<string>("READY_TO_READ");
   const [doctorPrintInfo, setDoctorPrintInfo] = useState<Record<string, string>>({});
   const [templateHtml, setTemplateHtml] = useState<string>("");
+  const [reportTemplates, setReportTemplates] = useState<ReportTemplateOption[]>([]);
   const [viewerLink, setViewerLink] = useState("");
 
   useEffect(() => {
@@ -90,6 +100,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
     async function loadData() {
       try {
         setIsLoading(true);
+        setReportTemplates([]);
         const [report, studyInfo, template] = await Promise.all([
           getReport(studyInstanceUid),
           getStudyDetails(studyInstanceUid),
@@ -109,6 +120,12 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
           if (studyInfo.WorkflowStatus) setStudyStatus(studyInfo.WorkflowStatus);
         }
         if (template) setTemplateHtml(template);
+
+        const cannedTemplates = await getReportTemplateSuggestions({
+          modality: studyInfo?.EnrichedModality || studyInfo?.MainDicomTags?.Modality,
+          bodyPart: studyInfo?.MainDicomTags?.BodyPartExamined,
+        });
+        setReportTemplates(cannedTemplates || []);
       } catch (error) {
         console.error("Failed to load report data", error);
       } finally {
@@ -144,6 +161,19 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const applyReportTemplate = (template: ReportTemplateOption, mode: TemplateApplyMode) => {
+    if (mode === "replace") {
+      setFindings(normalizeTemplateHtml(template.findings));
+      setConclusion(template.conclusion || "");
+      setRecommendation(template.recommendation || "");
+      return;
+    }
+
+    setFindings(current => appendTemplateHtml(current, template.findings));
+    setConclusion(current => appendTemplateText(current, template.conclusion));
+    setRecommendation(current => appendTemplateText(current, template.recommendation));
   };
 
   const patientTags = patientDetails?.PatientMainDicomTags || {};
@@ -213,6 +243,11 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
 
             <div>
               <label className="mb-2 block text-sm font-semibold text-vin-text2">Mô tả (Findings)</label>
+              <ReportTemplatePicker
+                disabled={isSaving}
+                templates={reportTemplates}
+                onApply={applyReportTemplate}
+              />
               <TiptapEditor value={findings} onChange={setFindings} />
             </div>
 

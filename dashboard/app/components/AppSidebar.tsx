@@ -11,10 +11,10 @@ const mainMenuItems = [
   { key: "studies", label: "Ca chụp", href: "/", icon: LayoutDashboard },
   { key: "worklist", label: "Tạo ca", href: "/worklist/new", icon: FileText },
   { key: "users", label: "Người dùng", href: "/admin/users", icon: UserCog },
+  { key: "templates", label: "Mẫu báo cáo", href: "/settings/report-templates", icon: FileText },
 ] as const;
 
 const upcomingMenuItems = [
-  { key: "templates", label: "Mẫu báo cáo", icon: FileText },
   { key: "pacs", label: "PACS / IT", icon: Settings },
   { key: "storage", label: "Dung lượng", icon: HardDrive },
 ] as const;

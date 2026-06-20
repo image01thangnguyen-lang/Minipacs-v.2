@@ -84,6 +84,7 @@ model User {
   // Relation back to reports
   reports   Report[] @relation("DoctorReports")
   doctorProfile DoctorProfile?
+  reportTemplateTexts ReportTemplateText[] @relation("ReportTemplateOwner")
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -116,6 +117,31 @@ model PrintTemplate {
   updatedAt   DateTime @updatedAt
 
   @@map("print_templates")
+}
+
+model ReportTemplateText {
+  id             String   @id @default(uuid())
+  name           String
+  modality       String
+  bodyPart       String?
+  shortcut       String?
+  findings       String   @db.Text
+  conclusion     String   @db.Text
+  recommendation String?  @db.Text
+  isNormal       Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  scope          String   @default("GLOBAL")
+  ownerUserId    String?
+  owner          User?    @relation("ReportTemplateOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([modality])
+  @@index([bodyPart])
+  @@index([shortcut])
+  @@index([scope])
+  @@index([ownerUserId])
+  @@map("report_template_texts")
 }
 
 model WorklistOrder {
