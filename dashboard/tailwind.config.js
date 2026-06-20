@@ -21,6 +21,7 @@ module.exports = {
           borderStrong: 'var(--vin-border-strong)',
           accent: 'var(--vin-accent)',
           accentHover: 'var(--vin-accent-hover)',
+          accentSoft: 'var(--vin-accent-soft)',
           text: 'var(--vin-text-primary)',
           text2: 'var(--vin-text-secondary)',
           muted: 'var(--vin-text-muted)',

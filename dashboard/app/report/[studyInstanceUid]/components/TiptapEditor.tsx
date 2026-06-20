@@ -57,7 +57,7 @@ export default function TiptapEditor({
     content: value,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm prose-invert focus:outline-none max-w-none text-slate-300 min-h-[400px]',
+        class: 'prose prose-sm prose-invert focus:outline-none max-w-none text-vin-text2 min-h-[400px]',
       },
       handlePaste: (view, event, slice) => {
         const items = event.clipboardData?.items;
@@ -107,12 +107,12 @@ export default function TiptapEditor({
   if (!editor) return null;
 
   return (
-    <div className="border border-slate-700/60 rounded-xl overflow-hidden bg-slate-900/50 flex flex-col focus-within:border-emerald-500/50 transition-colors">
+    <div className="border border-vin-border rounded-xl overflow-hidden bg-vin-shell flex flex-col focus-within:border-vin-accent transition-colors">
       {/* Toolbar */}
-      <div className="flex items-center gap-1 p-2 border-b border-slate-700/60 bg-slate-800/50">
+      <div className="flex items-center gap-1 p-2 border-b border-vin-border bg-vin-panel2">
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`p-1.5 rounded ${editor.isActive('bold') ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+          className={`p-1.5 rounded ${editor.isActive('bold') ? 'bg-vin-accent text-white' : 'text-vin-muted hover:text-white hover:bg-vin-tableHover'}`}
           type="button"
           title="Bold"
         >
@@ -120,16 +120,16 @@ export default function TiptapEditor({
         </button>
         <button
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`p-1.5 rounded ${editor.isActive('italic') ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+          className={`p-1.5 rounded ${editor.isActive('italic') ? 'bg-vin-accent text-white' : 'text-vin-muted hover:text-white hover:bg-vin-tableHover'}`}
           type="button"
           title="Italic"
         >
           <Italic size={16} />
         </button>
-        <div className="w-px h-4 bg-slate-700 mx-1"></div>
+        <div className="w-px h-4 bg-vin-border mx-1"></div>
         <button
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`p-1.5 rounded ${editor.isActive('bulletList') ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+          className={`p-1.5 rounded ${editor.isActive('bulletList') ? 'bg-vin-accent text-white' : 'text-vin-muted hover:text-white hover:bg-vin-tableHover'}`}
           type="button"
           title="Bullet List"
         >
@@ -137,7 +137,7 @@ export default function TiptapEditor({
         </button>
         <button
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`p-1.5 rounded ${editor.isActive('orderedList') ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'}`}
+          className={`p-1.5 rounded ${editor.isActive('orderedList') ? 'bg-vin-accent text-white' : 'text-vin-muted hover:text-white hover:bg-vin-tableHover'}`}
           type="button"
           title="Ordered List"
         >

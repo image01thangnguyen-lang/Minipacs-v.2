@@ -65,14 +65,14 @@ export default function NewWorklistPage() {
 
         <div className="bg-vin-panel border border-vin-borderStrong rounded-2xl shadow-xl overflow-hidden p-8">
           {successMsg && (
-            <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-start gap-3 text-emerald-400">
+            <div className="mb-6 p-4 bg-vin-status-approved-bg/15 border border-vin-status-approved-bg/40 rounded-xl flex items-start gap-3 text-white">
               <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5" />
               <p className="font-medium">{successMsg}</p>
             </div>
           )}
 
           {errorMsg && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-red-400">
+            <div className="mb-6 p-4 bg-vin-status-danger-bg/15 border border-vin-status-danger-bg/40 rounded-xl flex items-start gap-3 text-red-100">
               <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
               <p className="font-medium">{errorMsg}</p>
             </div>

@@ -1,159 +1,563 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
-import { ChevronLeft, ChevronRight, Loader2, Save, CheckCircle, Printer, Image as ImageIcon, Search, X, Clock } from "lucide-react";
-import { getStudies } from './actions';
-import { getStudyDetails, getReport, upsertReport, getDefaultTemplate } from './report/[studyInstanceUid]/actions';
-import TiptapEditor from './report/[studyInstanceUid]/components/TiptapEditor';
-import { PrintTemplateViewer } from './report/[studyInstanceUid]/components/PrintTemplateViewer';
-import { useReactToPrint } from 'react-to-print';
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Image as ImageIcon,
+  Loader2,
+  Printer,
+  Save,
+  Search,
+  X,
+} from "lucide-react";
+import { useReactToPrint } from "react-to-print";
+import { getStudies } from "./actions";
+import {
+  getDefaultTemplate,
+  getReport,
+  getStudyDetails,
+  upsertReport,
+} from "./report/[studyInstanceUid]/actions";
+import TiptapEditor from "./report/[studyInstanceUid]/components/TiptapEditor";
+import { PrintTemplateViewer } from "./report/[studyInstanceUid]/components/PrintTemplateViewer";
 
-// ── Helpers ──
-const fmtName = (n?: string) => n ? n.replace(/\^/g, ' ') : "Unknown Patient";
-const fmtPhys = (n?: string) => n ? n.replace(/\^/g, ' ') : "—";
-const fmtSex = (s?: string) => s === 'M' ? 'Nam' : s === 'F' ? 'Nữ' : s || '?';
-const fmtAge = (a?: string) => a ? a.replace(/\D/g, '') : '?';
-const fmtDt = (d?: string, t?: string) => {
-  if (!d) return "—";
-  const ds = d.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3');
-  const ts = t ? t.substring(0, 4).replace(/(\d{2})(\d{2})/, '$1:$2') : "";
-  return ts ? `${ds} ${ts}` : ds;
+const fmtName = (name?: string) => (name ? name.replace(/\^/g, " ") : "Unknown Patient");
+const fmtText = (value?: string) => value || "-";
+const fmtSex = (sex?: string) => (sex === "M" ? "Nam" : sex === "F" ? "Nữ" : sex || "?");
+const fmtAge = (age?: string) => (age ? age.replace(/\D/g, "") : "?");
+
+const fmtDateTime = (date?: string, time?: string) => {
+  if (!date) return "-";
+  const dateValue = date.replace(/(\d{4})(\d{2})(\d{2})/, "$3/$2/$1");
+  const timeValue = time ? time.substring(0, 4).replace(/(\d{2})(\d{2})/, "$1:$2") : "";
+  return timeValue ? `${dateValue} ${timeValue}` : dateValue;
 };
 
-const ModBadge = ({ m }: { m: string }) => {
-  const v = m || "?";
-  let c = "bg-zinc-900/60 text-zinc-500 border-zinc-800/50";
-  if (v === 'CT') c = "bg-teal-950/40 text-teal-400 border-teal-900/50";
-  else if (v === 'MR') c = "bg-blue-950/40 text-blue-400 border-blue-900/50";
-  else if (['CR','DX'].includes(v)) c = "bg-orange-950/40 text-orange-400 border-orange-900/50";
-  else if (v === 'US') c = "bg-emerald-950/40 text-emerald-400 border-emerald-900/50";
-  return <span className={`px-1.5 py-px rounded font-mono text-[10px] font-bold border ${c}`}>{v}</span>;
+const modalityClasses: Record<string, string> = {
+  CT: "bg-vin-accentSoft/20 text-vin-accent border-vin-accent/40",
+  MR: "bg-cyan-900/30 text-cyan-200 border-cyan-500/30",
+  CR: "bg-amber-900/25 text-amber-200 border-amber-500/30",
+  DX: "bg-amber-900/25 text-amber-200 border-amber-500/30",
+  US: "bg-emerald-900/25 text-emerald-200 border-emerald-500/30",
 };
 
-// ── Main ──
+function ModBadge({ value }: { value?: string }) {
+  const label = value || "?";
+  const classes = modalityClasses[label] || "bg-vin-panel2 text-vin-muted border-vin-border";
+
+  return (
+    <span className={`inline-flex min-w-9 justify-center rounded border px-1.5 py-px font-mono text-[10px] font-bold ${classes}`}>
+      {label}
+    </span>
+  );
+}
+
+function StatusBadge({ status }: { status?: string }) {
+  if (status === "COMPLETED" || status === "FINAL") {
+    return <span className="rounded bg-vin-status-approved-bg px-2 py-0.5 text-[9px] font-bold text-white">ĐÃ DUYỆT</span>;
+  }
+
+  if (status === "DRAFTING" || status === "DRAFT") {
+    return <span className="rounded bg-vin-status-warning-bg px-2 py-0.5 text-[9px] font-bold text-white">ĐANG SOẠN</span>;
+  }
+
+  return <span className="rounded bg-vin-status-new-bg px-2 py-0.5 text-[9px] font-bold text-white">MỚI</span>;
+}
+
 export default function DashboardPage() {
   const [studies, setStudies] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(50);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [modalityFilter, setModalityFilter] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [modalityFilter, setModalityFilter] = useState("ALL");
 
   const [selectedStudy, setSelectedStudy] = useState<any>(null);
   const [patientDetails, setPatientDetails] = useState<any>(null);
-  const [findings, setFindings] = useState('');
-  const [conclusion, setConclusion] = useState('');
-  const [recommendation, setRecommendation] = useState('');
-  const [reportStatus, setReportStatus] = useState('UNREAD');
-  const [templateHtml, setTemplateHtml] = useState('');
+  const [findings, setFindings] = useState("");
+  const [conclusion, setConclusion] = useState("");
+  const [recommendation, setRecommendation] = useState("");
+  const [reportStatus, setReportStatus] = useState("UNREAD");
+  const [templateHtml, setTemplateHtml] = useState("");
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      try { setIsLoading(true); const d = await getStudies(); setStudies(d || []); }
-      catch (e) { console.error(e); }
-      finally { setIsLoading(false); }
-    })();
+    async function loadStudies() {
+      try {
+        setIsLoading(true);
+        const data = await getStudies();
+        setStudies(data || []);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadStudies();
   }, []);
 
   useEffect(() => {
     document.title = "Mini PACS - Danh sách ca chụp";
   }, []);
 
-  // ── Derived data ──
   const modalities = useMemo(() => {
-    const s = new Set<string>(); studies.forEach(x => { if (x.EnrichedModality) s.add(x.EnrichedModality); }); return Array.from(s).sort();
+    const values = new Set<string>();
+    studies.forEach(study => {
+      if (study.EnrichedModality) values.add(study.EnrichedModality);
+    });
+    return Array.from(values).sort();
   }, [studies]);
 
-  const filtered = useMemo(() => {
-    let l = studies;
-    if (searchQuery.trim()) { const q = searchQuery.toLowerCase(); l = l.filter(s => ((s.PatientMainDicomTags?.PatientName||'')+(s.PatientMainDicomTags?.PatientID||'')+(s.MainDicomTags?.AccessionNumber||'')).toLowerCase().includes(q)); }
-    if (modalityFilter !== 'ALL') l = l.filter(s => s.EnrichedModality === modalityFilter);
-    return l;
-  }, [studies, searchQuery, modalityFilter]);
+  const filteredStudies = useMemo(() => {
+    let list = studies;
 
-  const totalPages = Math.ceil(filtered.length / rowsPerPage) || 1;
-  const pageStudies = filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      list = list.filter(study => {
+        const patient = study.PatientMainDicomTags || {};
+        const main = study.MainDicomTags || {};
+        return `${patient.PatientName || ""} ${patient.PatientID || ""} ${main.AccessionNumber || ""} ${main.StudyDescription || ""}`
+          .toLowerCase()
+          .includes(query);
+      });
+    }
 
-  // ── Patient history: all studies sharing same PatientID ──
+    if (modalityFilter !== "ALL") {
+      list = list.filter(study => study.EnrichedModality === modalityFilter);
+    }
+
+    return list;
+  }, [modalityFilter, searchQuery, studies]);
+
+  const totalPages = Math.ceil(filteredStudies.length / rowsPerPage) || 1;
+  const pageStudies = filteredStudies.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+
   const patientHistory = useMemo(() => {
     if (!selectedStudy) return [];
-    const pid = selectedStudy.PatientMainDicomTags?.PatientID;
-    if (!pid) return [];
-    return studies.filter(s => s.PatientMainDicomTags?.PatientID === pid);
-  }, [studies, selectedStudy]);
+    const patientId = selectedStudy.PatientMainDicomTags?.PatientID;
+    if (!patientId) return [];
+    return studies.filter(study => study.PatientMainDicomTags?.PatientID === patientId);
+  }, [selectedStudy, studies]);
 
-  // ── Handlers ──
   const handleSelect = async (study: any) => {
     setSelectedStudy(study);
     const uid = study.MainDicomTags?.StudyInstanceUID;
     if (!uid) return;
+
     try {
       setIsReportLoading(true);
-      setFindings(''); setConclusion(''); setRecommendation(''); setReportStatus('UNREAD');
-      const [rpt, info, tmpl] = await Promise.all([getReport(uid), getStudyDetails(uid), getDefaultTemplate()]);
-      if (rpt) { setFindings(rpt.findings||''); setConclusion(rpt.conclusion||''); setRecommendation(rpt.recommendation||''); setReportStatus(rpt.status); }
-      if (info) setPatientDetails(info);
-      if (tmpl) setTemplateHtml(tmpl);
-    } catch (e) { console.error(e); }
-    finally { setIsReportLoading(false); }
+      setFindings("");
+      setConclusion("");
+      setRecommendation("");
+      setReportStatus("UNREAD");
+
+      const [report, details, template] = await Promise.all([
+        getReport(uid),
+        getStudyDetails(uid),
+        getDefaultTemplate(),
+      ]);
+
+      if (report) {
+        setFindings(report.findings || "");
+        setConclusion(report.conclusion || "");
+        setRecommendation(report.recommendation || "");
+        setReportStatus(report.status);
+      }
+
+      if (details) setPatientDetails(details);
+      if (template) setTemplateHtml(template);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsReportLoading(false);
+    }
   };
 
   const openViewer = (study: any) => {
     const uid = study.MainDicomTags?.StudyInstanceUID;
-    if (uid) {
-      const currentHost = window.location.hostname;
-      const viewerUrl = `http://${currentHost}:3000/viewer/${encodeURIComponent(uid)}`;
-      window.open(viewerUrl, '_blank');
+    if (!uid) return;
+    const currentHost = window.location.hostname;
+    window.open(`http://${currentHost}:3000/viewer/${encodeURIComponent(uid)}`, "_blank");
+  };
+
+  const handleSave = async (status: "DRAFTING" | "COMPLETED") => {
+    const uid = selectedStudy?.MainDicomTags?.StudyInstanceUID;
+    if (!uid) return;
+
+    setIsSaving(true);
+    try {
+      const result = await upsertReport(uid, {
+        status,
+        findings,
+        conclusion,
+        recommendation,
+      });
+
+      if (result.success) {
+        setReportStatus(status);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleSave = async (status: 'DRAFTING' | 'COMPLETED') => {
-    const uid = selectedStudy?.MainDicomTags?.StudyInstanceUID; if (!uid) return;
-    setIsSaving(true);
-    try {
-      const r = await upsertReport(uid, { status, findings, conclusion, recommendation });
-      if (r.success) { setReportStatus(status); setStudies(p => p.map(s => s.MainDicomTags?.StudyInstanceUID === uid ? { ...s, IsStable: true } : s)); }
-    } catch (e) { console.error(e); } finally { setIsSaving(false); }
-  };
-
   const printRef = useRef<HTMLDivElement>(null);
-  const handlePrint = useReactToPrint({ contentRef: printRef, documentTitle: `CDHA_${selectedStudy?.MainDicomTags?.StudyInstanceUID||''}` });
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `CDHA_${selectedStudy?.MainDicomTags?.StudyInstanceUID || ""}`,
+  });
 
+  const selectedUid = selectedStudy?.MainDicomTags?.StudyInstanceUID;
+  const selectedPatient = selectedStudy?.PatientMainDicomTags || {};
+  const selectedMain = selectedStudy?.MainDicomTags || {};
+  const patientName = fmtName(selectedPatient.PatientName);
+  const patientId = fmtText(selectedPatient.PatientID);
+  const patientSex = fmtSex(selectedPatient.PatientSex);
+  const patientAge = fmtAge(selectedPatient.PatientAge);
+  const studyDate = fmtDateTime(selectedMain.StudyDate, selectedMain.StudyTime);
+  const studyDesc = fmtText(selectedMain.StudyDescription);
+
+  return (
+    <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
+      <section className="flex h-full w-[55%] flex-col border-r border-vin-border bg-vin-shell">
+        <div className="flex-none border-b border-vin-border/70 px-3 py-2">
+          <div className="mb-2 flex items-center justify-between">
+            <div>
+              <h1 className="text-sm font-bold tracking-tight text-white">Danh sách ca chụp</h1>
+              <p className="mt-0.5 text-[10px] text-vin-muted">
+                {filteredStudies.length} ca · Trang {currentPage}/{totalPages}
+              </p>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+                disabled={currentPage === 1}
+                className="rounded border border-vin-border bg-vin-panel p-1 text-vin-muted transition hover:border-vin-accent hover:text-vin-text disabled:cursor-not-allowed disabled:opacity-30"
+                title="Trang trước"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
+                disabled={currentPage >= totalPages}
+                className="rounded border border-vin-border bg-vin-panel p-1 text-vin-muted transition hover:border-vin-accent hover:text-vin-text disabled:cursor-not-allowed disabled:opacity-30"
+                title="Trang sau"
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-[1fr_7rem] gap-2">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-vin-faint" />
+              <input
+                value={searchQuery}
+                onChange={event => {
+                  setSearchQuery(event.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full rounded border border-vin-border bg-vin-panel py-1.5 pl-7 pr-7 text-[11px] text-vin-text placeholder:text-vin-faint outline-none transition focus:border-vin-accent"
+                placeholder="Tìm tên, mã bệnh nhân, accession..."
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setCurrentPage(1);
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-vin-faint transition hover:text-vin-text"
+                  title="Xóa tìm kiếm"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+            <select
+              value={modalityFilter}
+              onChange={event => {
+                setModalityFilter(event.target.value);
+                setCurrentPage(1);
+              }}
+              className="rounded border border-vin-border bg-vin-panel px-2 py-1.5 text-[11px] text-vin-text outline-none transition focus:border-vin-accent"
+            >
+              <option value="ALL">Tất cả</option>
+              {modalities.map(modality => (
+                <option key={modality} value={modality}>
+                  {modality}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-auto scr-dark">
+          <table className="w-full text-left">
+            <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
+              <tr>
+                <th className="w-9 py-2 pl-2 pr-1 text-center">TT</th>
+                <th className="px-2 py-2">Bệnh nhân</th>
+                <th className="px-2 py-2">Mô tả</th>
+                <th className="px-2 py-2 text-center">Mod</th>
+                <th className="px-2 py-2">Ngày chụp</th>
+                <th className="px-2 py-2 text-center">Ảnh</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-vin-border/45 text-[11px]">
+              {isLoading ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-vin-muted">
+                    <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
+                    Đang tải danh sách ca chụp...
+                  </td>
+                </tr>
+              ) : pageStudies.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-vin-muted">
+                    Không có ca chụp nào.
+                  </td>
+                </tr>
+              ) : (
+                pageStudies.map((study, index) => {
+                  const uid = study.MainDicomTags?.StudyInstanceUID;
+                  const isSelected = uid === selectedUid;
+                  const patient = study.PatientMainDicomTags || {};
+                  const main = study.MainDicomTags || {};
+
+                  return (
+                    <tr
+                      key={study.ID || uid}
+                      onClick={() => handleSelect(study)}
+                      onDoubleClick={() => openViewer(study)}
+                      className={`cursor-pointer select-none border-l-2 transition-colors ${
+                        isSelected
+                          ? "border-l-vin-accent bg-vin-tableSelected text-white"
+                          : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
+                      }`}
+                      title="Click: chọn · Double-click: mở OHIF"
+                    >
+                      <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{(currentPage - 1) * rowsPerPage + index + 1}</td>
+                      <td className="px-2 py-2">
+                        <div className="max-w-[210px] truncate font-semibold text-white">{fmtName(patient.PatientName)}</div>
+                        <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
+                          {fmtText(patient.PatientID)} · {fmtSex(patient.PatientSex)} · {fmtAge(patient.PatientAge)}T
+                        </div>
+                      </td>
+                      <td className="px-2 py-2">
+                        <div className="max-w-[260px] truncate text-vin-text2" title={main.StudyDescription || ""}>
+                          {fmtText(main.StudyDescription)}
+                        </div>
+                        <div className="mt-0.5 max-w-[260px] truncate font-mono text-[10px] text-vin-muted">
+                          {fmtText(main.AccessionNumber)}
+                        </div>
+                      </td>
+                      <td className="px-2 py-2 text-center">
+                        <ModBadge value={study.EnrichedModality || main.Modality} />
+                      </td>
+                      <td className="whitespace-nowrap px-2 py-2 font-mono text-vin-text2">
+                        {fmtDateTime(main.StudyDate, main.StudyTime)}
+                      </td>
+                      <td className="px-2 py-2 text-center font-mono text-vin-muted">
+                        {study.EnrichedInstancesCount ?? study.Instances?.length ?? "-"}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="h-[28%] min-h-[180px] flex-none border-t border-vin-border bg-vin-sidebar">
+          <div className="flex items-center gap-2 border-b border-vin-border px-3 py-2">
+            <Clock className="h-3.5 w-3.5 text-vin-accent" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-vin-muted">Lịch sử chụp</span>
+            {selectedStudy && (
+              <span className="font-mono text-[10px] text-vin-faint">
+                · PID: {patientId} · {patientHistory.length} ca
+              </span>
+            )}
+          </div>
+
+          <div className="h-[calc(100%-34px)] overflow-auto scr-dark">
+            {!selectedStudy ? (
+              <div className="flex h-full items-center justify-center text-[11px] text-vin-faint">
+                Chọn một bệnh nhân để xem lịch sử chụp
+              </div>
+            ) : patientHistory.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-[11px] text-vin-faint">Không có lịch sử</div>
             ) : (
               <table className="w-full text-left">
-                <thead className="text-[9px] font-semibold text-zinc-400 uppercase tracking-wider bg-[#070809] border-b border-white/[0.03] sticky top-0 z-10">
+                <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[9px] font-semibold uppercase tracking-wider text-vin-muted">
                   <tr>
-                    <th className="pl-2 pr-1 py-1">Ngày chụp</th>
-                    <th className="px-1 py-1 w-10 text-center">Mod</th>
-                    <th className="px-1 py-1">Mô tả ca chụp</th>
-                    <th className="pr-2 pl-1 py-1 w-6 text-center">TT</th>
+                    <th className="py-1 pl-2 pr-1">Ngày chụp</th>
+                    <th className="w-10 px-1 py-1 text-center">Mod</th>
+                    <th className="px-1 py-1">Mô tả</th>
+                    <th className="w-8 py-1 pl-1 pr-2 text-center">TT</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {patientHistory.map(h => {
-                    const hUid = h.MainDicomTags?.StudyInstanceUID;
-                    const isCurrent = hUid === selUid;
+                <tbody className="divide-y divide-vin-border/40 text-[10px]">
+                  {patientHistory.map(history => {
+                    const uid = history.MainDicomTags?.StudyInstanceUID;
+                    const isCurrent = uid === selectedUid;
+
                     return (
-                      <tr key={h.ID}
-                        onClick={()=>handleSelect(h)} onDoubleClick={()=>openViewer(h)}
-                        className={`cursor-pointer select-none transition-colors ${isCurrent ? 'bg-blue-950/30 text-blue-300' : 'hover:bg-white/[0.015] even:bg-[#0e1322]/20 text-zinc-300'}`}
-                        title="Click: chọn · Dbl-click: OHIF">
-                        <td className="pl-2 pr-1 py-1 text-[10px] font-mono whitespace-nowrap">{fmtDt(h.MainDicomTags?.StudyDate, h.MainDicomTags?.StudyTime)}</td>
-                        <td className="px-1 py-1 text-center"><ModBadge m={h.EnrichedModality||'?'}/></td>
-                        <td className="px-1 py-1 text-[10px] truncate max-w-[200px]">{h.MainDicomTags?.StudyDescription||'—'}</td>
-              <PrintTemplateViewer ref={printRef} templateHtml={templateHtml} context={{ patientName:pN, patientId:pI, studyDate:sDt, studyDesc:sD, reportContent:findings, conclusion, recommendation }}/>
+                      <tr
+                        key={history.ID || uid}
+                        onClick={() => handleSelect(history)}
+                        onDoubleClick={() => openViewer(history)}
+                        className={`cursor-pointer transition-colors ${
+                          isCurrent ? "bg-vin-tableSelected text-white" : "text-vin-text2 hover:bg-vin-tableHover"
+                        }`}
+                      >
+                        <td className="whitespace-nowrap py-1 pl-2 pr-1 font-mono">
+                          {fmtDateTime(history.MainDicomTags?.StudyDate, history.MainDicomTags?.StudyTime)}
+                        </td>
+                        <td className="px-1 py-1 text-center">
+                          <ModBadge value={history.EnrichedModality || "?"} />
+                        </td>
+                        <td className="max-w-[220px] truncate px-1 py-1">{fmtText(history.MainDicomTags?.StudyDescription)}</td>
+                        <td className="py-1 pl-1 pr-2 text-center">
+                          <span className={`inline-block h-1.5 w-1.5 rounded-full ${(history.IsStable ?? true) ? "bg-emerald-400" : "bg-amber-400"}`} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="relative flex h-full w-[45%] flex-col bg-vin-panel text-vin-text2">
+        {!selectedStudy ? (
+          <div className="flex h-full flex-col items-center justify-center text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl border border-vin-border bg-vin-shell">
+              <ImageIcon className="h-7 w-7 text-vin-faint" />
             </div>
+            <h3 className="mb-1 text-sm font-semibold text-vin-text2">Chưa chọn ca chụp</h3>
+            <p className="max-w-[250px] text-[11px] leading-relaxed text-vin-muted">
+              Click vào ca chụp bên trái để viết kết quả. Double-click để mở OHIF Viewer.
+            </p>
+          </div>
+        ) : isReportLoading ? (
+          <div className="flex h-full flex-col items-center justify-center bg-vin-panel">
+            <Loader2 className="mb-2 h-5 w-5 animate-spin text-vin-accent" />
+            <span className="text-[11px] text-vin-muted">Đang tải thông tin ca chụp...</span>
+          </div>
+        ) : (
+          <>
+            <div className="flex-none border-b border-vin-border bg-vin-panel2 px-4 py-3">
+              <div className="mb-2 flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="truncate text-sm font-bold uppercase tracking-wide text-white">{patientName}</h2>
+                  <p className="mt-1 text-[10px] text-vin-muted">
+                    {patientId} · {fmtSex(selectedPatient.PatientSex)} · {patientAge}T
+                  </p>
+                </div>
+                <StatusBadge status={reportStatus} />
+              </div>
+              <div className="grid grid-cols-3 gap-3 text-[10px]">
+                <div>
+                  <span className="text-vin-muted">Ngày:</span> <span className="font-semibold text-vin-text2">{studyDate}</span>
+                </div>
+                <div>
+                  <span className="text-vin-muted">Mod:</span> <span className="font-semibold text-vin-text2">{selectedStudy.EnrichedModality || "-"}</span>
+                </div>
+                <div className="truncate">
+                  <span className="text-vin-muted">Chỉ định:</span> <span className="font-semibold text-vin-text2">{studyDesc}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1 space-y-4 overflow-auto p-4 scr-dark">
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <label className="text-[11px] font-semibold text-vin-text2">Mô tả (Findings)</label>
+                  <span className="rounded bg-vin-shell px-2 py-0.5 font-mono text-[9px] text-vin-muted">Paste/Drop ảnh</span>
+                </div>
+                <TiptapEditor value={findings} onChange={setFindings} />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-[11px] font-semibold text-vin-text2">Kết luận (Conclusion)</label>
+                <textarea
+                  value={conclusion}
+                  onChange={event => setConclusion(event.target.value)}
+                  className="h-24 w-full resize-none rounded-lg border border-vin-border bg-vin-shell p-3 text-[12px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent"
+                  placeholder="Nhập kết luận..."
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-[11px] font-semibold text-vin-text2">Đề nghị (Recommendation)</label>
+                <textarea
+                  value={recommendation}
+                  onChange={event => setRecommendation(event.target.value)}
+                  className="h-20 w-full resize-none rounded-lg border border-vin-border bg-vin-shell p-3 text-[12px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent"
+                  placeholder="Nhập đề nghị..."
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-none items-center justify-between border-t border-vin-border bg-vin-panel2 px-4 py-3">
+              <button
+                onClick={() => handlePrint()}
+                className="flex items-center gap-1.5 rounded-lg border border-vin-border bg-vin-shell px-3 py-1.5 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white"
+              >
+                <Printer className="h-3.5 w-3.5" />
+                In phiếu
+              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleSave("DRAFTING")}
+                  disabled={isSaving}
+                  className="flex items-center gap-1.5 rounded-lg border border-vin-border bg-vin-shell px-3 py-1.5 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <Save className="h-3.5 w-3.5" />
+                  Lưu nháp
+                </button>
+                <button
+                  onClick={() => handleSave("COMPLETED")}
+                  disabled={isSaving}
+                  className="flex items-center gap-1.5 rounded-lg border border-vin-accent/50 bg-vin-accent px-3 py-1.5 text-[11px] font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                  Hoàn tất
+                </button>
+              </div>
+            </div>
+
+            <PrintTemplateViewer
+              ref={printRef}
+              templateHtml={templateHtml}
+              context={{
+                patientName,
+                patientId,
+                studyDate,
+                studyDesc,
+                reportContent: findings,
+                conclusion,
+                recommendation,
+              }}
+            />
           </>
         )}
-      </div>
+      </section>
 
       <style>{`
-        .scr-dark::-webkit-scrollbar{width:4px}
+        .scr-dark::-webkit-scrollbar{width:5px;height:5px}
         .scr-dark::-webkit-scrollbar-track{background:transparent}
-        .scr-dark::-webkit-scrollbar-thumb{background:#1e293b;border-radius:10px}
-        .scr-dark::-webkit-scrollbar-thumb:hover{background:#334155}
+        .scr-dark::-webkit-scrollbar-thumb{background:var(--vin-border-subtle);border-radius:10px}
+        .scr-dark::-webkit-scrollbar-thumb:hover{background:var(--vin-border-strong)}
       `}</style>
     </div>
   );
