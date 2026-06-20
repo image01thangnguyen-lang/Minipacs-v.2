@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, FileText, HardDrive, LayoutDashboard, Settings, UserCog } from "lucide-react";
+import { FileText, HardDrive, LayoutDashboard, Menu, Settings, UserCog, X } from "lucide-react";
 
 type ActiveMenu = "studies" | "worklist" | "users" | "templates" | "pacs" | "storage";
 
@@ -27,17 +27,30 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
         collapsed ? "w-14" : "w-48"
       }`}
     >
-      {/* Header */}
-      <div className="border-b border-vin-border px-3 py-3">
+      {/* Header with toggle */}
+      <div className="border-b border-vin-border px-2 py-2.5">
         {collapsed ? (
-          <div className="flex h-[34px] items-center justify-center">
-            <span className="text-sm font-bold text-white">M</span>
-          </div>
+          <button
+            onClick={() => setCollapsed(false)}
+            className="flex h-[34px] w-full items-center justify-center rounded text-vin-muted transition-colors hover:bg-vin-panel hover:text-white"
+            title="Mở menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
         ) : (
-          <>
-            <div className="text-sm font-bold text-white">Mini PACS</div>
-            <div className="mt-0.5 text-[10px] uppercase tracking-wide text-vin-muted">RIS Dashboard</div>
-          </>
+          <div className="flex h-[34px] items-center justify-between pl-2">
+            <div>
+              <div className="text-sm font-bold leading-tight text-white">Mini PACS</div>
+              <div className="text-[10px] uppercase tracking-wide text-vin-muted">RIS Dashboard</div>
+            </div>
+            <button
+              onClick={() => setCollapsed(true)}
+              className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded text-vin-muted transition-colors hover:bg-vin-panel hover:text-white"
+              title="Đóng menu"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         )}
       </div>
 
@@ -89,15 +102,6 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
           );
         })}
       </nav>
-
-      {/* Toggle Button */}
-      <button
-        onClick={() => setCollapsed(prev => !prev)}
-        className="absolute -right-3 top-[72px] z-20 flex h-6 w-6 items-center justify-center rounded-full border border-vin-border bg-vin-panel2 text-vin-muted shadow-md transition-colors hover:border-vin-accent hover:text-white"
-        title={collapsed ? "Mở menu" : "Đóng menu"}
-      >
-        {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
-      </button>
     </aside>
   );
 }
