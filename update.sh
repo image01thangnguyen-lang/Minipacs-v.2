@@ -1,41 +1,60 @@
 #!/bin/bash
 
-# ==============================================================================
-# MINI PACS V2 - UPDATE SCRIPT (DAY 2+)
-# ==============================================================================
-# Script này dành cho việc cập nhật code UI/Logic mới từ Github MÀ KHÔNG MẤT DỮ LIỆU
-# ==============================================================================
+# Mini PACS v2 updater.
+# Goal: one command on the server:
+#   sudo bash ./update.sh
 
-set -e
+set -Eeuo pipefail
 
-# Màu sắc để hiển thị console
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
-# 1. Cảnh báo an toàn dữ liệu
-echo -e "${YELLOW}================================================================${NC}"
-echo -e "${YELLOW}Đang tiến hành cập nhật hệ thống. Dữ liệu PACS_DATA (Postgres, Orthanc) và file cấu hình (.env) sẽ được giữ nguyên an toàn.${NC}"
-echo -e "${YELLOW}================================================================${NC}"
-sleep 2
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+RUN_USER="${SUDO_USER:-$(id -un)}"
 
-# 2. Cập nhật code mới nhất từ Github (Ghi đè code cũ, không rớt dữ liệu nếu đã có gitignore)
-echo -e "${GREEN}[1/4] Kéo mã nguồn mới nhất từ kho lưu trữ (Github)...${NC}"
-# Đảm bảo bạn đang ở thư mục dự án khi chạy
-git fetch origin
-git reset --hard origin/main
-echo "Đã lấy mã nguồn thành công."
+cd "$PROJECT_DIR"
 
-# 3. Đồng bộ và sinh lại file cấu hình từ template nếu có cập nhật từ .env (Day 2+)
-echo -e "${YELLOW}[2/5] Đồng bộ và sinh file cấu hình thực tế từ template...${NC}"
-if [ ! -f .env ] || ! grep -q "POSTGRES_PASSWORD=" .env; then
-  echo -e "${YELLOW}Không tìm thấy file .env hoặc file bị lỗi. Đang tự động tạo từ .env.example...${NC}"
-  cp .env.example .env
-fi
+info() {
+  echo -e "${GREEN}$1${NC}"
+}
 
-if [ -f .env ]; then
-  # Load các biến môi trường từ .env một cách an toàn
+warn() {
+  echo -e "${YELLOW}$1${NC}"
+}
+
+fail() {
+  echo -e "${RED}$1${NC}"
+  exit 1
+}
+
+compose() {
+  if docker compose version >/dev/null 2>&1; then
+    docker compose "$@"
+  elif command -v docker-compose >/dev/null 2>&1; then
+    docker-compose "$@"
+  else
+    fail "Docker Compose is not installed."
+  fi
+}
+
+run_as_repo_user() {
+  if [ "$(id -u)" -eq 0 ] && [ -n "${SUDO_USER:-}" ]; then
+    sudo -u "$RUN_USER" -H bash -lc "cd '$PROJECT_DIR' && $*"
+  else
+    bash -lc "cd '$PROJECT_DIR' && $*"
+  fi
+}
+
+load_env_file() {
+  if [ ! -f .env ] || ! grep -q "POSTGRES_PASSWORD=" .env; then
+    warn "No valid .env found. Creating one from .env.example..."
+    [ -f .env.example ] || fail ".env.example not found."
+    cp .env.example .env
+  fi
+
   while IFS= read -r line || [ -n "$line" ]; do
     if [[ ! "$line" =~ ^# ]] && [[ "$line" =~ = ]]; then
       key=$(echo "$line" | cut -d'=' -f1 | xargs)
@@ -43,67 +62,117 @@ if [ -f .env ]; then
       export "$key"="$val"
     fi
   done < .env
-fi
-
-# Đảm bảo thư mục config tồn tại
-mkdir -p config
-
-# Hàm sinh file cấu hình an toàn
-generate_config() {
-    local template="$1"
-    local output="$2"
-    
-    # Kiểm tra xem có bị lỗi Docker tự động tạo thư mục rỗng hay không
-    if [ -d "$output" ]; then
-        echo -e "${YELLOW}Cảnh báo: Phát hiện lỗi Docker biến file $output thành một thư mục. Tiến hành xóa thư mục rỗng và phục hồi nâng cấp thành dạng file...${NC}"
-        sudo rm -rf "$output"
-    fi
-
-    echo -e "${GREEN}Đang cấu hình: $output...${NC}"
-    cp "$template" "$output"
-    
-    # Thay thế các biến từ file .env sang cấu hình thực tế
-    for var in SERVER_IP POSTGRES_PASSWORD ORTHANC_ADMIN_USER ORTHANC_ADMIN_PASSWORD; do
-        val="${!var}"
-        # Thoát các ký tự đặc biệt cho sed trước khi thế vào
-        escaped_val=$(echo "$val" | sed 's/[\/&]/\\&/g')
-        sed -i "s/\${$var}/$escaped_val/g" "$output"
-        sed -i "s/\$$var/$escaped_val/g" "$output"
-    done
 }
 
-if [ -f config_templates/app-config.js.template ]; then
-    generate_config config_templates/app-config.js.template config/app-config.js
-fi
+generate_config() {
+  local template="$1"
+  local output="$2"
 
-if [ -f config_templates/orthanc.json.template ]; then
-    generate_config config_templates/orthanc.json.template config/orthanc.json
-fi
+  [ -f "$template" ] || return 0
 
-# 4. Gỡ bỏ container cũ (Giữ lại Data Volumes)
-echo -e "${GREEN}[3/5] Dọn dẹp container cũ đang chạy...${NC}"
-if docker compose version &> /dev/null; then
-    docker compose down
-else
-    docker-compose down
-fi
-echo "Đã hạ các container cũ."
+  if [ -d "$output" ]; then
+    warn "$output is a directory. Removing it so the config file can be recreated..."
+    rm -rf "$output"
+  fi
 
-# 5. Build và khởi động lại container với code mới
-echo -e "${GREEN}[4/5] Build lại Image và tái khởi động hệ thống...${NC}"
-if docker compose version &> /dev/null; then
-    docker compose up -d --build
-else
-    docker-compose up -d --build
-fi
-echo "Hệ thống đã khởi chạy thành công."
+  mkdir -p "$(dirname "$output")"
+  cp "$template" "$output"
 
-# 6. Dọn dẹp rác Docker
-echo -e "${GREEN}[5/5] Dọn dẹp tài nguyên dư thừa...${NC}"
-docker image prune -f
-echo "Đã giải phóng ổ cứng."
+  for var in SERVER_IP POSTGRES_PASSWORD ORTHANC_ADMIN_USER ORTHANC_ADMIN_PASSWORD; do
+    val="${!var:-}"
+    escaped_val=$(echo "$val" | sed 's/[\/&]/\\&/g')
+    sed -i "s/\${$var}/$escaped_val/g" "$output"
+    sed -i "s/\$$var/$escaped_val/g" "$output"
+  done
+}
 
-# 6. Hoàn thành
-echo -e "${GREEN}================================================================${NC}"
-echo -e "${GREEN}Cập nhật thành công! Hệ thống đã online với phiên bản mới nhất.${NC}"
-echo -e "${GREEN}================================================================${NC}"
+ensure_data_dirs() {
+  mkdir -p pacs_data/postgres pacs_data/orthanc pacs_data/report_images pacs_data/worklists config
+  chmod -R 777 pacs_data
+}
+
+update_code() {
+  info "[1/6] Pulling latest code..."
+
+  [ -d .git ] || fail "This folder is not a git repository: $PROJECT_DIR"
+
+  if [ "$(id -u)" -eq 0 ] && [ -n "${SUDO_USER:-}" ]; then
+    run_as_repo_user "git fetch origin"
+    run_as_repo_user "git reset --hard origin/main"
+  else
+    git fetch origin
+    git reset --hard origin/main
+  fi
+}
+
+build_and_start() {
+  info "[4/6] Stopping old containers..."
+  compose down
+
+  info "[5/6] Rebuilding and starting Mini PACS..."
+  compose up -d --build
+}
+
+wait_for_dashboard() {
+  info "[6/6] Checking services..."
+
+  local max_attempts=45
+  local attempt=1
+
+  while [ "$attempt" -le "$max_attempts" ]; do
+    if compose ps dashboard 2>/dev/null | grep -q "Up"; then
+      if command -v curl >/dev/null 2>&1; then
+        if curl -fsS -o /dev/null http://127.0.0.1; then
+          return 0
+        fi
+      else
+        return 0
+      fi
+    fi
+
+    sleep 2
+    attempt=$((attempt + 1))
+  done
+
+  echo
+  fail_with_logs
+}
+
+fail_with_logs() {
+  echo -e "${RED}Dashboard did not become healthy. Recent logs:${NC}"
+  compose ps || true
+  echo
+  compose logs --tail=160 dashboard || true
+  exit 1
+}
+
+print_urls() {
+  local server_ip="${SERVER_IP:-localhost}"
+
+  echo -e "\n${CYAN}============================================================${NC}"
+  echo -e "${GREEN}Mini PACS updated and running.${NC}"
+  echo -e "${CYAN}============================================================${NC}"
+  echo -e "RIS Dashboard : ${GREEN}http://${server_ip}${NC}"
+  echo -e "OHIF Viewer   : ${GREEN}http://${server_ip}:3000${NC}"
+  echo -e "Orthanc       : ${GREEN}http://${server_ip}:8042${NC}"
+  echo -e "${CYAN}============================================================${NC}\n"
+}
+
+warn "Updating Mini PACS. Existing pacs_data and .env will be preserved."
+
+load_env_file
+update_code
+
+info "[2/6] Preparing local storage and config..."
+load_env_file
+ensure_data_dirs
+generate_config config_templates/app-config.js.template config/app-config.js
+generate_config config_templates/orthanc.json.template config/orthanc.json
+
+info "[3/6] Validating Docker access..."
+docker info >/dev/null 2>&1 || fail "Docker is not accessible. Run with sudo or add your user to the docker group."
+
+build_and_start
+wait_for_dashboard
+docker image prune -f >/dev/null 2>&1 || true
+print_urls

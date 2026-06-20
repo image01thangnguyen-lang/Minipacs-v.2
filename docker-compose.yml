@@ -66,7 +66,7 @@ services:
     restart: always
     ports:
       - "80:3000"
-    command: sh -c "npx prisma db push && node prisma/seed.js && npm start"
+    command: sh -c "npx prisma db push --skip-generate && node prisma/seed.js && npm start"
     environment:
       - NEXT_PUBLIC_OHIF_URL=http://${SERVER_IP}:3000
       - AUTH_SECRET=${AUTH_SECRET}

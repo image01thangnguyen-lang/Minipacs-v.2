@@ -48,7 +48,7 @@ model Report {
   id               String       @id @default(uuid())
   studyInstanceUid String       @unique
   status           ReportStatus @default(DRAFT)
-  imagingStudyId   String?      @unique
+  imagingStudyId   String?
   imagingStudy     ImagingStudy? @relation(fields: [imagingStudyId], references: [id])
   
   // Rich text HTML bindings
@@ -109,7 +109,7 @@ model WorklistOrder {
   referringPhysician String?
   modality         String
   accessionNumber  String   @unique
-  requestedStudyInstanceUid String? @unique
+  requestedStudyInstanceUid String?
   scheduledDate    DateTime @default(now())
   
   // Legacy string status kept for compatibility with existing data.
@@ -137,7 +137,7 @@ model ImagingStudy {
   status           StudyStatus @default(ORDERED)
   orderId          String?
   order            WorklistOrder? @relation(fields: [orderId], references: [id])
-  report           Report?
+  reports          Report[]
   scheduledAt      DateTime?
   receivedAt       DateTime?
   stableAt         DateTime?
