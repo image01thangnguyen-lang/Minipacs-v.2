@@ -227,10 +227,10 @@ export default function TiptapEditor({
         const suggestion = shortcutSuggestionRef.current;
 
         if (suggestion) {
-          if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          if (['ArrowDown', 'ArrowUp', 'ArrowRight', 'ArrowLeft'].includes(event.key)) {
             event.preventDefault();
             event.stopPropagation();
-            const direction = event.key === 'ArrowDown' ? 1 : -1;
+            const direction = event.key === 'ArrowDown' || event.key === 'ArrowRight' ? 1 : -1;
             setShortcutSuggestion({
               ...suggestion,
               activeIndex: (suggestion.activeIndex + direction + suggestion.matches.length) % suggestion.matches.length,
