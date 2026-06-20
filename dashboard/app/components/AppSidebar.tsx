@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FileText, HardDrive, LayoutDashboard, Menu, Settings, UserCog, X } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X } from "lucide-react";
 
 type ActiveMenu = "studies" | "worklist" | "users" | "templates" | "pacs" | "storage";
 
@@ -20,6 +21,12 @@ const upcomingMenuItems = [
 
 export function AppSidebar({ active }: { active: ActiveMenu }) {
   const [collapsed, setCollapsed] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    await signOut({ callbackUrl: "/login" });
+  };
 
   return (
     <aside
@@ -102,6 +109,22 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
           );
         })}
       </nav>
+
+      {/* Logout Button */}
+      <div className="border-t border-vin-border px-2 py-2.5">
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          title="Đăng xuất"
+          className={`flex w-full items-center gap-2 rounded px-3 py-2 text-[12px] font-semibold text-red-400 transition hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50 ${
+            collapsed ? "justify-center px-0" : ""
+          }`}
+        >
+          <LogOut className={`h-4 w-4 flex-shrink-0 ${loggingOut ? "animate-pulse" : ""}`} />
+          {!collapsed && <span className="truncate">{loggingOut ? "Đang xuất..." : "Đăng xuất"}</span>}
+        </button>
+      </div>
     </aside>
   );
 }
+
