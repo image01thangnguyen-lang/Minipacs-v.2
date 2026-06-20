@@ -14,6 +14,7 @@ NC='\033[0m'
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUN_USER="${SUDO_USER:-$(id -un)}"
+UPDATE_REEXECED="${MINIPACS_UPDATE_REEXECED:-0}"
 
 cd "$PROJECT_DIR"
 
@@ -115,6 +116,12 @@ update_code() {
   else
     git fetch origin
     git reset --hard origin/main
+  fi
+
+  if [ "$UPDATE_REEXECED" != "1" ]; then
+    info "Reloading updated update.sh before continuing..."
+    export MINIPACS_UPDATE_REEXECED=1
+    exec bash "$PROJECT_DIR/update.sh"
   fi
 }
 
