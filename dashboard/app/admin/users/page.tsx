@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BadgeCheck,
   KeyRound,
@@ -60,6 +60,7 @@ export default function UserManagementPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [mode, setMode] = useState<"view" | "create">("view");
   const [isSaving, setIsSaving] = useState(false);
+  const [createFormKey, setCreateFormKey] = useState(0);
 
   const loadUsers = async () => {
     try {
@@ -142,6 +143,7 @@ export default function UserManagementPage() {
               onClick={() => {
                 setMode("create");
                 setSelectedUserId(null);
+                setCreateFormKey(k => k + 1);
               }}
               className="flex items-center gap-1.5 rounded border border-vin-accent/50 bg-vin-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-vin-accentHover"
             >
@@ -245,7 +247,7 @@ export default function UserManagementPage() {
       <section className="relative flex h-full min-w-0 flex-1 flex-col bg-vin-panel text-vin-text2">
         {mode === "create" ? (
           /* ── Create new user form ── */
-          <>
+          <React.Fragment key={createFormKey}>
             <div className="flex-none border-b border-vin-border bg-vin-panel2 px-4 py-3">
               <div className="flex items-center justify-between">
                 <h2 className="flex items-center gap-2 text-sm font-bold text-white">
@@ -265,6 +267,7 @@ export default function UserManagementPage() {
               onSubmit={handleCreateSubmit}
               className="min-h-0 flex-1 space-y-4 overflow-auto p-4 scr-dark"
               encType="multipart/form-data"
+              autoComplete="off"
             >
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -370,7 +373,7 @@ export default function UserManagementPage() {
                 </button>
               </div>
             </form>
-          </>
+          </React.Fragment>
         ) : selectedUser ? (
           /* ── Edit selected user ── */
           <>
