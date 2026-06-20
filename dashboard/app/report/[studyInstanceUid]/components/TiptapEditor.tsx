@@ -3,6 +3,8 @@
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TiptapImage from '@tiptap/extension-image';
+import { normalizeTemplateHtml } from '@/app/components/ReportTemplatePicker';
+import type { ReportTemplateOption } from '@/app/components/ReportTemplatePicker';
 import {
   Bold,
   Code,
@@ -58,13 +60,35 @@ function ToolbarDivider() {
 }
 
 export default function TiptapEditor({
+  onShortcutApply,
   value,
   onChange,
+  shortcutTemplates = [],
 }: {
+  onShortcutApply?: (template: ReportTemplateOption) => void;
   value: string;
   onChange: (html: string) => void;
+  shortcutTemplates?: ReportTemplateOption[];
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorRef = useRef<any>(null);
+  const shortcutMapRef = useRef<Map<string, ReportTemplateOption>>(new Map());
+  const onShortcutApplyRef = useRef<typeof onShortcutApply>(onShortcutApply);
+
+  useEffect(() => {
+    const shortcutMap = new Map<string, ReportTemplateOption>();
+    shortcutTemplates.forEach(template => {
+      const rawShortcut = (template.shortcut || '').trim().toLowerCase();
+      if (!rawShortcut) return;
+      const shortcut = rawShortcut.startsWith('/') ? rawShortcut : `/${rawShortcut}`;
+      shortcutMap.set(shortcut, template);
+    });
+    shortcutMapRef.current = shortcutMap;
+  }, [shortcutTemplates]);
+
+  useEffect(() => {
+    onShortcutApplyRef.current = onShortcutApply;
+  }, [onShortcutApply]);
 
   const handleImageUpload = useCallback(async (file: File, editor: any, pos?: number) => {
     if (!file.type.startsWith('image/')) return;
@@ -153,11 +177,45 @@ export default function TiptapEditor({
         }
         return false;
       },
+      handleKeyDown: (view, event) => {
+        if (![' ', 'Enter', 'Tab'].includes(event.key)) return false;
+        if (event.ctrlKey || event.metaKey || event.altKey || (event as any).isComposing) return false;
+
+        const editorInstance = editorRef.current;
+        if (!editorInstance || !view.state.selection.empty) return false;
+
+        const { from } = view.state.selection;
+        const $from = view.state.doc.resolve(from);
+        const textBeforeCursor = $from.parent.textBetween(0, $from.parentOffset, '\n', '\0');
+        const match = textBeforeCursor.match(/(?:^|\s)(\/[a-zA-Z0-9_-]+)$/);
+        const shortcut = match?.[1]?.toLowerCase();
+        if (!shortcut) return false;
+
+        const template = shortcutMapRef.current.get(shortcut);
+        if (!template) return false;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        editorInstance
+          .chain()
+          .focus()
+          .deleteRange({ from: from - shortcut.length, to: from })
+          .insertContent(normalizeTemplateHtml(template.findings))
+          .run();
+
+        onShortcutApplyRef.current?.(template);
+        return true;
+      },
     },
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },
   });
+
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
 
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {

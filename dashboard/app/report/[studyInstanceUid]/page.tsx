@@ -176,6 +176,11 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
     setRecommendation(current => appendTemplateText(current, template.recommendation));
   };
 
+  const applyReportTemplateShortcut = (template: ReportTemplateOption) => {
+    setConclusion(current => appendTemplateText(current, template.conclusion));
+    setRecommendation(current => appendTemplateText(current, template.recommendation));
+  };
+
   const patientTags = patientDetails?.PatientMainDicomTags || {};
   const studyTags = patientDetails?.MainDicomTags || {};
   const patientName = formatPatientName(patientTags.PatientName);
@@ -248,7 +253,12 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
                 templates={reportTemplates}
                 onApply={applyReportTemplate}
               />
-              <TiptapEditor value={findings} onChange={setFindings} />
+              <TiptapEditor
+                value={findings}
+                onChange={setFindings}
+                shortcutTemplates={reportTemplates}
+                onShortcutApply={applyReportTemplateShortcut}
+              />
             </div>
 
             <div>

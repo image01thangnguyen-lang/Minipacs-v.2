@@ -260,6 +260,11 @@ export default function DashboardPage() {
     setRecommendation(current => appendTemplateText(current, template.recommendation));
   };
 
+  const applyReportTemplateShortcut = (template: ReportTemplateOption) => {
+    setConclusion(current => appendTemplateText(current, template.conclusion));
+    setRecommendation(current => appendTemplateText(current, template.recommendation));
+  };
+
   const handleSave = async (status: "DRAFTING" | "COMPLETED") => {
     const uid = selectedStudy?.MainDicomTags?.StudyInstanceUID;
     if (!uid) return;
@@ -578,7 +583,12 @@ export default function DashboardPage() {
                   templates={reportTemplates}
                   onApply={applyReportTemplate}
                 />
-                <TiptapEditor value={findings} onChange={setFindings} />
+                <TiptapEditor
+                  value={findings}
+                  onChange={setFindings}
+                  shortcutTemplates={reportTemplates}
+                  onShortcutApply={applyReportTemplateShortcut}
+                />
               </div>
 
               <div>
