@@ -88,7 +88,6 @@ export async function getStudies() {
         return {
           ...study,
           WorkflowStatus: workflow?.status || 'READY_TO_READ',
-          ReportStatus: workflow?.reportStatus || 'UNREAD',
           OrderStatus: workflow?.orderStatus || null,
         };
       } catch (error) {
@@ -96,7 +95,6 @@ export async function getStudies() {
         return {
           ...study,
           WorkflowStatus: 'ERROR',
-          ReportStatus: 'UNREAD',
           OrderStatus: null,
         };
       }

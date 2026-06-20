@@ -39,7 +39,6 @@ export async function getStudyDetails(studyInstanceUID: string) {
       return {
         ...studies[0],
         WorkflowStatus: workflow?.status || 'READY_TO_READ',
-        ReportStatus: workflow?.reportStatus || 'UNREAD',
         OrderStatus: workflow?.orderStatus || null,
       };
     }

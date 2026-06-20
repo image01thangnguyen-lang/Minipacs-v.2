@@ -17,19 +17,7 @@ const formatDicomDateTime = (date?: string, time?: string) => {
   return timeValue ? `${dateValue} ${timeValue}` : dateValue;
 };
 
-function StatusBadge({ status }: { status?: string }) {
-  if (status === "COMPLETED" || status === "FINAL") {
-    return <span className="rounded bg-vin-status-approved-bg px-2 py-0.5 text-[10px] font-bold text-white">ĐÃ DUYỆT</span>;
-  }
-
-  if (status === "DRAFTING" || status === "DRAFT") {
-    return <span className="rounded bg-vin-status-warning-bg px-2 py-0.5 text-[10px] font-bold text-white">ĐANG SOẠN</span>;
-  }
-
-  return <span className="rounded bg-vin-status-new-bg px-2 py-0.5 text-[10px] font-bold text-white">MỚI</span>;
-}
-
-const studyStatusLabels: Record<string, string> = {
+const risStatusLabels: Record<string, string> = {
   ORDERED: "Chờ chụp",
   READY_FOR_SCAN: "Sẵn sàng chụp",
   IN_PROGRESS: "Đang chụp",
@@ -47,9 +35,9 @@ const studyStatusLabels: Record<string, string> = {
   ERROR: "Lỗi",
 };
 
-function StudyStatusBadge({ status }: { status?: string }) {
+function RisStatusBadge({ status }: { status?: string }) {
   const value = status || "READY_TO_READ";
-  const label = studyStatusLabels[value] || value;
+  const label = risStatusLabels[value] || value;
   const classes =
     value === "FINALIZED" || value === "DELIVERED"
       ? "bg-vin-status-approved-bg text-white"
@@ -74,7 +62,6 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
   const [findings, setFindings] = useState("");
   const [conclusion, setConclusion] = useState("");
   const [recommendation, setRecommendation] = useState("");
-  const [reportStatus, setReportStatus] = useState<string>("UNREAD");
   const [studyStatus, setStudyStatus] = useState<string>("READY_TO_READ");
   const [templateHtml, setTemplateHtml] = useState<string>("");
   const [viewerLink, setViewerLink] = useState("");
@@ -98,7 +85,6 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
           setFindings(report.findings || "");
           setConclusion(report.conclusion || "");
           setRecommendation(report.recommendation || "");
-          setReportStatus(report.status);
           if (report.imagingStudy?.status) setStudyStatus(report.imagingStudy.status);
         }
 
@@ -134,7 +120,6 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
       });
 
       if (result.success) {
-        setReportStatus(status);
         setStudyStatus(status === "COMPLETED" ? "FINALIZED" : "READING");
       }
     } catch (error) {
@@ -178,8 +163,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
                 Mở OHIF
               </a>
             )}
-            <StudyStatusBadge status={studyStatus} />
-            <StatusBadge status={reportStatus} />
+            <RisStatusBadge status={studyStatus} />
           </div>
         </div>
       </header>
@@ -198,10 +182,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
                   <h2 className="text-base font-bold uppercase text-white">{patientName}</h2>
                   <p className="mt-1 text-xs text-vin-muted">PID: {patientId}</p>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <StudyStatusBadge status={studyStatus} />
-                  <StatusBadge status={reportStatus} />
-                </div>
+                <RisStatusBadge status={studyStatus} />
               </div>
               <div className="grid grid-cols-1 gap-3 text-xs text-vin-text2 sm:grid-cols-2">
                 <div>

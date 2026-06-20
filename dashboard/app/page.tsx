@@ -55,19 +55,7 @@ function ModBadge({ value }: { value?: string }) {
   );
 }
 
-function StatusBadge({ status }: { status?: string }) {
-  if (status === "COMPLETED" || status === "FINAL") {
-    return <span className="rounded bg-vin-status-approved-bg px-2 py-0.5 text-[9px] font-bold text-white">ĐÃ DUYỆT</span>;
-  }
-
-  if (status === "DRAFTING" || status === "DRAFT") {
-    return <span className="rounded bg-vin-status-warning-bg px-2 py-0.5 text-[9px] font-bold text-white">ĐANG SOẠN</span>;
-  }
-
-  return <span className="rounded bg-vin-status-new-bg px-2 py-0.5 text-[9px] font-bold text-white">MỚI</span>;
-}
-
-const studyStatusLabels: Record<string, string> = {
+const risStatusLabels: Record<string, string> = {
   ORDERED: "Chờ chụp",
   READY_FOR_SCAN: "Sẵn sàng chụp",
   IN_PROGRESS: "Đang chụp",
@@ -85,9 +73,9 @@ const studyStatusLabels: Record<string, string> = {
   ERROR: "Lỗi",
 };
 
-function StudyStatusBadge({ status }: { status?: string }) {
+function RisStatusBadge({ status }: { status?: string }) {
   const value = status || "READY_TO_READ";
-  const label = studyStatusLabels[value] || value;
+  const label = risStatusLabels[value] || value;
 
   const classes =
     value === "FINALIZED" || value === "DELIVERED"
@@ -116,7 +104,6 @@ export default function DashboardPage() {
   const [findings, setFindings] = useState("");
   const [conclusion, setConclusion] = useState("");
   const [recommendation, setRecommendation] = useState("");
-  const [reportStatus, setReportStatus] = useState("UNREAD");
   const [studyStatus, setStudyStatus] = useState("READY_TO_READ");
   const [templateHtml, setTemplateHtml] = useState("");
   const [isReportLoading, setIsReportLoading] = useState(false);
@@ -191,7 +178,6 @@ export default function DashboardPage() {
       setFindings("");
       setConclusion("");
       setRecommendation("");
-      setReportStatus("UNREAD");
       setStudyStatus(study.WorkflowStatus || "READY_TO_READ");
 
       const [report, details, template] = await Promise.all([
@@ -204,7 +190,6 @@ export default function DashboardPage() {
         setFindings(report.findings || "");
         setConclusion(report.conclusion || "");
         setRecommendation(report.recommendation || "");
-        setReportStatus(report.status);
         if (report.imagingStudy?.status) setStudyStatus(report.imagingStudy.status);
       }
 
@@ -241,13 +226,12 @@ export default function DashboardPage() {
       });
 
       if (result.success) {
-        setReportStatus(status);
         const nextStudyStatus = status === "COMPLETED" ? "FINALIZED" : "READING";
         setStudyStatus(nextStudyStatus);
         setStudies(current =>
           current.map(study => (
             study.MainDicomTags?.StudyInstanceUID === uid
-              ? { ...study, WorkflowStatus: nextStudyStatus, ReportStatus: status }
+              ? { ...study, WorkflowStatus: nextStudyStatus }
               : study
           ))
         );
@@ -414,7 +398,7 @@ export default function DashboardPage() {
                         <ModBadge value={study.EnrichedModality || main.Modality} />
                       </td>
                       <td className="px-2 py-2 text-center">
-                        <StudyStatusBadge status={study.WorkflowStatus} />
+                        <RisStatusBadge status={study.WorkflowStatus} />
                       </td>
                       <td className="whitespace-nowrap px-2 py-2 font-mono text-vin-text2">
                         {fmtDateTime(main.StudyDate, main.StudyTime)}
@@ -518,10 +502,7 @@ export default function DashboardPage() {
                     {patientId} · {fmtSex(selectedPatient.PatientSex)} · {patientAge}T
                   </p>
                 </div>
-                <div className="flex flex-col items-end gap-1">
-                  <StudyStatusBadge status={studyStatus} />
-                  <StatusBadge status={reportStatus} />
-                </div>
+                <RisStatusBadge status={studyStatus} />
               </div>
               <div className="grid grid-cols-3 gap-3 text-[10px]">
                 <div>
