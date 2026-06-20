@@ -67,6 +67,42 @@ function StatusBadge({ status }: { status?: string }) {
   return <span className="rounded bg-vin-status-new-bg px-2 py-0.5 text-[9px] font-bold text-white">MỚI</span>;
 }
 
+const studyStatusLabels: Record<string, string> = {
+  ORDERED: "Chờ chụp",
+  READY_FOR_SCAN: "Sẵn sàng chụp",
+  IN_PROGRESS: "Đang chụp",
+  RECEIVED: "Đã nhận ảnh",
+  STABLE: "Ảnh ổn định",
+  NEEDS_QC: "Cần QC",
+  QC_REJECTED: "Chụp lại",
+  READY_TO_READ: "Chờ đọc",
+  READING: "Đang đọc",
+  REPORTED: "Đã có báo cáo",
+  FINALIZED: "Đã ký",
+  DELIVERED: "Đã trả",
+  ARCHIVED: "Lưu trữ",
+  DELETED_FROM_PACS: "Đã xóa ảnh",
+  ERROR: "Lỗi",
+};
+
+function StudyStatusBadge({ status }: { status?: string }) {
+  const value = status || "READY_TO_READ";
+  const label = studyStatusLabels[value] || value;
+
+  const classes =
+    value === "FINALIZED" || value === "DELIVERED"
+      ? "bg-vin-status-approved-bg text-white"
+      : value === "READING" || value === "REPORTED"
+        ? "bg-vin-status-warning-bg text-white"
+        : value === "QC_REJECTED" || value === "ERROR"
+          ? "bg-vin-status-danger-bg text-white"
+          : value === "READY_TO_READ" || value === "RECEIVED" || value === "STABLE"
+            ? "bg-vin-accentSoft text-white"
+            : "bg-vin-status-new-bg text-white";
+
+  return <span className={`inline-flex max-w-[110px] justify-center truncate rounded px-2 py-0.5 text-[9px] font-bold ${classes}`}>{label}</span>;
+}
+
 export default function DashboardPage() {
   const [studies, setStudies] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,6 +117,7 @@ export default function DashboardPage() {
   const [conclusion, setConclusion] = useState("");
   const [recommendation, setRecommendation] = useState("");
   const [reportStatus, setReportStatus] = useState("UNREAD");
+  const [studyStatus, setStudyStatus] = useState("READY_TO_READ");
   const [templateHtml, setTemplateHtml] = useState("");
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -155,6 +192,7 @@ export default function DashboardPage() {
       setConclusion("");
       setRecommendation("");
       setReportStatus("UNREAD");
+      setStudyStatus(study.WorkflowStatus || "READY_TO_READ");
 
       const [report, details, template] = await Promise.all([
         getReport(uid),
@@ -167,9 +205,13 @@ export default function DashboardPage() {
         setConclusion(report.conclusion || "");
         setRecommendation(report.recommendation || "");
         setReportStatus(report.status);
+        if (report.imagingStudy?.status) setStudyStatus(report.imagingStudy.status);
       }
 
-      if (details) setPatientDetails(details);
+      if (details) {
+        setPatientDetails(details);
+        if (details.WorkflowStatus) setStudyStatus(details.WorkflowStatus);
+      }
       if (template) setTemplateHtml(template);
     } catch (error) {
       console.error(error);
@@ -200,6 +242,15 @@ export default function DashboardPage() {
 
       if (result.success) {
         setReportStatus(status);
+        const nextStudyStatus = status === "COMPLETED" ? "FINALIZED" : "READING";
+        setStudyStatus(nextStudyStatus);
+        setStudies(current =>
+          current.map(study => (
+            study.MainDicomTags?.StudyInstanceUID === uid
+              ? { ...study, WorkflowStatus: nextStudyStatus, ReportStatus: status }
+              : study
+          ))
+        );
       }
     } catch (error) {
       console.error(error);
@@ -306,6 +357,7 @@ export default function DashboardPage() {
                 <th className="px-2 py-2">Bệnh nhân</th>
                 <th className="px-2 py-2">Mô tả</th>
                 <th className="px-2 py-2 text-center">Mod</th>
+                <th className="px-2 py-2 text-center">Trạng thái</th>
                 <th className="px-2 py-2">Ngày chụp</th>
                 <th className="px-2 py-2 text-center">Ảnh</th>
               </tr>
@@ -313,14 +365,14 @@ export default function DashboardPage() {
             <tbody className="divide-y divide-vin-border/45 text-[11px]">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-vin-muted">
+                  <td colSpan={7} className="py-12 text-center text-vin-muted">
                     <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
                     Đang tải danh sách ca chụp...
                   </td>
                 </tr>
               ) : pageStudies.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-vin-muted">
+                  <td colSpan={7} className="py-12 text-center text-vin-muted">
                     Không có ca chụp nào.
                   </td>
                 </tr>
@@ -360,6 +412,9 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-2 py-2 text-center">
                         <ModBadge value={study.EnrichedModality || main.Modality} />
+                      </td>
+                      <td className="px-2 py-2 text-center">
+                        <StudyStatusBadge status={study.WorkflowStatus} />
                       </td>
                       <td className="whitespace-nowrap px-2 py-2 font-mono text-vin-text2">
                         {fmtDateTime(main.StudyDate, main.StudyTime)}
@@ -463,7 +518,10 @@ export default function DashboardPage() {
                     {patientId} · {fmtSex(selectedPatient.PatientSex)} · {patientAge}T
                   </p>
                 </div>
-                <StatusBadge status={reportStatus} />
+                <div className="flex flex-col items-end gap-1">
+                  <StudyStatusBadge status={studyStatus} />
+                  <StatusBadge status={reportStatus} />
+                </div>
               </div>
               <div className="grid grid-cols-3 gap-3 text-[10px]">
                 <div>

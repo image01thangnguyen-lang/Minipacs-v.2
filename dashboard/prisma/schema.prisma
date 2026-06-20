@@ -18,10 +18,38 @@ enum ReportStatus {
   COMPLETED
 }
 
+enum OrderStatus {
+  REQUESTED
+  SCHEDULED
+  ARRIVED
+  CANCELLED
+  EXPIRED
+}
+
+enum StudyStatus {
+  ORDERED
+  READY_FOR_SCAN
+  IN_PROGRESS
+  RECEIVED
+  STABLE
+  NEEDS_QC
+  QC_REJECTED
+  READY_TO_READ
+  READING
+  REPORTED
+  FINALIZED
+  DELIVERED
+  ARCHIVED
+  DELETED_FROM_PACS
+  ERROR
+}
+
 model Report {
   id               String       @id @default(uuid())
   studyInstanceUid String       @unique
   status           ReportStatus @default(DRAFT)
+  imagingStudyId   String?      @unique
+  imagingStudy     ImagingStudy? @relation(fields: [imagingStudyId], references: [id])
   
   // Rich text HTML bindings
   findings         String?      @db.Text
@@ -81,10 +109,14 @@ model WorklistOrder {
   referringPhysician String?
   modality         String
   accessionNumber  String   @unique
+  requestedStudyInstanceUid String? @unique
   scheduledDate    DateTime @default(now())
   
-  // Status tracking: Pending, Completed, Error, etc
+  // Legacy string status kept for compatibility with existing data.
   status           String   @default("PENDING")
+  orderStatus      OrderStatus @default(REQUESTED)
+
+  imagingStudies   ImagingStudy[]
 
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -92,3 +124,68 @@ model WorklistOrder {
   @@map("worklist_orders")
 }
 
+model ImagingStudy {
+  id               String      @id @default(uuid())
+  studyInstanceUid String      @unique
+  orthancStudyId   String?     @unique
+  accessionNumber  String?
+  patientId        String?
+  patientName      String?
+  modality         String?
+  bodyPart         String?
+  studyDescription String?
+  status           StudyStatus @default(ORDERED)
+  orderId          String?
+  order            WorklistOrder? @relation(fields: [orderId], references: [id])
+  report           Report?
+  scheduledAt      DateTime?
+  receivedAt       DateTime?
+  stableAt         DateTime?
+  finalizedAt      DateTime?
+  deliveredAt      DateTime?
+  archivedAt       DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  statusHistory    StudyStatusHistory[]
+
+  @@index([status])
+  @@index([patientId])
+  @@index([accessionNumber])
+  @@index([modality])
+  @@map("imaging_studies")
+}
+
+model StudyStatusHistory {
+  id             String      @id @default(uuid())
+  imagingStudyId String
+  imagingStudy   ImagingStudy @relation(fields: [imagingStudyId], references: [id], onDelete: Cascade)
+  fromStatus     StudyStatus?
+  toStatus       StudyStatus
+  reason         String?
+  actorUserId    String?
+  source         String      @default("SYSTEM")
+  metadataJson   String?     @db.Text
+  createdAt      DateTime    @default(now())
+
+  @@index([imagingStudyId])
+  @@index([createdAt])
+  @@map("study_status_history")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  actorUserId  String?
+  action       String
+  entityType   String
+  entityId     String?
+  message      String?
+  metadataJson String?  @db.Text
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+
+  @@index([actorUserId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

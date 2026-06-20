@@ -1,6 +1,7 @@
 'use server'
 
 import { prisma } from './db';
+import { syncOrthancStudyToRis, updateStudyStatusForReport } from '@/lib/studyStatus';
 
 /**
  * Server Action: Lấy danh sách bệnh nhân/studies từ Orthanc.
@@ -81,7 +82,27 @@ export async function getStudies() {
       };
     }));
 
-    return enrichedStudies;
+    const studiesWithWorkflow = await Promise.all(enrichedStudies.map(async (study: any) => {
+      try {
+        const workflow = await syncOrthancStudyToRis(study);
+        return {
+          ...study,
+          WorkflowStatus: workflow?.status || 'READY_TO_READ',
+          ReportStatus: workflow?.reportStatus || 'UNREAD',
+          OrderStatus: workflow?.orderStatus || null,
+        };
+      } catch (error) {
+        console.error('Failed to sync study workflow status:', error);
+        return {
+          ...study,
+          WorkflowStatus: 'ERROR',
+          ReportStatus: 'UNREAD',
+          OrderStatus: null,
+        };
+      }
+    }));
+
+    return studiesWithWorkflow;
   } catch (error) {
     console.error('Failed to fetch from Orthanc:', error);
     return [];
@@ -139,6 +160,8 @@ export async function saveReportAction(data: {
         ...(data.doctorId ? { doctorId: data.doctorId } : {})
       }
     });
+
+    await updateStudyStatusForReport(data.studyInstanceUid, data.status);
 
     return {
       success: true,

@@ -1,6 +1,7 @@
 'use server';
 
 import { prisma } from '../../db';
+import { syncOrthancStudyToRis, updateStudyStatusForReport } from '@/lib/studyStatus';
 
 export async function getStudyDetails(studyInstanceUID: string) {
   const orthancUrl = process.env.ORTHANC_API_URL || 'http://orthanc:8042';
@@ -34,7 +35,13 @@ export async function getStudyDetails(studyInstanceUID: string) {
 
     const studies = await response.json();
     if (studies && studies.length > 0) {
-      return studies[0];
+      const workflow = await syncOrthancStudyToRis(studies[0]);
+      return {
+        ...studies[0],
+        WorkflowStatus: workflow?.status || 'READY_TO_READ',
+        ReportStatus: workflow?.reportStatus || 'UNREAD',
+        OrderStatus: workflow?.orderStatus || null,
+      };
     }
     return null;
   } catch (error) {
@@ -46,7 +53,8 @@ export async function getStudyDetails(studyInstanceUID: string) {
 export async function getReport(studyInstanceUid: string) {
   try {
     const report = await prisma.report.findUnique({
-      where: { studyInstanceUid }
+      where: { studyInstanceUid },
+      include: { imagingStudy: true }
     });
     return report;
   } catch (err) {
@@ -78,6 +86,7 @@ export async function upsertReport(studyInstanceUid: string, data: {
         recommendation: data.recommendation
       }
     });
+    await updateStudyStatusForReport(studyInstanceUid, data.status);
     return { success: true, report };
   } catch (error) {
     console.error("Failed to upsert report:", error);

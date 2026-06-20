@@ -29,6 +29,41 @@ function StatusBadge({ status }: { status?: string }) {
   return <span className="rounded bg-vin-status-new-bg px-2 py-0.5 text-[10px] font-bold text-white">MỚI</span>;
 }
 
+const studyStatusLabels: Record<string, string> = {
+  ORDERED: "Chờ chụp",
+  READY_FOR_SCAN: "Sẵn sàng chụp",
+  IN_PROGRESS: "Đang chụp",
+  RECEIVED: "Đã nhận ảnh",
+  STABLE: "Ảnh ổn định",
+  NEEDS_QC: "Cần QC",
+  QC_REJECTED: "Chụp lại",
+  READY_TO_READ: "Chờ đọc",
+  READING: "Đang đọc",
+  REPORTED: "Đã có báo cáo",
+  FINALIZED: "Đã ký",
+  DELIVERED: "Đã trả",
+  ARCHIVED: "Lưu trữ",
+  DELETED_FROM_PACS: "Đã xóa ảnh",
+  ERROR: "Lỗi",
+};
+
+function StudyStatusBadge({ status }: { status?: string }) {
+  const value = status || "READY_TO_READ";
+  const label = studyStatusLabels[value] || value;
+  const classes =
+    value === "FINALIZED" || value === "DELIVERED"
+      ? "bg-vin-status-approved-bg text-white"
+      : value === "READING" || value === "REPORTED"
+        ? "bg-vin-status-warning-bg text-white"
+        : value === "QC_REJECTED" || value === "ERROR"
+          ? "bg-vin-status-danger-bg text-white"
+          : value === "READY_TO_READ" || value === "RECEIVED" || value === "STABLE"
+            ? "bg-vin-accentSoft text-white"
+            : "bg-vin-status-new-bg text-white";
+
+  return <span className={`inline-flex max-w-[120px] justify-center truncate rounded px-2 py-0.5 text-[10px] font-bold ${classes}`}>{label}</span>;
+}
+
 export default function ReportPage({ params }: { params: { studyInstanceUid: string } }) {
   const { studyInstanceUid } = params;
   const router = useRouter();
@@ -40,6 +75,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
   const [conclusion, setConclusion] = useState("");
   const [recommendation, setRecommendation] = useState("");
   const [reportStatus, setReportStatus] = useState<string>("UNREAD");
+  const [studyStatus, setStudyStatus] = useState<string>("READY_TO_READ");
   const [templateHtml, setTemplateHtml] = useState<string>("");
   const [viewerLink, setViewerLink] = useState("");
 
@@ -63,9 +99,13 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
           setConclusion(report.conclusion || "");
           setRecommendation(report.recommendation || "");
           setReportStatus(report.status);
+          if (report.imagingStudy?.status) setStudyStatus(report.imagingStudy.status);
         }
 
-        if (studyInfo) setPatientDetails(studyInfo);
+        if (studyInfo) {
+          setPatientDetails(studyInfo);
+          if (studyInfo.WorkflowStatus) setStudyStatus(studyInfo.WorkflowStatus);
+        }
         if (template) setTemplateHtml(template);
       } catch (error) {
         console.error("Failed to load report data", error);
@@ -93,7 +133,10 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
         recommendation,
       });
 
-      if (result.success) setReportStatus(status);
+      if (result.success) {
+        setReportStatus(status);
+        setStudyStatus(status === "COMPLETED" ? "FINALIZED" : "READING");
+      }
     } catch (error) {
       console.error("Failed to save report", error);
     } finally {
@@ -135,6 +178,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
                 Mở OHIF
               </a>
             )}
+            <StudyStatusBadge status={studyStatus} />
             <StatusBadge status={reportStatus} />
           </div>
         </div>
@@ -154,7 +198,10 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
                   <h2 className="text-base font-bold uppercase text-white">{patientName}</h2>
                   <p className="mt-1 text-xs text-vin-muted">PID: {patientId}</p>
                 </div>
-                <StatusBadge status={reportStatus} />
+                <div className="flex flex-col items-end gap-1">
+                  <StudyStatusBadge status={studyStatus} />
+                  <StatusBadge status={reportStatus} />
+                </div>
               </div>
               <div className="grid grid-cols-1 gap-3 text-xs text-vin-text2 sm:grid-cols-2">
                 <div>

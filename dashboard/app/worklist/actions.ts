@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/app/db"; // Assuming this exports Prisma client
+import { upsertWorklistStudy } from "@/lib/studyStatus";
 import fs from "fs/promises";
 import path from "path";
 import { z } from "zod";
@@ -21,6 +22,7 @@ export async function createWorklistAction(data: z.infer<typeof worklistSchema>)
     // Generate unique Accession Number
     const timestamp = new Date().getTime().toString().slice(-6);
     const accessionNumber = `ACC${timestamp}${Math.floor(Math.random() * 1000)}`;
+    const studyInstanceUid = "1.2.840.113619.2." + timestamp + "." + accessionNumber;
     
     // Convert DOB if necessary
     const dobDate = validatedData.dob ? new Date(validatedData.dob) : new Date("1900-01-01");
@@ -36,6 +38,8 @@ export async function createWorklistAction(data: z.infer<typeof worklistSchema>)
         referringPhysician: validatedData.referringPhysician,
         modality: validatedData.modality,
         accessionNumber,
+        requestedStudyInstanceUid: studyInstanceUid,
+        orderStatus: "SCHEDULED",
       }
     });
 
@@ -57,7 +61,7 @@ export async function createWorklistAction(data: z.infer<typeof worklistSchema>)
           "0040,0007": "Study_" + accessionNumber, // ScheduledProcedureStepDescription
           "0040,0009": "STEP_" + accessionNumber // ScheduledProcedureStepID
         }],
-        "0020,000D": "1.2.840.113619.2." + timestamp + "." + accessionNumber, // StudyInstanceUID
+        "0020,000D": studyInstanceUid,          // StudyInstanceUID
         "0040,1001": accessionNumber,            // RequestedProcedureID
         "0032,1060": "Routine procedure"         // RequestedProcedureDescription
     };
@@ -75,6 +79,17 @@ export async function createWorklistAction(data: z.infer<typeof worklistSchema>)
     // Save JSON file
     const filePath = path.join(worklistsDir, `${accessionNumber}.wl.json`);
     await fs.writeFile(filePath, JSON.stringify(dicomJson, null, 2), "utf8");
+
+    await upsertWorklistStudy({
+      studyInstanceUid,
+      orderId: order.id,
+      accessionNumber,
+      patientId: validatedData.patientId,
+      patientName: validatedData.patientName,
+      modality: validatedData.modality,
+      studyDescription: "Study_" + accessionNumber,
+      scheduledAt: order.scheduledDate,
+    });
 
     return { success: true, accessionNumber };
   } catch (err: any) {
