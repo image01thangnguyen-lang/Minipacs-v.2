@@ -1,0 +1,15 @@
+body.mpacs-clean-viewer [data-mpacs-hidden="true"] {
+  display: none !important;
+}
+
+body.mpacs-clean-viewer [data-mpacs-options-button="true"] {
+  position: fixed !important;
+  top: 72px !important;
+  right: 150px !important;
+  z-index: 10020 !important;
+  margin: 0 !important;
+}
+
+body.mpacs-clean-viewer [data-mpacs-options-button="true"] > * {
+  margin-top: 0 !important;
+}
