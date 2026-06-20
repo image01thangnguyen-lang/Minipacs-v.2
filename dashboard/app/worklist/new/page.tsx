@@ -51,19 +51,19 @@ export default function NewWorklistPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-slate-200 p-8 sm:p-12 font-sans">
+    <div className="min-h-screen bg-vin-root text-vin-text p-8 sm:p-12 font-sans">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-            <PlusCircle className="text-blue-500 h-8 w-8" />
+            <PlusCircle className="text-vin-accent h-8 w-8" />
             Tạo ca chụp mới
           </h1>
-          <p className="text-slate-400 mt-2">
+          <p className="text-vin-muted mt-2">
             Tạo Modalilty Worklist Order (MWL). Thông tin sẽ được gửi tới máy chụp X-quang/Siêu âm.
           </p>
         </div>
 
-        <div className="bg-[#0d0d0f] border border-slate-800 rounded-2xl shadow-xl overflow-hidden p-8">
+        <div className="bg-vin-panel border border-vin-borderStrong rounded-2xl shadow-xl overflow-hidden p-8">
           {successMsg && (
             <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-start gap-3 text-emerald-400">
               <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5" />
@@ -82,10 +82,10 @@ export default function NewWorklistPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Patient Name */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Tên Bệnh Nhân *</label>
+                <label className="text-sm font-semibold text-vin-muted uppercase tracking-wider">Tên Bệnh Nhân *</label>
                 <input
                   {...register("patientName")}
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full bg-vin-shell border border-vin-border text-vin-text rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-vin-accent/50"
                   placeholder="VD: NGUYEN VAN A"
                 />
                 {errors.patientName && <p className="text-red-400 text-xs mt-1">{errors.patientName.message}</p>}
@@ -93,10 +93,10 @@ export default function NewWorklistPage() {
 
               {/* Patient ID */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Mã Bệnh Nhân (PID) *</label>
+                <label className="text-sm font-semibold text-vin-muted uppercase tracking-wider">Mã Bệnh Nhân (PID) *</label>
                 <input
                   {...register("patientId")}
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono"
+                  className="w-full bg-vin-shell border border-vin-border text-vin-text rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-vin-accent/50 font-mono"
                   placeholder="VD: PID-12345"
                 />
                 {errors.patientId && <p className="text-red-400 text-xs mt-1">{errors.patientId.message}</p>}
@@ -104,20 +104,20 @@ export default function NewWorklistPage() {
 
               {/* DOB */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Ngày Sinh</label>
+                <label className="text-sm font-semibold text-vin-muted uppercase tracking-wider">Ngày Sinh</label>
                 <input
                   type="date"
                   {...register("dob")}
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 [color-scheme:dark]"
+                  className="w-full bg-vin-shell border border-vin-border text-vin-text rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-vin-accent/50 [color-scheme:dark]"
                 />
               </div>
 
               {/* Gender */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Giới tính</label>
+                <label className="text-sm font-semibold text-vin-muted uppercase tracking-wider">Giới tính</label>
                 <select
                   {...register("gender")}
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full bg-vin-shell border border-vin-border text-vin-text rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-vin-accent/50"
                 >
                   <option value="M">Nam</option>
                   <option value="F">Nữ</option>
@@ -127,20 +127,20 @@ export default function NewWorklistPage() {
 
               {/* Referring Physician */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Bác sĩ chỉ định</label>
+                <label className="text-sm font-semibold text-vin-muted uppercase tracking-wider">Bác sĩ chỉ định</label>
                 <input
                   {...register("referringPhysician")}
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                  className="w-full bg-vin-shell border border-vin-border text-vin-text rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-vin-accent/50"
                   placeholder="VD: bs_tuan"
                 />
               </div>
 
               {/* Modality */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Loại máy chụp (Modality) *</label>
+                <label className="text-sm font-semibold text-vin-muted uppercase tracking-wider">Loại máy chụp (Modality) *</label>
                 <select
                   {...register("modality")}
-                  className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono"
+                  className="w-full bg-vin-shell border border-vin-border text-vin-text rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-vin-accent/50 font-mono"
                 >
                   <option value="CR">CR (X-quang số hóa)</option>
                   <option value="DX">DX (X-quang kỹ thuật số)</option>
@@ -156,7 +156,7 @@ export default function NewWorklistPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-vin-accent hover:bg-vin-accentHover text-white rounded-xl font-semibold shadow-lg shadow-vin-accent/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>

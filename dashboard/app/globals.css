@@ -4,16 +4,40 @@
 
 :root {
   --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 10, 10, 12;
-  --background-end-rgb: 0, 0, 0;
+  --background-start-rgb: 8, 31, 42;
+  --background-end-rgb: 8, 31, 42;
+
+  --vin-bg-root: #081f2a;
+  --vin-bg-shell: #0a2a38;
+  --vin-bg-sidebar: #062536;
+  --vin-bg-panel: #1f3037;
+  --vin-bg-panel-2: #243d48;
+  --vin-bg-table: #2b5669;
+  --vin-bg-table-alt: #2a5162;
+  --vin-bg-table-hover: #34687c;
+  --vin-bg-table-selected: #3b7188;
+
+  --vin-border-subtle: #315060;
+  --vin-border-strong: #4f7282;
+
+  --vin-text-primary: #ffffff;
+  --vin-text-secondary: #d8edf4;
+  --vin-text-muted: #8fb2bf;
+  --vin-text-faint: #648694;
+
+  --vin-accent: #18b9d0;
+  --vin-accent-hover: #23cbe3;
+  --vin-accent-soft: #0f8395;
+
+  --vin-status-new-bg: #5b7183;
+  --vin-status-new-text: #ffffff;
+  --vin-status-approved-bg: #6fa34a;
+  --vin-status-approved-text: #ffffff;
+  --vin-status-warning-bg: #b78b36;
+  --vin-status-danger-bg: #b84a4a;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: var(--vin-text-primary);
+  background: var(--vin-bg-root);
 }
