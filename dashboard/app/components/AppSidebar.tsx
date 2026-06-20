@@ -25,7 +25,8 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
 
   const handleLogout = async () => {
     setLoggingOut(true);
-    await signOut({ callbackUrl: "/login" });
+    await signOut({ redirect: false });
+    window.location.href = "/login";
   };
 
   return (
