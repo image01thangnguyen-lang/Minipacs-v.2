@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BadgeCheck, ChevronLeft, KeyRound, PenLine, Shield, Upload, UserPlus, Users } from "lucide-react";
+import { AppSidebar } from "@/app/components/AppSidebar";
 import { createUserAction, getUsersForAdmin, updateUserAction } from "./actions";
 
 const roleLabels: Record<string, string> = {
@@ -28,25 +29,27 @@ export default async function UserManagementPage() {
   const users = await getUsersForAdmin();
 
   return (
-    <main className="min-h-screen bg-vin-root text-vin-text">
-      <header className="border-b border-vin-border bg-vin-sidebar px-5 py-4">
-        <div className="mx-auto flex max-w-7xl items-center gap-4">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded border border-vin-border bg-vin-panel px-3 py-2 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Quay lại
-          </Link>
-          <div className="min-w-0">
-            <h1 className="flex items-center gap-2 text-lg font-bold text-white">
-              <Users className="h-5 w-5 text-vin-accent" />
-              Quản lý người dùng
-            </h1>
-            <p className="mt-1 text-xs text-vin-muted">Phân quyền, hồ sơ bác sĩ và chữ ký scan cho phiếu kết quả.</p>
+    <main className="flex h-screen overflow-hidden bg-vin-root text-vin-text">
+      <AppSidebar active="users" />
+      <section className="min-w-0 flex-1 overflow-auto">
+        <header className="border-b border-vin-border bg-vin-sidebar px-5 py-4">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 rounded border border-vin-border bg-vin-panel px-3 py-2 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Quay lại
+            </Link>
+            <div className="min-w-0">
+              <h1 className="flex items-center gap-2 text-lg font-bold text-white">
+                <Users className="h-5 w-5 text-vin-accent" />
+                Quản lý người dùng
+              </h1>
+              <p className="mt-1 text-xs text-vin-muted">Phân quyền, hồ sơ bác sĩ và chữ ký scan cho phiếu kết quả.</p>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
       <div className="mx-auto max-w-7xl space-y-5 p-5">
         <section className="border border-vin-border bg-vin-panel p-4">
@@ -243,6 +246,7 @@ export default async function UserManagementPage() {
           })}
         </section>
       </div>
+      </section>
     </main>
   );
 }

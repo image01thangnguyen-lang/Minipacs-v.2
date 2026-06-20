@@ -6,6 +6,7 @@ import { createWorklistAction, worklistSchema } from "../actions";
 import { z } from "zod";
 import { useState } from "react";
 import { Loader2, PlusCircle, CheckCircle2, AlertCircle } from "lucide-react";
+import { AppSidebar } from "@/app/components/AppSidebar";
 
 type FormValues = z.infer<typeof worklistSchema>;
 
@@ -51,7 +52,9 @@ export default function NewWorklistPage() {
   };
 
   return (
-    <div className="min-h-screen bg-vin-root text-vin-text p-8 sm:p-12 font-sans">
+    <div className="flex h-screen overflow-hidden bg-vin-root font-sans text-vin-text">
+      <AppSidebar active="worklist" />
+      <div className="min-w-0 flex-1 overflow-auto p-8 sm:p-12">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
@@ -173,6 +176,7 @@ export default function NewWorklistPage() {
             </div>
           </form>
         </div>
+      </div>
       </div>
     </div>
   );

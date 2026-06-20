@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CheckCircle,
@@ -12,10 +11,10 @@ import {
   Printer,
   Save,
   Search,
-  UserCog,
   X,
 } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
+import { AppSidebar } from "./components/AppSidebar";
 import { getStudies } from "./actions";
 import {
   getDefaultTemplate,
@@ -281,7 +280,8 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-      <section className="flex h-full w-[55%] flex-col border-r border-vin-border bg-vin-shell">
+      <AppSidebar active="studies" />
+      <section className="flex h-full w-[52%] min-w-[640px] flex-col border-r border-vin-border bg-vin-shell">
         <div className="flex-none border-b border-vin-border/70 px-3 py-2">
           <div className="mb-2 flex items-center justify-between">
             <div>
@@ -291,13 +291,6 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex items-center gap-1">
-              <Link
-                href="/admin/users"
-                className="rounded border border-vin-border bg-vin-panel p-1 text-vin-muted transition hover:border-vin-accent hover:text-vin-text"
-                title="Quản lý người dùng"
-              >
-                <UserCog className="h-3.5 w-3.5" />
-              </Link>
               <button
                 onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
                 disabled={currentPage === 1}
@@ -503,7 +496,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section className="relative flex h-full w-[45%] flex-col bg-vin-panel text-vin-text2">
+      <section className="relative flex h-full min-w-0 flex-1 flex-col bg-vin-panel text-vin-text2">
         {!selectedStudy ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl border border-vin-border bg-vin-shell">
