@@ -30,6 +30,7 @@ import {
   getStudyDetails,
   upsertReport,
 } from "./report/[studyInstanceUid]/actions";
+import { getClinicProfile } from "./settings/clinic-profile/actions";
 import { getReportTemplateSuggestions } from "./settings/report-templates/actions";
 import TiptapEditor from "./report/[studyInstanceUid]/components/TiptapEditor";
 import { PrintTemplateViewer } from "./report/[studyInstanceUid]/components/PrintTemplateViewer";
@@ -131,6 +132,7 @@ export default function DashboardPage() {
   const [studyStatus, setStudyStatus] = useState("READY_TO_READ");
   const [doctorPrintInfo, setDoctorPrintInfo] = useState<Record<string, string>>({});
   const [templateHtml, setTemplateHtml] = useState("");
+  const [clinicProfile, setClinicProfile] = useState<Record<string, string>>({});
   const [reportTemplates, setReportTemplates] = useState<ReportTemplateOption[]>([]);
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -139,8 +141,23 @@ export default function DashboardPage() {
     async function loadStudies() {
       try {
         setIsLoading(true);
-        const data = await getStudies();
+        const [data, clinic] = await Promise.all([
+          getStudies(),
+          getClinicProfile(),
+        ]);
         setStudies(data || []);
+        setClinicProfile({
+          clinicName: clinic?.name || "",
+          clinicLegalName: clinic?.legalName || "",
+          clinicAddress: clinic?.address || "",
+          clinicPhone: clinic?.phone || "",
+          clinicEmail: clinic?.email || "",
+          clinicWebsite: clinic?.website || "",
+          clinicLogoPath: clinic?.logoPath || "",
+          clinicHeaderText: clinic?.headerText || "",
+          clinicFooterText: clinic?.footerText || "",
+          clinicLicenseNumber: clinic?.licenseNumber || "",
+        });
       } catch (error) {
         console.error(error);
       } finally {
@@ -651,6 +668,7 @@ export default function DashboardPage() {
                 reportContent: findings,
                 conclusion,
                 recommendation,
+                ...clinicProfile,
                 ...doctorPrintInfo,
               }}
             />

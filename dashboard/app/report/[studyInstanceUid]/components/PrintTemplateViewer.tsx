@@ -14,6 +14,16 @@ export interface PrintContext {
   doctorSpecialty?: string;
   doctorLicenseNumber?: string;
   doctorSignatureImagePath?: string;
+  clinicName?: string;
+  clinicLegalName?: string;
+  clinicAddress?: string;
+  clinicPhone?: string;
+  clinicEmail?: string;
+  clinicWebsite?: string;
+  clinicLogoPath?: string;
+  clinicHeaderText?: string;
+  clinicFooterText?: string;
+  clinicLicenseNumber?: string;
 }
 
 interface PrintTemplateViewerProps {
@@ -49,10 +59,45 @@ export const PrintTemplateViewer = forwardRef<HTMLDivElement, PrintTemplateViewe
         </div>
       `;
     };
+
+    const buildClinicHeaderBlock = (data: PrintContext) => {
+      const clinicName = data.clinicName || data.clinicLegalName;
+      if (!clinicName && !data.clinicLogoPath && !data.clinicHeaderText) return "";
+
+      const logo = data.clinicLogoPath
+        ? `<img src="${escapeHtml(data.clinicLogoPath)}" alt="Logo phong kham" class="clinic-logo" />`
+        : `<div class="clinic-logo-placeholder"></div>`;
+      const contactLine = [data.clinicPhone, data.clinicEmail, data.clinicWebsite].filter(Boolean).join(" · ");
+
+      return `
+        <div class="clinic-header">
+          <div class="clinic-logo-box">${logo}</div>
+          <div class="clinic-header-text">
+            <div class="clinic-name">${escapeHtml(clinicName)}</div>
+            ${data.clinicLegalName && data.clinicLegalName !== clinicName ? `<div class="clinic-legal-name">${escapeHtml(data.clinicLegalName)}</div>` : ""}
+            ${data.clinicHeaderText ? `<div class="clinic-subtitle">${escapeHtml(data.clinicHeaderText)}</div>` : ""}
+            ${data.clinicAddress ? `<div class="clinic-meta">${escapeHtml(data.clinicAddress)}</div>` : ""}
+            ${contactLine ? `<div class="clinic-meta">${escapeHtml(contactLine)}</div>` : ""}
+            ${data.clinicLicenseNumber ? `<div class="clinic-meta">Giay phep: ${escapeHtml(data.clinicLicenseNumber)}</div>` : ""}
+          </div>
+        </div>
+      `;
+    };
+
+    const buildClinicFooterBlock = (data: PrintContext) => {
+      if (!data.clinicFooterText) return "";
+      return `<div class="clinic-footer">${escapeHtml(data.clinicFooterText)}</div>`;
+    };
     
     // Parse function using regex replacement
     const generatePrintHtml = (html: string, data: PrintContext) => {
       let parsed = html;
+      const clinicHeader = buildClinicHeaderBlock(data);
+      const clinicFooter = buildClinicFooterBlock(data);
+
+      const hasClinicHeaderPlaceholder = parsed.includes("{{CLINIC_HEADER}}");
+      const hasClinicFooterPlaceholder = parsed.includes("{{CLINIC_FOOTER}}");
+
       parsed = parsed.replace(/{{PATIENT_NAME}}/g, data.patientName || '');
       parsed = parsed.replace(/{{PATIENT_ID}}/g, data.patientId || '');
       parsed = parsed.replace(/{{STUDY_DATE}}/g, data.studyDate || '');
@@ -64,13 +109,30 @@ export const PrintTemplateViewer = forwardRef<HTMLDivElement, PrintTemplateViewe
       parsed = parsed.replace(/{{DOCTOR_TITLE}}/g, escapeHtml(data.doctorTitle));
       parsed = parsed.replace(/{{DOCTOR_SPECIALTY}}/g, escapeHtml(data.doctorSpecialty));
       parsed = parsed.replace(/{{DOCTOR_LICENSE}}/g, escapeHtml(data.doctorLicenseNumber));
+      parsed = parsed.replace(/{{CLINIC_HEADER}}/g, clinicHeader);
+      parsed = parsed.replace(/{{CLINIC_FOOTER}}/g, clinicFooter);
+      parsed = parsed.replace(/{{CLINIC_NAME}}/g, escapeHtml(data.clinicName));
+      parsed = parsed.replace(/{{CLINIC_LEGAL_NAME}}/g, escapeHtml(data.clinicLegalName));
+      parsed = parsed.replace(/{{CLINIC_ADDRESS}}/g, escapeHtml(data.clinicAddress));
+      parsed = parsed.replace(/{{CLINIC_PHONE}}/g, escapeHtml(data.clinicPhone));
+      parsed = parsed.replace(/{{CLINIC_EMAIL}}/g, escapeHtml(data.clinicEmail));
+      parsed = parsed.replace(/{{CLINIC_WEBSITE}}/g, escapeHtml(data.clinicWebsite));
+      parsed = parsed.replace(/{{CLINIC_HEADER_TEXT}}/g, escapeHtml(data.clinicHeaderText));
+      parsed = parsed.replace(/{{CLINIC_FOOTER_TEXT}}/g, escapeHtml(data.clinicFooterText));
+      parsed = parsed.replace(/{{CLINIC_LICENSE}}/g, escapeHtml(data.clinicLicenseNumber));
+      parsed = parsed.replace(
+        /{{CLINIC_LOGO}}/g,
+        data.clinicLogoPath
+          ? `<img src="${escapeHtml(data.clinicLogoPath)}" alt="Logo phong kham" class="clinic-logo" />`
+          : ''
+      );
       parsed = parsed.replace(
         /{{DOCTOR_SIGNATURE}}/g,
         data.doctorSignatureImagePath
           ? `<img src="${escapeHtml(data.doctorSignatureImagePath)}" alt="Chu ky bac si" class="doctor-signature-image" />`
           : ''
       );
-      return `${parsed}${buildDoctorSignatureBlock(data)}`;
+      return `${hasClinicHeaderPlaceholder ? "" : clinicHeader}${parsed}${buildDoctorSignatureBlock(data)}${hasClinicFooterPlaceholder ? "" : clinicFooter}`;
     };
 
     const finalHtml = generatePrintHtml(templateHtml, context);
@@ -103,6 +165,60 @@ export const PrintTemplateViewer = forwardRef<HTMLDivElement, PrintTemplateViewe
           .print-content {
             font-family: inherit;
             line-height: 1.6;
+          }
+          .clinic-header {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            border-bottom: 1px solid #d5dbe1;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+          }
+          .clinic-logo-box {
+            width: 112px;
+            min-height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .clinic-logo {
+            display: block;
+            max-width: 112px;
+            max-height: 64px;
+            object-fit: contain;
+          }
+          .clinic-logo-placeholder {
+            width: 72px;
+            height: 48px;
+            border: 1px solid #d5dbe1;
+            background: #f6f8fa;
+          }
+          .clinic-header-text {
+            flex: 1;
+            min-width: 0;
+          }
+          .clinic-name {
+            font-size: 1.15rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            line-height: 1.25;
+          }
+          .clinic-legal-name {
+            font-weight: 700;
+            color: #333;
+          }
+          .clinic-subtitle,
+          .clinic-meta {
+            font-size: 0.875rem;
+            color: #444;
+          }
+          .clinic-footer {
+            margin-top: 28px;
+            border-top: 1px solid #d5dbe1;
+            padding-top: 10px;
+            font-size: 0.8rem;
+            color: #555;
+            white-space: pre-line;
           }
           .print-content p { margin: 0.5em 0; }
           .print-content h1 { font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5em; }

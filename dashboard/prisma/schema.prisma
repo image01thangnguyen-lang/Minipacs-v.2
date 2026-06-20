@@ -144,6 +144,25 @@ model ReportTemplateText {
   @@map("report_template_texts")
 }
 
+model ClinicProfile {
+  id                    String   @id @default(uuid())
+  name                  String
+  legalName             String?
+  address               String?
+  phone                 String?
+  email                 String?
+  website               String?
+  logoPath              String?
+  headerText            String?  @db.Text
+  footerText            String?  @db.Text
+  licenseNumber         String?
+  defaultReportLanguage String   @default("vi")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("clinic_profiles")
+}
+
 model WorklistOrder {
   id               String   @id @default(uuid())
   patientName      String

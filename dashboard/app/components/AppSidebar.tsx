@@ -3,15 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X } from "lucide-react";
+import { Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X } from "lucide-react";
 
-type ActiveMenu = "studies" | "worklist" | "users" | "templates" | "pacs" | "storage";
+type ActiveMenu = "studies" | "worklist" | "users" | "templates" | "clinic" | "pacs" | "storage";
 
 const mainMenuItems = [
   { key: "studies", label: "Ca chụp", href: "/", icon: LayoutDashboard },
   { key: "worklist", label: "Tạo ca", href: "/worklist/new", icon: FileText },
   { key: "users", label: "Người dùng", href: "/admin/users", icon: UserCog },
   { key: "templates", label: "Mẫu báo cáo", href: "/settings/report-templates", icon: FileText },
+  { key: "clinic", label: "Phòng khám", href: "/settings/clinic-profile", icon: Building2 },
 ] as const;
 
 const upcomingMenuItems = [

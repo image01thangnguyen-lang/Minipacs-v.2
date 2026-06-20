@@ -15,6 +15,7 @@ import {
   ReportTemplatePicker,
   TemplateApplyMode,
 } from "@/app/components/ReportTemplatePicker";
+import { getClinicProfile } from "@/app/settings/clinic-profile/actions";
 import { getReportTemplateSuggestions } from "@/app/settings/report-templates/actions";
 
 const formatPatientName = (name?: string) => (name ? name.replace(/\^/g, " ") : "Unknown Patient");
@@ -88,6 +89,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
   const [studyStatus, setStudyStatus] = useState<string>("READY_TO_READ");
   const [doctorPrintInfo, setDoctorPrintInfo] = useState<Record<string, string>>({});
   const [templateHtml, setTemplateHtml] = useState<string>("");
+  const [clinicProfile, setClinicProfile] = useState<Record<string, string>>({});
   const [reportTemplates, setReportTemplates] = useState<ReportTemplateOption[]>([]);
   const [viewerLink, setViewerLink] = useState("");
 
@@ -101,11 +103,25 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
       try {
         setIsLoading(true);
         setReportTemplates([]);
-        const [report, studyInfo, template] = await Promise.all([
+        const [report, studyInfo, template, clinic] = await Promise.all([
           getReport(studyInstanceUid),
           getStudyDetails(studyInstanceUid),
           getDefaultTemplate(),
+          getClinicProfile(),
         ]);
+
+        setClinicProfile({
+          clinicName: clinic?.name || "",
+          clinicLegalName: clinic?.legalName || "",
+          clinicAddress: clinic?.address || "",
+          clinicPhone: clinic?.phone || "",
+          clinicEmail: clinic?.email || "",
+          clinicWebsite: clinic?.website || "",
+          clinicLogoPath: clinic?.logoPath || "",
+          clinicHeaderText: clinic?.headerText || "",
+          clinicFooterText: clinic?.footerText || "",
+          clinicLicenseNumber: clinic?.licenseNumber || "",
+        });
 
         if (report) {
           setFindings(report.findings || "");
@@ -324,6 +340,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
           reportContent: findings,
           conclusion,
           recommendation,
+          ...clinicProfile,
           ...doctorPrintInfo,
         }}
       />

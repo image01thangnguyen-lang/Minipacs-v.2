@@ -69,6 +69,25 @@ async function main() {
   }
 
   console.log(`Report text templates seeded: ${reportTemplateTexts.length}`);
+
+  const existingClinicProfile = await prisma.clinicProfile.findFirst();
+  if (!existingClinicProfile) {
+    await prisma.clinicProfile.create({
+      data: {
+        name: 'Mini PACS',
+        legalName: 'Mini PACS Diagnostic Imaging',
+        address: '',
+        phone: '',
+        email: '',
+        website: '',
+        headerText: 'Hệ thống chẩn đoán hình ảnh',
+        footerText: 'Phiếu kết quả được phát hành từ hệ thống Mini PACS.',
+        licenseNumber: '',
+        defaultReportLanguage: 'vi'
+      }
+    });
+    console.log('Clinic profile seeded: Mini PACS');
+  }
 }
 
 main()
