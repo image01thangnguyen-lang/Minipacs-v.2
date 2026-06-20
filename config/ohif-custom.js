@@ -115,29 +115,7 @@
     });
   }
 
-  function markOptionsButton() {
-    var elements = Array.prototype.slice.call(
-      document.querySelectorAll('button, a, span, div, [role="button"], [aria-haspopup="true"]')
-    );
-
-    for (var index = 0; index < elements.length; index += 1) {
-      var element = elements[index];
-      var text = normalizeText(element.textContent);
-      var hasOptionsLabel = OPTIONS_LABELS.some(function(label) {
-        return text.indexOf(label) !== -1;
-      });
-
-      if (!hasOptionsLabel || !isVisibleTopElement(element, 100)) {
-        continue;
-      }
-
-      var button = closestInteractive(element);
-      button.setAttribute(OPTIONS_ATTR, 'true');
-      button.removeAttribute(HIDDEN_ATTR);
-      button.removeAttribute('aria-hidden');
-      return;
-    }
-  }
+  // Đã loại bỏ markOptionsButton theo Phương án B (giữ nút ở DOM gốc)
 
   function applyCustomization() {
     scheduled = false;
@@ -153,7 +131,7 @@
       return;
     }
 
-    markOptionsButton();
+    // markOptionsButton(); (Đã xóa để không tác động nút Lựa chọn)
     hideTextLabels();
     hideLogoAndSeparators();
   }

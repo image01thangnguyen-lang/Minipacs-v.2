@@ -3,13 +3,6 @@ body.mpacs-clean-viewer [data-mpacs-hidden="true"] {
 }
 
 body.mpacs-clean-viewer [data-mpacs-options-button="true"] {
-  position: fixed !important;
-  top: 72px !important;
-  right: 150px !important;
-  z-index: 10020 !important;
-  margin: 0 !important;
-}
-
-body.mpacs-clean-viewer [data-mpacs-options-button="true"] > * {
-  margin-top: 0 !important;
+  /* Không dùng position: fixed để tránh làm vỡ popover menu */
+  /* Nút sẽ nằm ở vị trí mặc định trên header (Phương án B trong tài liệu kế hoạch) */
 }
