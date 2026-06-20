@@ -2,7 +2,9 @@
   var BODY_CLASS = 'mpacs-clean-viewer';
   var HIDDEN_ATTR = 'data-mpacs-hidden';
   var OPTIONS_ATTR = 'data-mpacs-options-button';
-  var TOP_BAR_LIMIT = 64;
+
+
+var TOP_BAR_LIMIT = 64;
   var OPTIONS_LABELS = ['L\u1ef1a ch\u1ecdn', 'Options'];
   var HIDDEN_LABELS = [
     { text: 'Open Health Imaging Foundation', exact: false },
@@ -115,7 +117,65 @@
     });
   }
 
-  // Đã loại bỏ markOptionsButton theo Phương án B (giữ nút ở DOM gốc)
+  function moveOptionsButtonAndHideHeader() {
+    var optionsButtonEl = null;
+    var elements = Array.prototype.slice.call(
+      document.querySelectorAll('button, a, span, div, [role="button"], [aria-haspopup="true"]')
+    );
+
+    for (var i = 0; i < elements.length; i++) {
+      var text = normalizeText(elements[i].textContent);
+      var hasOptions = OPTIONS_LABELS.some(function(l) { return text.indexOf(l) !== -1; });
+      if (hasOptions && (elements[i].tagName === 'BUTTON' || elements[i].getAttribute('role') === 'button' || closestInteractive(elements[i]))) {
+        optionsButtonEl = closestInteractive(elements[i]);
+        break;
+      }
+    }
+
+    if (!optionsButtonEl) return;
+
+    var measureButtonEl = null;
+    for (var j = 0; j < elements.length; j++) {
+      var mText = normalizeText(elements[j].textContent);
+      if ((mText.indexOf('measurements') !== -1 || mText.indexOf('tracked') !== -1) && 
+          (elements[j].tagName === 'BUTTON' || elements[j].getAttribute('role') === 'button' || closestInteractive(elements[j]))) {
+        measureButtonEl = closestInteractive(elements[j]);
+        break;
+      }
+    }
+
+    if (!measureButtonEl) return;
+
+    if (!measureButtonEl.parentNode.contains(optionsButtonEl)) {
+      measureButtonEl.parentNode.insertBefore(optionsButtonEl, measureButtonEl);
+      optionsButtonEl.style.marginLeft = '8px';
+      optionsButtonEl.style.marginRight = '8px';
+    }
+
+    var header = document.querySelector('header');
+    if (!header) {
+      var allDivs = document.querySelectorAll('div');
+      for (var k = 0; k < allDivs.length; k++) {
+        var rect = allDivs[k].getBoundingClientRect();
+        if (rect.top === 0 && rect.height > 0 && rect.height <= 80 && allDivs[k].offsetWidth === window.innerWidth) {
+           if (!allDivs[k].contains(measureButtonEl)) {
+             header = allDivs[k];
+             break;
+           }
+        }
+      }
+    }
+
+    if (header) {
+      header.style.display = 'none';
+      header.style.height = '0px';
+      header.style.minHeight = '0px';
+      header.style.padding = '0px';
+      header.style.margin = '0px';
+      header.style.border = 'none';
+      header.style.overflow = 'hidden';
+    }
+  }
 
   function applyCustomization() {
     scheduled = false;
@@ -131,9 +191,9 @@
       return;
     }
 
-    // markOptionsButton(); (Đã xóa để không tác động nút Lựa chọn)
     hideTextLabels();
     hideLogoAndSeparators();
+    moveOptionsButtonAndHideHeader();
   }
 
   function scheduleCustomization() {
