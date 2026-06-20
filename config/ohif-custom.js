@@ -2,9 +2,7 @@
   var BODY_CLASS = 'mpacs-clean-viewer';
   var HIDDEN_ATTR = 'data-mpacs-hidden';
   var OPTIONS_ATTR = 'data-mpacs-options-button';
-
-
-var TOP_BAR_LIMIT = 64;
+  var TOP_BAR_LIMIT = 64;
   var OPTIONS_LABELS = ['L\u1ef1a ch\u1ecdn', 'Options'];
   var HIDDEN_LABELS = [
     { text: 'Open Health Imaging Foundation', exact: false },
@@ -117,136 +115,7 @@ var TOP_BAR_LIMIT = 64;
     });
   }
 
-  function handleLanguageButtonAndHideHeader() {
-    var optionsButtonEl = null;
-    var elements = Array.prototype.slice.call(
-      document.querySelectorAll('button, a, span, div, [role="button"], [aria-haspopup="true"]')
-    );
-
-    for (var i = 0; i < elements.length; i++) {
-      var text = normalizeText(elements[i].textContent);
-      var hasOptions = OPTIONS_LABELS.some(function(l) { return text.indexOf(l) !== -1; });
-      if (hasOptions && (elements[i].tagName === 'BUTTON' || elements[i].getAttribute('role') === 'button' || closestInteractive(elements[i]))) {
-        optionsButtonEl = closestInteractive(elements[i]);
-        optionsButtonEl.style.display = 'none'; // Xóa/ẩn hoàn toàn nút Lựa chọn theo kế hoạch mới
-        break;
-      }
-    }
-
-    var measureButtonEl = null;
-    for (var j = 0; j < elements.length; j++) {
-      var mText = normalizeText(elements[j].textContent).toLowerCase();
-      if ((mText.indexOf('measurements') !== -1 || mText.indexOf('tracked') !== -1) && 
-          (elements[j].tagName === 'BUTTON' || elements[j].getAttribute('role') === 'button' || closestInteractive(elements[j]))) {
-        measureButtonEl = closestInteractive(elements[j]);
-        break;
-      }
-    }
-
-    var header = document.querySelector('header');
-    if (!header && measureButtonEl) {
-      var allDivs = document.querySelectorAll('div');
-      for (var k = 0; k < allDivs.length; k++) {
-        var rect = allDivs[k].getBoundingClientRect();
-        if (rect.top === 0 && rect.height > 0 && rect.height <= 80 && allDivs[k].offsetWidth === window.innerWidth) {
-           if (!allDivs[k].contains(measureButtonEl)) {
-             header = allDivs[k];
-             break;
-           }
-        }
-      }
-    }
-
-    if (header) {
-      header.style.display = 'none';
-      header.style.height = '0px';
-      header.style.minHeight = '0px';
-      header.style.padding = '0px';
-      header.style.margin = '0px';
-      header.style.border = 'none';
-      header.style.overflow = 'hidden';
-    }
-
-    if (!measureButtonEl || !measureButtonEl.parentNode) return;
-
-    var langBtnId = 'mpacs-custom-lang-btn';
-    var existingLangBtn = document.getElementById(langBtnId);
-    if (existingLangBtn && measureButtonEl.parentNode.contains(existingLangBtn)) {
-       return; // Nút ngôn ngữ đã tồn tại
-    }
-    if (existingLangBtn) {
-       existingLangBtn.parentNode.removeChild(existingLangBtn); 
-    }
-
-    var langBtn = document.createElement('div');
-    langBtn.id = langBtnId;
-    langBtn.className = measureButtonEl.className; // Kế thừa style từ toolbar
-    langBtn.style.position = 'relative';
-    langBtn.style.cursor = 'pointer';
-    langBtn.style.marginLeft = '8px';
-    langBtn.style.marginRight = '8px';
-    langBtn.style.display = 'flex';
-    langBtn.style.alignItems = 'center';
-    langBtn.style.justifyContent = 'center';
-    langBtn.style.minWidth = '80px';
-    langBtn.style.height = '100%';
-
-    var currentLang = window.localStorage.getItem('i18nextLng') || 'en-US';
-    var isVietnamese = currentLang.indexOf('vi') !== -1;
-
-    // Icon (Optional, text is fallback)
-    langBtn.innerHTML = '<span style="font-size: 13px; font-weight: 500; color: white;">' + (isVietnamese ? 'Ngôn ngữ' : 'Language') + '</span>';
-
-    var menuHtml = '<div id="mpacs-lang-menu" style="display:none; position:absolute; top:100%; right:0; background:#090C14; border:1px solid #3A3F99; border-radius:4px; z-index:99999; min-width:140px; box-shadow:0 4px 6px rgba(0,0,0,0.5); overflow:hidden; margin-top:8px;">' + 
-      '<div class="mpacs-lang-opt" data-lang="vi" style="padding:10px 15px; color:#fff; cursor:pointer; font-size:13px; background:' + (isVietnamese ? '#3A3F99' : 'transparent') + ';">Tiếng Việt</div>' + 
-      '<div class="mpacs-lang-opt" data-lang="en-US" style="padding:10px 15px; color:#fff; cursor:pointer; font-size:13px; background:' + (!isVietnamese ? '#3A3F99' : 'transparent') + ';">English</div>' + 
-    '</div>';
-
-    langBtn.insertAdjacentHTML('beforeend', menuHtml);
-
-    measureButtonEl.parentNode.insertBefore(langBtn, measureButtonEl);
-
-    var menuEl = langBtn.querySelector('#mpacs-lang-menu');
-    
-    langBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      menuEl.style.display = menuEl.style.display === 'none' ? 'block' : 'none';
-    });
-
-    document.addEventListener('click', function() {
-      if (menuEl) menuEl.style.display = 'none';
-    });
-
-    var opts = langBtn.querySelectorAll('.mpacs-lang-opt');
-    for(var optIdx = 0; optIdx < opts.length; optIdx++) {
-       opts[optIdx].addEventListener('click', function(e) {
-          e.stopPropagation();
-          var lang = this.getAttribute('data-lang');
-          
-          window.localStorage.setItem('i18nextLng', lang);
-          // Fallback OHIF v2 style key
-          window.localStorage.setItem('lang', lang);
-
-          window.location.reload();
-       });
-       
-       opts[optIdx].addEventListener('mouseenter', function() {
-           if (this.style.background === 'transparent' || this.style.background === 'rgba(0, 0, 0, 0)') {
-               this.style.background = '#1a1f4c'; // Highlight hover
-           }
-       });
-       opts[optIdx].addEventListener('mouseleave', function() {
-           var itemLang = this.getAttribute('data-lang');
-           var itemIsVi = itemLang === 'vi';
-           var currentlyVi = (window.localStorage.getItem('i18nextLng') || '').indexOf('vi') !== -1;
-           if ((itemIsVi && currentlyVi) || (!itemIsVi && !currentlyVi)) {
-               this.style.background = '#3A3F99';
-           } else {
-               this.style.background = 'transparent';
-           }
-       });
-    }
-  }
+  // Đã loại bỏ markOptionsButton theo Phương án B (giữ nút ở DOM gốc)
 
   function applyCustomization() {
     scheduled = false;
@@ -262,9 +131,9 @@ var TOP_BAR_LIMIT = 64;
       return;
     }
 
+    // markOptionsButton(); (Đã xóa để không tác động nút Lựa chọn)
     hideTextLabels();
     hideLogoAndSeparators();
-    handleLanguageButtonAndHideHeader();
   }
 
   function scheduleCustomization() {
