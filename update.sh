@@ -29,6 +29,11 @@ echo "Đã lấy mã nguồn thành công."
 
 # 3. Đồng bộ và sinh lại file cấu hình từ template nếu có cập nhật từ .env (Day 2+)
 echo -e "${YELLOW}[2/5] Đồng bộ và sinh file cấu hình thực tế từ template...${NC}"
+if [ ! -f .env ] && [ -f .env.example ]; then
+  echo -e "${YELLOW}Không tìm thấy file .env. Đang tự động tạo từ .env.example...${NC}"
+  cp .env.example .env
+fi
+
 if [ -f .env ]; then
   # Load các biến môi trường từ .env một cách an toàn
   while IFS= read -r line || [ -n "$line" ]; do
