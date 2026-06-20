@@ -11,8 +11,8 @@ SERVER_IP="localhost"
 ORTHANC_ADMIN_USER="admin"
 ORTHANC_ADMIN_PASSWORD="admin_password"
 
-if [ ! -f .env ] && [ -f .env.example ]; then
-  echo -e "${YELLOW}Không tìm thấy file .env. Đang tự động tạo từ .env.example...${NC}"
+if [ ! -f .env ] || ! grep -q "POSTGRES_PASSWORD=" .env; then
+  echo -e "${YELLOW}Không tìm thấy file .env hoặc file bị lỗi. Đang tự động tạo từ .env.example...${NC}"
   cp .env.example .env
 fi
 
