@@ -20,7 +20,7 @@ const formatDateTime = (dateStr: string, timeStr: string) => {
 
 const getOhifViewerUrl = (studyInstanceUID?: string) => {
   const currentHost = window.location.hostname;
-  return `http://${currentHost}:3000/viewer?StudyInstanceUIDs=${encodeURIComponent(studyInstanceUID || '')}`;
+  return `http://${currentHost}:3000/viewer/${encodeURIComponent(studyInstanceUID || '')}`;
 };
 
 // Modality Badge Helper

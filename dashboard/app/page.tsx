@@ -104,7 +104,7 @@ export default function DashboardPage() {
     const uid = study.MainDicomTags?.StudyInstanceUID;
     if (uid) {
       const currentHost = window.location.hostname;
-      const viewerUrl = `http://${currentHost}:3000/viewer?StudyInstanceUIDs=${encodeURIComponent(uid)}`;
+      const viewerUrl = `http://${currentHost}:3000/viewer/${encodeURIComponent(uid)}`;
       window.open(viewerUrl, '_blank');
     }
   };

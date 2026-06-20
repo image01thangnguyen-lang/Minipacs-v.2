@@ -3,6 +3,24 @@ window.config = {
   showStudyList: true,
   extensions: [],
   modes: [],
+  servers: {
+    dicomWeb: [
+      {
+        name: 'Orthanc',
+        wadoUriRoot: '/dicom-web',
+        qidoRoot: '/dicom-web',
+        wadoRoot: '/dicom-web',
+        qidoSupportsIncludeField: false,
+        imageRendering: 'wadors',
+        thumbnailRendering: 'wadors',
+        enableStudyLazyLoad: true,
+        supportsFuzzyMatching: false,
+        supportsWildcard: true,
+        dicomUploadEnabled: true,
+        omitQuotationForMultipartRequest: true,
+      },
+    ],
+  },
   dataSources: [
     {
       friendlyName: 'Orthanc DICOMweb',
