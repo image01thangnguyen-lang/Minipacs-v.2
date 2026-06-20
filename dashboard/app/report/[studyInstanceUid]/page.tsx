@@ -10,6 +10,20 @@ import { getDefaultTemplate, getReport, getStudyDetails, upsertReport } from "./
 
 const formatPatientName = (name?: string) => (name ? name.replace(/\^/g, " ") : "Unknown Patient");
 
+const getDoctorPrintInfo = (report: any) => {
+  const doctor = report?.doctor;
+  const profile = doctor?.doctorProfile;
+  if (!doctor) return {};
+
+  return {
+    doctorName: doctor.fullName,
+    doctorTitle: profile?.title || "",
+    doctorSpecialty: profile?.specialty || "",
+    doctorLicenseNumber: profile?.licenseNumber || "",
+    doctorSignatureImagePath: profile?.signatureImagePath || "",
+  };
+};
+
 const formatDicomDateTime = (date?: string, time?: string) => {
   if (!date) return "-";
   const dateValue = date.replace(/(\d{4})(\d{2})(\d{2})/, "$3/$2/$1");
@@ -63,6 +77,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
   const [conclusion, setConclusion] = useState("");
   const [recommendation, setRecommendation] = useState("");
   const [studyStatus, setStudyStatus] = useState<string>("READY_TO_READ");
+  const [doctorPrintInfo, setDoctorPrintInfo] = useState<Record<string, string>>({});
   const [templateHtml, setTemplateHtml] = useState<string>("");
   const [viewerLink, setViewerLink] = useState("");
 
@@ -86,6 +101,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
           setConclusion(report.conclusion || "");
           setRecommendation(report.recommendation || "");
           if (report.imagingStudy?.status) setStudyStatus(report.imagingStudy.status);
+          setDoctorPrintInfo(getDoctorPrintInfo(report));
         }
 
         if (studyInfo) {
@@ -121,6 +137,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
 
       if (result.success) {
         setStudyStatus(status === "COMPLETED" ? "FINALIZED" : "READING");
+        if (result.report) setDoctorPrintInfo(getDoctorPrintInfo(result.report));
       }
     } catch (error) {
       console.error("Failed to save report", error);
@@ -262,6 +279,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
           reportContent: findings,
           conclusion,
           recommendation,
+          ...doctorPrintInfo,
         }}
       />
     </div>

@@ -13,13 +13,15 @@ async function main() {
     update: {
       password: hashedPassword,
       role: 'ADMIN',
-      fullName: 'System Admin'
+      fullName: 'System Admin',
+      isActive: true
     },
     create: {
       username,
       password: hashedPassword,
       role: 'ADMIN',
-      fullName: 'System Admin'
+      fullName: 'System Admin',
+      isActive: true
     }
   });
 

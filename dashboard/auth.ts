@@ -25,6 +25,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Tài khoản không tồn tại");
         }
 
+        if (!user.isActive) {
+          throw new Error("Tài khoản đã bị khóa");
+        }
+
         const isMatch = await bcrypt.compare(credentials.password as string, user.password);
         if (!isMatch) {
           throw new Error("Mật khẩu không chính xác");

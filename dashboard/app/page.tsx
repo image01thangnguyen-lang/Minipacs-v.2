@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CheckCircle,
@@ -11,6 +12,7 @@ import {
   Printer,
   Save,
   Search,
+  UserCog,
   X,
 } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
@@ -28,6 +30,20 @@ const fmtName = (name?: string) => (name ? name.replace(/\^/g, " ") : "Unknown P
 const fmtText = (value?: string) => value || "-";
 const fmtSex = (sex?: string) => (sex === "M" ? "Nam" : sex === "F" ? "Nữ" : sex || "?");
 const fmtAge = (age?: string) => (age ? age.replace(/\D/g, "") : "?");
+
+const getDoctorPrintInfo = (report: any) => {
+  const doctor = report?.doctor;
+  const profile = doctor?.doctorProfile;
+  if (!doctor) return {};
+
+  return {
+    doctorName: doctor.fullName,
+    doctorTitle: profile?.title || "",
+    doctorSpecialty: profile?.specialty || "",
+    doctorLicenseNumber: profile?.licenseNumber || "",
+    doctorSignatureImagePath: profile?.signatureImagePath || "",
+  };
+};
 
 const fmtDateTime = (date?: string, time?: string) => {
   if (!date) return "-";
@@ -105,6 +121,7 @@ export default function DashboardPage() {
   const [conclusion, setConclusion] = useState("");
   const [recommendation, setRecommendation] = useState("");
   const [studyStatus, setStudyStatus] = useState("READY_TO_READ");
+  const [doctorPrintInfo, setDoctorPrintInfo] = useState<Record<string, string>>({});
   const [templateHtml, setTemplateHtml] = useState("");
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -179,6 +196,7 @@ export default function DashboardPage() {
       setConclusion("");
       setRecommendation("");
       setStudyStatus(study.WorkflowStatus || "READY_TO_READ");
+      setDoctorPrintInfo({});
 
       const [report, details, template] = await Promise.all([
         getReport(uid),
@@ -191,6 +209,7 @@ export default function DashboardPage() {
         setConclusion(report.conclusion || "");
         setRecommendation(report.recommendation || "");
         if (report.imagingStudy?.status) setStudyStatus(report.imagingStudy.status);
+        setDoctorPrintInfo(getDoctorPrintInfo(report));
       }
 
       if (details) {
@@ -228,6 +247,7 @@ export default function DashboardPage() {
       if (result.success) {
         const nextStudyStatus = status === "COMPLETED" ? "FINALIZED" : "READING";
         setStudyStatus(nextStudyStatus);
+        if (result.report) setDoctorPrintInfo(getDoctorPrintInfo(result.report));
         setStudies(current =>
           current.map(study => (
             study.MainDicomTags?.StudyInstanceUID === uid
@@ -271,6 +291,13 @@ export default function DashboardPage() {
               </p>
             </div>
             <div className="flex items-center gap-1">
+              <Link
+                href="/admin/users"
+                className="rounded border border-vin-border bg-vin-panel p-1 text-vin-muted transition hover:border-vin-accent hover:text-vin-text"
+                title="Quản lý người dùng"
+              >
+                <UserCog className="h-3.5 w-3.5" />
+              </Link>
               <button
                 onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
                 disabled={currentPage === 1}
@@ -586,6 +613,7 @@ export default function DashboardPage() {
                 reportContent: findings,
                 conclusion,
                 recommendation,
+                ...doctorPrintInfo,
               }}
             />
           </>

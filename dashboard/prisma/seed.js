@@ -14,12 +14,14 @@ async function main() {
       password: hashedPassword,
       role: 'ADMIN',
       fullName: 'System Admin',
+      isActive: true,
     },
     create: {
       username,
       password: hashedPassword,
       role: 'ADMIN',
       fullName: 'System Admin',
+      isActive: true,
     },
   });
 

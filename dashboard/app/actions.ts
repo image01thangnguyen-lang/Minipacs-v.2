@@ -2,6 +2,7 @@
 
 import { prisma } from './db';
 import { syncOrthancStudyToRis, updateStudyStatusForReport } from '@/lib/studyStatus';
+import { auth } from '@/auth';
 
 /**
  * Server Action: Lấy danh sách bệnh nhân/studies từ Orthanc.
@@ -137,6 +138,13 @@ export async function saveReportAction(data: {
 
   try {
     // 2. Tiến hành UPSERT thông tin báo cáo
+    const session = await auth();
+    const signingDoctorId = data.doctorId || (
+      session?.user?.id && ["DOCTOR", "ADMIN"].includes(session.user.role)
+        ? session.user.id
+        : undefined
+    );
+
     const report = await prisma.report.upsert({
       where: {
         studyInstanceUid: data.studyInstanceUid
@@ -147,7 +155,7 @@ export async function saveReportAction(data: {
         recommendation: data.recommendation || '',
         status: data.status,
         // Nếu truyền doctorId thì liên kết với tài khoản bác sĩ tương ứng
-        ...(data.doctorId ? { doctorId: data.doctorId } : {})
+        ...(signingDoctorId ? { doctorId: signingDoctorId } : {})
       },
       create: {
         studyInstanceUid: data.studyInstanceUid,
@@ -155,7 +163,7 @@ export async function saveReportAction(data: {
         conclusion: data.conclusion || '',
         recommendation: data.recommendation || '',
         status: data.status,
-        ...(data.doctorId ? { doctorId: data.doctorId } : {})
+        ...(signingDoctorId ? { doctorId: signingDoctorId } : {})
       }
     });
 

@@ -9,6 +9,11 @@ export interface PrintContext {
   reportContent: string;
   conclusion: string;
   recommendation: string;
+  doctorName?: string;
+  doctorTitle?: string;
+  doctorSpecialty?: string;
+  doctorLicenseNumber?: string;
+  doctorSignatureImagePath?: string;
 }
 
 interface PrintTemplateViewerProps {
@@ -18,6 +23,32 @@ interface PrintTemplateViewerProps {
 
 export const PrintTemplateViewer = forwardRef<HTMLDivElement, PrintTemplateViewerProps>(
   ({ templateHtml, context }, ref) => {
+    const escapeHtml = (value?: string) =>
+      (value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+    const buildDoctorSignatureBlock = (data: PrintContext) => {
+      if (!data.doctorName && !data.doctorSignatureImagePath) return "";
+
+      const title = [data.doctorTitle, data.doctorSpecialty].filter(Boolean).join(" - ");
+      const signatureImage = data.doctorSignatureImagePath
+        ? `<img src="${escapeHtml(data.doctorSignatureImagePath)}" alt="Chu ky bac si" class="doctor-signature-image" />`
+        : "";
+
+      return `
+        <div class="doctor-signature-block">
+          <div class="doctor-signature-title">Bác sĩ đọc kết quả</div>
+          ${signatureImage}
+          <div class="doctor-signature-name">${escapeHtml(data.doctorName)}</div>
+          ${title ? `<div class="doctor-signature-meta">${escapeHtml(title)}</div>` : ""}
+          ${data.doctorLicenseNumber ? `<div class="doctor-signature-meta">Số CCHN: ${escapeHtml(data.doctorLicenseNumber)}</div>` : ""}
+        </div>
+      `;
+    };
     
     // Parse function using regex replacement
     const generatePrintHtml = (html: string, data: PrintContext) => {
@@ -29,7 +60,17 @@ export const PrintTemplateViewer = forwardRef<HTMLDivElement, PrintTemplateViewe
       parsed = parsed.replace(/{{REPORT_CONTENT}}/g, data.reportContent || '');
       parsed = parsed.replace(/{{CONCLUSION}}/g, data.conclusion || '');
       parsed = parsed.replace(/{{RECOMMENDATION}}/g, data.recommendation || '');
-      return parsed;
+      parsed = parsed.replace(/{{DOCTOR_NAME}}/g, escapeHtml(data.doctorName));
+      parsed = parsed.replace(/{{DOCTOR_TITLE}}/g, escapeHtml(data.doctorTitle));
+      parsed = parsed.replace(/{{DOCTOR_SPECIALTY}}/g, escapeHtml(data.doctorSpecialty));
+      parsed = parsed.replace(/{{DOCTOR_LICENSE}}/g, escapeHtml(data.doctorLicenseNumber));
+      parsed = parsed.replace(
+        /{{DOCTOR_SIGNATURE}}/g,
+        data.doctorSignatureImagePath
+          ? `<img src="${escapeHtml(data.doctorSignatureImagePath)}" alt="Chu ky bac si" class="doctor-signature-image" />`
+          : ''
+      );
+      return `${parsed}${buildDoctorSignatureBlock(data)}`;
     };
 
     const finalHtml = generatePrintHtml(templateHtml, context);
@@ -67,6 +108,32 @@ export const PrintTemplateViewer = forwardRef<HTMLDivElement, PrintTemplateViewe
           .print-content h1 { font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5em; }
           .print-content h2 { font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5em; }
           .print-content h3 { font-size: 1.125rem; font-weight: bold; margin-bottom: 0.5em; }
+          .doctor-signature-block {
+            margin-top: 36px;
+            margin-left: auto;
+            width: 240px;
+            text-align: center;
+            page-break-inside: avoid;
+          }
+          .doctor-signature-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+          }
+          .doctor-signature-image {
+            display: block;
+            max-width: 180px;
+            max-height: 80px;
+            object-fit: contain;
+            margin: 0 auto 4px;
+          }
+          .doctor-signature-name {
+            font-weight: 700;
+            text-transform: uppercase;
+          }
+          .doctor-signature-meta {
+            font-size: 0.875rem;
+            color: #333;
+          }
           .print-content blockquote {
             border-left: 3px solid #ccc;
             margin: 1.5em 10px;

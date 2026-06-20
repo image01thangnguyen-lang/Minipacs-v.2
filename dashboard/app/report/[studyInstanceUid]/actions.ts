@@ -2,6 +2,7 @@
 
 import { prisma } from '../../db';
 import { syncOrthancStudyToRis, updateStudyStatusForReport } from '@/lib/studyStatus';
+import { auth } from '@/auth';
 
 export async function getStudyDetails(studyInstanceUID: string) {
   const orthancUrl = process.env.ORTHANC_API_URL || 'http://orthanc:8042';
@@ -53,7 +54,12 @@ export async function getReport(studyInstanceUid: string) {
   try {
     const report = await prisma.report.findUnique({
       where: { studyInstanceUid },
-      include: { imagingStudy: true }
+      include: {
+        imagingStudy: true,
+        doctor: {
+          include: { doctorProfile: true }
+        }
+      }
     });
     return report;
   } catch (err) {
@@ -69,20 +75,32 @@ export async function upsertReport(studyInstanceUid: string, data: {
   recommendation?: string
 }) {
   try {
+    const session = await auth();
+    const doctorId = session?.user?.id && ["DOCTOR", "ADMIN"].includes(session.user.role)
+      ? session.user.id
+      : undefined;
+
     const report = await prisma.report.upsert({
       where: { studyInstanceUid },
       update: {
         status: data.status,
         findings: data.findings,
         conclusion: data.conclusion,
-        recommendation: data.recommendation
+        recommendation: data.recommendation,
+        ...(doctorId ? { doctorId } : {})
       },
       create: {
         studyInstanceUid,
         status: data.status,
         findings: data.findings,
         conclusion: data.conclusion,
-        recommendation: data.recommendation
+        recommendation: data.recommendation,
+        ...(doctorId ? { doctorId } : {})
+      },
+      include: {
+        doctor: {
+          include: { doctorProfile: true }
+        }
       }
     });
     await updateStudyStatusForReport(studyInstanceUid, data.status);

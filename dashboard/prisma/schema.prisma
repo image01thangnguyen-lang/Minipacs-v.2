@@ -69,6 +69,7 @@ model Report {
 enum Role {
   ADMIN
   DOCTOR
+  TECHNICIAN
   RECEPTION
 }
 
@@ -78,14 +79,31 @@ model User {
   password  String
   fullName  String
   role      Role     @default(DOCTOR)
+  isActive  Boolean  @default(true)
   
   // Relation back to reports
   reports   Report[] @relation("DoctorReports")
+  doctorProfile DoctorProfile?
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+model DoctorProfile {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title              String?
+  specialty          String?
+  licenseNumber      String?
+  signatureImagePath String?
+  isSigningDoctor    Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("doctor_profiles")
 }
 
 model PrintTemplate {
