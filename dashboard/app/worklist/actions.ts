@@ -1,84 +1,285 @@
 "use server";
 
-import { prisma } from "@/app/db"; // Assuming this exports Prisma client
+import { auth } from "@/auth";
+import { prisma } from "@/app/db";
 import { upsertWorklistStudy } from "@/lib/studyStatus";
 import fs from "fs/promises";
 import path from "path";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
+
+const worklistRoles = new Set(["ADMIN", "RECEPTION", "TECHNICIAN"]);
+const priorityValues = ["ROUTINE", "URGENT", "STAT"] as const;
+const orderStatusValues = ["REQUESTED", "SCHEDULED", "ARRIVED", "CANCELLED", "EXPIRED"] as const;
+
+const WORKLIST_DIR =
+  process.env.NODE_ENV === "production"
+    ? "/app/pacs_data/worklists"
+    : path.resolve(process.cwd(), "../pacs_data/worklists");
 
 export const worklistSchema = z.object({
   patientName: z.string().min(1, "Vui lòng nhập tên bệnh nhân"),
   patientId: z.string().min(1, "Vui lòng nhập mã bệnh nhân"),
   dob: z.string().optional(),
   gender: z.string().optional(),
+  phone: z.string().optional(),
   referringPhysician: z.string().optional(),
   modality: z.string().min(1, "Vui lòng chọn loại máy chụp"),
+  bodyPart: z.string().optional(),
+  procedureCode: z.string().optional(),
+  procedureDescription: z.string().optional(),
+  priority: z.enum(priorityValues).default("ROUTINE"),
+  scheduledDateTime: z.string().optional(),
+  scheduledStationAeTitle: z.string().optional(),
+  scheduledStationName: z.string().optional(),
+  notes: z.string().optional(),
 });
 
-export async function createWorklistAction(data: z.infer<typeof worklistSchema>) {
+type WorklistInput = z.infer<typeof worklistSchema>;
+
+function readDateRange(date?: string) {
+  const base = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(`${date}T00:00:00`) : new Date();
+  const start = new Date(base);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 1);
+  return { start, end };
+}
+
+async function requireWorklistAccess() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+  if (!worklistRoles.has(session.user.role)) redirect("/");
+  return session.user;
+}
+
+function cleanText(value?: string | null) {
+  return (value || "").trim();
+}
+
+function toDicomDate(date?: Date | null) {
+  if (!date) return "";
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}${month}${day}`;
+}
+
+function toDicomTime(date?: Date | null) {
+  if (!date) return "000000.000";
+  const hour = `${date.getHours()}`.padStart(2, "0");
+  const minute = `${date.getMinutes()}`.padStart(2, "0");
+  const second = `${date.getSeconds()}`.padStart(2, "0");
+  return `${hour}${minute}${second}.000`;
+}
+
+function generateAccessionNumber() {
+  const now = new Date();
+  const ymd = `${now.getFullYear()}${`${now.getMonth() + 1}`.padStart(2, "0")}${`${now.getDate()}`.padStart(2, "0")}`;
+  const hms = `${`${now.getHours()}`.padStart(2, "0")}${`${now.getMinutes()}`.padStart(2, "0")}${`${now.getSeconds()}`.padStart(2, "0")}`;
+  return `ACC${ymd}${hms}${Math.floor(Math.random() * 1000).toString().padStart(3, "0")}`;
+}
+
+function generateStudyInstanceUid(accessionNumber: string) {
+  const numeric = `${Date.now()}${accessionNumber.replace(/\D/g, "").slice(-8)}`;
+  return `1.2.826.0.1.3680043.10.9999.${numeric}`;
+}
+
+function buildWorklistDicomJson(order: {
+  patientName: string;
+  patientId: string;
+  dob?: Date | null;
+  gender?: string | null;
+  phone?: string | null;
+  referringPhysician?: string | null;
+  modality: string;
+  bodyPart?: string | null;
+  procedureCode?: string | null;
+  procedureDescription?: string | null;
+  priority?: string | null;
+  scheduledDate: Date;
+  scheduledStationAeTitle?: string | null;
+  scheduledStationName?: string | null;
+  accessionNumber: string;
+  requestedStudyInstanceUid?: string | null;
+}) {
+  const procedureDescription = cleanText(order.procedureDescription) || `Study_${order.accessionNumber}`;
+  const stationAe = cleanText(order.scheduledStationAeTitle) || "AETITLE";
+
+  return {
+    "0010,0010": order.patientName,
+    "0010,0020": order.patientId,
+    "0010,0030": toDicomDate(order.dob),
+    "0010,0040": order.gender || "O",
+    "0010,2154": cleanText(order.phone),
+    "0008,0050": order.accessionNumber,
+    "0008,0090": cleanText(order.referringPhysician),
+    "0018,0015": cleanText(order.bodyPart),
+    "0020,000D": order.requestedStudyInstanceUid,
+    "0032,1060": procedureDescription,
+    "0040,1001": order.accessionNumber,
+    "0040,1003": order.priority || "ROUTINE",
+    "0040,0100": [
+      {
+        "0008,0060": order.modality,
+        "0040,0001": stationAe,
+        "0040,0002": toDicomDate(order.scheduledDate),
+        "0040,0003": toDicomTime(order.scheduledDate),
+        "0040,0006": cleanText(order.referringPhysician),
+        "0040,0007": procedureDescription,
+        "0040,0009": `STEP_${order.accessionNumber}`,
+        "0040,0010": cleanText(order.scheduledStationName),
+      },
+    ],
+    "0032,1064": order.procedureCode
+      ? [
+          {
+            "0008,0100": order.procedureCode,
+            "0008,0104": procedureDescription,
+          },
+        ]
+      : [],
+  };
+}
+
+async function writeWorklistFile(order: any) {
+  await fs.mkdir(WORKLIST_DIR, { recursive: true });
+  const filename = `${order.accessionNumber}.wl.json`;
+  const filePath = path.join(WORKLIST_DIR, filename);
+  await fs.writeFile(filePath, JSON.stringify(buildWorklistDicomJson(order), null, 2), "utf8");
+  return filename;
+}
+
+async function removeWorklistFile(filename?: string | null) {
+  if (!filename || !/^[a-zA-Z0-9_.-]+\.wl\.json$/.test(filename)) return;
+  const resolvedPath = path.resolve(WORKLIST_DIR, filename);
+  if (!resolvedPath.startsWith(path.resolve(WORKLIST_DIR))) return;
+  await fs.unlink(resolvedPath).catch(() => undefined);
+}
+
+function serializeOrder(order: any) {
+  const study = order.imagingStudies?.[0] || null;
+  return {
+    id: order.id,
+    patientName: order.patientName,
+    patientId: order.patientId,
+    dob: order.dob?.toISOString() || null,
+    gender: order.gender || "",
+    phone: order.phone || "",
+    referringPhysician: order.referringPhysician || "",
+    modality: order.modality,
+    bodyPart: order.bodyPart || "",
+    procedureCode: order.procedureCode || "",
+    procedureDescription: order.procedureDescription || "",
+    priority: order.priority || "ROUTINE",
+    scheduledStationAeTitle: order.scheduledStationAeTitle || "",
+    scheduledStationName: order.scheduledStationName || "",
+    accessionNumber: order.accessionNumber,
+    requestedStudyInstanceUid: order.requestedStudyInstanceUid || "",
+    scheduledDate: order.scheduledDate?.toISOString() || null,
+    arrivedAt: order.arrivedAt?.toISOString() || null,
+    cancelledAt: order.cancelledAt?.toISOString() || null,
+    notes: order.notes || "",
+    orderStatus: order.orderStatus,
+    legacyStatus: order.status,
+    createdAt: order.createdAt?.toISOString() || null,
+    updatedAt: order.updatedAt?.toISOString() || null,
+    studyStatus: study?.status || null,
+    orthancStudyId: study?.orthancStudyId || null,
+    studyInstanceUid: study?.studyInstanceUid || order.requestedStudyInstanceUid || "",
+  };
+}
+
+export async function getWorklistOrdersAction(filters: {
+  date?: string;
+  status?: string;
+  search?: string;
+} = {}) {
+  await requireWorklistAccess();
+  const { start, end } = readDateRange(filters.date);
+  const status = orderStatusValues.includes(filters.status as any) ? filters.status : undefined;
+  const search = cleanText(filters.search);
+
+  const where: any = {
+    scheduledDate: {
+      gte: start,
+      lt: end,
+    },
+  };
+
+  if (status) where.orderStatus = status;
+  if (search) {
+    where.OR = [
+      { patientName: { contains: search, mode: "insensitive" } },
+      { patientId: { contains: search, mode: "insensitive" } },
+      { accessionNumber: { contains: search, mode: "insensitive" } },
+      { procedureDescription: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  const orders = await prisma.worklistOrder.findMany({
+    where,
+    include: {
+      imagingStudies: {
+        select: {
+          status: true,
+          orthancStudyId: true,
+          studyInstanceUid: true,
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 1,
+      },
+    },
+    orderBy: [{ priority: "desc" }, { scheduledDate: "asc" }, { createdAt: "asc" }],
+  });
+
+  return orders.map(serializeOrder);
+}
+
+export async function createWorklistAction(data: WorklistInput) {
+  const actor = await requireWorklistAccess();
+
   try {
     const validatedData = worklistSchema.parse(data);
-    
-    // Generate unique Accession Number
-    const timestamp = new Date().getTime().toString().slice(-6);
-    const accessionNumber = `ACC${timestamp}${Math.floor(Math.random() * 1000)}`;
-    const studyInstanceUid = "1.2.840.113619.2." + timestamp + "." + accessionNumber;
-    
-    // Convert DOB if necessary
-    const dobDate = validatedData.dob ? new Date(validatedData.dob) : new Date("1900-01-01");
-    // Format DOB for DICOM (YYYYMMDD)
-    const dicomDob = validatedData.dob ? validatedData.dob.replace(/-/g, "") : "";
+    const accessionNumber = generateAccessionNumber();
+    const studyInstanceUid = generateStudyInstanceUid(accessionNumber);
+    const scheduledDate = validatedData.scheduledDateTime
+      ? new Date(validatedData.scheduledDateTime)
+      : new Date();
+    const dobDate = validatedData.dob ? new Date(validatedData.dob) : null;
+    const procedureDescription = cleanText(validatedData.procedureDescription) || `${validatedData.modality} ${cleanText(validatedData.bodyPart) || "Routine procedure"}`;
 
     const order = await prisma.worklistOrder.create({
       data: {
         patientName: validatedData.patientName,
         patientId: validatedData.patientId,
         dob: dobDate,
-        gender: validatedData.gender,
-        referringPhysician: validatedData.referringPhysician,
+        gender: validatedData.gender || "O",
+        phone: cleanText(validatedData.phone) || null,
+        referringPhysician: cleanText(validatedData.referringPhysician) || null,
         modality: validatedData.modality,
+        bodyPart: cleanText(validatedData.bodyPart) || null,
+        procedureCode: cleanText(validatedData.procedureCode) || null,
+        procedureDescription,
+        priority: validatedData.priority || "ROUTINE",
+        scheduledStationAeTitle: cleanText(validatedData.scheduledStationAeTitle) || "AETITLE",
+        scheduledStationName: cleanText(validatedData.scheduledStationName) || null,
         accessionNumber,
         requestedStudyInstanceUid: studyInstanceUid,
+        scheduledDate,
+        notes: cleanText(validatedData.notes) || null,
         orderStatus: "SCHEDULED",
-      }
+        status: "SCHEDULED",
+      },
     });
 
-    // Generate JSON for Orthanc
-    // Orthanc Worklist Plugin uses specific tags
-    const dicomJson = {
-        "0010,0010": validatedData.patientName,   // PatientName
-        "0010,0020": validatedData.patientId,     // PatientID
-        "0010,0030": dicomDob,                   // PatientBirthDate
-        "0010,0040": validatedData.gender || "O", // PatientSex
-        "0008,0050": accessionNumber,            // AccessionNumber
-        "0008,0090": validatedData.referringPhysician || "", // ReferringPhysicianName
-        "0040,0100": [{                          // ScheduledProcedureStepSequence
-          "0008,0060": validatedData.modality,   // Modality
-          "0040,0001": "AETITLE",                // ScheduledStationAETitle
-          "0040,0002": new Date().toISOString().slice(0,10).replace(/-/g, ""), // ScheduledProcedureStepStartDate
-          "0040,0003": "000000.000",             // ScheduledProcedureStepStartTime
-          "0040,0006": "Dr. " + (validatedData.referringPhysician || ""), // ScheduledPerformingPhysicianName
-          "0040,0007": "Study_" + accessionNumber, // ScheduledProcedureStepDescription
-          "0040,0009": "STEP_" + accessionNumber // ScheduledProcedureStepID
-        }],
-        "0020,000D": studyInstanceUid,          // StudyInstanceUID
-        "0040,1001": accessionNumber,            // RequestedProcedureID
-        "0032,1060": "Routine procedure"         // RequestedProcedureDescription
-    };
-
-    // Save to pacs_data/worklists inside docker (or locally!)
-    // Assuming workspace root is mapped to ./pacs_data/worklists in compose,
-    // the container mounts it to /app/pacs_data/worklists.
-    // In dev mode (Next.js run), it's inside root folder.
-    const rootPath = process.cwd();
-    const worklistsDir = path.join(rootPath, "pacs_data", "worklists");
-
-    // Ensure dir exists
-    await fs.mkdir(worklistsDir, { recursive: true });
-
-    // Save JSON file
-    const filePath = path.join(worklistsDir, `${accessionNumber}.wl.json`);
-    await fs.writeFile(filePath, JSON.stringify(dicomJson, null, 2), "utf8");
+    const worklistFilePath = await writeWorklistFile(order);
+    const savedOrder = await prisma.worklistOrder.update({
+      where: { id: order.id },
+      data: { worklistFilePath },
+      include: { imagingStudies: true },
+    });
 
     await upsertWorklistStudy({
       studyInstanceUid,
@@ -87,13 +288,126 @@ export async function createWorklistAction(data: z.infer<typeof worklistSchema>)
       patientId: validatedData.patientId,
       patientName: validatedData.patientName,
       modality: validatedData.modality,
-      studyDescription: "Study_" + accessionNumber,
-      scheduledAt: order.scheduledDate,
+      bodyPart: cleanText(validatedData.bodyPart),
+      studyDescription: procedureDescription,
+      scheduledAt: scheduledDate,
     });
 
-    return { success: true, accessionNumber };
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: actor.id,
+        action: "WORKLIST_ORDER_CREATED",
+        entityType: "WorklistOrder",
+        entityId: order.id,
+        message: `Created worklist order ${accessionNumber}`,
+        metadataJson: JSON.stringify({
+          accessionNumber,
+          modality: validatedData.modality,
+          priority: validatedData.priority,
+          stationAe: savedOrder.scheduledStationAeTitle,
+        }),
+      },
+    });
+
+    revalidatePath("/worklist");
+    return { success: true, order: serializeOrder(savedOrder), accessionNumber };
   } catch (err: any) {
     console.error("Error creating worklist:", err);
     return { success: false, error: err.message };
   }
+}
+
+export async function checkInWorklistOrderAction(orderId: string) {
+  const actor = await requireWorklistAccess();
+  const order = await prisma.worklistOrder.update({
+    where: { id: orderId },
+    data: {
+      orderStatus: "ARRIVED",
+      status: "ARRIVED",
+      arrivedAt: new Date(),
+    },
+    include: { imagingStudies: true },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      actorUserId: actor.id,
+      action: "WORKLIST_ORDER_CHECKED_IN",
+      entityType: "WorklistOrder",
+      entityId: order.id,
+      message: `Checked in worklist order ${order.accessionNumber}`,
+    },
+  });
+
+  revalidatePath("/worklist");
+  return { success: true, order: serializeOrder(order) };
+}
+
+export async function cancelWorklistOrderAction(orderId: string) {
+  const actor = await requireWorklistAccess();
+  const existing = await prisma.worklistOrder.findUnique({
+    where: { id: orderId },
+  });
+
+  if (!existing) return { success: false, error: "Order không tồn tại." };
+
+  await removeWorklistFile(existing.worklistFilePath);
+  const order = await prisma.worklistOrder.update({
+    where: { id: orderId },
+    data: {
+      orderStatus: "CANCELLED",
+      status: "CANCELLED",
+      cancelledAt: new Date(),
+      worklistFilePath: null,
+    },
+    include: { imagingStudies: true },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      actorUserId: actor.id,
+      action: "WORKLIST_ORDER_CANCELLED",
+      entityType: "WorklistOrder",
+      entityId: order.id,
+      message: `Cancelled worklist order ${order.accessionNumber}`,
+    },
+  });
+
+  revalidatePath("/worklist");
+  return { success: true, order: serializeOrder(order) };
+}
+
+export async function regenerateWorklistFileAction(orderId: string) {
+  const actor = await requireWorklistAccess();
+  const existing = await prisma.worklistOrder.findUnique({
+    where: { id: orderId },
+  });
+
+  if (!existing) return { success: false, error: "Order không tồn tại." };
+  if (existing.orderStatus === "CANCELLED") return { success: false, error: "Order đã hủy, không tạo lại worklist." };
+
+  const worklistFilePath = await writeWorklistFile(existing);
+  const order = await prisma.worklistOrder.update({
+    where: { id: orderId },
+    data: {
+      worklistFilePath,
+      orderStatus: existing.orderStatus === "REQUESTED" ? "SCHEDULED" : existing.orderStatus,
+      status: existing.orderStatus === "REQUESTED" ? "SCHEDULED" : existing.status,
+    },
+    include: { imagingStudies: true },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      actorUserId: actor.id,
+      action: "WORKLIST_FILE_REGENERATED",
+      entityType: "WorklistOrder",
+      entityId: order.id,
+      message: `Regenerated worklist file ${order.accessionNumber}`,
+      metadataJson: JSON.stringify({ worklistFilePath }),
+    },
+  });
+
+  revalidatePath("/worklist");
+  return { success: true, order: serializeOrder(order) };
 }

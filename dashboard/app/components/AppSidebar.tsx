@@ -9,7 +9,7 @@ type ActiveMenu = "studies" | "worklist" | "users" | "templates" | "clinic" | "p
 
 const mainMenuItems = [
   { key: "studies", label: "Ca chụp", href: "/", icon: LayoutDashboard },
-  { key: "worklist", label: "Tạo ca", href: "/worklist/new", icon: FileText },
+  { key: "worklist", label: "Tiếp đón", href: "/worklist", icon: FileText },
   { key: "users", label: "Người dùng", href: "/admin/users", icon: UserCog },
   { key: "templates", label: "Mẫu báo cáo", href: "/settings/report-templates", icon: FileText },
   { key: "clinic", label: "Phòng khám", href: "/settings/clinic-profile", icon: Building2 },

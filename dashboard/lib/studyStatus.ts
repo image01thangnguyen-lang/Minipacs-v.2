@@ -36,6 +36,7 @@ type WorklistStudyInput = {
   patientId: string;
   patientName: string;
   modality: string;
+  bodyPart?: string;
   studyDescription?: string;
   scheduledAt?: Date;
 };
@@ -372,6 +373,7 @@ export async function upsertWorklistStudy(input: WorklistStudyInput) {
           patientId: input.patientId,
           patientName: input.patientName,
           modality: input.modality,
+          bodyPart: input.bodyPart,
           studyDescription: input.studyDescription,
           orderId: input.orderId,
           scheduledAt: input.scheduledAt,
@@ -402,6 +404,7 @@ export async function upsertWorklistStudy(input: WorklistStudyInput) {
         patientId: input.patientId || existing.patientId,
         patientName: input.patientName || existing.patientName,
         modality: input.modality || existing.modality,
+        bodyPart: input.bodyPart || existing.bodyPart,
         studyDescription: input.studyDescription || existing.studyDescription,
         orderId: existing.orderId || input.orderId,
         scheduledAt: existing.scheduledAt || input.scheduledAt,

@@ -169,11 +169,22 @@ model WorklistOrder {
   patientId        String
   dob              DateTime?
   gender           String?   // M, F, O
+  phone            String?
   referringPhysician String?
   modality         String
+  bodyPart         String?
+  procedureCode    String?
+  procedureDescription String?
+  priority         String   @default("ROUTINE")
+  scheduledStationAeTitle String?
+  scheduledStationName String?
   accessionNumber  String   @unique
   requestedStudyInstanceUid String?
   scheduledDate    DateTime @default(now())
+  arrivedAt        DateTime?
+  cancelledAt      DateTime?
+  notes            String?  @db.Text
+  worklistFilePath String?
   
   // Legacy string status kept for compatibility with existing data.
   status           String   @default("PENDING")
@@ -184,6 +195,10 @@ model WorklistOrder {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  @@index([scheduledDate])
+  @@index([patientId])
+  @@index([orderStatus])
+  @@index([modality])
   @@map("worklist_orders")
 }
 
