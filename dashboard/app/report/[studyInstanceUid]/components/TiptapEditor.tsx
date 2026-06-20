@@ -25,7 +25,7 @@ import {
   Undo2,
   Unlink,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 function ToolbarButton({
   active,
@@ -59,6 +59,22 @@ function ToolbarDivider() {
   return <div className="mx-1 h-4 w-px bg-vin-border" />;
 }
 
+type ShortcutSuggestionState = {
+  activeIndex: number;
+  matches: ReportTemplateOption[];
+  query: string;
+  range: {
+    from: number;
+    to: number;
+  };
+};
+
+function normalizeShortcut(value?: string | null) {
+  const shortcut = (value || '').trim().toLowerCase();
+  if (!shortcut) return '';
+  return shortcut.startsWith('/') ? shortcut : `/${shortcut}`;
+}
+
 export default function TiptapEditor({
   onShortcutApply,
   value,
@@ -72,23 +88,52 @@ export default function TiptapEditor({
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<any>(null);
-  const shortcutMapRef = useRef<Map<string, ReportTemplateOption>>(new Map());
+  const shortcutTemplatesRef = useRef<ReportTemplateOption[]>([]);
   const onShortcutApplyRef = useRef<typeof onShortcutApply>(onShortcutApply);
+  const shortcutSuggestionRef = useRef<ShortcutSuggestionState | null>(null);
+  const [shortcutSuggestion, setShortcutSuggestionState] = useState<ShortcutSuggestionState | null>(null);
+
+  const setShortcutSuggestion = useCallback((next: ShortcutSuggestionState | null) => {
+    shortcutSuggestionRef.current = next;
+    setShortcutSuggestionState(next);
+  }, []);
 
   useEffect(() => {
-    const shortcutMap = new Map<string, ReportTemplateOption>();
-    shortcutTemplates.forEach(template => {
-      const rawShortcut = (template.shortcut || '').trim().toLowerCase();
-      if (!rawShortcut) return;
-      const shortcut = rawShortcut.startsWith('/') ? rawShortcut : `/${rawShortcut}`;
-      shortcutMap.set(shortcut, template);
-    });
-    shortcutMapRef.current = shortcutMap;
+    shortcutTemplatesRef.current = shortcutTemplates;
   }, [shortcutTemplates]);
 
   useEffect(() => {
     onShortcutApplyRef.current = onShortcutApply;
   }, [onShortcutApply]);
+
+  const findShortcutMatches = useCallback((query: string) => {
+    const normalizedQuery = normalizeShortcut(query);
+    const queryText = normalizedQuery.replace(/^\//, '');
+
+    return shortcutTemplatesRef.current
+      .filter(template => {
+        const shortcut = normalizeShortcut(template.shortcut);
+        if (!shortcut) return false;
+
+        const name = (template.name || '').toLowerCase();
+        return (
+          shortcut === normalizedQuery ||
+          shortcut.startsWith(normalizedQuery) ||
+          shortcut.includes(normalizedQuery) ||
+          (queryText.length > 0 && name.includes(queryText))
+        );
+      })
+      .sort((a, b) => {
+        const aShortcut = normalizeShortcut(a.shortcut);
+        const bShortcut = normalizeShortcut(b.shortcut);
+        const aExact = aShortcut === normalizedQuery ? 0 : aShortcut.startsWith(normalizedQuery) ? 1 : 2;
+        const bExact = bShortcut === normalizedQuery ? 0 : bShortcut.startsWith(normalizedQuery) ? 1 : 2;
+        if (aExact !== bExact) return aExact - bExact;
+        if (Boolean(a.isNormal) !== Boolean(b.isNormal)) return a.isNormal ? -1 : 1;
+        return a.name.localeCompare(b.name, 'vi');
+      })
+      .slice(0, 8);
+  }, []);
 
   const handleImageUpload = useCallback(async (file: File, editor: any, pos?: number) => {
     if (!file.type.startsWith('image/')) return;
@@ -178,33 +223,78 @@ export default function TiptapEditor({
         return false;
       },
       handleKeyDown: (view, event) => {
-        if (![' ', 'Enter', 'Tab'].includes(event.key)) return false;
+        const editorInstance = editorRef.current;
+        const suggestion = shortcutSuggestionRef.current;
+
+        if (suggestion) {
+          if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            event.stopPropagation();
+            const direction = event.key === 'ArrowDown' ? 1 : -1;
+            setShortcutSuggestion({
+              ...suggestion,
+              activeIndex: (suggestion.activeIndex + direction + suggestion.matches.length) % suggestion.matches.length,
+            });
+            return true;
+          }
+
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            event.stopPropagation();
+            setShortcutSuggestion(null);
+            return true;
+          }
+
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const template = suggestion.matches[suggestion.activeIndex];
+            if (!template || !editorInstance) {
+              setShortcutSuggestion(null);
+              return true;
+            }
+
+            editorInstance
+              .chain()
+              .focus()
+              .deleteRange(suggestion.range)
+              .insertContent(normalizeTemplateHtml(template.findings))
+              .run();
+
+            setShortcutSuggestion(null);
+            onShortcutApplyRef.current?.(template);
+            return true;
+          }
+
+          setShortcutSuggestion(null);
+          return false;
+        }
+
+        if (event.key !== 'Enter') return false;
         if (event.ctrlKey || event.metaKey || event.altKey || (event as any).isComposing) return false;
 
-        const editorInstance = editorRef.current;
         if (!editorInstance || !view.state.selection.empty) return false;
 
         const { from } = view.state.selection;
         const $from = view.state.doc.resolve(from);
         const textBeforeCursor = $from.parent.textBetween(0, $from.parentOffset, '\n', '\0');
-        const match = textBeforeCursor.match(/(?:^|\s)(\/[a-zA-Z0-9_-]+)$/);
+        const match = textBeforeCursor.match(/(?:^|\s)(\/[a-zA-Z0-9_-]*)$/);
         const shortcut = match?.[1]?.toLowerCase();
         if (!shortcut) return false;
 
-        const template = shortcutMapRef.current.get(shortcut);
-        if (!template) return false;
+        const matches = findShortcutMatches(shortcut);
+        if (matches.length === 0) return false;
 
         event.preventDefault();
         event.stopPropagation();
 
-        editorInstance
-          .chain()
-          .focus()
-          .deleteRange({ from: from - shortcut.length, to: from })
-          .insertContent(normalizeTemplateHtml(template.findings))
-          .run();
-
-        onShortcutApplyRef.current?.(template);
+        setShortcutSuggestion({
+          activeIndex: 0,
+          matches,
+          query: shortcut,
+          range: { from: from - shortcut.length, to: from },
+        });
         return true;
       },
     },
@@ -245,6 +335,21 @@ export default function TiptapEditor({
       handleImageUpload(file, editor);
     }
     event.target.value = '';
+  };
+
+  const applyShortcutSuggestion = (template: ReportTemplateOption, range: ShortcutSuggestionState['range']) => {
+    const editorInstance = editorRef.current;
+    if (!editorInstance) return;
+
+    editorInstance
+      .chain()
+      .focus()
+      .deleteRange(range)
+      .insertContent(normalizeTemplateHtml(template.findings))
+      .run();
+
+    setShortcutSuggestion(null);
+    onShortcutApplyRef.current?.(template);
   };
 
   return (
@@ -338,6 +443,45 @@ export default function TiptapEditor({
 
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePickedImage} />
       </div>
+
+      {shortcutSuggestion && (
+        <div className="border-b border-vin-border bg-vin-panel2 px-2 py-2">
+          <div className="flex flex-wrap gap-1.5">
+            {shortcutSuggestion.matches.map((template, index) => {
+              const isActive = index === shortcutSuggestion.activeIndex;
+
+              return (
+                <button
+                  key={template.id}
+                  type="button"
+                  onMouseDown={event => {
+                    event.preventDefault();
+                    applyShortcutSuggestion(template, shortcutSuggestion.range);
+                  }}
+                  className={`flex min-w-[190px] max-w-full items-center justify-between gap-2 rounded border px-2.5 py-1.5 text-left text-[11px] transition ${
+                    isActive
+                      ? 'border-vin-accent bg-vin-accent text-white'
+                      : 'border-vin-border bg-vin-shell text-vin-text2 hover:border-vin-accent hover:text-white'
+                  }`}
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate font-semibold">{template.name}</span>
+                    <span className={`block truncate font-mono text-[10px] ${isActive ? 'text-white/80' : 'text-vin-muted'}`}>
+                      {normalizeShortcut(template.shortcut)} · {template.modality}
+                      {template.bodyPart ? ` · ${template.bodyPart}` : ''}
+                    </span>
+                  </span>
+                  {template.isNormal && (
+                    <span className={`flex-shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold ${isActive ? 'bg-white/20 text-white' : 'bg-emerald-900/25 text-emerald-200'}`}>
+                      BT
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 p-4">
         {/* @ts-ignore: React 18/19 type conflict with Tiptap */}
