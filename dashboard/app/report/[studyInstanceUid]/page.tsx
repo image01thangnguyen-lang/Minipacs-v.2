@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Save, CheckCircle, Loader2, Printer } from 'lucide-react';
 import TiptapEditor from './components/TiptapEditor';
@@ -35,9 +35,12 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
   const [recommendation, setRecommendation] = useState('');
   const [reportStatus, setReportStatus] = useState<string>('UNREAD');
   const [templateHtml, setTemplateHtml] = useState<string>('');
+  const [viewerLink, setViewerLink] = useState('');
 
-  const ohifUrl = process.env.NEXT_PUBLIC_OHIF_URL || 'http://localhost:3000';
-  const viewerLink = `${ohifUrl}/viewer?StudyInstanceUIDs=${studyInstanceUid}`;
+  useEffect(() => {
+    const currentHost = window.location.hostname;
+    setViewerLink(`http://${currentHost}:3000/viewer?StudyInstanceUIDs=${encodeURIComponent(studyInstanceUid)}`);
+  }, [studyInstanceUid]);
 
   useEffect(() => {
     async function loadData() {

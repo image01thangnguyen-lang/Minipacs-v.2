@@ -18,6 +18,11 @@ const formatDateTime = (dateStr: string, timeStr: string) => {
   return t ? `${d} ${t}` : d;
 };
 
+const getOhifViewerUrl = (studyInstanceUID?: string) => {
+  const currentHost = window.location.hostname;
+  return `http://${currentHost}:3000/viewer?StudyInstanceUIDs=${encodeURIComponent(studyInstanceUID || '')}`;
+};
+
 // Modality Badge Helper
 const ModalityBadge = ({ type }: { type: string }) => {
   let colors = "bg-slate-800 text-slate-300";
@@ -422,7 +427,7 @@ export default function App() {
                             </td>
                             <td className="px-6 py-4 text-right">
                               <a 
-                                href={`http://localhost:3000/viewer?StudyInstanceUIDs=${study.MainDicomTags?.StudyInstanceUID}`}
+                                href={getOhifViewerUrl(study.MainDicomTags?.StudyInstanceUID)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-2 px-3 py-1.5 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-400 rounded-lg transition-all font-medium text-xs shadow-sm hover:shadow-emerald-500/10 focus:ring-2 focus:ring-emerald-500/40 outline-none"

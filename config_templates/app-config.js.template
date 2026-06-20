@@ -1,8 +1,8 @@
 window.config = {
   routerBasename: '/',
+  showStudyList: true,
   extensions: [],
   modes: [],
-  showStudyList: true,
   dataSources: [
     {
       friendlyName: 'Orthanc DICOMweb',
@@ -10,13 +10,17 @@ window.config = {
       sourceName: 'dicomweb',
       configuration: {
         name: 'Orthanc',
-        wadoUriRoot: 'http://localhost:8042/dicom-web',
-        qidoRoot: 'http://localhost:8042/dicom-web',
-        wadoRoot: 'http://localhost:8042/dicom-web',
+        wadoUriRoot: '/dicom-web',
+        qidoRoot: '/dicom-web',
+        wadoRoot: '/dicom-web',
         qidoSupportsIncludeField: false,
-        omitQuotationForMultipartRequest: true,
         imageRendering: 'wadors',
         thumbnailRendering: 'wadors',
+        enableStudyLazyLoad: true,
+        supportsFuzzyMatching: false,
+        supportsWildcard: true,
+        dicomUploadEnabled: true,
+        omitQuotationForMultipartRequest: true,
       },
     },
   ],

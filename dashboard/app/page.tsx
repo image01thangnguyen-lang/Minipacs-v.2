@@ -49,8 +49,6 @@ export default function DashboardPage() {
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const ohifUrl = process.env.NEXT_PUBLIC_OHIF_URL || 'http://localhost:3000';
-
   useEffect(() => {
     (async () => {
       try { setIsLoading(true); const d = await getStudies(); setStudies(d || []); }
@@ -104,10 +102,9 @@ export default function DashboardPage() {
 
   const openViewer = (study: any) => {
     const uid = study.MainDicomTags?.StudyInstanceUID;
-    const patientName = fmtName(study.PatientMainDicomTags?.PatientName);
     if (uid) {
       const currentHost = window.location.hostname;
-      const viewerUrl = `http://${currentHost}:3000/viewer?StudyInstanceUIDs=${uid}&patientName=${encodeURIComponent(patientName)}`;
+      const viewerUrl = `http://${currentHost}:3000/viewer?StudyInstanceUIDs=${encodeURIComponent(uid)}`;
       window.open(viewerUrl, '_blank');
     }
   };

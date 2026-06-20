@@ -3,7 +3,6 @@ window.config = {
   showStudyList: true,
   extensions: [],
   modes: [],
-  defaultDataSourceName: 'dicomweb',
   dataSources: [
     {
       friendlyName: 'Orthanc DICOMweb',
@@ -11,7 +10,6 @@ window.config = {
       sourceName: 'dicomweb',
       configuration: {
         name: 'Orthanc',
-        // CHUẨN KIẾN TRÚC PROXY CỦA NGINX (Không có IP, Không có Port)
         wadoUriRoot: '/dicom-web',
         qidoRoot: '/dicom-web',
         wadoRoot: '/dicom-web',
@@ -21,9 +19,10 @@ window.config = {
         enableStudyLazyLoad: true,
         supportsFuzzyMatching: false,
         supportsWildcard: true,
-        singlepart: 'bulkdata,video',
-        omitQuotationForMultipartRequest: true
+        dicomUploadEnabled: true,
+        omitQuotationForMultipartRequest: true,
       },
     },
   ],
+  defaultDataSourceName: 'dicomweb',
 };
