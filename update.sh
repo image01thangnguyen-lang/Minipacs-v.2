@@ -48,6 +48,19 @@ run_as_repo_user() {
   fi
 }
 
+fix_repo_permissions() {
+  if [ "$(id -u)" -eq 0 ] && [ -n "${SUDO_USER:-}" ]; then
+    local run_group
+    run_group="$(id -gn "$RUN_USER")"
+
+    info "Fixing repository permissions..."
+    chown "$RUN_USER:$run_group" "$PROJECT_DIR"
+
+    # Keep PACS data untouched; it may contain large medical image and database volumes.
+    find "$PROJECT_DIR" -mindepth 1 -maxdepth 1 ! -name pacs_data -exec chown -R "$RUN_USER:$run_group" {} +
+  fi
+}
+
 load_env_file() {
   if [ ! -f .env ] || ! grep -q "POSTGRES_PASSWORD=" .env; then
     warn "No valid .env found. Creating one from .env.example..."
@@ -161,6 +174,7 @@ print_urls() {
 warn "Updating Mini PACS. Existing pacs_data and .env will be preserved."
 
 load_env_file
+fix_repo_permissions
 update_code
 
 info "[2/6] Preparing local storage and config..."
