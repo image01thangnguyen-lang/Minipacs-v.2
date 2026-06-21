@@ -8,11 +8,98 @@ async function main() {
   const password = process.env.ADMIN_PASSWORD || 'admin@123';
   const hashedPassword = await bcrypt.hash(password, 10);
 
+  const roleProfiles = [
+    {
+      code: 'ADMIN',
+      name: 'Admin',
+      description: 'Toàn quyền cấu hình hệ thống, PACS, người dùng và dữ liệu vận hành.',
+      baseRole: 'ADMIN',
+      permissions: [
+        'studies.read',
+        'reports.read',
+        'reports.write',
+        'worklist.manage',
+        'archive.read',
+        'archive.deliver',
+        'statistics.read',
+        'statistics.doctorStats',
+        'users.manage',
+        'templates.manage',
+        'clinic.manage',
+        'pacs.manage',
+      ],
+      isSystem: true,
+      isActive: true,
+    },
+    {
+      code: 'DOCTOR',
+      name: 'Bác sĩ',
+      description: 'Đọc phim, soạn/ký báo cáo, quản lý mẫu cá nhân và xem thống kê chuyên môn.',
+      baseRole: 'DOCTOR',
+      permissions: [
+        'studies.read',
+        'reports.read',
+        'reports.write',
+        'archive.read',
+        'statistics.read',
+        'statistics.doctorStats',
+        'templates.manage',
+      ],
+      isSystem: true,
+      isActive: true,
+    },
+    {
+      code: 'TECHNICIAN',
+      name: 'Kỹ thuật viên',
+      description: 'Theo dõi danh sách ca, tiếp nhận/worklist và xử lý vận hành kỹ thuật.',
+      baseRole: 'TECHNICIAN',
+      permissions: ['studies.read', 'worklist.manage', 'archive.read', 'statistics.read'],
+      isSystem: true,
+      isActive: true,
+    },
+    {
+      code: 'RECEPTION',
+      name: 'Lễ tân',
+      description: 'Tạo order, check-in, tìm/in lại kết quả và xem thống kê vận hành cơ bản.',
+      baseRole: 'RECEPTION',
+      permissions: ['studies.read', 'worklist.manage', 'archive.read', 'archive.deliver', 'statistics.read'],
+      isSystem: true,
+      isActive: true,
+    },
+  ];
+
+  const roleProfileByCode = {};
+  for (const roleProfile of roleProfiles) {
+    roleProfileByCode[roleProfile.code] = await prisma.appRoleProfile.upsert({
+      where: { code: roleProfile.code },
+      update: roleProfile,
+      create: roleProfile,
+    });
+  }
+
+  const secretaryRole = await prisma.appRoleProfile.findUnique({
+    where: { code: 'DOCTOR_SECRETARY' },
+  });
+  if (!secretaryRole) {
+    await prisma.appRoleProfile.create({
+      data: {
+        code: 'DOCTOR_SECRETARY',
+        name: 'Thư ký bác sĩ',
+        description: 'Chỉ tra cứu Archive và in lại kết quả theo phân công của bác sĩ.',
+        baseRole: 'RECEPTION',
+        permissions: ['archive.read'],
+        isSystem: false,
+        isActive: true,
+      },
+    });
+  }
+
   const admin = await prisma.user.upsert({
     where: { username },
     update: {
       password: hashedPassword,
       role: 'ADMIN',
+      roleProfileId: roleProfileByCode.ADMIN.id,
       fullName: 'System Admin',
       isActive: true,
     },
@@ -20,6 +107,7 @@ async function main() {
       username,
       password: hashedPassword,
       role: 'ADMIN',
+      roleProfileId: roleProfileByCode.ADMIN.id,
       fullName: 'System Admin',
       isActive: true,
     },

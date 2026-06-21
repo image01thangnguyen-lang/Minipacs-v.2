@@ -35,7 +35,7 @@ const statusLabels: Record<string, string> = {
 async function requireStatisticsAccess() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  if (!hasPermission(session.user.role, "statistics.read")) redirect("/");
+  if (!hasPermission(session.user.role, "statistics.read", session.user.permissions)) redirect("/");
   return session.user;
 }
 
@@ -222,8 +222,8 @@ async function getAverageTurnaround(start: Date, endExclusive: Date) {
   return average(values);
 }
 
-async function getDoctorRows(start: Date, endExclusive: Date, role: string, userId: string): Promise<StatisticsDoctorRow[]> {
-  if (!hasPermission(role, "statistics.doctorStats")) return [];
+async function getDoctorRows(start: Date, endExclusive: Date, role: string, userId: string, permissions?: string[], baseRole?: string): Promise<StatisticsDoctorRow[]> {
+  if (!hasPermission(role, "statistics.doctorStats", permissions)) return [];
 
   const thisMonthInput = vietnamDateInput();
   const [year, month] = thisMonthInput.split("-").map(Number);
@@ -231,7 +231,7 @@ async function getDoctorRows(start: Date, endExclusive: Date, role: string, user
   const monthEnd = new Date(monthStart);
   monthEnd.setUTCMonth(monthEnd.getUTCMonth() + 1);
 
-  const doctorId = role === "DOCTOR" ? userId : undefined;
+  const doctorId = (baseRole || role) === "DOCTOR" ? userId : undefined;
   const [periodReports, monthReports, draftReports] = await Promise.all([
     prisma.report.groupBy({
       by: ["doctorId"],
@@ -318,7 +318,7 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
       _count: { _all: true },
     }),
     getAverageTurnaround(range.start, endExclusive),
-    getDoctorRows(range.start, endExclusive, user.role, user.id),
+    getDoctorRows(range.start, endExclusive, user.role, user.id, user.permissions, user.baseRole),
     prisma.imagingStudy.findMany({
       where: { status: { in: ["READY_TO_READ", "READING"] } },
       include: { order: true },
@@ -355,7 +355,7 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     dateTo: range.dateTo,
     generatedAt: new Date().toISOString(),
     role: user.role,
-    canViewDoctorStats: hasPermission(user.role, "statistics.doctorStats"),
+    canViewDoctorStats: hasPermission(user.role, "statistics.doctorStats", user.permissions),
     kpis: {
       studiesInPeriod,
       readyToRead,

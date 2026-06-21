@@ -79,6 +79,8 @@ model User {
   password  String
   fullName  String
   role      Role     @default(DOCTOR)
+  roleProfileId String?
+  roleProfile AppRoleProfile? @relation(fields: [roleProfileId], references: [id])
   isActive  Boolean  @default(true)
   
   // Relation back to reports
@@ -89,7 +91,26 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([roleProfileId])
   @@map("users")
+}
+
+model AppRoleProfile {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?  @db.Text
+  baseRole    Role     @default(RECEPTION)
+  permissions String[]
+  isSystem    Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([baseRole])
+  @@index([isActive])
+  @@map("app_role_profiles")
 }
 
 model DoctorProfile {

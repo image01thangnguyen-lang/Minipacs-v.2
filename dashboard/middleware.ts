@@ -11,13 +11,13 @@ export default auth((req) => {
   }
 
   if (isLoggedIn && isLoginPage) {
-    return NextResponse.redirect(new URL(getDefaultPathForRole(req.auth?.user?.role), req.url));
+    return NextResponse.redirect(new URL(getDefaultPathForRole(req.auth?.user?.role, req.auth?.user?.permissions), req.url));
   }
 
   if (isLoggedIn) {
     const requiredPermission = getRoutePermission(req.nextUrl.pathname);
-    if (requiredPermission && !hasPermission(req.auth?.user?.role, requiredPermission)) {
-      return NextResponse.redirect(new URL(getDefaultPathForRole(req.auth?.user?.role), req.url));
+    if (requiredPermission && !hasPermission(req.auth?.user?.role, requiredPermission, req.auth?.user?.permissions)) {
+      return NextResponse.redirect(new URL(getDefaultPathForRole(req.auth?.user?.role, req.auth?.user?.permissions), req.url));
     }
   }
 

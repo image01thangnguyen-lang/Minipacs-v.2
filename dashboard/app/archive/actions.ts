@@ -417,7 +417,7 @@ export async function logArchivePrintAction(studyInstanceUid: string, mode: "PRI
 export async function markArchiveDeliveredAction(studyInstanceUid: string) {
   const actor = await requireArchiveAccess();
 
-  if (!hasPermission(actor.role, "archive.deliver")) {
+  if (!hasPermission(actor.role, "archive.deliver", actor.permissions)) {
     return { success: false, error: "Chi le tan hoac admin duoc ghi nhan tra ket qua." };
   }
 

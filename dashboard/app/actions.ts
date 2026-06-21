@@ -146,11 +146,11 @@ export async function saveReportAction(data: {
     if (!session?.user?.id) {
       return { success: false, error: 'Bạn cần đăng nhập để lưu báo cáo.' };
     }
-    if (!hasPermission(session.user.role, "reports.write")) {
+    if (!hasPermission(session.user.role, "reports.write", session.user.permissions)) {
       return { success: false, error: 'Bạn không có quyền lưu hoặc ký báo cáo.' };
     }
     const signingDoctorId = data.doctorId || (
-      session?.user?.id && ["DOCTOR", "ADMIN"].includes(session.user.role)
+      session?.user?.id && ["DOCTOR", "ADMIN"].includes(session.user.baseRole || session.user.role)
         ? session.user.id
         : undefined
     );

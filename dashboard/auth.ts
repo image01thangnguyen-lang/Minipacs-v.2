@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/app/db"; // or adjust path if necessary
+import { getPermissionsForRole } from "@/lib/permissions";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -18,7 +19,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         
         // Find user
         const user = await prisma.user.findUnique({
-          where: { username: credentials.username as string }
+          where: { username: credentials.username as string },
+          include: { roleProfile: true },
         });
 
         if (!user) {
@@ -34,11 +36,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Mật khẩu không chính xác");
         }
 
+        const activeRoleProfile = user.roleProfile?.isActive ? user.roleProfile : null;
+        const role = activeRoleProfile?.code || user.role;
+        const permissions = getPermissionsForRole(user.role, activeRoleProfile?.permissions);
+
         return {
           id: user.id,
           name: user.fullName,
           username: user.username,
-          role: user.role,
+          role,
+          baseRole: activeRoleProfile?.baseRole || user.role,
+          roleName: activeRoleProfile?.name,
+          permissions,
         };
       }
     })
@@ -48,6 +57,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.baseRole = user.baseRole;
+        token.roleName = user.roleName;
+        token.permissions = user.permissions;
         token.username = user.username;
       }
       return token;
@@ -56,6 +68,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.baseRole = token.baseRole as string | undefined;
+        session.user.roleName = token.roleName as string | undefined;
+        session.user.permissions = Array.isArray(token.permissions) ? token.permissions : undefined;
       }
       return session;
     }

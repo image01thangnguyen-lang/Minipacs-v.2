@@ -27,11 +27,15 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
   const [collapsed, setCollapsed] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
   const [role, setRole] = useState<string | null>(null);
+  const [permissions, setPermissions] = useState<string[] | null>(null);
 
   useEffect(() => {
     let mounted = true;
     getSession().then(session => {
-      if (mounted) setRole(session?.user?.role || null);
+      if (mounted) {
+        setRole(session?.user?.role || null);
+        setPermissions(session?.user?.permissions || null);
+      }
     });
     return () => {
       mounted = false;
@@ -45,7 +49,7 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
   };
 
   const visibleMenuItems = role
-    ? mainMenuItems.filter(item => hasPermission(role, item.permission as PermissionKey))
+    ? mainMenuItems.filter(item => hasPermission(role, item.permission as PermissionKey, permissions))
     : mainMenuItems.filter(item => item.key === active || item.key === "studies");
 
   return (

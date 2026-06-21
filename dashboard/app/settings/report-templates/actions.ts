@@ -32,7 +32,7 @@ function normalizeShortcut(value: string) {
 async function requireTemplateAccess() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  if (!hasPermission(session.user.role, "templates.manage")) redirect("/");
+  if (!hasPermission(session.user.role, "templates.manage", session.user.permissions)) redirect("/");
   return session.user;
 }
 
