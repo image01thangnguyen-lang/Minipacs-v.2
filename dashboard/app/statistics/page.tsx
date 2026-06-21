@@ -17,9 +17,18 @@ import {
 } from "lucide-react";
 import { AppSidebar } from "@/app/components/AppSidebar";
 import { CustomDatePicker } from "@/app/components/CustomDatePicker";
-import { getStatisticsDashboardAction } from "./actions";
+import { CustomSelect } from "@/app/components/CustomSelect";
+import {
+  acknowledgeOperationalAlertAction,
+  assignStudyDoctorAction,
+  getStatisticsDashboardAction,
+  resolveOperationalAlertAction,
+} from "./actions";
 import type {
+  StatisticsAlertRow,
+  StatisticsAlerts,
   StatisticsBreakdownRow,
+  StatisticsDoctorOption,
   StatisticsDurationSummary,
   StatisticsFilters,
   StatisticsHourlyUtilizationRow,
@@ -27,6 +36,9 @@ import type {
   StatisticsPayload,
   StatisticsPerformanceOutlier,
   StatisticsRoomUtilizationRow,
+  StatisticsWorkload,
+  StatisticsWorkloadDoctorRow,
+  StatisticsWorkloadQueueRow,
 } from "./types";
 
 function todayInput() {
@@ -91,6 +103,7 @@ export default function StatisticsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
+  const [busyActionId, setBusyActionId] = useState("");
 
   const loadData = async (nextFilters = filters, options: { silent?: boolean } = {}) => {
     if (options.silent) {
@@ -128,6 +141,31 @@ export default function StatisticsPage() {
 
     return () => window.clearInterval(timer);
   }, [data?.operations.autoRefreshSeconds, filters.dateFrom, filters.dateTo]);
+
+  const runDashboardAction = async (actionId: string, action: () => Promise<unknown>) => {
+    setBusyActionId(actionId);
+    setError("");
+    try {
+      await action();
+      await loadData(filters, { silent: true });
+    } catch (err: any) {
+      setError(err?.message || "Không thực hiện được thao tác.");
+    } finally {
+      setBusyActionId("");
+    }
+  };
+
+  const handleAssignDoctor = (studyId: string, doctorId: string) => {
+    runDashboardAction(`assign:${studyId}`, () => assignStudyDoctorAction(studyId, doctorId));
+  };
+
+  const handleAcknowledgeAlert = (alertId: string) => {
+    runDashboardAction(`ack:${alertId}`, () => acknowledgeOperationalAlertAction(alertId));
+  };
+
+  const handleResolveAlert = (alertId: string) => {
+    runDashboardAction(`resolve:${alertId}`, () => resolveOperationalAlertAction(alertId));
+  };
 
   const maxModalityCount = useMemo(
     () => Math.max(1, ...(data?.modalityCounts || []).map(item => item.count)),
@@ -280,6 +318,20 @@ export default function StatisticsPage() {
                 />
               </div>
             </section>
+
+            <div className="mt-3 grid gap-3 xl:grid-cols-[0.95fr_1.25fr]">
+              <AlertEscalationPanel
+                alerts={data.alerts}
+                busyActionId={busyActionId}
+                onAcknowledge={handleAcknowledgeAlert}
+                onResolve={handleResolveAlert}
+              />
+              <WorkloadCenter
+                workload={data.workload}
+                busyActionId={busyActionId}
+                onAssignDoctor={handleAssignDoctor}
+              />
+            </div>
 
             <section className="mt-3 rounded border border-vin-border bg-vin-panel">
               <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
@@ -786,6 +838,283 @@ function RoomUtilizationTable({ rows }: { rows: StatisticsRoomUtilizationRow[] }
           </table>
         </div>
       )}
+    </section>
+  );
+}
+
+function AlertEscalationPanel({
+  alerts,
+  busyActionId,
+  onAcknowledge,
+  onResolve,
+}: {
+  alerts: StatisticsAlerts;
+  busyActionId: string;
+  onAcknowledge: (alertId: string) => void;
+  onResolve: (alertId: string) => void;
+}) {
+  return (
+    <section className="overflow-hidden rounded border border-vin-border bg-vin-panel">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <div>
+          <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Alert & escalation</h2>
+          <div className="mt-0.5 text-[10px] text-vin-muted">Alert đang mở từ rule SLA, workflow, assign và DICOM node.</div>
+        </div>
+        <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-vin-muted">
+          {alerts.canManageAlerts ? "Có quyền xử lý" : "Chỉ xem"}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-3 border-b border-white/5">
+        <MiniMetric label="Open" value={alerts.open} />
+        <MiniMetric label="Ack" value={alerts.acknowledged} />
+        <MiniMetric label="Critical" value={alerts.critical} />
+      </div>
+
+      <div className="max-h-[420px] overflow-auto scr-dark">
+        {alerts.rows.length === 0 ? (
+          <div className="px-3 py-10 text-center text-[11px] text-vin-muted">Không có alert đang mở.</div>
+        ) : (
+          alerts.rows.map(alert => (
+            <AlertRowItem
+              key={alert.id}
+              alert={alert}
+              canManage={alerts.canManageAlerts}
+              busyActionId={busyActionId}
+              onAcknowledge={onAcknowledge}
+              onResolve={onResolve}
+            />
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function AlertRowItem({
+  alert,
+  canManage,
+  busyActionId,
+  onAcknowledge,
+  onResolve,
+}: {
+  alert: StatisticsAlertRow;
+  canManage: boolean;
+  busyActionId: string;
+  onAcknowledge: (alertId: string) => void;
+  onResolve: (alertId: string) => void;
+}) {
+  const severityClass =
+    alert.severity === "critical"
+      ? "bg-vin-status-danger-bg text-white"
+      : alert.severity === "warning"
+        ? "bg-vin-status-warning-bg text-white"
+        : "border border-white/10 text-vin-muted";
+  const ackBusy = busyActionId === `ack:${alert.id}`;
+  const resolveBusy = busyActionId === `resolve:${alert.id}`;
+
+  return (
+    <div className="border-b border-white/5 px-3 py-2.5 last:border-b-0">
+      <div className="flex items-start justify-between gap-2">
+        <a href={alert.href} className="min-w-0">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${severityClass}`}>
+              {alert.severity.toUpperCase()}
+            </span>
+            <span className="truncate text-[12px] font-bold text-white">{alert.title}</span>
+          </div>
+          <div className="mt-1 line-clamp-2 text-[10px] text-vin-muted">{alert.message}</div>
+        </a>
+        <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 font-mono text-[9px] text-vin-muted">
+          {alert.status}
+        </span>
+      </div>
+
+      <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-vin-muted">
+        <span className="truncate">
+          {alert.patientName || alert.entityType}
+          {alert.priority ? ` · ${alert.priority}` : ""}
+        </span>
+        <span className="whitespace-nowrap">{formatDuration(alert.ageMinutes)} trước</span>
+      </div>
+
+      {canManage && (
+        <div className="mt-2 flex items-center gap-2">
+          <button
+            type="button"
+            disabled={ackBusy || resolveBusy || alert.status === "ACKNOWLEDGED"}
+            onClick={() => onAcknowledge(alert.id)}
+            className="inline-flex h-7 items-center gap-1 rounded border border-white/10 px-2 text-[10px] font-bold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
+          >
+            {ackBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserRoundCheck className="h-3 w-3" />}
+            Ack
+          </button>
+          <button
+            type="button"
+            disabled={ackBusy || resolveBusy}
+            onClick={() => onResolve(alert.id)}
+            className="inline-flex h-7 items-center gap-1 rounded border border-emerald-400/30 px-2 text-[10px] font-bold text-emerald-200 transition hover:border-emerald-300 disabled:opacity-40"
+          >
+            {resolveBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
+            Resolve
+          </button>
+          <a href={alert.href} className="ml-auto text-[10px] font-semibold text-vin-accent hover:text-white">
+            Mở
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WorkloadCenter({
+  workload,
+  busyActionId,
+  onAssignDoctor,
+}: {
+  workload: StatisticsWorkload;
+  busyActionId: string;
+  onAssignDoctor: (studyId: string, doctorId: string) => void;
+}) {
+  return (
+    <section className="overflow-hidden rounded border border-vin-border bg-vin-panel">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <div>
+          <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Radiologist workload</h2>
+          <div className="mt-0.5 text-[10px] text-vin-muted">
+            Backlog theo bác sĩ, ca chưa assign và TAT theo người đọc.
+          </div>
+        </div>
+        <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-vin-muted">
+          {workload.currentDoctorOnly ? "Queue của tôi" : "Điều phối chung"}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-3 border-b border-white/5">
+        <MiniMetric label="Assigned" value={workload.totalAssignedActive} />
+        <MiniMetric label="Unassigned" value={workload.unassignedCount} />
+        <MiniMetric label="Queue" value={workload.queue.length} />
+      </div>
+
+      <div className="grid gap-3 p-3 xl:grid-cols-[0.9fr_1.1fr]">
+        <WorkloadDoctorTable rows={workload.rows} />
+        <WorkloadQueueList
+          rows={workload.queue}
+          doctors={workload.doctors}
+          canManage={workload.canManageAssignments}
+          busyActionId={busyActionId}
+          onAssignDoctor={onAssignDoctor}
+        />
+      </div>
+    </section>
+  );
+}
+
+function WorkloadDoctorTable({ rows }: { rows: StatisticsWorkloadDoctorRow[] }) {
+  return (
+    <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Theo bác sĩ</h3>
+        <span className="text-[10px] text-vin-muted">{rows.length} dòng</span>
+      </div>
+      {rows.length === 0 ? (
+        <div className="px-3 py-8 text-center text-[11px] text-vin-muted">Chưa có dữ liệu workload.</div>
+      ) : (
+        <div className="max-h-[320px] overflow-auto scr-dark">
+          <table className="w-full text-left text-[10px]">
+            <thead className="sticky top-0 border-b border-white/5 bg-vin-shell text-vin-muted">
+              <tr>
+                <th className="px-3 py-2">Bác sĩ</th>
+                <th className="px-2 py-2 text-right">Backlog</th>
+                <th className="px-2 py-2 text-right">Draft</th>
+                <th className="px-2 py-2 text-right">Final</th>
+                <th className="px-3 py-2 text-right">P90</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(row => (
+                <tr key={row.doctorId} className="border-b border-white/5 last:border-b-0">
+                  <td className="px-3 py-2">
+                    <div className="truncate font-bold text-white">{row.doctorName}</div>
+                    <div className="mt-0.5 text-[9px] text-vin-muted">{row.slaBreaches} breach SLA</div>
+                  </td>
+                  <td className="px-2 py-2 text-right text-vin-text2">{row.readyToRead + row.reading}</td>
+                  <td className="px-2 py-2 text-right text-vin-text2">{row.draftReports}</td>
+                  <td className="px-2 py-2 text-right text-vin-text2">{row.finalizedInPeriod}</td>
+                  <td className="px-3 py-2 text-right text-vin-muted">{formatDuration(row.p90TatMinutes)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function WorkloadQueueList({
+  rows,
+  doctors,
+  canManage,
+  busyActionId,
+  onAssignDoctor,
+}: {
+  rows: StatisticsWorkloadQueueRow[];
+  doctors: StatisticsDoctorOption[];
+  canManage: boolean;
+  busyActionId: string;
+  onAssignDoctor: (studyId: string, doctorId: string) => void;
+}) {
+  const doctorOptions = [
+    { value: "UNASSIGNED", label: "Chưa assign" },
+    ...doctors.map(doctor => ({ value: doctor.id, label: doctor.name })),
+  ];
+
+  return (
+    <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Queue assign</h3>
+        <span className="text-[10px] text-vin-muted">{canManage ? "Có thể assign" : "Chỉ xem"}</span>
+      </div>
+      <div className="max-h-[320px] overflow-auto scr-dark">
+        {rows.length === 0 ? (
+          <div className="px-3 py-8 text-center text-[11px] text-vin-muted">Không có ca trong queue.</div>
+        ) : (
+          rows.map(row => {
+            const busy = busyActionId === `assign:${row.id}`;
+            return (
+              <div key={row.id} className="border-b border-white/5 px-3 py-2.5 last:border-b-0">
+                <div className="flex items-start justify-between gap-2">
+                  <a href={row.href} className="min-w-0">
+                    <div className="truncate text-[12px] font-bold uppercase text-white">{row.patientName}</div>
+                    <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
+                      {row.patientId} · {row.accessionNumber}
+                    </div>
+                  </a>
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${priorityTone[row.priority] || priorityTone.ROUTINE}`}>
+                    {row.priority}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-vin-muted">
+                  <span className="truncate">{row.modality} · {row.statusLabel} · {formatDuration(row.waitingMinutes)}</span>
+                  <a href={row.href} className="shrink-0 font-semibold text-vin-accent hover:text-white">Mở</a>
+                </div>
+                <div className="mt-2 flex items-center gap-2">
+                  <CustomSelect
+                    options={doctorOptions}
+                    value={row.assignedDoctorId || "UNASSIGNED"}
+                    onChange={value => onAssignDoctor(row.id, value)}
+                    disabled={!canManage || busy}
+                    compact
+                    className="min-w-[180px] flex-1"
+                  />
+                  {busy && <Loader2 className="h-3.5 w-3.5 animate-spin text-vin-accent" />}
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
     </section>
   );
 }

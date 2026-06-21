@@ -184,6 +184,80 @@ export type StatisticsUtilization = {
   hourly: StatisticsHourlyUtilizationRow[];
 };
 
+export type StatisticsDoctorOption = {
+  id: string;
+  name: string;
+};
+
+export type StatisticsWorkloadDoctorRow = {
+  doctorId: string;
+  doctorName: string;
+  assignedActive: number;
+  readyToRead: number;
+  reading: number;
+  draftReports: number;
+  finalizedInPeriod: number;
+  averageTatMinutes: number | null;
+  p90TatMinutes: number | null;
+  slaBreaches: number;
+};
+
+export type StatisticsWorkloadQueueRow = {
+  id: string;
+  studyInstanceUid: string;
+  patientName: string;
+  patientId: string;
+  accessionNumber: string;
+  modality: string;
+  studyDescription: string;
+  status: string;
+  statusLabel: string;
+  priority: string;
+  stationAeTitle: string;
+  assignedDoctorId: string | null;
+  assignedDoctorName: string;
+  waitingMinutes: number;
+  href: string;
+};
+
+export type StatisticsWorkload = {
+  canManageAssignments: boolean;
+  currentDoctorOnly: boolean;
+  doctors: StatisticsDoctorOption[];
+  rows: StatisticsWorkloadDoctorRow[];
+  queue: StatisticsWorkloadQueueRow[];
+  unassignedCount: number;
+  totalAssignedActive: number;
+};
+
+export type StatisticsAlertRow = {
+  id: string;
+  alertType: string;
+  severity: string;
+  status: string;
+  title: string;
+  message: string;
+  entityType: string;
+  entityId: string | null;
+  studyInstanceUid: string | null;
+  patientName: string | null;
+  priority: string | null;
+  ageMinutes: number;
+  createdAt: string;
+  updatedAt: string;
+  acknowledgedAt: string | null;
+  resolvedAt: string | null;
+  href: string;
+};
+
+export type StatisticsAlerts = {
+  canManageAlerts: boolean;
+  open: number;
+  acknowledged: number;
+  critical: number;
+  rows: StatisticsAlertRow[];
+};
+
 export type StatisticsStorage = {
   available: boolean;
   patients: number;
@@ -210,5 +284,7 @@ export type StatisticsPayload = {
   operations: StatisticsOperations;
   performance: StatisticsPerformance;
   utilization: StatisticsUtilization;
+  workload: StatisticsWorkload;
+  alerts: StatisticsAlerts;
   storage: StatisticsStorage;
 };

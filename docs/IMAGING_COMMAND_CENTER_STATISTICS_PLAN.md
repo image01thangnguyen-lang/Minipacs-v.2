@@ -621,13 +621,15 @@ Dieu phoi backlog doc phim theo bac si.
 
 ### Viec can lam
 
-- [ ] Them `assignedDoctorId` vao `ImagingStudy`.
-- [ ] Tao action assign/reassign.
-- [ ] Ghi event khi assign/reassign.
-- [ ] Tao workload table theo bac si.
-- [ ] Tao queue theo bac si.
-- [ ] Tinh TAT theo bac si.
-- [ ] Them filter "unassigned".
+- [x] Them `assignedDoctorId` vao `ImagingStudy`.
+- [x] Tao action assign/reassign.
+- [x] Ghi event khi assign/reassign.
+- [x] Tao workload table theo bac si.
+- [x] Tao queue theo bac si.
+- [x] Tinh TAT theo bac si.
+- [x] Them filter "unassigned".
+
+Ghi chu 2026-06-21: Da them Radiologist Workload tren `/statistics`, gom bang backlog theo bac si, queue assign, dropdown assign/unassign, event va audit log khi doi nguoi phu trach.
 
 ### Acceptance criteria
 
@@ -643,13 +645,15 @@ Tu dong day cac van de can can thiep len dau.
 
 ### Viec can lam
 
-- [ ] Them model `OperationalAlert`.
-- [ ] Tao rule engine server-side.
-- [ ] Tao cau hinh SLA theo priority.
-- [ ] Tao alert drawer.
-- [ ] Them acknowledge/resolved flow.
-- [ ] Ghi audit khi xu ly alert.
-- [ ] Lien ket alert voi study/order/node.
+- [x] Them model `OperationalAlert`.
+- [x] Tao rule engine server-side.
+- [x] Tao cau hinh SLA theo priority.
+- [x] Tao alert drawer.
+- [x] Them acknowledge/resolved flow.
+- [x] Ghi audit khi xu ly alert.
+- [x] Lien ket alert voi study/order/node.
+
+Ghi chu 2026-06-21: Da them Alert & Escalation tren `/statistics`. Rule engine sync khi load dashboard, gom SLA breach, stuck workflow, unassigned reading va DICOM node bat thuong. Can tach scheduler nen neu muon alert chay doc lap voi dashboard.
 
 ### Acceptance criteria
 

@@ -306,6 +306,43 @@ model ImagingStudyEvent {
   @@map("imaging_study_events")
 }
 
+model OperationalAlert {
+  id                   String   @id @default(uuid())
+  alertType            String
+  severity             String   @default("warning")
+  status               String   @default("OPEN")
+  title                String
+  message              String?  @db.Text
+  entityType           String
+  entityId             String?
+  ruleKey              String?
+  imagingStudyId       String?
+  worklistOrderId      String?
+  dicomNodeId          String?
+  studyInstanceUid     String?
+  patientName          String?
+  priority             String?
+  assignedToUserId     String?
+  acknowledgedAt       DateTime?
+  acknowledgedByUserId String?
+  resolvedAt           DateTime?
+  resolvedByUserId     String?
+  metadataJson         String?  @db.Text
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([alertType])
+  @@index([severity])
+  @@index([status])
+  @@index([entityType, entityId])
+  @@index([ruleKey])
+  @@index([imagingStudyId])
+  @@index([worklistOrderId])
+  @@index([dicomNodeId])
+  @@index([createdAt])
+  @@map("operational_alerts")
+}
+
 model AuditLog {
   id           String   @id @default(uuid())
   actorUserId  String?

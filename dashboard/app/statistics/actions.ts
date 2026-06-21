@@ -4,8 +4,11 @@ import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { redirect } from "next/navigation";
 import { hasPermission } from "@/lib/permissions";
+import { recordStudyEventInTx } from "@/lib/studyEvents";
 import type {
+  StatisticsAlerts,
   StatisticsBreakdownRow,
+  StatisticsDoctorOption,
   StatisticsDoctorRow,
   StatisticsDurationSummary,
   StatisticsFilters,
@@ -21,6 +24,9 @@ import type {
   StatisticsStorage,
   StatisticsTrendPoint,
   StatisticsUtilization,
+  StatisticsWorkload,
+  StatisticsWorkloadDoctorRow,
+  StatisticsWorkloadQueueRow,
 } from "./types";
 
 const statusLabels: Record<string, string> = {
@@ -70,6 +76,37 @@ async function requireStatisticsAccess() {
   if (!session?.user?.id) redirect("/login");
   if (!hasPermission(session.user.role, "statistics.read", session.user.permissions)) redirect("/");
   return session.user;
+}
+
+function canManageAssignments(user: any) {
+  return (
+    hasPermission(user.role, "worklist.manage", user.permissions) ||
+    hasPermission(user.role, "users.manage", user.permissions)
+  );
+}
+
+function canManageOperationalAlerts(user: any) {
+  return (
+    hasPermission(user.role, "worklist.manage", user.permissions) ||
+    hasPermission(user.role, "users.manage", user.permissions) ||
+    hasPermission(user.role, "pacs.manage", user.permissions)
+  );
+}
+
+function isDoctorOnlyWorkloadView(user: any) {
+  return (user.baseRole || user.role) === "DOCTOR" && !canManageAssignments(user);
+}
+
+async function requireAssignmentAccess() {
+  const user = await requireStatisticsAccess();
+  if (!canManageAssignments(user)) throw new Error("Tài khoản không có quyền điều phối bác sĩ đọc phim.");
+  return user;
+}
+
+async function requireAlertAccess() {
+  const user = await requireStatisticsAccess();
+  if (!canManageOperationalAlerts(user)) throw new Error("Tài khoản không có quyền xử lý alert vận hành.");
+  return user;
 }
 
 function pad2(value: number) {
@@ -369,6 +406,244 @@ function serializePerformanceOutlier(row: {
     finalizedAt: row.finalizedAt ? row.finalizedAt.toISOString() : null,
     href: study.studyInstanceUid ? `/report/${encodeURIComponent(study.studyInstanceUid)}` : "/worklist",
   };
+}
+
+type AlertCandidate = {
+  alertType: string;
+  severity: "critical" | "warning" | "info";
+  title: string;
+  message: string;
+  entityType: string;
+  entityId?: string | null;
+  ruleKey: string;
+  imagingStudyId?: string | null;
+  worklistOrderId?: string | null;
+  dicomNodeId?: string | null;
+  studyInstanceUid?: string | null;
+  patientName?: string | null;
+  priority?: string | null;
+  assignedToUserId?: string | null;
+  metadata?: Record<string, unknown>;
+};
+
+const managedAlertTypes = ["SLA_BREACH", "STUCK_WORKFLOW", "UNASSIGNED_READING", "DICOM_NODE_DOWN"];
+
+function serializeMetadata(metadata?: Record<string, unknown>) {
+  return metadata ? JSON.stringify(metadata) : null;
+}
+
+function alertHref(alert: any) {
+  if (alert.studyInstanceUid) return `/report/${encodeURIComponent(alert.studyInstanceUid)}`;
+  if (alert.entityType === "DICOM_NODE") return "/admin/pacs/nodes";
+  if (alert.entityType === "WORKLIST_ORDER") return "/worklist";
+  return "/statistics";
+}
+
+function severityRank(severity?: string | null) {
+  if (severity === "critical") return 0;
+  if (severity === "warning") return 1;
+  return 2;
+}
+
+async function upsertOperationalAlert(candidate: AlertCandidate) {
+  const existing = await prisma.operationalAlert.findFirst({
+    where: {
+      alertType: candidate.alertType,
+      ruleKey: candidate.ruleKey,
+      status: { in: ["OPEN", "ACKNOWLEDGED"] },
+    },
+    select: { id: true, status: true },
+  });
+
+  const data = {
+    alertType: candidate.alertType,
+    severity: candidate.severity,
+    title: candidate.title,
+    message: candidate.message,
+    entityType: candidate.entityType,
+    entityId: candidate.entityId || null,
+    ruleKey: candidate.ruleKey,
+    imagingStudyId: candidate.imagingStudyId || null,
+    worklistOrderId: candidate.worklistOrderId || null,
+    dicomNodeId: candidate.dicomNodeId || null,
+    studyInstanceUid: candidate.studyInstanceUid || null,
+    patientName: candidate.patientName || null,
+    priority: candidate.priority || null,
+    assignedToUserId: candidate.assignedToUserId || null,
+    metadataJson: serializeMetadata(candidate.metadata),
+  };
+
+  if (existing) {
+    await prisma.operationalAlert.update({
+      where: { id: existing.id },
+      data,
+    });
+    return;
+  }
+
+  const manuallyResolved = await prisma.operationalAlert.findFirst({
+    where: {
+      alertType: candidate.alertType,
+      ruleKey: candidate.ruleKey,
+      status: "RESOLVED",
+      resolvedByUserId: { not: null },
+    },
+    select: { id: true },
+  });
+  if (manuallyResolved) return;
+
+  await prisma.operationalAlert.create({
+    data: {
+      ...data,
+      status: "OPEN",
+    },
+  });
+}
+
+async function syncOperationalAlerts() {
+  const now = new Date();
+  const [readingStudies, activeStudies, nodes] = await Promise.all([
+    prisma.imagingStudy.findMany({
+      where: { status: { in: ["READY_TO_READ", "READING"] as any[] } },
+      include: { order: true },
+      take: 200,
+    }),
+    prisma.imagingStudy.findMany({
+      where: { status: { in: ["ORDERED", "READY_FOR_SCAN", "RECEIVED", "STABLE", "NEEDS_QC", "READY_TO_READ", "READING", "FINALIZED"] as any[] } },
+      include: { order: true },
+      take: 200,
+    }),
+    prisma.dicomNode.findMany({
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+        aeTitle: true,
+        modality: true,
+        lastEchoStatus: true,
+        lastEchoMessage: true,
+        lastEchoAt: true,
+      },
+    }),
+  ]);
+
+  const candidates: AlertCandidate[] = [];
+
+  readingStudies.forEach(study => {
+    const row = serializeOperationStudyRow(study, "");
+    const threshold = slaThresholdForPriority(row.priority);
+    if (row.waitingMinutes >= threshold) {
+      candidates.push({
+        alertType: "SLA_BREACH",
+        severity: row.priority === "STAT" ? "critical" : "warning",
+        title: `${row.priority} quá SLA đọc phim`,
+        message: `${row.patientName} đã chờ ${row.waitingMinutes} phút, ngưỡng ${threshold} phút.`,
+        entityType: "IMAGING_STUDY",
+        entityId: study.id,
+        ruleKey: `SLA_BREACH:${study.id}`,
+        imagingStudyId: study.id,
+        studyInstanceUid: study.studyInstanceUid,
+        patientName: row.patientName,
+        priority: row.priority,
+        assignedToUserId: study.assignedDoctorId,
+        metadata: {
+          waitingMinutes: row.waitingMinutes,
+          thresholdMinutes: threshold,
+          status: study.status,
+          stationAeTitle: row.stationAeTitle,
+        },
+      });
+    }
+
+    if (!study.assignedDoctorId) {
+      candidates.push({
+        alertType: "UNASSIGNED_READING",
+        severity: row.priority === "STAT" ? "critical" : row.priority === "URGENT" ? "warning" : "info",
+        title: "Ca chờ đọc chưa assign bác sĩ",
+        message: `${row.patientName} đang ở trạng thái ${row.statusLabel} nhưng chưa có bác sĩ phụ trách.`,
+        entityType: "IMAGING_STUDY",
+        entityId: study.id,
+        ruleKey: `UNASSIGNED_READING:${study.id}`,
+        imagingStudyId: study.id,
+        studyInstanceUid: study.studyInstanceUid,
+        patientName: row.patientName,
+        priority: row.priority,
+        metadata: {
+          waitingMinutes: row.waitingMinutes,
+          status: study.status,
+          stationAeTitle: row.stationAeTitle,
+        },
+      });
+    }
+  });
+
+  activeStudies.forEach(study => {
+    const reason = stuckReason(study);
+    if (!reason) return;
+    const row = serializeOperationStudyRow(study, reason);
+    candidates.push({
+      alertType: "STUCK_WORKFLOW",
+      severity: row.priority === "STAT" ? "critical" : "warning",
+      title: "Ca kẹt workflow",
+      message: reason,
+      entityType: "IMAGING_STUDY",
+      entityId: study.id,
+      ruleKey: `STUCK_WORKFLOW:${study.id}:${study.status}`,
+      imagingStudyId: study.id,
+      studyInstanceUid: study.studyInstanceUid,
+      patientName: row.patientName,
+      priority: row.priority,
+      assignedToUserId: study.assignedDoctorId,
+      metadata: {
+        waitingMinutes: row.waitingMinutes,
+        status: study.status,
+        stationAeTitle: row.stationAeTitle,
+      },
+    });
+  });
+
+  nodes.forEach(node => {
+    const status = cleanText(node.lastEchoStatus).toUpperCase();
+    if (!status || ["OK", "SUCCESS", "ONLINE", "UP"].includes(status)) return;
+    candidates.push({
+      alertType: "DICOM_NODE_DOWN",
+      severity: "critical",
+      title: `DICOM node bất thường: ${node.name}`,
+      message: node.lastEchoMessage || `C-ECHO status hiện tại: ${node.lastEchoStatus}`,
+      entityType: "DICOM_NODE",
+      entityId: node.id,
+      ruleKey: `DICOM_NODE_DOWN:${node.id}`,
+      dicomNodeId: node.id,
+      metadata: {
+        aeTitle: node.aeTitle,
+        modality: node.modality,
+        lastEchoStatus: node.lastEchoStatus,
+        lastEchoAt: node.lastEchoAt?.toISOString() || null,
+      },
+    });
+  });
+
+  for (const candidate of candidates) {
+    await upsertOperationalAlert(candidate);
+  }
+
+  const activeRuleKeys = Array.from(new Set(candidates.map(candidate => candidate.ruleKey)));
+  const staleWhere: any = {
+    alertType: { in: managedAlertTypes },
+    status: { in: ["OPEN", "ACKNOWLEDGED"] },
+  };
+  if (activeRuleKeys.length) {
+    staleWhere.ruleKey = { notIn: activeRuleKeys };
+  }
+
+  await prisma.operationalAlert.updateMany({
+    where: staleWhere,
+    data: {
+      status: "RESOLVED",
+      resolvedAt: now,
+      resolvedByUserId: null,
+    },
+  });
 }
 
 async function getOrthancStorage(): Promise<StatisticsStorage> {
@@ -950,10 +1225,349 @@ async function getUtilizationAnalytics(start: Date, endExclusive: Date): Promise
   };
 }
 
+function serializeWorkloadQueueRow(study: any, doctorNames: Map<string, string>): StatisticsWorkloadQueueRow {
+  const waitingSince = waitingSinceForStudy(study);
+  const assignedDoctorId = study.assignedDoctorId || null;
+  return {
+    id: study.id,
+    studyInstanceUid: study.studyInstanceUid || "",
+    patientName: formatPatientName(study.patientName),
+    patientId: study.patientId || "-",
+    accessionNumber: study.accessionNumber || "-",
+    modality: study.modality || "-",
+    studyDescription: study.studyDescription || "-",
+    status: study.status,
+    statusLabel: statusLabels[study.status] || study.status,
+    priority: priorityOf(study),
+    stationAeTitle: stationOf(study),
+    assignedDoctorId,
+    assignedDoctorName: assignedDoctorId ? doctorNames.get(assignedDoctorId) || "Unknown doctor" : "Chưa assign",
+    waitingMinutes: minutesBetween(waitingSince, new Date()) || 0,
+    href: study.studyInstanceUid ? `/report/${encodeURIComponent(study.studyInstanceUid)}` : "/worklist",
+  };
+}
+
+async function getRadiologistWorkload(start: Date, endExclusive: Date, user: any): Promise<StatisticsWorkload> {
+  const canManage = canManageAssignments(user);
+  const doctorOnly = isDoctorOnlyWorkloadView(user);
+
+  const [doctors, activeStudies, draftReports, finalizedStudies] = await Promise.all([
+    prisma.user.findMany({
+      where: {
+        isActive: true,
+        role: { in: ["DOCTOR", "ADMIN"] as any[] },
+      },
+      select: { id: true, fullName: true, username: true },
+      orderBy: { fullName: "asc" },
+    }),
+    prisma.imagingStudy.findMany({
+      where: {
+        status: { in: ["READY_TO_READ", "READING", "REPORTED"] as any[] },
+        ...(doctorOnly ? { assignedDoctorId: user.id } : {}),
+      },
+      include: { order: true },
+      orderBy: [
+        { receivedAt: "asc" },
+        { stableAt: "asc" },
+        { createdAt: "asc" },
+      ],
+      take: 300,
+    }),
+    prisma.report.groupBy({
+      by: ["doctorId"],
+      where: { status: { in: ["DRAFT", "DRAFTING"] as any[] } },
+      _count: { _all: true },
+    }),
+    prisma.imagingStudy.findMany({
+      where: { finalizedAt: rangeFilter(start, endExclusive) },
+      include: {
+        order: true,
+        reports: {
+          select: { doctorId: true },
+        },
+      },
+      take: 1000,
+    }),
+  ]);
+
+  const visibleDoctors = doctorOnly ? doctors.filter(doctor => doctor.id === user.id) : doctors;
+  const doctorOptions: StatisticsDoctorOption[] = visibleDoctors.map(doctor => ({
+    id: doctor.id,
+    name: doctor.fullName || doctor.username,
+  }));
+  const doctorNames = new Map(doctors.map(doctor => [doctor.id, doctor.fullName || doctor.username]));
+  const rowMap = new Map<string, StatisticsWorkloadDoctorRow>();
+
+  function ensureRow(doctorId: string, doctorName: string) {
+    const existing = rowMap.get(doctorId);
+    if (existing) return existing;
+    const row: StatisticsWorkloadDoctorRow = {
+      doctorId,
+      doctorName,
+      assignedActive: 0,
+      readyToRead: 0,
+      reading: 0,
+      draftReports: 0,
+      finalizedInPeriod: 0,
+      averageTatMinutes: null,
+      p90TatMinutes: null,
+      slaBreaches: 0,
+    };
+    rowMap.set(doctorId, row);
+    return row;
+  }
+
+  visibleDoctors.forEach(doctor => ensureRow(doctor.id, doctor.fullName || doctor.username));
+  if (!doctorOnly) ensureRow("UNASSIGNED", "Chưa assign");
+
+  const tatMap = new Map<string, number[]>();
+  activeStudies.forEach(study => {
+    const doctorId = study.assignedDoctorId || "UNASSIGNED";
+    if (doctorOnly && doctorId !== user.id) return;
+    const row = ensureRow(doctorId, doctorId === "UNASSIGNED" ? "Chưa assign" : doctorNames.get(doctorId) || "Unknown doctor");
+    const queueRow = serializeWorkloadQueueRow(study, doctorNames);
+    row.assignedActive += doctorId === "UNASSIGNED" ? 0 : 1;
+    if (study.status === "READY_TO_READ") row.readyToRead += 1;
+    if (study.status === "READING" || study.status === "REPORTED") row.reading += 1;
+    if (queueRow.waitingMinutes >= slaThresholdForPriority(queueRow.priority)) row.slaBreaches += 1;
+  });
+
+  draftReports.forEach(group => {
+    if (!group.doctorId) return;
+    if (doctorOnly && group.doctorId !== user.id) return;
+    const row = ensureRow(group.doctorId, doctorNames.get(group.doctorId) || "Unknown doctor");
+    row.draftReports = group._count._all;
+  });
+
+  finalizedStudies.forEach(study => {
+    const reportDoctorId = study.reports.find(report => report.doctorId)?.doctorId || null;
+    const doctorId = study.assignedDoctorId || reportDoctorId || "UNASSIGNED";
+    if (doctorOnly && doctorId !== user.id) return;
+    const row = ensureRow(doctorId, doctorId === "UNASSIGNED" ? "Chưa assign" : doctorNames.get(doctorId) || "Unknown doctor");
+    row.finalizedInPeriod += 1;
+
+    const startAt = study.receivedAt || study.stableAt || study.scanEndedAt || study.scheduledAt || null;
+    const tat = minutesBetween(startAt, study.finalizedAt);
+    if (tat !== null) {
+      const values = tatMap.get(doctorId) || [];
+      values.push(tat);
+      tatMap.set(doctorId, values);
+    }
+  });
+
+  tatMap.forEach((values, doctorId) => {
+    const row = rowMap.get(doctorId);
+    if (!row) return;
+    row.averageTatMinutes = average(values);
+    row.p90TatMinutes = percentile(values, 90);
+  });
+
+  const queue = sortOperationRows(activeStudies.map(study => serializeOperationStudyRow(study, "")))
+    .map(row => {
+      const study = activeStudies.find(item => item.id === row.id);
+      return study ? serializeWorkloadQueueRow(study, doctorNames) : null;
+    })
+    .filter((row): row is StatisticsWorkloadQueueRow => Boolean(row))
+    .slice(0, 24);
+
+  const rows = Array.from(rowMap.values())
+    .filter(row => !doctorOnly || row.doctorId === user.id)
+    .sort((a, b) => {
+      if (a.doctorId === "UNASSIGNED") return -1;
+      if (b.doctorId === "UNASSIGNED") return 1;
+      return b.slaBreaches - a.slaBreaches || b.readyToRead + b.reading - (a.readyToRead + a.reading);
+    });
+
+  return {
+    canManageAssignments: canManage,
+    currentDoctorOnly: doctorOnly,
+    doctors: doctorOptions,
+    rows,
+    queue,
+    unassignedCount: activeStudies.filter(study => !study.assignedDoctorId).length,
+    totalAssignedActive: activeStudies.filter(study => Boolean(study.assignedDoctorId)).length,
+  };
+}
+
+function serializeAlertRow(alert: any): StatisticsAlerts["rows"][number] {
+  return {
+    id: alert.id,
+    alertType: alert.alertType,
+    severity: alert.severity,
+    status: alert.status,
+    title: alert.title,
+    message: alert.message || "",
+    entityType: alert.entityType,
+    entityId: alert.entityId || null,
+    studyInstanceUid: alert.studyInstanceUid || null,
+    patientName: alert.patientName || null,
+    priority: alert.priority || null,
+    ageMinutes: minutesBetween(alert.createdAt, new Date()) || 0,
+    createdAt: alert.createdAt.toISOString(),
+    updatedAt: alert.updatedAt.toISOString(),
+    acknowledgedAt: alert.acknowledgedAt ? alert.acknowledgedAt.toISOString() : null,
+    resolvedAt: alert.resolvedAt ? alert.resolvedAt.toISOString() : null,
+    href: alertHref(alert),
+  };
+}
+
+async function getOperationalAlerts(user: any): Promise<StatisticsAlerts> {
+  const alerts = await prisma.operationalAlert.findMany({
+    where: { status: { in: ["OPEN", "ACKNOWLEDGED"] } },
+    orderBy: [
+      { createdAt: "desc" },
+    ],
+    take: 40,
+  });
+
+  const rows = alerts
+    .map(serializeAlertRow)
+    .sort((a, b) => severityRank(a.severity) - severityRank(b.severity) || b.ageMinutes - a.ageMinutes);
+
+  return {
+    canManageAlerts: canManageOperationalAlerts(user),
+    open: rows.filter(row => row.status === "OPEN").length,
+    acknowledged: rows.filter(row => row.status === "ACKNOWLEDGED").length,
+    critical: rows.filter(row => row.severity === "critical").length,
+    rows,
+  };
+}
+
+export async function assignStudyDoctorAction(studyId: string, doctorId: string | null) {
+  const user = await requireAssignmentAccess();
+  const normalizedDoctorId = doctorId && doctorId !== "UNASSIGNED" ? doctorId : null;
+
+  const study = await prisma.imagingStudy.findUnique({
+    where: { id: studyId },
+    select: {
+      id: true,
+      studyInstanceUid: true,
+      patientName: true,
+      assignedDoctorId: true,
+    },
+  });
+  if (!study) throw new Error("Không tìm thấy study để assign.");
+
+  let doctorName: string | null = null;
+  if (normalizedDoctorId) {
+    const doctor = await prisma.user.findFirst({
+      where: {
+        id: normalizedDoctorId,
+        isActive: true,
+        role: { in: ["DOCTOR", "ADMIN"] as any[] },
+      },
+      select: { id: true, fullName: true, username: true },
+    });
+    if (!doctor) throw new Error("Không tìm thấy bác sĩ hợp lệ để assign.");
+    doctorName = doctor.fullName || doctor.username;
+  }
+
+  if (study.assignedDoctorId === normalizedDoctorId) {
+    return { success: true, assignedDoctorId: normalizedDoctorId };
+  }
+
+  await prisma.$transaction(async tx => {
+    await tx.imagingStudy.update({
+      where: { id: study.id },
+      data: { assignedDoctorId: normalizedDoctorId },
+    });
+    await recordStudyEventInTx(tx, {
+      imagingStudyId: study.id,
+      eventType: "ASSIGNED_DOCTOR_CHANGED",
+      actorUserId: user.id,
+      source: "WORKLOAD",
+      metadata: {
+        fromDoctorId: study.assignedDoctorId,
+        toDoctorId: normalizedDoctorId,
+        toDoctorName: doctorName,
+      },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorUserId: user.id,
+        action: "IMAGING_STUDY_ASSIGNED_DOCTOR",
+        entityType: "ImagingStudy",
+        entityId: study.id,
+        message: `Assigned study ${study.studyInstanceUid} to ${doctorName || "unassigned"}`,
+        metadataJson: JSON.stringify({
+          studyInstanceUid: study.studyInstanceUid,
+          patientName: study.patientName,
+          fromDoctorId: study.assignedDoctorId,
+          toDoctorId: normalizedDoctorId,
+        }),
+      },
+    });
+  });
+
+  return { success: true, assignedDoctorId: normalizedDoctorId };
+}
+
+export async function acknowledgeOperationalAlertAction(alertId: string) {
+  const user = await requireAlertAccess();
+  const alert = await prisma.operationalAlert.findUnique({ where: { id: alertId } });
+  if (!alert) throw new Error("Không tìm thấy alert.");
+  if (alert.status === "RESOLVED") return { success: true };
+
+  await prisma.$transaction([
+    prisma.operationalAlert.update({
+      where: { id: alertId },
+      data: {
+        status: "ACKNOWLEDGED",
+        acknowledgedAt: alert.acknowledgedAt || new Date(),
+        acknowledgedByUserId: alert.acknowledgedByUserId || user.id,
+      },
+    }),
+    prisma.auditLog.create({
+      data: {
+        actorUserId: user.id,
+        action: "OPERATIONAL_ALERT_ACKNOWLEDGED",
+        entityType: "OperationalAlert",
+        entityId: alertId,
+        message: `Acknowledged alert ${alert.title}`,
+        metadataJson: JSON.stringify({ alertType: alert.alertType, ruleKey: alert.ruleKey }),
+      },
+    }),
+  ]);
+
+  return { success: true };
+}
+
+export async function resolveOperationalAlertAction(alertId: string) {
+  const user = await requireAlertAccess();
+  const alert = await prisma.operationalAlert.findUnique({ where: { id: alertId } });
+  if (!alert) throw new Error("Không tìm thấy alert.");
+  if (alert.status === "RESOLVED") return { success: true };
+
+  await prisma.$transaction([
+    prisma.operationalAlert.update({
+      where: { id: alertId },
+      data: {
+        status: "RESOLVED",
+        resolvedAt: new Date(),
+        resolvedByUserId: user.id,
+      },
+    }),
+    prisma.auditLog.create({
+      data: {
+        actorUserId: user.id,
+        action: "OPERATIONAL_ALERT_RESOLVED",
+        entityType: "OperationalAlert",
+        entityId: alertId,
+        message: `Resolved alert ${alert.title}`,
+        metadataJson: JSON.stringify({ alertType: alert.alertType, ruleKey: alert.ruleKey }),
+      },
+    }),
+  ]);
+
+  return { success: true };
+}
+
 export async function getStatisticsDashboardAction(filters: StatisticsFilters = {}): Promise<StatisticsPayload> {
   const user = await requireStatisticsAccess();
   const range = toVietnamRange(filters.dateFrom, filters.dateTo);
   const endExclusive = plusOneDay(range.end);
+
+  await syncOperationalAlerts();
 
   const [
     studiesInPeriod,
@@ -971,6 +1585,8 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     operations,
     performance,
     utilization,
+    workload,
+    alerts,
     storage,
   ] = await Promise.all([
     prisma.imagingStudy.count({ where: studyDateWhere(range.start, endExclusive) }),
@@ -1005,6 +1621,8 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     getOperationsDashboard(range.start, endExclusive),
     getPerformanceAnalytics(range.start, endExclusive),
     getUtilizationAnalytics(range.start, endExclusive),
+    getRadiologistWorkload(range.start, endExclusive, user),
+    getOperationalAlerts(user),
     getOrthancStorage(),
   ]);
 
@@ -1047,6 +1665,8 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     operations,
     performance,
     utilization,
+    workload,
+    alerts,
     storage,
   };
 }
