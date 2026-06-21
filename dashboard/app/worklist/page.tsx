@@ -39,9 +39,14 @@ type WorklistOrderView = {
   gender?: string;
   phone?: string;
   referringPhysician?: string;
+  referringDepartment?: string;
+  sourceFacility?: string;
   modality: string;
   bodyPart?: string;
+  procedureCode?: string;
   procedureDescription?: string;
+  price?: number | null;
+  paymentStatus?: string;
   priority: string;
   scheduledStationAeTitle?: string;
   scheduledStationName?: string;
@@ -161,10 +166,14 @@ export default function WorklistPage() {
     gender: "O",
     phone: "",
     referringPhysician: "",
+    referringDepartment: "",
+    sourceFacility: "",
     modality: "DX",
     bodyPart: "",
     procedureCode: "",
     procedureDescription: "",
+    price: undefined,
+    paymentStatus: "",
     priority: "ROUTINE",
     scheduledDateTime: toDateTimeLocalValue(),
     scheduledStationAeTitle: "AETITLE",
@@ -520,6 +529,15 @@ export default function WorklistPage() {
             </Field>
           </div>
 
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Khoa/phòng gửi">
+              <input {...register("referringDepartment")} className="field-input" placeholder="Nội tổng quát / ICU" />
+            </Field>
+            <Field label="Facility/source">
+              <input {...register("sourceFacility")} className="field-input" placeholder="Phòng khám A / Đối tác B" />
+            </Field>
+          </div>
+
           <div className="grid grid-cols-3 gap-3">
             <Field label="Modality *" error={errors.modality?.message}>
               <Controller
@@ -546,6 +564,15 @@ export default function WorklistPage() {
           <Field label="Mô tả chỉ định">
             <input {...register("procedureDescription")} className="field-input" placeholder="Chụp Xquang ngực thẳng" />
           </Field>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Giá ước tính">
+              <input type="number" min="0" step="1000" {...register("price")} className="field-input" placeholder="0" />
+            </Field>
+            <Field label="Thanh toán">
+              <input {...register("paymentStatus")} className="field-input" placeholder="UNPAID / PAID / INSURANCE" />
+            </Field>
+          </div>
 
           <div className="grid grid-cols-3 gap-3">
             <Field label="Thời gian hẹn">
@@ -578,11 +605,11 @@ export default function WorklistPage() {
 
       <style>{`
         select option{background:var(--vin-bg-shell);color:var(--vin-text-primary)}
-        .field-input{width:100%;min-height:2.5rem;border-radius:0.375rem;border:1px solid rgb(143 178 191 / .34);background:transparent;padding:0.625rem 0.75rem;font-size:0.875rem;color:var(--vin-text-primary);outline:none;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
+        .field-input{width:100%;min-height:2.5rem;border-radius:0.375rem;border:1px solid rgb(255 255 255 / 0.1);background:transparent;padding:0.625rem 0.75rem;font-size:0.875rem;color:var(--vin-text-primary);outline:none;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
         .field-input::placeholder{color:var(--vin-text-faint)}
         .field-input:focus{border-color:var(--vin-accent);background:rgb(8 31 42 / .18);box-shadow:0 0 0 2px rgb(24 185 208 / .12)}
         .field-input option{background:var(--vin-bg-shell);color:var(--vin-text-primary)}
-        .field-textarea{width:100%;resize:none;border-radius:0.375rem;border:1px solid rgb(143 178 191 / .34);background:transparent;padding:0.625rem 0.75rem;font-size:0.875rem;line-height:1.55;color:var(--vin-text-primary);outline:none;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
+        .field-textarea{width:100%;resize:none;border-radius:0.375rem;border:1px solid rgb(255 255 255 / 0.1);background:transparent;padding:0.625rem 0.75rem;font-size:0.875rem;line-height:1.55;color:var(--vin-text-primary);outline:none;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
         .field-textarea::placeholder{color:var(--vin-text-faint)}
         .field-textarea:focus{border-color:var(--vin-accent);background:rgb(8 31 42 / .18);box-shadow:0 0 0 2px rgb(24 185 208 / .12)}
         .scr-dark::-webkit-scrollbar{width:5px;height:5px}

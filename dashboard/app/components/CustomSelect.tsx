@@ -2,6 +2,7 @@
 
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 
 export type SelectOption = {
   value: string;
@@ -40,13 +41,41 @@ export function CustomSelect({
   const selectedOption = options.find((opt) => opt.value === value);
   const displayLabel = selectedOption?.label ?? placeholder;
 
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+
+  const updatePosition = useCallback(() => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setDropdownStyle({
+        position: "fixed",
+        top: rect.bottom + 4,
+        left: rect.left,
+        width: rect.width,
+        zIndex: 99999,
+      });
+    }
+  }, []);
+
+  // Update position on scroll/resize
+  useEffect(() => {
+    if (!isOpen) return;
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [isOpen, updatePosition]);
+
   // Close on click outside
   useEffect(() => {
     if (!isOpen) return;
     const handler = (event: MouseEvent) => {
       if (
         containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
+        !containerRef.current.contains(event.target as Node) &&
+        listRef.current &&
+        !listRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -66,10 +95,11 @@ export function CustomSelect({
 
   const openDropdown = useCallback(() => {
     if (disabled) return;
+    updatePosition();
     setIsOpen(true);
     const idx = options.findIndex((opt) => opt.value === value);
     setHighlightIndex(idx >= 0 ? idx : 0);
-  }, [disabled, options, value]);
+  }, [disabled, options, value, updatePosition]);
 
   const selectOption = useCallback(
     (optionValue: string) => {
@@ -131,7 +161,7 @@ export function CustomSelect({
   const fontSize = compact ? "text-[11px]" : "text-sm";
   const baseBgBorder = compact
     ? "border-white/10 bg-transparent"
-    : "border-vin-border bg-vin-shell";
+    : "border-white/10 bg-transparent";
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
@@ -161,12 +191,12 @@ export function CustomSelect({
       </button>
 
       {/* Dropdown menu */}
-      {isOpen && (
+      {isOpen && typeof document !== "undefined" && createPortal(
         <ul
           ref={listRef}
           role="listbox"
-          className="absolute left-0 z-50 mt-1 max-h-60 w-full min-w-[160px] overflow-auto rounded-md border border-white/10 bg-vin-shell shadow-xl shadow-black/30 scr-dark"
-          style={{ animation: "customSelectFadeIn 0.12s ease-out" }}
+          className="fixed max-h-60 min-w-[160px] overflow-auto rounded-md border border-white/10 bg-vin-shell shadow-xl shadow-black/30 scr-dark"
+          style={{ ...dropdownStyle, animation: "customSelectFadeIn 0.12s ease-out" }}
         >
           {options.map((option, index) => {
             const isSelected = option.value === value;
@@ -198,7 +228,8 @@ export function CustomSelect({
               Không có tùy chọn
             </li>
           )}
-        </ul>
+        </ul>,
+        document.body
       )}
 
       <style>{`

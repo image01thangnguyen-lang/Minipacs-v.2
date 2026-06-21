@@ -532,9 +532,11 @@ Tao nen mong de tinh SLA/TAT va audit dung.
 - [x] Them `ImagingStudyEvent`.
 - [x] Bo sung cac moc thoi gian thieu vao `ImagingStudy`.
 - [x] Dam bao moi transition quan trong ghi event.
-- [ ] Backfill event tu du lieu hien co neu co the.
+- [x] Backfill event tu du lieu hien co neu co the.
 - [x] Tao helper `recordStudyEvent()`.
 - [x] Tao helper `getStudyTimeline()`.
+
+Ghi chu 2026-06-21: Da them backfill idempotent theo range dang xem tren `/statistics`, suy luan event tu scheduled/check-in/scan/received/stable/QC/open/final/delivered timestamp neu study chua co event tuong ung.
 
 ### Acceptance criteria
 
@@ -599,13 +601,13 @@ Quan ly nang luc may chup va phong chup.
 
 - [x] Dam bao `DicomNode` co `room`, `modality`, `aeTitle`.
 - [x] Map study/order vao `stationAeTitle`.
-- [ ] Ghi `scanStartedAt`, `scanEndedAt` neu co MPPS/manual event.
+- [x] Ghi `scanStartedAt`, `scanEndedAt` neu co MPPS/manual event.
 - [x] Tao utilization chart theo gio.
 - [x] Tao ranking may/phong theo so ca.
 - [x] Tao no-show/cancel widget.
 - [x] Tao QC reject theo may.
 
-Ghi chu 2026-06-21: Da them section utilization tren `/statistics`. Khi chua co MPPS/manual scan event, busy time dung uoc tinh tu scheduled/received hoac default theo modality.
+Ghi chu 2026-06-21: Da them section utilization tren `/statistics`. Khi chua co MPPS/manual scan event, busy time dung uoc tinh tu scheduled/received hoac default theo modality. Da them action/manual button ghi scan start/end, cap nhat timestamp va event `SCAN_STARTED`/`SCAN_ENDED`.
 
 ### Acceptance criteria
 
@@ -698,9 +700,9 @@ Quan ly chat luong hinh anh, bao cao va rui ro lam sang.
 - [x] Tao QC dashboard.
 - [x] Them critical result model/flow.
 - [x] Them addendum tracking.
-- [ ] Neu co du lieu, ingest dose RDSR/dose tags.
+- [x] Neu co du lieu, ingest dose RDSR/dose tags.
 
-Ghi chu 2026-06-21: Da them Quality & Safety tren `/statistics`, gom QC reject rate/ly do/recent list, missing critical data, critical result pending communication, action tao/danh dau critical result da thong bao, va addendum tracking khi sua report da final/completed. Chua ingest dose vi chua co nguon RDSR/dose tag.
+Ghi chu 2026-06-21: Da them Quality & Safety tren `/statistics`, gom QC reject rate/ly do/recent list, missing critical data, critical result pending communication, action tao/danh dau critical result da thong bao, addendum tracking khi sua report da final/completed, model/action `DoseObservation` va dose outlier dashboard. Nguon RDSR/dose tag co the day vao `recordDoseObservationAction()`.
 
 ### Acceptance criteria
 
@@ -716,12 +718,14 @@ Ho tro quan ly san luong va nguon gui benh.
 
 ### Viec can lam
 
-- [ ] Chuan hoa `referringPhysician`.
-- [ ] Them source/facility neu can.
-- [ ] Them procedure code mapping.
-- [ ] Tao chart theo nguon gui.
-- [ ] Tao chart modality/procedure mix.
-- [ ] Them export CSV/XLSX.
+- [x] Chuan hoa `referringPhysician`.
+- [x] Them source/facility neu can.
+- [x] Them procedure code mapping.
+- [x] Tao chart theo nguon gui.
+- [x] Tao chart modality/procedure mix.
+- [x] Them export CSV/XLSX.
+
+Ghi chu 2026-06-21: Da them Business / Referral Analytics tren `/statistics`, chuan hoa bucket referring physician/source/department khi aggregate, bo sung field `referringDepartment`, `sourceFacility`, `price`, `paymentStatus`, model `ProcedureCatalog`, chart nguon gui/khoa/facility/modality/procedure/trend va export dung drilldown CSV/XLSX.
 
 ### Acceptance criteria
 
@@ -736,12 +740,14 @@ Lam dashboard thanh cong cu hanh dong hang ngay.
 
 ### Viec can lam
 
-- [ ] Tao component drilldown table dung chung.
-- [ ] Moi KPI co filter link.
-- [ ] Them saved filters.
-- [ ] Them export theo quyen.
-- [ ] Them empty/loading/error states ro rang.
-- [ ] Toi uu query va index.
+- [x] Tao component drilldown table dung chung.
+- [x] Moi KPI co filter link.
+- [x] Them saved filters.
+- [x] Them export theo quyen.
+- [x] Them empty/loading/error states ro rang.
+- [x] Toi uu query va index.
+
+Ghi chu 2026-06-21: Da them drilldown table dung chung tren `/statistics`, KPI/modality/business row click de loc danh sach ca, saved filter preset theo user/shared, export CSV/XLSX an thong tin nhay cam neu user khong co `reports.read`, empty/loading/error states cho cac panel moi va index cho cac cot query moi.
 
 ### Acceptance criteria
 

@@ -106,7 +106,7 @@ ensure_data_dirs() {
 }
 
 update_code() {
-  info "[1/6] Pulling latest code..."
+  info "[1/8] Pulling latest code..."
 
   [ -d .git ] || fail "This folder is not a git repository: $PROJECT_DIR"
 
@@ -125,16 +125,50 @@ update_code() {
   fi
 }
 
+wait_for_database() {
+  info "Waiting for PostgreSQL..."
+
+  local max_attempts=45
+  local attempt=1
+  local db_user="${POSTGRES_USER:-orthanc}"
+  local db_name="${POSTGRES_DB:-orthanc_db}"
+
+  while [ "$attempt" -le "$max_attempts" ]; do
+    if compose exec -T db pg_isready -U "$db_user" -d "$db_name" >/dev/null 2>&1; then
+      return 0
+    fi
+
+    sleep 2
+    attempt=$((attempt + 1))
+  done
+
+  compose ps || true
+  fail "PostgreSQL did not become ready."
+}
+
+apply_database_schema() {
+  info "[7/8] Applying dashboard Prisma schema..."
+  compose run --rm --no-deps dashboard npx prisma db push --skip-generate
+}
+
 build_and_start() {
-  info "[4/6] Stopping old containers..."
+  info "[4/8] Stopping old containers..."
   compose down
 
-  info "[5/6] Rebuilding and starting Mini PACS..."
-  compose up -d --build
+  info "[5/8] Rebuilding dashboard image..."
+  compose build dashboard
+
+  info "[6/8] Starting database and PACS services..."
+  compose up -d db orthanc
+  wait_for_database
+  apply_database_schema
+
+  info "[8/8] Starting Mini PACS..."
+  compose up -d
 }
 
 wait_for_dashboard() {
-  info "[6/6] Checking services..."
+  info "Checking services..."
 
   local max_attempts=45
   local attempt=1
@@ -184,13 +218,13 @@ load_env_file
 fix_repo_permissions
 update_code
 
-info "[2/6] Preparing local storage and config..."
+info "[2/8] Preparing local storage and config..."
 load_env_file
 ensure_data_dirs
 generate_config config_templates/app-config.js.template config/app-config.js
 generate_config config_templates/orthanc.json.template config/orthanc.json
 
-info "[3/6] Validating Docker access..."
+info "[3/8] Validating Docker access..."
 docker info >/dev/null 2>&1 || fail "Docker is not accessible. Run with sudo or add your user to the docker group."
 
 build_and_start

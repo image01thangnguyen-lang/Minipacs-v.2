@@ -193,10 +193,14 @@ model WorklistOrder {
   gender                    String? // M, F, O
   phone                     String?
   referringPhysician        String?
+  referringDepartment       String?
+  sourceFacility            String?
   modality                  String
   bodyPart                  String?
   procedureCode             String?
   procedureDescription      String?
+  price                     Decimal?  @db.Decimal(12, 2)
+  paymentStatus             String?
   priority                  String    @default("ROUTINE")
   scheduledStationAeTitle   String?
   scheduledStationName      String?
@@ -221,6 +225,11 @@ model WorklistOrder {
   @@index([patientId])
   @@index([orderStatus])
   @@index([modality])
+  @@index([referringPhysician])
+  @@index([referringDepartment])
+  @@index([sourceFacility])
+  @@index([procedureCode])
+  @@index([paymentStatus])
   @@map("worklist_orders")
 }
 
@@ -255,11 +264,12 @@ model ImagingStudy {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
-  statusHistory   StudyStatusHistory[]
-  events          ImagingStudyEvent[]
-  qcEvents        StudyQcEvent[]
-  criticalResults CriticalResult[]
-  reportAddenda   ReportAddendum[]
+  statusHistory    StudyStatusHistory[]
+  events           ImagingStudyEvent[]
+  qcEvents         StudyQcEvent[]
+  criticalResults  CriticalResult[]
+  reportAddenda    ReportAddendum[]
+  doseObservations DoseObservation[]
 
   @@index([status])
   @@index([patientId])
@@ -269,7 +279,12 @@ model ImagingStudy {
   @@index([stationAeTitle])
   @@index([assignedDoctorId])
   @@index([scheduledAt])
+  @@index([scanStartedAt])
+  @@index([scanEndedAt])
   @@index([receivedAt])
+  @@index([stableAt])
+  @@index([qcCompletedAt])
+  @@index([firstOpenedAt])
   @@index([finalizedAt])
   @@index([deliveredAt])
   @@map("imaging_studies")
@@ -432,6 +447,57 @@ model ReportAddendum {
   @@index([reasonCode])
   @@index([createdAt])
   @@map("report_addenda")
+}
+
+model DoseObservation {
+  id                String       @id @default(uuid())
+  imagingStudyId    String
+  imagingStudy      ImagingStudy @relation(fields: [imagingStudyId], references: [id], onDelete: Cascade)
+  metricType        String
+  value             Float
+  unit              String?
+  source            String       @default("DICOM")
+  seriesInstanceUid String?
+  sopInstanceUid    String?
+  metadataJson      String?      @db.Text
+  createdAt         DateTime     @default(now())
+
+  @@index([imagingStudyId])
+  @@index([metricType])
+  @@index([createdAt])
+  @@map("dose_observations")
+}
+
+model ProcedureCatalog {
+  id           String   @id @default(uuid())
+  code         String   @unique
+  name         String
+  modality     String?
+  bodyPart     String?
+  defaultPrice Decimal? @db.Decimal(12, 2)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([modality])
+  @@index([isActive])
+  @@map("procedure_catalog")
+}
+
+model DashboardFilterPreset {
+  id          String   @id @default(uuid())
+  userId      String?
+  name        String
+  dashboard   String   @default("statistics")
+  filtersJson String   @db.Text
+  isShared    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([dashboard])
+  @@index([isShared])
+  @@map("dashboard_filter_presets")
 }
 
 model AuditLog {

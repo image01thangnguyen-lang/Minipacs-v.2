@@ -9,10 +9,17 @@ import { orthancClient } from "@/lib/orthancClient";
 import type {
   StatisticsAlerts,
   StatisticsBreakdownRow,
+  StatisticsBusinessAnalytics,
+  StatisticsBusinessBreakdownRow,
+  StatisticsBusinessTrendRow,
   StatisticsCriticalResultRow,
+  StatisticsDoseOutlierRow,
   StatisticsDoctorOption,
   StatisticsDoctorRow,
+  StatisticsDrilldown,
+  StatisticsDrilldownRow,
   StatisticsDurationSummary,
+  StatisticsFilterPreset,
   StatisticsFilters,
   StatisticsModalityCount,
   StatisticsOperations,
@@ -25,6 +32,7 @@ import type {
   StatisticsPayload,
   StatisticsPerformance,
   StatisticsPerformanceOutlier,
+  StatisticsProcedureMixRow,
   StatisticsQualityBreakdownRow,
   StatisticsQualityReasonRow,
   StatisticsQualitySafety,
@@ -71,6 +79,12 @@ const NODE_ECHO_CRITICAL_MINUTES = 120;
 const MODALITY_IDLE_WARNING_MINUTES = 24 * 60;
 const STORAGE_WARNING_DAYS = 30;
 const STORAGE_CRITICAL_DAYS = 7;
+const DOSE_THRESHOLDS: Record<string, number> = {
+  CTDIVOL: Number(process.env.DOSE_CTDI_VOL_THRESHOLD || 80),
+  DLP: Number(process.env.DOSE_DLP_THRESHOLD || 1500),
+  DOSE_AREA_PRODUCT: Number(process.env.DOSE_DAP_THRESHOLD || 50000),
+  ENTRANCE_DOSE: Number(process.env.DOSE_ENTRANCE_THRESHOLD || 20),
+};
 const DEFAULT_SCAN_MINUTES_BY_MODALITY: Record<string, number> = {
   CT: 20,
   MR: 30,
@@ -280,8 +294,34 @@ function cleanText(value?: string | null) {
   return (value || "").trim();
 }
 
+function normalizeBucket(value?: string | null, fallback = "UNKNOWN") {
+  return cleanText(value)
+    .replace(/\s+/g, " ")
+    .toUpperCase()
+    || fallback;
+}
+
+function displayBucket(value?: string | null, fallback = "Unknown") {
+  return cleanText(value).replace(/\s+/g, " ") || fallback;
+}
+
 function formatPatientName(value?: string | null) {
   return cleanText(value).replace(/\^/g, " ") || "Unknown Patient";
+}
+
+function decimalToNumber(value: any): number | null {
+  if (value === null || value === undefined) return null;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function csvCell(value: unknown) {
+  const text = value === null || value === undefined ? "" : String(value);
+  return `"${text.replace(/"/g, '""')}"`;
+}
+
+function buildCsv(rows: string[][]) {
+  return rows.map(row => row.map(csvCell).join(",")).join("\r\n");
 }
 
 function serializeQueueRow(study: any): StatisticsQueueRow {
@@ -1100,8 +1140,13 @@ function qualityReasonLabel(value?: string | null) {
   return cleanText(value) || "NO_REASON";
 }
 
+function doseThreshold(metricType?: string | null) {
+  const key = normalizeBucket(metricType);
+  return DOSE_THRESHOLDS[key] ?? null;
+}
+
 async function getQualitySafetyDashboard(start: Date, endExclusive: Date): Promise<StatisticsQualitySafety> {
-  const [studies, qcEvents, criticalResults, criticalPending, addenda, finalizedStudies, finalizedReports] = await Promise.all([
+  const [studies, qcEvents, criticalResults, criticalPending, addenda, finalizedStudies, finalizedReports, doseObservations] = await Promise.all([
     prisma.imagingStudy.findMany({
       where: studyDateWhere(start, endExclusive),
       include: { order: true },
@@ -1146,6 +1191,12 @@ async function getQualitySafetyDashboard(start: Date, endExclusive: Date): Promi
       where: reportFinalWhere(start, endExclusive),
       select: { doctorId: true, imagingStudy: { select: { modality: true } } },
       take: 1000,
+    }),
+    prisma.doseObservation.findMany({
+      where: { createdAt: rangeFilter(start, endExclusive) },
+      include: { imagingStudy: true },
+      orderBy: { createdAt: "desc" },
+      take: 500,
     }),
   ]);
 
@@ -1264,6 +1315,28 @@ async function getQualitySafetyDashboard(start: Date, endExclusive: Date): Promi
     .sort((a, b) => b.count - a.count)
     .slice(0, 8);
 
+  const doseOutliers: StatisticsDoseOutlierRow[] = doseObservations
+    .map(row => {
+      const threshold = doseThreshold(row.metricType);
+      if (threshold === null || row.value <= threshold) return null;
+      return {
+        id: row.id,
+        studyInstanceUid: row.imagingStudy.studyInstanceUid || "",
+        patientName: formatPatientName(row.imagingStudy.patientName),
+        patientId: row.imagingStudy.patientId || "-",
+        accessionNumber: row.imagingStudy.accessionNumber || "-",
+        modality: row.imagingStudy.modality || "-",
+        metricType: row.metricType,
+        value: row.value,
+        unit: row.unit || "",
+        threshold,
+        createdAt: row.createdAt.toISOString(),
+        href: studyHref(row.imagingStudy),
+      };
+    })
+    .filter((row): row is StatisticsDoseOutlierRow => Boolean(row))
+    .slice(0, 20);
+
   return {
     kpis: {
       qcEvents: qcEvents.length,
@@ -1274,15 +1347,517 @@ async function getQualitySafetyDashboard(start: Date, endExclusive: Date): Promi
       criticalPending,
       addendumCount: addenda.length,
       addendumRate: rate(addenda.length, finalizedStudies.length),
-      doseOutliers: null,
+      doseOutliers: doseOutliers.length,
     },
     qcReasons,
     qcRecent,
     missingCriticalDataRows,
     criticalResults: criticalRows,
+    doseOutliers,
     addendumByDoctor,
     addendumByModality,
   };
+}
+
+function orderEstimatedRevenue(order: any, catalogByCode: Map<string, any>) {
+  const direct = decimalToNumber(order.price);
+  if (direct !== null) return direct;
+  const code = normalizeBucket(order.procedureCode, "");
+  if (!code) return null;
+  return decimalToNumber(catalogByCode.get(code)?.defaultPrice);
+}
+
+function addBusinessRow(
+  map: Map<string, StatisticsBusinessBreakdownRow>,
+  keyInput: string | null | undefined,
+  labelInput: string | null | undefined,
+  total: number,
+  order: any,
+  revenue: number | null,
+  now: Date,
+) {
+  const key = normalizeBucket(keyInput);
+  const row = map.get(key) || {
+    key,
+    label: displayBucket(labelInput || keyInput),
+    count: 0,
+    percent: 0,
+    cancelled: 0,
+    noShow: 0,
+    estimatedRevenue: null,
+  };
+  row.count += 1;
+  row.percent = rate(row.count, total);
+  if (order.cancelledAt || order.orderStatus === "CANCELLED") row.cancelled += 1;
+  const hasStudy = Boolean(order.imagingStudies?.length);
+  const isNoShow =
+    !hasStudy &&
+    !order.arrivedAt &&
+    !order.cancelledAt &&
+    order.scheduledDate < now &&
+    ["REQUESTED", "SCHEDULED"].includes(String(order.orderStatus));
+  if (isNoShow) row.noShow += 1;
+  if (revenue !== null) row.estimatedRevenue = (row.estimatedRevenue || 0) + revenue;
+  map.set(key, row);
+}
+
+async function getBusinessAnalytics(start: Date, endExclusive: Date): Promise<StatisticsBusinessAnalytics> {
+  const now = new Date();
+  const [orders, studies, catalogs] = await Promise.all([
+    prisma.worklistOrder.findMany({
+      where: { scheduledDate: rangeFilter(start, endExclusive) },
+      include: {
+        imagingStudies: {
+          select: { id: true },
+          take: 1,
+        },
+      },
+      orderBy: { scheduledDate: "asc" },
+      take: 2000,
+    }),
+    prisma.imagingStudy.findMany({
+      where: studyDateWhere(start, endExclusive),
+      select: {
+        id: true,
+        modality: true,
+        order: {
+          select: {
+            modality: true,
+            sourceFacility: true,
+            referringPhysician: true,
+            referringDepartment: true,
+            procedureCode: true,
+            procedureDescription: true,
+            price: true,
+          },
+        },
+        createdAt: true,
+      },
+      take: 2000,
+    }),
+    prisma.procedureCatalog.findMany({
+      where: { isActive: true },
+      take: 1000,
+    }),
+  ]);
+
+  const catalogByCode = new Map(catalogs.map(catalog => [normalizeBucket(catalog.code, ""), catalog]));
+  const byReferringPhysician = new Map<string, StatisticsBusinessBreakdownRow>();
+  const byDepartment = new Map<string, StatisticsBusinessBreakdownRow>();
+  const bySourceFacility = new Map<string, StatisticsBusinessBreakdownRow>();
+  const modalityMix = new Map<string, StatisticsBusinessBreakdownRow>();
+  const procedureMix = new Map<string, StatisticsProcedureMixRow>();
+  const daily = new Map<string, StatisticsBusinessTrendRow>();
+  const totalOrders = orders.length;
+  let totalRevenue: number | null = null;
+  let noShow = 0;
+  let cancelled = 0;
+
+  dateKeysInRange(start, endExclusive).forEach(date => {
+    daily.set(date, { date, studyCount: 0, orderCount: 0, estimatedRevenue: null });
+  });
+
+  orders.forEach(order => {
+    const revenue = orderEstimatedRevenue(order, catalogByCode);
+    if (revenue !== null) totalRevenue = (totalRevenue || 0) + revenue;
+    if (order.cancelledAt || order.orderStatus === "CANCELLED") cancelled += 1;
+    const hasStudy = Boolean(order.imagingStudies?.length);
+    const isNoShow =
+      !hasStudy &&
+      !order.arrivedAt &&
+      !order.cancelledAt &&
+      order.scheduledDate < now &&
+      ["REQUESTED", "SCHEDULED"].includes(String(order.orderStatus));
+    if (isNoShow) noShow += 1;
+
+    addBusinessRow(byReferringPhysician, order.referringPhysician, order.referringPhysician, totalOrders, order, revenue, now);
+    addBusinessRow(byDepartment, order.referringDepartment, order.referringDepartment, totalOrders, order, revenue, now);
+    addBusinessRow(bySourceFacility, order.sourceFacility, order.sourceFacility, totalOrders, order, revenue, now);
+    addBusinessRow(modalityMix, order.modality, order.modality, totalOrders, order, revenue, now);
+
+    const procedureKey = normalizeBucket(order.procedureCode || order.procedureDescription);
+    const catalog = order.procedureCode ? catalogByCode.get(normalizeBucket(order.procedureCode, "")) : null;
+    const procedureRow = procedureMix.get(procedureKey) || {
+      code: cleanText(order.procedureCode) || "-",
+      label: catalog?.name || displayBucket(order.procedureDescription || order.procedureCode, "Unknown procedure"),
+      modality: order.modality || catalog?.modality || "-",
+      count: 0,
+      percent: 0,
+      estimatedRevenue: null,
+    };
+    procedureRow.count += 1;
+    procedureRow.percent = rate(procedureRow.count, totalOrders);
+    if (revenue !== null) procedureRow.estimatedRevenue = (procedureRow.estimatedRevenue || 0) + revenue;
+    procedureMix.set(procedureKey, procedureRow);
+
+    const key = vietnamDateKey(order.scheduledDate);
+    const trend = daily.get(key);
+    if (trend) {
+      trend.orderCount += 1;
+      if (revenue !== null) trend.estimatedRevenue = (trend.estimatedRevenue || 0) + revenue;
+    }
+  });
+
+  studies.forEach(study => {
+    const key = vietnamDateKey(study.createdAt);
+    const trend = daily.get(key);
+    if (trend) trend.studyCount += 1;
+  });
+
+  const sortBreakdown = (rows: Iterable<StatisticsBusinessBreakdownRow>) =>
+    Array.from(rows)
+      .map(row => ({ ...row, percent: rate(row.count, totalOrders) }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+  return {
+    kpis: {
+      ordersInPeriod: orders.length,
+      studiesInPeriod: studies.length,
+      referringSources: byReferringPhysician.size,
+      departments: byDepartment.size,
+      noShow,
+      cancelled,
+      estimatedRevenue: totalRevenue,
+    },
+    byReferringPhysician: sortBreakdown(byReferringPhysician.values()),
+    byDepartment: sortBreakdown(byDepartment.values()),
+    bySourceFacility: sortBreakdown(bySourceFacility.values()),
+    modalityMix: sortBreakdown(modalityMix.values()),
+    procedureMix: Array.from(procedureMix.values())
+      .map(row => ({ ...row, percent: rate(row.count, totalOrders) }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 12),
+    dailyTrend: Array.from(daily.values()),
+  };
+}
+
+function serializeDrilldownStudy(study: any): StatisticsDrilldownRow {
+  return {
+    id: study.id,
+    studyInstanceUid: study.studyInstanceUid || "",
+    patientName: formatPatientName(study.patientName),
+    patientId: study.patientId || "-",
+    accessionNumber: study.accessionNumber || "-",
+    modality: study.modality || study.order?.modality || "-",
+    status: study.status,
+    statusLabel: statusLabels[study.status] || study.status,
+    priority: priorityOf(study),
+    stationAeTitle: stationOf(study),
+    referringPhysician: displayBucket(study.order?.referringPhysician, "-"),
+    sourceFacility: displayBucket(study.order?.sourceFacility, "-"),
+    procedureCode: cleanText(study.order?.procedureCode) || "-",
+    procedureDescription: displayBucket(study.order?.procedureDescription || study.studyDescription, "-"),
+    scheduledAt: optionalIso(study.scheduledAt || study.order?.scheduledDate),
+    receivedAt: optionalIso(study.receivedAt),
+    finalizedAt: optionalIso(study.finalizedAt),
+    href: studyHref(study),
+  };
+}
+
+function drilldownTitle(filter?: string, value?: string) {
+  const label = displayBucket(value, "");
+  switch (filter) {
+    case "readyToRead": return "Ca chờ đọc";
+    case "reading": return "Ca đang đọc / nháp";
+    case "finalized": return "Ca đã ký trong kỳ";
+    case "delivered": return "Ca đã trả trong kỳ";
+    case "qcIssues": return "Ca QC / lỗi";
+    case "slaBreaches": return "Ca quá SLA";
+    case "stuckWorkflow": return "Ca kẹt workflow";
+    case "modality": return `Ca modality ${label}`;
+    case "status": return `Ca trạng thái ${label}`;
+    case "priority": return `Ca priority ${label}`;
+    case "doctor": return `Ca của bác sĩ ${label}`;
+    case "referringPhysician": return `Nguồn gửi ${label}`;
+    case "department": return `Khoa/phòng ${label}`;
+    case "sourceFacility": return `Cơ sở/đối tác ${label}`;
+    case "procedure": return `Dịch vụ ${label}`;
+    default: return "Tất cả ca trong kỳ";
+  }
+}
+
+function buildDrilldownWhere(start: Date, endExclusive: Date, filters: StatisticsFilters) {
+  const filter = filters.drilldown || "all";
+  const value = cleanText(filters.drilldownValue);
+  const where: any = studyDateWhere(start, endExclusive);
+
+  if (filter === "readyToRead") where.status = "READY_TO_READ";
+  if (filter === "reading") where.status = { in: ["READING", "REPORTED"] as any[] };
+  if (filter === "finalized") {
+    delete where.OR;
+    where.finalizedAt = rangeFilter(start, endExclusive);
+  }
+  if (filter === "delivered") {
+    delete where.OR;
+    where.deliveredAt = rangeFilter(start, endExclusive);
+  }
+  if (filter === "qcIssues") where.status = { in: ["NEEDS_QC", "QC_REJECTED", "ERROR"] as any[] };
+  if (filter === "modality" && value) where.modality = value;
+  if (filter === "status" && value) where.status = value;
+  if (filter === "priority" && value) {
+    const dateOr = where.OR;
+    delete where.OR;
+    where.AND = [
+      { OR: dateOr },
+      {
+        OR: [
+          { priority: value },
+          { order: { is: { priority: value } } },
+        ],
+      },
+    ];
+  }
+  if (filter === "doctor" && value) {
+    where.assignedDoctorId = value;
+  }
+  if (filter === "referringPhysician" && value) {
+    where.order = { is: { referringPhysician: { equals: value, mode: "insensitive" } } };
+  }
+  if (filter === "department" && value) {
+    where.order = { is: { referringDepartment: { equals: value, mode: "insensitive" } } };
+  }
+  if (filter === "sourceFacility" && value) {
+    where.order = { is: { sourceFacility: { equals: value, mode: "insensitive" } } };
+  }
+  if (filter === "procedure" && value) {
+    where.order = {
+      is: {
+        OR: [
+          { procedureCode: { equals: value, mode: "insensitive" } },
+          { procedureDescription: { equals: value, mode: "insensitive" } },
+        ],
+      },
+    };
+  }
+
+  return where;
+}
+
+async function getDrilldownDashboard(start: Date, endExclusive: Date, filters: StatisticsFilters): Promise<StatisticsDrilldown> {
+  const activeFilter = filters.drilldown || "all";
+  const activeValue = cleanText(filters.drilldownValue);
+  const computedFilter = ["slaBreaches", "stuckWorkflow"].includes(activeFilter);
+  const where = computedFilter
+    ? {
+        status: { in: ["ORDERED", "READY_FOR_SCAN", "RECEIVED", "STABLE", "NEEDS_QC", "READY_TO_READ", "READING", "FINALIZED"] as any[] },
+      }
+    : buildDrilldownWhere(start, endExclusive, filters);
+
+  const studies = await prisma.imagingStudy.findMany({
+    where,
+    include: { order: true },
+    orderBy: [
+      { receivedAt: "desc" },
+      { scheduledAt: "desc" },
+      { createdAt: "desc" },
+    ],
+    take: computedFilter ? 500 : 150,
+  });
+
+  const filtered = computedFilter
+    ? studies
+        .filter(study => {
+          if (activeFilter === "slaBreaches") {
+            const row = serializeOperationStudyRow(study, "");
+            return ["READY_TO_READ", "READING"].includes(study.status) && row.waitingMinutes >= slaThresholdForPriority(row.priority);
+          }
+          return Boolean(stuckReason(study));
+        })
+        .slice(0, 150)
+    : studies;
+
+  const rows = filtered.map(serializeDrilldownStudy);
+  return {
+    activeFilter,
+    activeValue,
+    title: drilldownTitle(activeFilter, activeValue),
+    rows,
+    total: rows.length,
+    csvUrl: "",
+  };
+}
+
+async function getFilterPresets(user: any): Promise<StatisticsFilterPreset[]> {
+  const presets = await prisma.dashboardFilterPreset.findMany({
+    where: {
+      dashboard: "statistics",
+      OR: [
+        { userId: user.id },
+        { isShared: true },
+      ],
+    },
+    orderBy: { updatedAt: "desc" },
+    take: 30,
+  });
+
+  return presets.map(preset => ({
+    id: preset.id,
+    name: preset.name,
+    filters: JSON.parse(preset.filtersJson || "{}"),
+    isShared: preset.isShared,
+    createdAt: preset.createdAt.toISOString(),
+  }));
+}
+
+function exportRows(rows: StatisticsDrilldownRow[], includeSensitive: boolean) {
+  const header = [
+    "Patient Name",
+    "Patient ID",
+    "Accession",
+    "Modality",
+    "Status",
+    "Priority",
+    "Station",
+    "Referring Physician",
+    "Source Facility",
+    "Procedure Code",
+    "Procedure",
+    "Scheduled At",
+    "Received At",
+    "Finalized At",
+    "URL",
+  ];
+  const body = rows.map(row => [
+    includeSensitive ? row.patientName : "",
+    includeSensitive ? row.patientId : "",
+    includeSensitive ? row.accessionNumber : "",
+    row.modality,
+    row.statusLabel,
+    row.priority,
+    row.stationAeTitle,
+    row.referringPhysician,
+    row.sourceFacility,
+    row.procedureCode,
+    row.procedureDescription,
+    row.scheduledAt || "",
+    row.receivedAt || "",
+    row.finalizedAt || "",
+    row.href,
+  ]);
+  return [header, ...body];
+}
+
+function xmlEscape(value: unknown) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function crc32(buffer: Buffer) {
+  const table = Array.from({ length: 256 }, (_, index) => {
+    let c = index;
+    for (let k = 0; k < 8; k += 1) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    return c >>> 0;
+  });
+  let crc = 0xffffffff;
+  for (let index = 0; index < buffer.length; index += 1) {
+    crc = table[(crc ^ buffer[index]) & 0xff] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function dosDateTime(date = new Date()) {
+  const year = Math.max(1980, date.getFullYear());
+  const dosTime = (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
+  const dosDate = ((year - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate();
+  return { dosTime, dosDate };
+}
+
+function zipStore(files: Array<{ name: string; data: string }>) {
+  const localParts: Buffer[] = [];
+  const centralParts: Buffer[] = [];
+  let offset = 0;
+  const { dosTime, dosDate } = dosDateTime();
+
+  files.forEach(file => {
+    const name = Buffer.from(file.name, "utf8");
+    const data = Buffer.from(file.data, "utf8");
+    const crc = crc32(data);
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt16LE(0, 6);
+    local.writeUInt16LE(0, 8);
+    local.writeUInt16LE(dosTime, 10);
+    local.writeUInt16LE(dosDate, 12);
+    local.writeUInt32LE(crc, 14);
+    local.writeUInt32LE(data.length, 18);
+    local.writeUInt32LE(data.length, 22);
+    local.writeUInt16LE(name.length, 26);
+    local.writeUInt16LE(0, 28);
+    localParts.push(local, name, data);
+
+    const central = Buffer.alloc(46);
+    central.writeUInt32LE(0x02014b50, 0);
+    central.writeUInt16LE(20, 4);
+    central.writeUInt16LE(20, 6);
+    central.writeUInt16LE(0, 8);
+    central.writeUInt16LE(0, 10);
+    central.writeUInt16LE(dosTime, 12);
+    central.writeUInt16LE(dosDate, 14);
+    central.writeUInt32LE(crc, 16);
+    central.writeUInt32LE(data.length, 20);
+    central.writeUInt32LE(data.length, 24);
+    central.writeUInt16LE(name.length, 28);
+    central.writeUInt16LE(0, 30);
+    central.writeUInt16LE(0, 32);
+    central.writeUInt16LE(0, 34);
+    central.writeUInt16LE(0, 36);
+    central.writeUInt32LE(0, 38);
+    central.writeUInt32LE(offset, 42);
+    centralParts.push(central, name);
+    offset += local.length + name.length + data.length;
+  });
+
+  const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(0, 4);
+  end.writeUInt16LE(0, 6);
+  end.writeUInt16LE(files.length, 8);
+  end.writeUInt16LE(files.length, 10);
+  end.writeUInt32LE(centralSize, 12);
+  end.writeUInt32LE(offset, 16);
+  end.writeUInt16LE(0, 20);
+  return Buffer.concat([...localParts, ...centralParts, end]);
+}
+
+function rowsToXlsxBase64(rows: string[][]) {
+  const sheetRows = rows.map((row, rowIndex) => {
+    const cells = row.map((cell, colIndex) => {
+      const col = String.fromCharCode(65 + colIndex);
+      return `<c r="${col}${rowIndex + 1}" t="inlineStr"><is><t>${xmlEscape(cell)}</t></is></c>`;
+    }).join("");
+    return `<row r="${rowIndex + 1}">${cells}</row>`;
+  }).join("");
+
+  const files = [
+    {
+      name: "[Content_Types].xml",
+      data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>`,
+    },
+    {
+      name: "_rels/.rels",
+      data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
+    },
+    {
+      name: "xl/workbook.xml",
+      data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Drilldown" sheetId="1" r:id="rId1"/></sheets></workbook>`,
+    },
+    {
+      name: "xl/_rels/workbook.xml.rels",
+      data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>`,
+    },
+    {
+      name: "xl/worksheets/sheet1.xml",
+      data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${sheetRows}</sheetData></worksheet>`,
+    },
+  ];
+
+  return zipStore(files).toString("base64");
 }
 
 async function getAverageTurnaround(start: Date, endExclusive: Date) {
@@ -2022,6 +2597,64 @@ async function getOperationalAlerts(user: any): Promise<StatisticsAlerts> {
   };
 }
 
+async function backfillStudyEventsFromExistingData(start: Date, endExclusive: Date) {
+  const studies = await prisma.imagingStudy.findMany({
+    where: studyDateWhere(start, endExclusive),
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      scheduledAt: true,
+      checkedInAt: true,
+      scanStartedAt: true,
+      scanEndedAt: true,
+      receivedAt: true,
+      stableAt: true,
+      qcCompletedAt: true,
+      firstOpenedAt: true,
+      finalizedAt: true,
+      deliveredAt: true,
+      events: {
+        select: { eventType: true },
+      },
+    },
+    take: 1000,
+  });
+
+  const rows: any[] = [];
+  studies.forEach(study => {
+    const existing = new Set(study.events.map(event => event.eventType));
+    const candidates: Array<{ eventType: string; createdAt?: Date | null; toStatus?: any }> = [
+      { eventType: "ORDER_CREATED", createdAt: study.scheduledAt || study.createdAt, toStatus: "ORDERED" },
+      { eventType: "PATIENT_CHECKED_IN", createdAt: study.checkedInAt, toStatus: study.status },
+      { eventType: "SCAN_STARTED", createdAt: study.scanStartedAt, toStatus: "IN_PROGRESS" },
+      { eventType: "SCAN_ENDED", createdAt: study.scanEndedAt, toStatus: "RECEIVED" },
+      { eventType: "DICOM_RECEIVED", createdAt: study.receivedAt, toStatus: "RECEIVED" },
+      { eventType: "STUDY_STABLE", createdAt: study.stableAt, toStatus: "READY_TO_READ" },
+      { eventType: "QC_PASSED", createdAt: study.qcCompletedAt, toStatus: "READY_TO_READ" },
+      { eventType: "REPORT_OPENED", createdAt: study.firstOpenedAt, toStatus: "READING" },
+      { eventType: "REPORT_FINALIZED", createdAt: study.finalizedAt, toStatus: "FINALIZED" },
+      { eventType: "RESULT_DELIVERED", createdAt: study.deliveredAt, toStatus: "DELIVERED" },
+    ];
+
+    candidates.forEach(candidate => {
+      if (!candidate.createdAt || existing.has(candidate.eventType)) return;
+      rows.push({
+        imagingStudyId: study.id,
+        eventType: candidate.eventType,
+        toStatus: candidate.toStatus,
+        source: "BACKFILL",
+        metadataJson: JSON.stringify({ backfilled: true }),
+        createdAt: candidate.createdAt,
+      });
+    });
+  });
+
+  if (!rows.length) return 0;
+  await prisma.imagingStudyEvent.createMany({ data: rows });
+  return rows.length;
+}
+
 export async function assignStudyDoctorAction(studyId: string, doctorId: string | null) {
   const user = await requireAssignmentAccess();
   const normalizedDoctorId = doctorId && doctorId !== "UNASSIGNED" ? doctorId : null;
@@ -2149,6 +2782,124 @@ export async function resolveOperationalAlertAction(alertId: string) {
   ]);
 
   return { success: true };
+}
+
+export async function recordScanTimingAction(input: {
+  studyId: string;
+  scanStartedAt?: string;
+  scanEndedAt?: string;
+}) {
+  const user = await requireQualitySafetyAccess();
+  const study = await prisma.imagingStudy.findUnique({ where: { id: input.studyId } });
+  if (!study) throw new Error("Khong tim thay study de ghi moc chup.");
+
+  const scanStartedAt = input.scanStartedAt ? new Date(input.scanStartedAt) : null;
+  const scanEndedAt = input.scanEndedAt ? new Date(input.scanEndedAt) : null;
+  if (scanStartedAt && Number.isNaN(scanStartedAt.getTime())) throw new Error("Moc scanStartedAt khong hop le.");
+  if (scanEndedAt && Number.isNaN(scanEndedAt.getTime())) throw new Error("Moc scanEndedAt khong hop le.");
+  if (scanStartedAt && scanEndedAt && scanEndedAt < scanStartedAt) throw new Error("Scan end khong duoc truoc scan start.");
+
+  await prisma.$transaction(async tx => {
+    const nextStatus =
+      scanEndedAt ? study.status === "ORDERED" || study.status === "READY_FOR_SCAN" || study.status === "IN_PROGRESS" ? "RECEIVED" : study.status :
+      scanStartedAt ? "IN_PROGRESS" :
+      study.status;
+
+    await tx.imagingStudy.update({
+      where: { id: study.id },
+      data: {
+        scanStartedAt: scanStartedAt || study.scanStartedAt,
+        scanEndedAt: scanEndedAt || study.scanEndedAt,
+        status: nextStatus as any,
+      },
+    });
+
+    if (scanStartedAt && !study.scanStartedAt) {
+      await recordStudyEventInTx(tx, {
+        imagingStudyId: study.id,
+        eventType: "SCAN_STARTED",
+        fromStatus: study.status as any,
+        toStatus: "IN_PROGRESS",
+        actorUserId: user.id,
+        source: "MANUAL_SCAN",
+        createdAt: scanStartedAt,
+      });
+    }
+
+    if (scanEndedAt && !study.scanEndedAt) {
+      await recordStudyEventInTx(tx, {
+        imagingStudyId: study.id,
+        eventType: "SCAN_ENDED",
+        fromStatus: study.status as any,
+        toStatus: nextStatus as any,
+        actorUserId: user.id,
+        source: "MANUAL_SCAN",
+        createdAt: scanEndedAt,
+      });
+    }
+
+    await tx.auditLog.create({
+      data: {
+        actorUserId: user.id,
+        action: "STUDY_SCAN_TIMING_RECORDED",
+        entityType: "ImagingStudy",
+        entityId: study.id,
+        message: `Recorded scan timing for ${study.studyInstanceUid}`,
+        metadataJson: JSON.stringify({
+          scanStartedAt: scanStartedAt?.toISOString() || null,
+          scanEndedAt: scanEndedAt?.toISOString() || null,
+        }),
+      },
+    });
+  });
+
+  return { success: true };
+}
+
+export async function recordDoseObservationAction(input: {
+  studyId: string;
+  metricType: string;
+  value: number;
+  unit?: string;
+  source?: string;
+  seriesInstanceUid?: string;
+  sopInstanceUid?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  const user = await requireQualitySafetyAccess();
+  const metricType = normalizeBucket(input.metricType);
+  const value = Number(input.value);
+  if (!metricType || metricType === "UNKNOWN") throw new Error("Dose metricType bat buoc.");
+  if (!Number.isFinite(value) || value < 0) throw new Error("Dose value khong hop le.");
+
+  const study = await prisma.imagingStudy.findUnique({ where: { id: input.studyId } });
+  if (!study) throw new Error("Khong tim thay study de ghi dose.");
+
+  const observation = await prisma.doseObservation.create({
+    data: {
+      imagingStudyId: study.id,
+      metricType,
+      value,
+      unit: cleanText(input.unit) || null,
+      source: cleanText(input.source) || "DICOM",
+      seriesInstanceUid: cleanText(input.seriesInstanceUid) || null,
+      sopInstanceUid: cleanText(input.sopInstanceUid) || null,
+      metadataJson: input.metadata ? JSON.stringify(input.metadata) : null,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      actorUserId: user.id,
+      action: "DOSE_OBSERVATION_RECORDED",
+      entityType: "DoseObservation",
+      entityId: observation.id,
+      message: `Recorded dose ${metricType} for ${study.studyInstanceUid}`,
+      metadataJson: JSON.stringify({ value, unit: input.unit, source: input.source }),
+    },
+  });
+
+  return { success: true, id: observation.id };
 }
 
 export async function recordStudyQcAction(input: {
@@ -2282,12 +3033,113 @@ export async function communicateCriticalResultAction(resultId: string, communic
   return { success: true };
 }
 
+export async function saveStatisticsFilterPresetAction(name: string, filters: StatisticsFilters, isShared = false) {
+  const user = await requireStatisticsAccess();
+  const presetName = cleanText(name);
+  if (!presetName) throw new Error("Ten preset bat buoc.");
+
+  const preset = await prisma.dashboardFilterPreset.create({
+    data: {
+      userId: user.id,
+      name: presetName,
+      dashboard: "statistics",
+      filtersJson: JSON.stringify(filters),
+      isShared: Boolean(isShared && hasPermission(user.role, "users.manage", user.permissions)),
+    },
+  });
+
+  return {
+    success: true,
+    preset: {
+      id: preset.id,
+      name: preset.name,
+      filters,
+      isShared: preset.isShared,
+      createdAt: preset.createdAt.toISOString(),
+    },
+  };
+}
+
+export async function deleteStatisticsFilterPresetAction(presetId: string) {
+  const user = await requireStatisticsAccess();
+  const preset = await prisma.dashboardFilterPreset.findUnique({ where: { id: presetId } });
+  if (!preset) return { success: true };
+  if (preset.userId !== user.id && !hasPermission(user.role, "users.manage", user.permissions)) {
+    throw new Error("Khong co quyen xoa preset nay.");
+  }
+  await prisma.dashboardFilterPreset.delete({ where: { id: presetId } });
+  return { success: true };
+}
+
+export async function exportStatisticsDrilldownAction(filters: StatisticsFilters = {}, format: "csv" | "xlsx" = "csv") {
+  const user = await requireStatisticsAccess();
+  const range = toVietnamRange(filters.dateFrom, filters.dateTo);
+  const endExclusive = plusOneDay(range.end);
+  const drilldown = await getDrilldownDashboard(range.start, endExclusive, filters);
+  const rows = exportRows(drilldown.rows, hasPermission(user.role, "reports.read", user.permissions));
+  const suffix = `${range.dateFrom}_${range.dateTo}_${drilldown.activeFilter}`;
+
+  if (format === "xlsx") {
+    return {
+      filename: `statistics_${suffix}.xlsx`,
+      mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      encoding: "base64",
+      content: rowsToXlsxBase64(rows),
+    };
+  }
+
+  return {
+    filename: `statistics_${suffix}.csv`,
+    mimeType: "text/csv;charset=utf-8",
+    encoding: "utf8",
+    content: buildCsv(rows),
+  };
+}
+
+export async function upsertProcedureCatalogAction(input: {
+  code: string;
+  name: string;
+  modality?: string;
+  bodyPart?: string;
+  defaultPrice?: number | null;
+}) {
+  const user = await requireStatisticsAccess();
+  if (!hasPermission(user.role, "clinic.manage", user.permissions) && !hasPermission(user.role, "users.manage", user.permissions)) {
+    throw new Error("Khong co quyen cap nhat procedure catalog.");
+  }
+  const code = normalizeBucket(input.code, "");
+  const name = cleanText(input.name);
+  if (!code || !name) throw new Error("Procedure code va name bat buoc.");
+
+  const saved = await prisma.procedureCatalog.upsert({
+    where: { code },
+    update: {
+      name,
+      modality: cleanText(input.modality) || null,
+      bodyPart: cleanText(input.bodyPart) || null,
+      defaultPrice: input.defaultPrice === null || input.defaultPrice === undefined ? null : input.defaultPrice,
+      isActive: true,
+    },
+    create: {
+      code,
+      name,
+      modality: cleanText(input.modality) || null,
+      bodyPart: cleanText(input.bodyPart) || null,
+      defaultPrice: input.defaultPrice === null || input.defaultPrice === undefined ? null : input.defaultPrice,
+      isActive: true,
+    },
+  });
+
+  return { success: true, id: saved.id };
+}
+
 export async function getStatisticsDashboardAction(filters: StatisticsFilters = {}): Promise<StatisticsPayload> {
   const user = await requireStatisticsAccess();
   const range = toVietnamRange(filters.dateFrom, filters.dateTo);
   const endExclusive = plusOneDay(range.end);
   const storagePromise = getOrthancStorage();
 
+  await backfillStudyEventsFromExistingData(range.start, endExclusive);
   await syncOperationalAlerts();
 
   const [
@@ -2311,6 +3163,9 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     storage,
     pacsHealth,
     qualitySafety,
+    business,
+    drilldown,
+    filterPresets,
   ] = await Promise.all([
     prisma.imagingStudy.count({ where: studyDateWhere(range.start, endExclusive) }),
     prisma.imagingStudy.count({ where: { status: "READY_TO_READ" } }),
@@ -2349,6 +3204,9 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     storagePromise,
     storagePromise.then(storage => getPacsHealthDashboard(range.start, endExclusive, storage)),
     getQualitySafetyDashboard(range.start, endExclusive),
+    getBusinessAnalytics(range.start, endExclusive),
+    getDrilldownDashboard(range.start, endExclusive, filters),
+    getFilterPresets(user),
   ]);
 
   const totalModality = modalityGroups.reduce((sum, row) => sum + row._count._all, 0);
@@ -2395,5 +3253,8 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     storage,
     pacsHealth,
     qualitySafety,
+    business,
+    drilldown,
+    filterPresets,
   };
 }

@@ -8,9 +8,13 @@ import {
   CheckCircle2,
   Clock3,
   Database,
+  Download,
   FileCheck2,
   Loader2,
+  Play,
   RefreshCcw,
+  Save,
+  Square,
   Stethoscope,
   Timer,
   UserRoundCheck,
@@ -21,16 +25,25 @@ import { CustomSelect } from "@/app/components/CustomSelect";
 import {
   acknowledgeOperationalAlertAction,
   assignStudyDoctorAction,
+  exportStatisticsDrilldownAction,
   getStatisticsDashboardAction,
+  recordScanTimingAction,
   resolveOperationalAlertAction,
+  saveStatisticsFilterPresetAction,
 } from "./actions";
 import type {
   StatisticsAlertRow,
   StatisticsAlerts,
   StatisticsBreakdownRow,
+  StatisticsBusinessAnalytics,
+  StatisticsBusinessBreakdownRow,
   StatisticsCriticalResultRow,
+  StatisticsDoseOutlierRow,
   StatisticsDoctorOption,
+  StatisticsDrilldown,
+  StatisticsDrilldownRow,
   StatisticsDurationSummary,
+  StatisticsFilterPreset,
   StatisticsFilters,
   StatisticsHourlyUtilizationRow,
   StatisticsOperationRow,
@@ -40,6 +53,7 @@ import type {
   StatisticsPacsNodeHealthRow,
   StatisticsPayload,
   StatisticsPerformanceOutlier,
+  StatisticsProcedureMixRow,
   StatisticsQualityBreakdownRow,
   StatisticsQualityReasonRow,
   StatisticsQualitySafety,
@@ -86,6 +100,13 @@ function formatPercent(value: number | null) {
   return value === null ? "-" : `${value}%`;
 }
 
+function formatMoney(value: number | null) {
+  if (value === null) return "-";
+  return new Intl.NumberFormat("vi-VN", {
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
 function formatOptionalStorageMb(value: number | null) {
   return value === null ? "-" : formatStorageMb(value);
 }
@@ -99,6 +120,22 @@ function healthBadgeClass(level: "normal" | "warning" | "critical" | "unknown") 
   if (level === "warning") return "bg-vin-status-warning-bg text-white";
   if (level === "normal") return "bg-vin-status-approved-bg text-white";
   return "border border-white/10 text-vin-muted";
+}
+
+function downloadExportFile(result: { filename: string; mimeType: string; encoding: string; content: string }) {
+  const bytes =
+    result.encoding === "base64"
+      ? Uint8Array.from(window.atob(result.content), char => char.charCodeAt(0))
+      : new TextEncoder().encode(result.content);
+  const blob = new Blob([bytes], { type: result.mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = result.filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 const statusTone: Record<string, string> = {
@@ -128,6 +165,7 @@ export default function StatisticsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [busyActionId, setBusyActionId] = useState("");
+  const [presetName, setPresetName] = useState("");
 
   const loadData = async (nextFilters = filters, options: { silent?: boolean } = {}) => {
     if (options.silent) {
@@ -139,7 +177,7 @@ export default function StatisticsPage() {
     try {
       const result = await getStatisticsDashboardAction(nextFilters);
       setData(result);
-      setFilters({ dateFrom: result.dateFrom, dateTo: result.dateTo });
+      setFilters({ ...nextFilters, dateFrom: result.dateFrom, dateTo: result.dateTo });
     } catch (err: any) {
       setError(err?.message || "Không tải được dashboard thống kê.");
     } finally {
@@ -189,6 +227,50 @@ export default function StatisticsPage() {
 
   const handleResolveAlert = (alertId: string) => {
     runDashboardAction(`resolve:${alertId}`, () => resolveOperationalAlertAction(alertId));
+  };
+
+  const handleSetDrilldown = (drilldown: string, drilldownValue = "") => {
+    const nextFilters = { ...filters, drilldown, drilldownValue };
+    setFilters(nextFilters);
+    loadData(nextFilters, { silent: true });
+  };
+
+  const handleApplyPreset = (preset: StatisticsFilterPreset) => {
+    const nextFilters = {
+      dateFrom: preset.filters.dateFrom || filters.dateFrom,
+      dateTo: preset.filters.dateTo || filters.dateTo,
+      drilldown: preset.filters.drilldown,
+      drilldownValue: preset.filters.drilldownValue,
+    };
+    setFilters(nextFilters);
+    loadData(nextFilters);
+  };
+
+  const handleSavePreset = () => {
+    const name = presetName.trim();
+    if (!name) {
+      setError("Nhập tên preset trước khi lưu.");
+      return;
+    }
+    runDashboardAction("savePreset", async () => {
+      await saveStatisticsFilterPresetAction(name, filters);
+      setPresetName("");
+    });
+  };
+
+  const handleExport = (format: "csv" | "xlsx") => {
+    runDashboardAction(`export:${format}`, async () => {
+      const result = await exportStatisticsDrilldownAction(filters, format);
+      downloadExportFile(result);
+    });
+  };
+
+  const handleRecordScanStart = (studyId: string) => {
+    runDashboardAction(`scanStart:${studyId}`, () => recordScanTimingAction({ studyId, scanStartedAt: new Date().toISOString() }));
+  };
+
+  const handleRecordScanEnd = (studyId: string) => {
+    runDashboardAction(`scanEnd:${studyId}`, () => recordScanTimingAction({ studyId, scanEndedAt: new Date().toISOString() }));
   };
 
   const maxModalityCount = useMemo(
@@ -307,16 +389,32 @@ export default function StatisticsPage() {
               </div>
 
               <div className="grid grid-cols-2 border-b border-white/5 md:grid-cols-4 xl:grid-cols-8">
-                {operationItems.map(item => {
+                {operationItems.map((item, index) => {
                   const Icon = item.icon;
+                  const drilldowns = [
+                    ["all", ""],
+                    ["all", ""],
+                    ["status", "READY_FOR_SCAN"],
+                    ["status", "RECEIVED"],
+                    ["readyToRead", ""],
+                    ["reading", ""],
+                    ["slaBreaches", ""],
+                    ["stuckWorkflow", ""],
+                  ];
+                  const drilldown = drilldowns[index] || ["all", ""];
                   return (
-                    <div key={item.label} className="border-r border-b border-white/5 px-3 py-2 last:border-r-0 xl:border-b-0">
+                    <button
+                      type="button"
+                      key={item.label}
+                      onClick={() => handleSetDrilldown(drilldown[0], drilldown[1])}
+                      className="border-r border-b border-white/5 px-3 py-2 text-left transition hover:bg-white/[0.03] last:border-r-0 xl:border-b-0"
+                    >
                       <div className="flex items-center justify-between gap-2">
                         <span className="truncate text-[10px] font-bold uppercase tracking-wide text-vin-muted">{item.label}</span>
                         <Icon className={`h-3.5 w-3.5 ${item.tone}`} />
                       </div>
                       <div className="mt-1 text-xl font-bold text-white">{item.value}</div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -327,18 +425,27 @@ export default function StatisticsPage() {
                   rows={data.operations.slaBreaches}
                   emptyText="Không có ca quá SLA."
                   tone="danger"
+                  busyActionId={busyActionId}
+                  onRecordScanStart={handleRecordScanStart}
+                  onRecordScanEnd={handleRecordScanEnd}
                 />
                 <OperationList
                   title="Kẹt workflow"
                   rows={data.operations.stuckWorkflow}
                   emptyText="Chưa phát hiện ca kẹt luồng."
                   tone="warning"
+                  busyActionId={busyActionId}
+                  onRecordScanStart={handleRecordScanStart}
+                  onRecordScanEnd={handleRecordScanEnd}
                 />
                 <OperationList
                   title="Live queue"
                   rows={data.operations.liveQueue}
                   emptyText="Không có ca chờ đọc."
                   tone="normal"
+                  busyActionId={busyActionId}
+                  onRecordScanStart={handleRecordScanStart}
+                  onRecordScanEnd={handleRecordScanEnd}
                 />
               </div>
             </section>
@@ -426,17 +533,26 @@ export default function StatisticsPage() {
               <QualitySafetyPanel quality={data.qualitySafety} />
             </div>
 
+            <BusinessAnalyticsPanel business={data.business} onSetDrilldown={handleSetDrilldown} />
+
             <div className="mt-3 grid grid-cols-6 gap-3">
-              {kpiItems.map(item => {
+              {kpiItems.map((item, index) => {
                 const Icon = item.icon;
+                const drilldowns = ["all", "readyToRead", "reading", "finalized", "delivered", "qcIssues"];
+                const drilldown = drilldowns[index] || "all";
                 return (
-                  <div key={item.label} className="rounded border border-vin-border bg-vin-panel px-3 py-3">
+                  <button
+                    type="button"
+                    key={item.label}
+                    onClick={() => handleSetDrilldown(drilldown)}
+                    className="rounded border border-vin-border bg-vin-panel px-3 py-3 text-left transition hover:border-vin-accent"
+                  >
                     <div className="flex items-center justify-between gap-2">
                       <div className="text-[10px] font-bold uppercase tracking-wide text-vin-muted">{item.label}</div>
                       <Icon className={`h-4 w-4 ${item.tone}`} />
                     </div>
                     <div className="mt-2 text-2xl font-bold text-white">{item.value}</div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -452,7 +568,12 @@ export default function StatisticsPage() {
                     <EmptyLine text="Chưa có ca trong kỳ." />
                   ) : (
                     data.modalityCounts.map(item => (
-                      <div key={item.modality} className="grid grid-cols-[4rem_1fr_4rem] items-center gap-3 text-[11px]">
+                      <button
+                        type="button"
+                        key={item.modality}
+                        onClick={() => handleSetDrilldown("modality", item.modality)}
+                        className="grid grid-cols-[4rem_1fr_4rem] items-center gap-3 text-left text-[11px] transition hover:opacity-90"
+                      >
                         <div className="font-mono font-bold text-vin-accent">{item.modality}</div>
                         <div className="h-5 overflow-hidden rounded bg-vin-shell">
                           <div
@@ -461,7 +582,7 @@ export default function StatisticsPage() {
                           />
                         </div>
                         <div className="text-right font-semibold text-white">{item.count} <span className="text-vin-muted">({item.percent}%)</span></div>
-                      </div>
+                      </button>
                     ))
                   )}
                 </div>
@@ -621,6 +742,17 @@ export default function StatisticsPage() {
                 </div>
               </section>
             </div>
+
+            <DrilldownPanel
+              drilldown={data.drilldown}
+              presets={data.filterPresets}
+              presetName={presetName}
+              busyActionId={busyActionId}
+              onPresetNameChange={setPresetName}
+              onSavePreset={handleSavePreset}
+              onApplyPreset={handleApplyPreset}
+              onExport={handleExport}
+            />
 
             <style>{`
               .field-input { height: 2.25rem; border-radius: 0.25rem; border: 1px solid var(--vin-border-subtle); background: var(--vin-bg-sidebar); padding: 0.45rem 0.65rem; font-size: 0.75rem; color: var(--vin-text-primary); outline: none; }
@@ -873,6 +1005,150 @@ function RoomUtilizationTable({ rows }: { rows: StatisticsRoomUtilizationRow[] }
   );
 }
 
+function BusinessAnalyticsPanel({
+  business,
+  onSetDrilldown,
+}: {
+  business: StatisticsBusinessAnalytics;
+  onSetDrilldown: (drilldown: string, drilldownValue?: string) => void;
+}) {
+  return (
+    <section className="mt-3 overflow-hidden rounded border border-vin-border bg-vin-panel">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <div>
+          <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Business / referral analytics</h2>
+          <div className="mt-0.5 text-[10px] text-vin-muted">Nguồn gửi, khoa/phòng, facility, modality/procedure mix và doanh thu ước tính.</div>
+        </div>
+        <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-vin-muted">
+          Revenue {formatMoney(business.kpis.estimatedRevenue)}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 border-b border-white/5 md:grid-cols-4 xl:grid-cols-7">
+        <MiniMetric label="Orders" value={business.kpis.ordersInPeriod} />
+        <MiniMetric label="Studies" value={business.kpis.studiesInPeriod} />
+        <MiniMetric label="Ref sources" value={business.kpis.referringSources} />
+        <MiniMetric label="Departments" value={business.kpis.departments} />
+        <MiniMetric label="No-show" value={business.kpis.noShow} />
+        <MiniMetric label="Cancelled" value={business.kpis.cancelled} />
+        <MiniMetric label="Revenue" value={formatMoney(business.kpis.estimatedRevenue)} />
+      </div>
+
+      <div className="grid gap-3 p-3 xl:grid-cols-3">
+        <BusinessBreakdownTable title="Nguồn gửi" rows={business.byReferringPhysician} drilldown="referringPhysician" onSetDrilldown={onSetDrilldown} />
+        <BusinessBreakdownTable title="Khoa/phòng" rows={business.byDepartment} drilldown="department" onSetDrilldown={onSetDrilldown} />
+        <BusinessBreakdownTable title="Facility/source" rows={business.bySourceFacility} drilldown="sourceFacility" onSetDrilldown={onSetDrilldown} />
+        <BusinessBreakdownTable title="Modality mix" rows={business.modalityMix} drilldown="modality" onSetDrilldown={onSetDrilldown} />
+        <ProcedureMixTable rows={business.procedureMix} onSetDrilldown={onSetDrilldown} />
+        <BusinessTrend rows={business.dailyTrend} />
+      </div>
+    </section>
+  );
+}
+
+function BusinessBreakdownTable({
+  title,
+  rows,
+  drilldown,
+  onSetDrilldown,
+}: {
+  title: string;
+  rows: StatisticsBusinessBreakdownRow[];
+  drilldown: string;
+  onSetDrilldown: (drilldown: string, drilldownValue?: string) => void;
+}) {
+  return (
+    <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
+        <span className="text-[10px] text-vin-muted">{rows.length}</span>
+      </div>
+      <div className="max-h-[230px] overflow-auto scr-dark">
+        {rows.length === 0 ? (
+          <div className="px-3 py-7 text-center text-[11px] text-vin-muted">Chưa có dữ liệu.</div>
+        ) : (
+          rows.map(row => (
+            <button
+              type="button"
+              key={row.key}
+              onClick={() => onSetDrilldown(drilldown, row.label)}
+              className="grid w-full grid-cols-[minmax(0,1fr)_3rem_4rem] items-center gap-2 border-b border-white/5 px-3 py-2 text-left text-[10px] transition hover:bg-white/[0.03] last:border-b-0"
+            >
+              <div className="min-w-0">
+                <div className="truncate font-bold text-white">{row.label}</div>
+                <div className="mt-0.5 text-vin-muted">Cancel {row.cancelled} · No-show {row.noShow}</div>
+              </div>
+              <div className="text-right font-mono text-vin-text2">{row.count}</div>
+              <div className="text-right text-vin-muted">{row.percent}%</div>
+            </button>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function ProcedureMixTable({ rows, onSetDrilldown }: { rows: StatisticsProcedureMixRow[]; onSetDrilldown: (drilldown: string, drilldownValue?: string) => void }) {
+  return (
+    <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Procedure mix</h3>
+        <span className="text-[10px] text-vin-muted">{rows.length}</span>
+      </div>
+      <div className="max-h-[230px] overflow-auto scr-dark">
+        {rows.length === 0 ? (
+          <div className="px-3 py-7 text-center text-[11px] text-vin-muted">Chưa có procedure code.</div>
+        ) : (
+          rows.map(row => (
+            <button
+              type="button"
+              key={`${row.code}-${row.label}`}
+              onClick={() => onSetDrilldown("procedure", row.code !== "-" ? row.code : row.label)}
+              className="flex w-full items-center justify-between gap-2 border-b border-white/5 px-3 py-2 text-left text-[10px] transition hover:bg-white/[0.03] last:border-b-0"
+            >
+              <div className="min-w-0">
+                <div className="truncate font-bold text-white">{row.label}</div>
+                <div className="mt-0.5 font-mono text-[9px] text-vin-muted">{row.code} · {row.modality}</div>
+              </div>
+              <div className="shrink-0 text-right">
+                <div className="font-mono font-bold text-vin-text2">{row.count}</div>
+                <div className="text-vin-muted">{row.percent}%</div>
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function BusinessTrend({ rows }: { rows: StatisticsBusinessAnalytics["dailyTrend"] }) {
+  const maxCount = Math.max(1, ...rows.map(row => Math.max(row.orderCount, row.studyCount)));
+  return (
+    <section className="rounded border border-white/10 bg-vin-shell px-3 py-3">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Trend ngày</h3>
+        <span className="text-[10px] text-vin-muted">Orders / Studies</span>
+      </div>
+      <div className="space-y-2">
+        {rows.length === 0 ? (
+          <div className="py-6 text-center text-[11px] text-vin-muted">Chưa có trend.</div>
+        ) : (
+          rows.map(row => (
+            <div key={row.date} className="grid grid-cols-[5rem_1fr_3rem] items-center gap-2 text-[10px]">
+              <div className="font-mono text-vin-muted">{row.date.slice(5)}</div>
+              <div className="h-2 overflow-hidden rounded bg-vin-panel">
+                <div className="h-full rounded bg-vin-accent" style={{ width: `${Math.max(4, (row.orderCount / maxCount) * 100)}%` }} />
+              </div>
+              <div className="text-right font-mono text-vin-text2">{row.orderCount}/{row.studyCount}</div>
+            </div>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
 function PacsHealthPanel({ pacsHealth, storage }: { pacsHealth: StatisticsPacsHealth; storage: StatisticsPayload["storage"] }) {
   const metadataIssueCount =
     pacsHealth.metadataIssues.missingPatientId +
@@ -1067,6 +1343,7 @@ function QualitySafetyPanel({ quality }: { quality: StatisticsQualitySafety }) {
         <CriticalResultList rows={quality.criticalResults} />
         <QualityStudyList title="QC gần đây" rows={quality.qcRecent} emptyText="Chưa có QC reject trong kỳ." />
         <QualityStudyList title="Thiếu dữ liệu quan trọng" rows={quality.missingCriticalDataRows} emptyText="Chưa phát hiện thiếu PID/accession/DOB/sex." />
+        <DoseOutlierList rows={quality.doseOutliers} />
         <QualityBreakdown title="Addendum theo bác sĩ" rows={quality.addendumByDoctor} />
         <QualityBreakdown title="Addendum theo modality" rows={quality.addendumByModality} />
       </div>
@@ -1171,6 +1448,39 @@ function QualityStudyList({
   );
 }
 
+function DoseOutlierList({ rows }: { rows: StatisticsDoseOutlierRow[] }) {
+  return (
+    <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Dose outlier</h3>
+        <span className="text-[10px] text-vin-muted">{rows.length}</span>
+      </div>
+      <div className="max-h-[190px] overflow-auto scr-dark">
+        {rows.length === 0 ? (
+          <div className="px-3 py-6 text-center text-[11px] text-vin-muted">Chưa có dose observation vượt ngưỡng.</div>
+        ) : (
+          rows.map(row => (
+            <a key={row.id} href={row.href} className="block border-b border-white/5 px-3 py-2 transition hover:bg-white/[0.03] last:border-b-0">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="truncate text-[11px] font-bold text-white">{row.patientName}</div>
+                  <div className="mt-0.5 truncate font-mono text-[9px] text-vin-muted">{row.accessionNumber} · {row.modality}</div>
+                </div>
+                <span className="shrink-0 rounded-full bg-vin-status-danger-bg px-2 py-0.5 text-[9px] font-bold text-white">
+                  {row.metricType}
+                </span>
+              </div>
+              <div className="mt-1 text-[10px] text-vin-muted">
+                {row.value} {row.unit} / ngưỡng {row.threshold ?? "-"}
+              </div>
+            </a>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
 function QualityBreakdown({ title, rows }: { title: string; rows: StatisticsQualityBreakdownRow[] }) {
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
@@ -1191,6 +1501,133 @@ function QualityBreakdown({ title, rows }: { title: string; rows: StatisticsQual
         )}
       </div>
     </section>
+  );
+}
+
+function DrilldownPanel({
+  drilldown,
+  presets,
+  presetName,
+  busyActionId,
+  onPresetNameChange,
+  onSavePreset,
+  onApplyPreset,
+  onExport,
+}: {
+  drilldown: StatisticsDrilldown;
+  presets: StatisticsFilterPreset[];
+  presetName: string;
+  busyActionId: string;
+  onPresetNameChange: (value: string) => void;
+  onSavePreset: () => void;
+  onApplyPreset: (preset: StatisticsFilterPreset) => void;
+  onExport: (format: "csv" | "xlsx") => void;
+}) {
+  return (
+    <section className="mt-3 overflow-hidden rounded border border-vin-border bg-vin-panel">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 px-3 py-2">
+        <div>
+          <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Drilldown</h2>
+          <div className="mt-0.5 text-[10px] text-vin-muted">{drilldown.title} · {drilldown.total} ca</div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <CustomSelect
+            options={[
+              { value: "", label: "Preset" },
+              ...presets.map(preset => ({ value: preset.id, label: preset.name })),
+            ]}
+            value=""
+            onChange={value => {
+              const preset = presets.find(item => item.id === value);
+              if (preset) onApplyPreset(preset);
+            }}
+            compact
+            className="min-w-[150px]"
+          />
+          <input
+            value={presetName}
+            onChange={event => onPresetNameChange(event.target.value)}
+            placeholder="Tên preset"
+            className="h-8 w-36 rounded border border-vin-border bg-vin-shell px-2 text-[11px] text-white outline-none focus:border-vin-accent"
+          />
+          <button
+            type="button"
+            onClick={onSavePreset}
+            disabled={busyActionId === "savePreset"}
+            className="inline-flex h-8 items-center gap-1 rounded border border-white/10 px-2 text-[10px] font-bold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
+          >
+            {busyActionId === "savePreset" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+            Save
+          </button>
+          <button
+            type="button"
+            onClick={() => onExport("csv")}
+            disabled={busyActionId === "export:csv"}
+            className="inline-flex h-8 items-center gap-1 rounded border border-white/10 px-2 text-[10px] font-bold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
+          >
+            {busyActionId === "export:csv" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+            CSV
+          </button>
+          <button
+            type="button"
+            onClick={() => onExport("xlsx")}
+            disabled={busyActionId === "export:xlsx"}
+            className="inline-flex h-8 items-center gap-1 rounded border border-emerald-400/30 px-2 text-[10px] font-bold text-emerald-200 transition hover:border-emerald-300 disabled:opacity-40"
+          >
+            {busyActionId === "export:xlsx" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
+            XLSX
+          </button>
+        </div>
+      </div>
+
+      {drilldown.rows.length === 0 ? (
+        <div className="px-3 py-10 text-center text-[11px] text-vin-muted">Không có ca phù hợp bộ lọc hiện tại.</div>
+      ) : (
+        <div className="max-h-[380px] overflow-auto scr-dark">
+          <table className="w-full text-left text-[10px]">
+            <thead className="sticky top-0 border-b border-white/5 bg-vin-panel text-vin-muted">
+              <tr>
+                <th className="px-3 py-2">Bệnh nhân</th>
+                <th className="px-2 py-2">Modality</th>
+                <th className="px-2 py-2">Trạng thái</th>
+                <th className="px-2 py-2">Nguồn gửi</th>
+                <th className="px-2 py-2">Dịch vụ</th>
+                <th className="px-3 py-2 text-right">Mốc</th>
+              </tr>
+            </thead>
+            <tbody>
+              {drilldown.rows.map(row => <DrilldownRowItem key={row.id} row={row} />)}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function DrilldownRowItem({ row }: { row: StatisticsDrilldownRow }) {
+  return (
+    <tr className="border-b border-white/5 transition hover:bg-white/[0.03] last:border-b-0">
+      <td className="px-3 py-2">
+        <a href={row.href} className="block min-w-0">
+          <div className="truncate font-bold text-white">{row.patientName}</div>
+          <div className="mt-0.5 truncate font-mono text-[9px] text-vin-muted">{row.patientId} · {row.accessionNumber}</div>
+        </a>
+      </td>
+      <td className="px-2 py-2">
+        <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[9px] font-bold text-vin-text2">{row.modality}</span>
+      </td>
+      <td className="px-2 py-2">
+        <div className="font-bold text-vin-text2">{row.statusLabel}</div>
+        <div className="mt-0.5 text-[9px] text-vin-muted">{row.priority} · {row.stationAeTitle}</div>
+      </td>
+      <td className="px-2 py-2 text-vin-muted">{row.referringPhysician}</td>
+      <td className="px-2 py-2">
+        <div className="truncate text-vin-text2">{row.procedureDescription}</div>
+        <div className="mt-0.5 font-mono text-[9px] text-vin-muted">{row.procedureCode}</div>
+      </td>
+      <td className="px-3 py-2 text-right text-vin-muted">{formatDateTime(row.receivedAt || row.scheduledAt || row.finalizedAt)}</td>
+    </tr>
   );
 }
 
@@ -1476,11 +1913,17 @@ function OperationList({
   rows,
   emptyText,
   tone,
+  busyActionId,
+  onRecordScanStart,
+  onRecordScanEnd,
 }: {
   title: string;
   rows: StatisticsOperationRow[];
   emptyText: string;
   tone: "danger" | "warning" | "normal";
+  busyActionId: string;
+  onRecordScanStart: (studyId: string) => void;
+  onRecordScanEnd: (studyId: string) => void;
 }) {
   const toneClass =
     tone === "danger"
@@ -1501,26 +1944,46 @@ function OperationList({
         {rows.length === 0 ? (
           <div className="px-3 py-8 text-center text-[11px] text-vin-muted">{emptyText}</div>
         ) : (
-          rows.map(row => <OperationRowItem key={row.id} row={row} />)
+          rows.map(row => (
+            <OperationRowItem
+              key={row.id}
+              row={row}
+              busyActionId={busyActionId}
+              onRecordScanStart={onRecordScanStart}
+              onRecordScanEnd={onRecordScanEnd}
+            />
+          ))
         )}
       </div>
     </section>
   );
 }
 
-function OperationRowItem({ row }: { row: StatisticsOperationRow }) {
+function OperationRowItem({
+  row,
+  busyActionId,
+  onRecordScanStart,
+  onRecordScanEnd,
+}: {
+  row: StatisticsOperationRow;
+  busyActionId: string;
+  onRecordScanStart: (studyId: string) => void;
+  onRecordScanEnd: (studyId: string) => void;
+}) {
+  const canStartScan = row.status === "READY_FOR_SCAN" || row.status === "ORDERED";
+  const canEndScan = row.status === "IN_PROGRESS";
+  const startBusy = busyActionId === `scanStart:${row.id}`;
+  const endBusy = busyActionId === `scanEnd:${row.id}`;
+
   return (
-    <a
-      href={row.href}
-      className="block border-b border-white/5 px-3 py-2.5 transition hover:bg-white/[0.03] last:border-b-0"
-    >
+    <div className="block border-b border-white/5 px-3 py-2.5 transition hover:bg-white/[0.03] last:border-b-0">
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
+        <a href={row.href} className="min-w-0">
           <div className="truncate text-[12px] font-bold uppercase text-white">{row.patientName}</div>
           <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
             {row.patientId} · {row.accessionNumber}
           </div>
-        </div>
+        </a>
         <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${priorityTone[row.priority] || priorityTone.ROUTINE}`}>
           {row.priority}
         </span>
@@ -1545,6 +2008,36 @@ function OperationRowItem({ row }: { row: StatisticsOperationRow }) {
         {row.stationAeTitle !== "-" && <span>{row.stationAeTitle} · </span>}
         {row.reason}
       </div>
-    </a>
+      {(canStartScan || canEndScan) && (
+        <div className="mt-2 flex items-center gap-2">
+          {canStartScan && (
+            <button
+              type="button"
+              disabled={startBusy || endBusy}
+              onClick={() => {
+                onRecordScanStart(row.id);
+              }}
+              className="inline-flex h-7 items-center gap-1 rounded border border-white/10 px-2 text-[10px] font-bold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
+            >
+              {startBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
+              Start scan
+            </button>
+          )}
+          {canEndScan && (
+            <button
+              type="button"
+              disabled={startBusy || endBusy}
+              onClick={() => {
+                onRecordScanEnd(row.id);
+              }}
+              className="inline-flex h-7 items-center gap-1 rounded border border-emerald-400/30 px-2 text-[10px] font-bold text-emerald-200 transition hover:border-emerald-300 disabled:opacity-40"
+            >
+              {endBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Square className="h-3 w-3" />}
+              End scan
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

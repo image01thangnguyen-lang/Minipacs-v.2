@@ -1,6 +1,8 @@
 export type StatisticsFilters = {
   dateFrom?: string;
   dateTo?: string;
+  drilldown?: string;
+  drilldownValue?: string;
 };
 
 export type StatisticsKpis = {
@@ -378,6 +380,21 @@ export type StatisticsCriticalResultRow = {
   href: string;
 };
 
+export type StatisticsDoseOutlierRow = {
+  id: string;
+  studyInstanceUid: string;
+  patientName: string;
+  patientId: string;
+  accessionNumber: string;
+  modality: string;
+  metricType: string;
+  value: number;
+  unit: string;
+  threshold: number | null;
+  createdAt: string;
+  href: string;
+};
+
 export type StatisticsQualityBreakdownRow = {
   key: string;
   label: string;
@@ -401,8 +418,91 @@ export type StatisticsQualitySafety = {
   qcRecent: StatisticsQualityStudyRow[];
   missingCriticalDataRows: StatisticsQualityStudyRow[];
   criticalResults: StatisticsCriticalResultRow[];
+  doseOutliers: StatisticsDoseOutlierRow[];
   addendumByDoctor: StatisticsQualityBreakdownRow[];
   addendumByModality: StatisticsQualityBreakdownRow[];
+};
+
+export type StatisticsBusinessBreakdownRow = {
+  key: string;
+  label: string;
+  count: number;
+  percent: number;
+  cancelled: number;
+  noShow: number;
+  estimatedRevenue: number | null;
+};
+
+export type StatisticsProcedureMixRow = {
+  code: string;
+  label: string;
+  modality: string;
+  count: number;
+  percent: number;
+  estimatedRevenue: number | null;
+};
+
+export type StatisticsBusinessTrendRow = {
+  date: string;
+  studyCount: number;
+  orderCount: number;
+  estimatedRevenue: number | null;
+};
+
+export type StatisticsBusinessAnalytics = {
+  kpis: {
+    ordersInPeriod: number;
+    studiesInPeriod: number;
+    referringSources: number;
+    departments: number;
+    noShow: number;
+    cancelled: number;
+    estimatedRevenue: number | null;
+  };
+  byReferringPhysician: StatisticsBusinessBreakdownRow[];
+  byDepartment: StatisticsBusinessBreakdownRow[];
+  bySourceFacility: StatisticsBusinessBreakdownRow[];
+  modalityMix: StatisticsBusinessBreakdownRow[];
+  procedureMix: StatisticsProcedureMixRow[];
+  dailyTrend: StatisticsBusinessTrendRow[];
+};
+
+export type StatisticsDrilldownRow = {
+  id: string;
+  studyInstanceUid: string;
+  patientName: string;
+  patientId: string;
+  accessionNumber: string;
+  modality: string;
+  status: string;
+  statusLabel: string;
+  priority: string;
+  stationAeTitle: string;
+  referringPhysician: string;
+  sourceFacility: string;
+  procedureCode: string;
+  procedureDescription: string;
+  scheduledAt: string | null;
+  receivedAt: string | null;
+  finalizedAt: string | null;
+  href: string;
+};
+
+export type StatisticsDrilldown = {
+  activeFilter: string;
+  activeValue: string;
+  title: string;
+  rows: StatisticsDrilldownRow[];
+  total: number;
+  csvUrl: string;
+};
+
+export type StatisticsFilterPreset = {
+  id: string;
+  name: string;
+  filters: StatisticsFilters;
+  isShared: boolean;
+  createdAt: string;
 };
 
 export type StatisticsPayload = {
@@ -424,4 +524,7 @@ export type StatisticsPayload = {
   storage: StatisticsStorage;
   pacsHealth: StatisticsPacsHealth;
   qualitySafety: StatisticsQualitySafety;
+  business: StatisticsBusinessAnalytics;
+  drilldown: StatisticsDrilldown;
+  filterPresets: StatisticsFilterPreset[];
 };

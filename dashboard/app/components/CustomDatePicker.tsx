@@ -8,6 +8,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type CustomDatePickerProps = {
   value?: string;           // yyyy-mm-dd
@@ -130,6 +131,32 @@ export function CustomDatePicker({
 }: CustomDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+
+  const updatePosition = useCallback(() => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setDropdownStyle({
+        position: "fixed",
+        top: rect.bottom + 4,
+        left: rect.left,
+        zIndex: 99999,
+      });
+    }
+  }, []);
+
+  // Update position on scroll/resize
+  useEffect(() => {
+    if (!isOpen) return;
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [isOpen, updatePosition]);
 
   const selectedDate = useMemo(() => parseDate(value), [value]);
 
@@ -153,7 +180,12 @@ export function CustomDatePicker({
   useEffect(() => {
     if (!isOpen) return;
     const handler = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node) &&
+        popupRef.current &&
+        !popupRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -221,7 +253,7 @@ export function CustomDatePicker({
   const fontSize = compact ? "text-[11px]" : "text-sm";
   const baseBgBorder = compact
     ? "border-white/10 bg-transparent"
-    : "border-vin-border bg-vin-shell";
+    : "border-white/10 bg-transparent";
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
@@ -234,6 +266,7 @@ export function CustomDatePicker({
         title={title}
         onClick={() => {
           if (disabled) return;
+          if (!isOpen) updatePosition();
           setIsOpen((o) => !o);
         }}
         className={`flex w-full items-center justify-between gap-2 rounded-md border ${baseBgBorder} ${triggerPadding} ${triggerHeight} ${fontSize} text-left outline-none transition
@@ -249,10 +282,11 @@ export function CustomDatePicker({
       </button>
 
       {/* Calendar popup */}
-      {isOpen && (
+      {isOpen && typeof document !== "undefined" && createPortal(
         <div
-          className="absolute left-0 z-50 mt-1 w-[280px] rounded-lg border border-white/10 bg-vin-shell shadow-xl shadow-black/40"
-          style={{ animation: "customDateFadeIn 0.15s ease-out" }}
+          ref={popupRef}
+          className="fixed z-50 w-[280px] rounded-lg border border-white/10 bg-vin-shell shadow-xl shadow-black/40"
+          style={{ ...dropdownStyle, animation: "customDateFadeIn 0.15s ease-out" }}
         >
           {/* Header navigation */}
           <div className="flex items-center justify-between border-b border-white/10 px-2 py-2">
@@ -346,7 +380,8 @@ export function CustomDatePicker({
               </button>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <style>{`
