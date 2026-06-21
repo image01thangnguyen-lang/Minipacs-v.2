@@ -15,6 +15,7 @@
   "DicomPort": 4242,
   "DicomAet": "ORTHANC",
   "DefaultEncoding": "Utf8",
+  "DicomModalitiesInDatabase": true,
   "PostgreSQL": {
     "EnableIndex": true,
     "EnableStorage": true,
