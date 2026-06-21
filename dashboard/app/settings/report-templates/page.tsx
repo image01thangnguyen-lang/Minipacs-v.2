@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { AppSidebar } from "@/app/components/AppSidebar";
+import { CustomSelect } from "@/app/components/CustomSelect";
 import {
   createReportTemplateTextAction,
   deleteReportTemplateTextAction,
@@ -226,18 +227,15 @@ export default function ReportTemplateTextPage() {
                 </button>
               )}
             </div>
-            <select
+            <CustomSelect
+              options={[
+                { value: "ALL", label: "Tất cả" },
+                ...modalityOptions.filter(item => item !== "ALL").map(m => ({ value: m, label: m })),
+              ]}
               value={modalityFilter}
-              onChange={event => setModalityFilter(event.target.value)}
-              className="rounded border border-vin-border bg-vin-panel px-2 py-1.5 text-[11px] text-vin-text outline-none transition focus:border-vin-accent"
-            >
-              <option value="ALL">Tất cả</option>
-              {modalityOptions.filter(item => item !== "ALL").map(modality => (
-                <option key={modality} value={modality}>
-                  {modality}
-                </option>
-              ))}
-            </select>
+              onChange={val => setModalityFilter(val)}
+              compact
+            />
           </div>
         </div>
 
@@ -428,18 +426,11 @@ function TemplateForm({
       <div className="grid grid-cols-4 gap-3">
         <div>
           <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Modality</label>
-          <select
+          <CustomSelect
             name="modality"
-            required
-            defaultValue={template?.modality || "DX"}
-            className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent"
-          >
-            {modalityOptions.map(modality => (
-              <option key={modality} value={modality}>
-                {modality}
-              </option>
-            ))}
-          </select>
+            options={modalityOptions.map(m => ({ value: m, label: m }))}
+            value={template?.modality || "DX"}
+          />
         </div>
         <div>
           <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Body part</label>
@@ -461,14 +452,14 @@ function TemplateForm({
         </div>
         <div>
           <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Phạm vi</label>
-          <select
+          <CustomSelect
             name="scope"
-            defaultValue={template?.scope || "GLOBAL"}
-            className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent"
-          >
-            <option value="GLOBAL">Chung</option>
-            <option value="PRIVATE">Cá nhân</option>
-          </select>
+            options={[
+              { value: "GLOBAL", label: "Chung" },
+              { value: "PRIVATE", label: "Cá nhân" },
+            ]}
+            value={template?.scope || "GLOBAL"}
+          />
         </div>
       </div>
 

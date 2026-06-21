@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { BadgeCheck, Building2, Image as ImageIcon, Loader2, Save, Upload } from "lucide-react";
 import { AppSidebar } from "@/app/components/AppSidebar";
+import { CustomSelect } from "@/app/components/CustomSelect";
 import { getClinicProfile, saveClinicProfileAction } from "./actions";
 
 type ClinicProfileView = {
@@ -166,10 +167,14 @@ export default function ClinicProfilePage() {
                 <input name="licenseNumber" defaultValue={profile.licenseNumber || ""} className="field-input" />
               </Field>
               <Field label="Ngôn ngữ mặc định">
-                <select name="defaultReportLanguage" defaultValue={profile.defaultReportLanguage || "vi"} className="field-input">
-                  <option value="vi">Tiếng Việt</option>
-                  <option value="en">English</option>
-                </select>
+                <CustomSelect
+                  name="defaultReportLanguage"
+                  options={[
+                    { value: "vi", label: "Tiếng Việt" },
+                    { value: "en", label: "English" },
+                  ]}
+                  value={profile.defaultReportLanguage || "vi"}
+                />
               </Field>
             </div>
 

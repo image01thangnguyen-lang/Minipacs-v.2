@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { AppSidebar } from "@/app/components/AppSidebar";
+import { CustomSelect } from "@/app/components/CustomSelect";
 import {
   createRoleProfileAction,
   createUserAction,
@@ -206,9 +207,10 @@ function PermissionMatrix({ roleProfiles }: { roleProfiles: RoleProfile[] }) {
 }
 
 function baseRoleOptions() {
-  return (Object.keys(systemRoleLabels) as SystemRole[]).map(role => (
-    <option key={role} value={role}>{systemRoleLabels[role]}</option>
-  ));
+  return (Object.keys(systemRoleLabels) as SystemRole[]).map(role => ({
+    value: role,
+    label: systemRoleLabels[role],
+  }));
 }
 
 export default function UserManagementPage() {
@@ -629,17 +631,12 @@ export default function UserManagementPage() {
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Vai trò</label>
-                  <select
+                  <CustomSelect
                     name="roleProfileId"
+                    options={activeRoleProfiles.map(role => ({ value: role.id, label: role.name }))}
                     value={createRoleProfileId}
-                    onChange={event => setCreateRoleProfileId(event.target.value)}
-                    required
-                    className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent"
-                  >
-                    {activeRoleProfiles.map(role => (
-                      <option key={role.id} value={role.id}>{role.name}</option>
-                    ))}
-                  </select>
+                    onChange={val => setCreateRoleProfileId(val)}
+                  />
                 </div>
               </div>
 
@@ -707,9 +704,11 @@ export default function UserManagementPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Nhóm gốc</label>
-                  <select name="baseRole" defaultValue="RECEPTION" className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent">
-                    {baseRoleOptions()}
-                  </select>
+                  <CustomSelect
+                    name="baseRole"
+                    options={baseRoleOptions()}
+                    value="RECEPTION"
+                  />
                 </div>
                 <label className="mt-6 flex items-center gap-2 text-sm text-vin-text2">
                   <input name="isActive" type="checkbox" defaultChecked className="h-4 w-4 accent-vin-accent" />
@@ -763,19 +762,17 @@ export default function UserManagementPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Vai trò</label>
-                  <select
+                  <CustomSelect
                     name="roleProfileId"
+                    options={roleProfiles
+                      .filter(role => role.isActive || role.id === editRoleProfileId)
+                      .map(role => ({
+                        value: role.id,
+                        label: `${role.name}${!role.isActive ? " (đã khóa)" : ""}`
+                      }))}
                     value={editRoleProfileId}
-                    onChange={event => setEditRoleProfileId(event.target.value)}
-                    required
-                    className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent"
-                  >
-                    {roleProfiles.map(role => (
-                      <option key={role.id} value={role.id} disabled={!role.isActive && role.id !== editRoleProfileId}>
-                        {role.name}{!role.isActive ? " (đã khóa)" : ""}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={val => setEditRoleProfileId(val)}
+                  />
                 </div>
                 <div>
                   <label className="mb-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-vin-muted">
@@ -873,9 +870,12 @@ export default function UserManagementPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Nhóm gốc</label>
-                  <select name="baseRole" defaultValue={selectedRole.baseRole} disabled={selectedRole.isSystem} className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none disabled:opacity-55 focus:border-vin-accent">
-                    {baseRoleOptions()}
-                  </select>
+                  <CustomSelect
+                    name="baseRole"
+                    options={baseRoleOptions()}
+                    value={selectedRole.baseRole}
+                    disabled={selectedRole.isSystem}
+                  />
                 </div>
                 <label className="mt-6 flex items-center gap-2 text-sm text-vin-text2">
                   <input name="isActive" type="checkbox" defaultChecked={selectedRole.isActive} disabled={selectedRole.isSystem} className="h-4 w-4 accent-vin-accent disabled:opacity-45" />

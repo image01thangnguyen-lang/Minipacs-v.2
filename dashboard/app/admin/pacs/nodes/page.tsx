@@ -14,8 +14,9 @@ import {
   Trash2, 
   Wifi
 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CustomSelect } from "@/app/components/CustomSelect";
 import { 
   getNodesAction, 
   upsertNodeAction, 
@@ -53,6 +54,7 @@ export default function DicomNodesPage() {
     handleSubmit,
     reset,
     setValue,
+    control,
     formState: { errors },
   } = useForm<DicomNodeInput>({
     resolver: zodResolver(dicomNodeSchema),
@@ -362,14 +364,25 @@ export default function DicomNodesPage() {
               />
             </Field>
             <Field label="Modality *" error={errors.modality?.message}>
-              <select {...register("modality")} className="field-input font-mono">
-                <option value="DX">DX (X-Quang Số)</option>
-                <option value="CR">CR (X-Quang Cassette)</option>
-                <option value="US">US (Siêu âm)</option>
-                <option value="CT">CT (Cắt lớp)</option>
-                <option value="MR">MR (Cộng hưởng từ)</option>
-                <option value="MG">MG (Nhũ ảnh)</option>
-              </select>
+              <Controller
+                control={control}
+                name="modality"
+                render={({ field }) => (
+                  <CustomSelect
+                    options={[
+                      { value: "DX", label: "DX (X-Quang Số)" },
+                      { value: "CR", label: "CR (X-Quang Cassette)" },
+                      { value: "US", label: "US (Siêu âm)" },
+                      { value: "CT", label: "CT (Cắt lớp)" },
+                      { value: "MR", label: "MR (Cộng hưởng từ)" },
+                      { value: "MG", label: "MG (Nhũ ảnh)" },
+                    ]}
+                    value={field.value}
+                    onChange={field.onChange}
+                    mono
+                  />
+                )}
+              />
             </Field>
           </div>
 
@@ -392,10 +405,20 @@ export default function DicomNodesPage() {
               <input {...register("room")} className="field-input" placeholder="Phòng số 1" />
             </Field>
             <Field label="Trạng thái">
-              <select {...register("isActive", { setValueAs: (v) => v === "true" })} className="field-input">
-                <option value="true">Đang hoạt động</option>
-                <option value="false">Tạm ngưng</option>
-              </select>
+              <Controller
+                control={control}
+                name="isActive"
+                render={({ field }) => (
+                  <CustomSelect
+                    options={[
+                      { value: "true", label: "Đang hoạt động" },
+                      { value: "false", label: "Tạm ngưng" },
+                    ]}
+                    value={field.value ? "true" : "false"}
+                    onChange={(val) => field.onChange(val === "true")}
+                  />
+                )}
+              />
             </Field>
           </div>
 

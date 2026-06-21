@@ -2,6 +2,7 @@
 
 import { FileText, PlusCircle, Replace } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { CustomSelect } from "@/app/components/CustomSelect";
 
 export type ReportTemplateOption = {
   id: string;
@@ -82,20 +83,17 @@ export function ReportTemplatePicker({
     <div className="mb-2 flex flex-wrap items-center gap-2 rounded border border-vin-border bg-vin-panel2 px-2 py-2">
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <FileText className="h-3.5 w-3.5 flex-shrink-0 text-vin-accent" />
-        <select
+        <CustomSelect
+          options={templates.map(template => ({
+            value: template.id,
+            label: `${template.shortcut ? `${template.shortcut} · ` : ""}${template.name} · ${template.modality}${template.bodyPart ? ` · ${template.bodyPart}` : ""}`
+          }))}
           value={selectedId}
-          onChange={event => setSelectedId(event.target.value)}
+          onChange={val => setSelectedId(val)}
           disabled={disabled}
-          className="min-w-[180px] flex-1 rounded border border-vin-border bg-vin-shell px-2 py-1.5 text-[11px] text-vin-text outline-none transition focus:border-vin-accent disabled:opacity-40"
-        >
-          {templates.map(template => (
-            <option key={template.id} value={template.id}>
-              {template.shortcut ? `${template.shortcut} · ` : ""}
-              {template.name} · {template.modality}
-              {template.bodyPart ? ` · ${template.bodyPart}` : ""}
-            </option>
-          ))}
-        </select>
+          className="flex-1"
+          compact
+        />
       </div>
 
       <button

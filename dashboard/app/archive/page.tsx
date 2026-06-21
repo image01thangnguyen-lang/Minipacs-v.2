@@ -15,6 +15,8 @@ import {
   Search,
 } from "lucide-react";
 import { AppSidebar } from "@/app/components/AppSidebar";
+import { CustomSelect, type SelectOption } from "@/app/components/CustomSelect";
+import { CustomDatePicker } from "@/app/components/CustomDatePicker";
 import { PrintTemplateViewer } from "@/app/report/[studyInstanceUid]/components/PrintTemplateViewer";
 import {
   getArchiveDoctorsAction,
@@ -25,7 +27,15 @@ import {
 } from "./actions";
 import type { ArchiveDoctorOption, ArchiveReportDetail, ArchiveSearchFilters, ArchiveStudyRow } from "./types";
 
-const modalityOptions = ["ALL", "DX", "CR", "US", "CT", "MR", "MG"];
+const modalitySelectOptions: SelectOption[] = [
+  { value: "ALL", label: "Modality" },
+  { value: "DX", label: "DX" },
+  { value: "CR", label: "CR" },
+  { value: "US", label: "US" },
+  { value: "CT", label: "CT" },
+  { value: "MR", label: "MR" },
+  { value: "MG", label: "MG" },
+];
 
 const statusOptions = [
   { value: "ALL", label: "Tất cả" },
@@ -295,24 +305,30 @@ export default function ArchivePage() {
               <input value={filters.patientId || ""} onChange={event => handleFilterChange("patientId", event.target.value)} className="field-input font-mono" placeholder="Patient ID" />
               <input value={filters.accessionNumber || ""} onChange={event => handleFilterChange("accessionNumber", event.target.value)} className="field-input font-mono" placeholder="Accession / Study UID" />
             </div>
-            <input type="date" value={filters.dateFrom || ""} onChange={event => handleFilterChange("dateFrom", event.target.value)} className="field-input [color-scheme:dark]" title="Từ ngày" />
-            <input type="date" value={filters.dateTo || ""} onChange={event => handleFilterChange("dateTo", event.target.value)} className="field-input [color-scheme:dark]" title="Đến ngày" />
-            <select value={filters.modality || "ALL"} onChange={event => handleFilterChange("modality", event.target.value)} className="field-input font-mono">
-              {modalityOptions.map(modality => (
-                <option key={modality} value={modality}>{modality === "ALL" ? "Modality" : modality}</option>
-              ))}
-            </select>
-            <select value={filters.doctorId || "ALL"} onChange={event => handleFilterChange("doctorId", event.target.value)} className="field-input">
-              <option value="ALL">Bác sĩ</option>
-              {doctors.map(doctor => (
-                <option key={doctor.id} value={doctor.id}>{doctor.name}</option>
-              ))}
-            </select>
-            <select value={filters.status || "ALL"} onChange={event => handleFilterChange("status", event.target.value)} className="field-input">
-              {statusOptions.map(option => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
+            <CustomDatePicker value={filters.dateFrom || ""} onChange={val => handleFilterChange("dateFrom", val)} title="Từ ngày" compact />
+            <CustomDatePicker value={filters.dateTo || ""} onChange={val => handleFilterChange("dateTo", val)} title="Đến ngày" compact />
+            <CustomSelect
+              options={modalitySelectOptions}
+              value={filters.modality || "ALL"}
+              onChange={val => handleFilterChange("modality", val)}
+              compact
+              mono
+            />
+            <CustomSelect
+              options={[
+                { value: "ALL", label: "Bác sĩ" },
+                ...doctors.map(d => ({ value: d.id, label: d.name })),
+              ]}
+              value={filters.doctorId || "ALL"}
+              onChange={val => handleFilterChange("doctorId", val)}
+              compact
+            />
+            <CustomSelect
+              options={statusOptions}
+              value={filters.status || "ALL"}
+              onChange={val => handleFilterChange("status", val)}
+              compact
+            />
             <button type="submit" disabled={isLoading} className="flex h-9 items-center justify-center gap-1.5 rounded border border-vin-accent/50 bg-vin-accent px-3 text-[11px] font-bold text-white transition hover:bg-vin-accentHover disabled:opacity-40">
               <Search className="h-3.5 w-3.5" />
               Tìm

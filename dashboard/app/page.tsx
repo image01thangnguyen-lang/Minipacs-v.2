@@ -13,6 +13,7 @@ import {
   Search,
   X,
 } from "lucide-react";
+import { CustomSelect, type SelectOption } from "./components/CustomSelect";
 import { useReactToPrint } from "react-to-print";
 import { AppSidebar } from "./components/AppSidebar";
 import {
@@ -62,19 +63,19 @@ const fmtDateTime = (date?: string, time?: string) => {
 };
 
 const modalityClasses: Record<string, string> = {
-  CT: "bg-vin-accentSoft/20 text-vin-accent border-vin-accent/40",
-  MR: "bg-cyan-900/30 text-cyan-200 border-cyan-500/30",
-  CR: "bg-amber-900/25 text-amber-200 border-amber-500/30",
-  DX: "bg-amber-900/25 text-amber-200 border-amber-500/30",
-  US: "bg-emerald-900/25 text-emerald-200 border-emerald-500/30",
+  CT: "border-vin-accent/40 bg-vin-accentSoft/15 text-cyan-100",
+  MR: "border-cyan-400/30 bg-cyan-500/10 text-cyan-100",
+  CR: "border-amber-400/30 bg-amber-500/10 text-amber-100",
+  DX: "border-amber-400/30 bg-amber-500/10 text-amber-100",
+  US: "border-emerald-400/30 bg-emerald-500/10 text-emerald-100",
 };
 
 function ModBadge({ value }: { value?: string }) {
   const label = value || "?";
-  const classes = modalityClasses[label] || "bg-vin-panel2 text-vin-muted border-vin-border";
+  const classes = modalityClasses[label] || "border-white/10 bg-white/5 text-vin-muted";
 
   return (
-    <span className={`inline-flex min-w-9 justify-center rounded border px-1.5 py-px font-mono text-[10px] font-bold ${classes}`}>
+    <span className={`inline-flex min-w-9 items-center justify-center rounded-full border px-2 py-0.5 font-mono text-[10px] font-bold leading-none ${classes}`}>
       {label}
     </span>
   );
@@ -104,16 +105,16 @@ function RisStatusBadge({ status }: { status?: string }) {
 
   const classes =
     value === "FINALIZED" || value === "DELIVERED"
-      ? "bg-vin-status-approved-bg text-white"
+      ? "border-emerald-400/35 bg-emerald-500/15 text-emerald-100"
       : value === "READING" || value === "REPORTED"
-        ? "bg-vin-status-warning-bg text-white"
+        ? "border-amber-400/35 bg-amber-500/15 text-amber-100"
         : value === "QC_REJECTED" || value === "ERROR"
-          ? "bg-vin-status-danger-bg text-white"
+          ? "border-red-400/35 bg-red-500/15 text-red-100"
           : value === "READY_TO_READ" || value === "RECEIVED" || value === "STABLE"
-            ? "bg-vin-accentSoft text-white"
-            : "bg-vin-status-new-bg text-white";
+            ? "border-cyan-400/35 bg-cyan-500/15 text-cyan-100"
+            : "border-white/10 bg-white/5 text-vin-text2";
 
-  return <span className={`inline-flex max-w-[110px] justify-center truncate rounded px-2 py-0.5 text-[9px] font-bold ${classes}`}>{label}</span>;
+  return <span className={`inline-flex max-w-[118px] items-center justify-center truncate rounded-full border px-2.5 py-1 text-[9px] font-bold leading-none ${classes}`}>{label}</span>;
 }
 
 export default function DashboardPage() {
@@ -179,6 +180,11 @@ export default function DashboardPage() {
     });
     return Array.from(values).sort();
   }, [studies]);
+
+  const modalitySelectOptions = useMemo<SelectOption[]>(() => [
+    { value: "ALL", label: "Tất cả" },
+    ...modalities.map(m => ({ value: m, label: m })),
+  ], [modalities]);
 
   const filteredStudies = useMemo(() => {
     let list = studies;
@@ -371,7 +377,7 @@ export default function DashboardPage() {
                   setSearchQuery(event.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full rounded border border-vin-border bg-vin-panel py-1.5 pl-7 pr-7 text-[11px] text-vin-text placeholder:text-vin-faint outline-none transition focus:border-vin-accent"
+                className="w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-7 text-[11px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent focus:bg-vin-root/20"
                 placeholder="Tìm tên, mã bệnh nhân, accession..."
               />
               {searchQuery && (
@@ -387,27 +393,22 @@ export default function DashboardPage() {
                 </button>
               )}
             </div>
-            <select
+            <CustomSelect
+              options={modalitySelectOptions}
               value={modalityFilter}
-              onChange={event => {
-                setModalityFilter(event.target.value);
+              onChange={val => {
+                setModalityFilter(val);
                 setCurrentPage(1);
               }}
-              className="rounded border border-vin-border bg-vin-panel px-2 py-1.5 text-[11px] text-vin-text outline-none transition focus:border-vin-accent"
-            >
-              <option value="ALL">Tất cả</option>
-              {modalities.map(modality => (
-                <option key={modality} value={modality}>
-                  {modality}
-                </option>
-              ))}
-            </select>
+              compact
+              mono
+            />
           </div>
         </div>
 
         <div className="min-h-0 flex-1 overflow-auto scr-dark">
           <table className="w-full text-left">
-            <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
+            <thead className="sticky top-0 z-10 border-b border-white/10 bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
               <tr>
                 <th className="w-9 py-2 pl-2 pr-1 text-center">TT</th>
                 <th className="px-2 py-2">Bệnh nhân</th>
@@ -418,7 +419,7 @@ export default function DashboardPage() {
                 <th className="px-2 py-2 text-center">Ảnh</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-vin-border/45 text-[11px]">
+            <tbody className="text-[11px]">
               {isLoading ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-vin-muted">
@@ -444,7 +445,7 @@ export default function DashboardPage() {
                       key={study.ID || uid}
                       onClick={() => handleSelect(study)}
                       onDoubleClick={() => openViewer(study)}
-                      className={`cursor-pointer select-none border-l-2 transition-colors ${
+                      className={`cursor-pointer select-none border-b border-l-2 border-white/5 transition-colors last:border-b-0 ${
                         isSelected
                           ? "border-l-vin-accent bg-vin-tableSelected text-white"
                           : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
@@ -453,13 +454,13 @@ export default function DashboardPage() {
                     >
                       <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{(currentPage - 1) * rowsPerPage + index + 1}</td>
                       <td className="px-2 py-2">
-                        <div className="max-w-[210px] truncate font-semibold text-white">{fmtName(patient.PatientName)}</div>
+                        <div className="max-w-[210px] truncate font-semibold uppercase tracking-[0.01em] text-white">{fmtName(patient.PatientName)}</div>
                         <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
-                          {fmtText(patient.PatientID)} · {fmtSex(patient.PatientSex)} · {fmtAge(patient.PatientAge)}T
+                          {fmtText(patient.PatientID)} &bull; {fmtSex(patient.PatientSex)} &bull; {fmtAge(patient.PatientAge)}T
                         </div>
                       </td>
                       <td className="px-2 py-2">
-                        <div className="max-w-[260px] truncate text-vin-text2" title={main.StudyDescription || ""}>
+                        <div className="max-w-[260px] truncate font-medium text-vin-text2" title={main.StudyDescription || ""}>
                           {fmtText(main.StudyDescription)}
                         </div>
                         <div className="mt-0.5 max-w-[260px] truncate font-mono text-[10px] text-vin-muted">
@@ -506,7 +507,7 @@ export default function DashboardPage() {
               <div className="flex h-full items-center justify-center text-[11px] text-vin-faint">Không có lịch sử</div>
             ) : (
               <table className="w-full text-left">
-                <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[9px] font-semibold uppercase tracking-wider text-vin-muted">
+                <thead className="sticky top-0 z-10 border-b border-white/10 bg-vin-panel2 text-[9px] font-semibold uppercase tracking-wider text-vin-muted">
                   <tr>
                     <th className="py-1 pl-2 pr-1">Ngày chụp</th>
                     <th className="w-10 px-1 py-1 text-center">Mod</th>
@@ -514,7 +515,7 @@ export default function DashboardPage() {
                     <th className="w-8 py-1 pl-1 pr-2 text-center">TT</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-vin-border/40 text-[10px]">
+                <tbody className="text-[10px]">
                   {patientHistory.map(history => {
                     const uid = history.MainDicomTags?.StudyInstanceUID;
                     const isCurrent = uid === selectedUid;
@@ -524,7 +525,7 @@ export default function DashboardPage() {
                         key={history.ID || uid}
                         onClick={() => handleSelect(history)}
                         onDoubleClick={() => openViewer(history)}
-                        className={`cursor-pointer transition-colors ${
+                        className={`cursor-pointer border-b border-white/5 transition-colors last:border-b-0 ${
                           isCurrent ? "bg-vin-tableSelected text-white" : "text-vin-text2 hover:bg-vin-tableHover"
                         }`}
                       >
@@ -677,6 +678,7 @@ export default function DashboardPage() {
       </section>
 
       <style>{`
+        select option{background:var(--vin-bg-shell);color:var(--vin-text-primary)}
         .scr-dark::-webkit-scrollbar{width:5px;height:5px}
         .scr-dark::-webkit-scrollbar-track{background:transparent}
         .scr-dark::-webkit-scrollbar-thumb{background:var(--vin-border-subtle);border-radius:10px}

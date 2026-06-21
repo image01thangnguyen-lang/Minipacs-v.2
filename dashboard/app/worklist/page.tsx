@@ -16,8 +16,10 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { AppSidebar } from "@/app/components/AppSidebar";
+import { CustomSelect, type SelectOption } from "@/app/components/CustomSelect";
+import { CustomDatePicker } from "@/app/components/CustomDatePicker";
 import {
   cancelWorklistOrderAction,
   checkInWorklistOrderAction,
@@ -78,6 +80,29 @@ const studyStatusLabels: Record<string, string> = {
 const modalityOptions = ["DX", "CR", "US", "CT", "MR"];
 const statusFilterOptions = ["ALL", "REQUESTED", "SCHEDULED", "ARRIVED", "CANCELLED", "EXPIRED"];
 
+const modalitySelectOptions: SelectOption[] = modalityOptions.map(m => ({ value: m, label: m }));
+
+const statusFilterSelectOptions: SelectOption[] = [
+  { value: "ALL", label: "Tất cả" },
+  { value: "REQUESTED", label: "Mới tạo" },
+  { value: "SCHEDULED", label: "Đã hẹn" },
+  { value: "ARRIVED", label: "Đã đến" },
+  { value: "CANCELLED", label: "Đã hủy" },
+  { value: "EXPIRED", label: "Quá hạn" },
+];
+
+const genderSelectOptions: SelectOption[] = [
+  { value: "M", label: "Nam" },
+  { value: "F", label: "Nữ" },
+  { value: "O", label: "Khác" },
+];
+
+const prioritySelectOptions: SelectOption[] = [
+  { value: "ROUTINE", label: "Thường quy" },
+  { value: "URGENT", label: "Khẩn" },
+  { value: "STAT", label: "Cấp cứu" },
+];
+
 function toDateInputValue(date = new Date()) {
   const year = date.getFullYear();
   const month = `${date.getMonth() + 1}`.padStart(2, "0");
@@ -106,16 +131,16 @@ function formatDateTime(value?: string | null) {
 }
 
 function statusClass(status: string) {
-  if (status === "ARRIVED") return "bg-vin-status-approved-bg text-white";
-  if (status === "SCHEDULED") return "bg-vin-accentSoft text-white";
-  if (status === "CANCELLED" || status === "EXPIRED") return "bg-vin-status-danger-bg text-white";
-  return "bg-vin-status-new-bg text-white";
+  if (status === "ARRIVED") return "border-emerald-400/35 bg-emerald-500/15 text-emerald-100";
+  if (status === "SCHEDULED") return "border-cyan-400/35 bg-cyan-500/15 text-cyan-100";
+  if (status === "CANCELLED" || status === "EXPIRED") return "border-red-400/35 bg-red-500/15 text-red-100";
+  return "border-white/10 bg-white/5 text-vin-text2";
 }
 
 function priorityClass(priority: string) {
-  if (priority === "STAT") return "bg-vin-status-danger-bg text-white";
-  if (priority === "URGENT") return "bg-vin-status-warning-bg text-white";
-  return "bg-vin-panel text-vin-muted border border-vin-border";
+  if (priority === "STAT") return "border-red-400/35 bg-red-500/15 text-red-100";
+  if (priority === "URGENT") return "border-amber-400/35 bg-amber-500/15 text-amber-100";
+  return "border-white/10 bg-white/5 text-vin-muted";
 }
 
 export default function WorklistPage() {
@@ -151,6 +176,7 @@ export default function WorklistPage() {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(worklistSchema),
@@ -291,29 +317,23 @@ export default function WorklistPage() {
           )}
 
           <form onSubmit={handleSearchSubmit} className="grid grid-cols-[9rem_9rem_1fr] gap-2">
-            <input
-              type="date"
+            <CustomDatePicker
               value={selectedDate}
-              onChange={event => setSelectedDate(event.target.value)}
-              className="rounded border border-vin-border bg-vin-panel px-2 py-1.5 text-[11px] text-vin-text outline-none [color-scheme:dark] focus:border-vin-accent"
+              onChange={val => setSelectedDate(val)}
+              compact
             />
-            <select
+            <CustomSelect
+              options={statusFilterSelectOptions}
               value={statusFilter}
-              onChange={event => setStatusFilter(event.target.value)}
-              className="rounded border border-vin-border bg-vin-panel px-2 py-1.5 text-[11px] text-vin-text outline-none focus:border-vin-accent"
-            >
-              {statusFilterOptions.map(status => (
-                <option key={status} value={status}>
-                  {status === "ALL" ? "Tất cả" : orderStatusLabels[status]}
-                </option>
-              ))}
-            </select>
+              onChange={val => setStatusFilter(val)}
+              compact
+            />
             <div className="relative">
               <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-vin-faint" />
               <input
                 value={searchQuery}
                 onChange={event => setSearchQuery(event.target.value)}
-                className="w-full rounded border border-vin-border bg-vin-panel py-1.5 pl-7 pr-20 text-[11px] text-vin-text placeholder:text-vin-faint outline-none focus:border-vin-accent"
+                className="w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-20 text-[11px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent focus:bg-vin-root/20"
                 placeholder="Tìm tên, PID, accession, chỉ định..."
               />
               <button className="absolute right-1 top-1/2 -translate-y-1/2 rounded bg-vin-accent px-2 py-1 text-[10px] font-bold text-white">
@@ -325,7 +345,7 @@ export default function WorklistPage() {
 
         <div className="min-h-0 flex-1 overflow-auto scr-dark">
           <table className="w-full text-left">
-            <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
+            <thead className="sticky top-0 z-10 border-b border-white/10 bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
               <tr>
                 <th className="w-9 py-2 pl-2 pr-1 text-center">#</th>
                 <th className="px-2 py-2">Bệnh nhân</th>
@@ -336,7 +356,7 @@ export default function WorklistPage() {
                 <th className="px-2 py-2 text-right">Tác vụ</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-vin-border/45 text-[11px]">
+            <tbody className="text-[11px]">
               {isLoading ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-vin-muted">
@@ -354,25 +374,25 @@ export default function WorklistPage() {
                   const canMutate = order.orderStatus !== "CANCELLED";
 
                   return (
-                    <tr key={order.id} className="odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover">
+                    <tr key={order.id} className="border-b border-white/5 odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 transition-colors last:border-b-0 hover:bg-vin-tableHover">
                       <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
                       <td className="px-2 py-2">
-                        <div className="max-w-[180px] truncate font-semibold text-white">{order.patientName}</div>
+                        <div className="max-w-[180px] truncate font-semibold uppercase tracking-[0.01em] text-white">{order.patientName}</div>
                         <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
-                          {order.patientId} · {order.gender || "?"} · {order.phone || "-"}
+                          {order.patientId} &bull; {order.gender || "?"} &bull; {order.phone || "-"}
                         </div>
                       </td>
                       <td className="px-2 py-2">
-                        <div className="max-w-[240px] truncate text-vin-text2" title={order.procedureDescription || ""}>
+                        <div className="max-w-[240px] truncate font-medium text-vin-text2" title={order.procedureDescription || ""}>
                           {order.procedureDescription || "-"}
                         </div>
                         <div className="mt-0.5 flex items-center gap-1.5">
-                          <span className={`rounded px-1.5 py-px text-[9px] font-bold ${priorityClass(order.priority)}`}>{order.priority}</span>
+                          <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold leading-none ${priorityClass(order.priority)}`}>{order.priority}</span>
                           <span className="truncate font-mono text-[10px] text-vin-muted">{order.accessionNumber}</span>
                         </div>
                       </td>
                       <td className="px-2 py-2 text-center">
-                        <span className="inline-flex min-w-9 justify-center rounded border border-vin-accent/40 bg-vin-accentSoft/20 px-1.5 py-px font-mono text-[10px] font-bold text-vin-accent">
+                        <span className="inline-flex min-w-9 items-center justify-center rounded-full border border-vin-accent/40 bg-vin-accentSoft/15 px-2 py-0.5 font-mono text-[10px] font-bold leading-none text-cyan-100">
                           {order.modality}
                         </span>
                         <div className="mt-1 text-[10px] text-vin-muted">{order.bodyPart || "-"}</div>
@@ -387,7 +407,7 @@ export default function WorklistPage() {
                         </div>
                       </td>
                       <td className="px-2 py-2 text-center">
-                        <span className={`inline-flex rounded px-2 py-0.5 text-[9px] font-bold ${statusClass(order.orderStatus)}`}>
+                        <span className={`inline-flex max-w-[110px] items-center justify-center truncate rounded-full border px-2.5 py-1 text-[9px] font-bold leading-none ${statusClass(order.orderStatus)}`}>
                           {orderStatusLabels[order.orderStatus] || order.orderStatus}
                         </span>
                         <div className="mt-1 text-[10px] text-vin-muted">
@@ -452,14 +472,29 @@ export default function WorklistPage() {
 
           <div className="grid grid-cols-3 gap-3">
             <Field label="Ngày sinh">
-              <input type="date" {...register("dob")} className="field-input [color-scheme:dark]" />
+              <Controller
+                control={control}
+                name="dob"
+                render={({ field }) => (
+                  <CustomDatePicker
+                    value={field.value ?? undefined}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
             </Field>
             <Field label="Giới tính">
-              <select {...register("gender")} className="field-input">
-                <option value="M">Nam</option>
-                <option value="F">Nữ</option>
-                <option value="O">Khác</option>
-              </select>
+              <Controller
+                control={control}
+                name="gender"
+                render={({ field }) => (
+                  <CustomSelect
+                    options={genderSelectOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
             </Field>
             <Field label="Điện thoại">
               <input {...register("phone")} className="field-input" />
@@ -471,21 +506,34 @@ export default function WorklistPage() {
               <input {...register("referringPhysician")} className="field-input" placeholder="BS. Nguyễn Văn A" />
             </Field>
             <Field label="Ưu tiên">
-              <select {...register("priority")} className="field-input">
-                <option value="ROUTINE">Thường quy</option>
-                <option value="URGENT">Khẩn</option>
-                <option value="STAT">Cấp cứu</option>
-              </select>
+              <Controller
+                control={control}
+                name="priority"
+                render={({ field }) => (
+                  <CustomSelect
+                    options={prioritySelectOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
+                )}
+              />
             </Field>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <Field label="Modality *" error={errors.modality?.message}>
-              <select {...register("modality")} className="field-input font-mono">
-                {modalityOptions.map(modality => (
-                  <option key={modality} value={modality}>{modality}</option>
-                ))}
-              </select>
+              <Controller
+                control={control}
+                name="modality"
+                render={({ field }) => (
+                  <CustomSelect
+                    options={modalitySelectOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    mono
+                  />
+                )}
+              />
             </Field>
             <Field label="Body part">
               <input {...register("bodyPart")} className="field-input uppercase" placeholder="CHEST" />
@@ -529,10 +577,14 @@ export default function WorklistPage() {
       </section>
 
       <style>{`
-        .field-input{width:100%;border-radius:0.25rem;border:1px solid var(--vin-border-subtle);background:var(--vin-bg-sidebar);padding:0.5rem 0.75rem;font-size:0.875rem;color:var(--vin-text-primary);outline:none}
-        .field-input:focus{border-color:var(--vin-accent)}
-        .field-textarea{width:100%;resize:none;border-radius:0.25rem;border:1px solid var(--vin-border-subtle);background:var(--vin-bg-sidebar);padding:0.5rem 0.75rem;font-size:0.875rem;line-height:1.55;color:var(--vin-text-primary);outline:none}
-        .field-textarea:focus{border-color:var(--vin-accent)}
+        select option{background:var(--vin-bg-shell);color:var(--vin-text-primary)}
+        .field-input{width:100%;min-height:2.5rem;border-radius:0.375rem;border:1px solid rgb(143 178 191 / .34);background:transparent;padding:0.625rem 0.75rem;font-size:0.875rem;color:var(--vin-text-primary);outline:none;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
+        .field-input::placeholder{color:var(--vin-text-faint)}
+        .field-input:focus{border-color:var(--vin-accent);background:rgb(8 31 42 / .18);box-shadow:0 0 0 2px rgb(24 185 208 / .12)}
+        .field-input option{background:var(--vin-bg-shell);color:var(--vin-text-primary)}
+        .field-textarea{width:100%;resize:none;border-radius:0.375rem;border:1px solid rgb(143 178 191 / .34);background:transparent;padding:0.625rem 0.75rem;font-size:0.875rem;line-height:1.55;color:var(--vin-text-primary);outline:none;transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
+        .field-textarea::placeholder{color:var(--vin-text-faint)}
+        .field-textarea:focus{border-color:var(--vin-accent);background:rgb(8 31 42 / .18);box-shadow:0 0 0 2px rgb(24 185 208 / .12)}
         .scr-dark::-webkit-scrollbar{width:5px;height:5px}
         .scr-dark::-webkit-scrollbar-track{background:transparent}
         .scr-dark::-webkit-scrollbar-thumb{background:var(--vin-border-subtle);border-radius:10px}
@@ -543,9 +595,16 @@ export default function WorklistPage() {
 }
 
 function Field({ children, error, label }: { children: React.ReactNode; error?: string; label: string }) {
+  const labelText = label.trim();
+  const isRequired = labelText.endsWith("*");
+  const displayLabel = isRequired ? labelText.slice(0, -1).trim() : labelText;
+
   return (
     <div>
-      <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">{label}</label>
+      <label className="mb-1.5 flex items-center gap-1 text-[11px] font-semibold text-vin-text2">
+        {isRequired && <span className="text-red-300">*</span>}
+        <span>{displayLabel}</span>
+      </label>
       {children}
       {error && (
         <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-red-300">

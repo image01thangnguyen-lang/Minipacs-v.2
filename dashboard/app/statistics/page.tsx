@@ -16,6 +16,7 @@ import {
   UserRoundCheck,
 } from "lucide-react";
 import { AppSidebar } from "@/app/components/AppSidebar";
+import { CustomDatePicker } from "@/app/components/CustomDatePicker";
 import { getStatisticsDashboardAction } from "./actions";
 import type { StatisticsFilters, StatisticsPayload } from "./types";
 
@@ -136,17 +137,15 @@ export default function StatisticsPage() {
               }}
               className="flex items-center gap-2"
             >
-              <input
-                type="date"
+              <CustomDatePicker
                 value={filters.dateFrom || ""}
-                onChange={event => setFilters(current => ({ ...current, dateFrom: event.target.value }))}
-                className="field-input [color-scheme:dark]"
+                onChange={val => setFilters(current => ({ ...current, dateFrom: val }))}
+                compact
               />
-              <input
-                type="date"
+              <CustomDatePicker
                 value={filters.dateTo || ""}
-                onChange={event => setFilters(current => ({ ...current, dateTo: event.target.value }))}
-                className="field-input [color-scheme:dark]"
+                onChange={val => setFilters(current => ({ ...current, dateTo: val }))}
+                compact
               />
               <button
                 type="submit"
