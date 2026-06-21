@@ -3,12 +3,16 @@
 import { prisma } from './db';
 import { syncOrthancStudyToRis, updateStudyStatusForReport } from '@/lib/studyStatus';
 import { auth } from '@/auth';
+import { requirePermission } from '@/lib/authz';
+import { hasPermission } from '@/lib/permissions';
 
 /**
  * Server Action: Lấy danh sách bệnh nhân/studies từ Orthanc.
  * BẢO MẬT: Fetch từ backend, không làm lộ mật khẩu Orthanc ra frontend.
  */
 export async function getStudies() {
+  await requirePermission("studies.read");
+
   // Lấy cấu hình từ biến môi trường của Docker container
   const orthancUrl = process.env.ORTHANC_API_URL || 'http://orthanc:8042';
   const username = process.env.ORTHANC_USERNAME || 'admin';
@@ -139,6 +143,12 @@ export async function saveReportAction(data: {
   try {
     // 2. Tiến hành UPSERT thông tin báo cáo
     const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Bạn cần đăng nhập để lưu báo cáo.' };
+    }
+    if (!hasPermission(session.user.role, "reports.write")) {
+      return { success: false, error: 'Bạn không có quyền lưu hoặc ký báo cáo.' };
+    }
     const signingDoctorId = data.doctorId || (
       session?.user?.id && ["DOCTOR", "ADMIN"].includes(session.user.role)
         ? session.user.id

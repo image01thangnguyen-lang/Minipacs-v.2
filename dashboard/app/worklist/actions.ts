@@ -1,15 +1,13 @@
 "use server";
 
-import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { upsertWorklistStudy } from "@/lib/studyStatus";
 import fs from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { requirePermission } from "@/lib/authz";
 import { worklistSchema, type WorklistInput } from "./schema";
 
-const worklistRoles = new Set(["ADMIN", "RECEPTION", "TECHNICIAN"]);
 const orderStatusValues = ["REQUESTED", "SCHEDULED", "ARRIVED", "CANCELLED", "EXPIRED"] as const;
 
 const WORKLIST_DIR =
@@ -27,10 +25,7 @@ function readDateRange(date?: string) {
 }
 
 async function requireWorklistAccess() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  if (!worklistRoles.has(session.user.role)) redirect("/");
-  return session.user;
+  return requirePermission("worklist.manage");
 }
 
 function cleanText(value?: string | null) {

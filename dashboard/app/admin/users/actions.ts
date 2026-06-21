@@ -1,16 +1,15 @@
 "use server";
 
-import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { requirePermission } from "@/lib/authz";
+import { normalizeRole as normalizeAppRole, type AppRole } from "@/lib/permissions";
 
-const roles = ["ADMIN", "DOCTOR", "TECHNICIAN", "RECEPTION"] as const;
-type RoleValue = (typeof roles)[number];
+type RoleValue = AppRole;
 
 const SIGNATURE_UPLOAD_DIR =
   process.env.NODE_ENV === "production"
@@ -22,14 +21,11 @@ function readText(formData: FormData, key: string) {
 }
 
 async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  if (session.user.role !== "ADMIN") redirect("/");
-  return session.user;
+  return requirePermission("users.manage");
 }
 
-function normalizeRole(value: string): RoleValue {
-  return roles.includes(value as RoleValue) ? (value as RoleValue) : "DOCTOR";
+function readRole(value: string): RoleValue {
+  return normalizeAppRole(value);
 }
 
 async function saveSignature(file: File | null) {
@@ -76,7 +72,7 @@ export async function createUserAction(formData: FormData) {
   const username = readText(formData, "username").toLowerCase();
   const fullName = readText(formData, "fullName");
   const password = readText(formData, "password");
-  const role = normalizeRole(readText(formData, "role"));
+  const role = readRole(readText(formData, "role"));
 
   if (!username || !fullName || !password) {
     throw new Error("Vui lòng nhập đủ username, họ tên và mật khẩu.");
@@ -133,7 +129,7 @@ export async function updateUserAction(formData: FormData) {
 
   const userId = readText(formData, "userId");
   const fullName = readText(formData, "fullName");
-  const role = normalizeRole(readText(formData, "role"));
+  const role = readRole(readText(formData, "role"));
   const password = readText(formData, "password");
   const isActive = formData.get("isActive") === "on";
 

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import {
   BadgeCheck,
+  CheckCircle2,
   KeyRound,
   Loader2,
   Search,
@@ -14,6 +15,13 @@ import {
 } from "lucide-react";
 import { AppSidebar } from "@/app/components/AppSidebar";
 import { createUserAction, getUsersForAdmin, updateUserAction } from "./actions";
+import {
+  getPermissionsForRole,
+  permissionGroups,
+  permissionLabels,
+  roleDescriptions,
+  type AppRole,
+} from "@/lib/permissions";
 
 const roleLabels: Record<string, string> = {
   ADMIN: "Admin",
@@ -39,6 +47,82 @@ function RoleBadge({ role }: { role: string }) {
   );
 }
 
+function RolePermissionSummary({ role }: { role: AppRole }) {
+  const permissions = new Set(getPermissionsForRole(role));
+
+  return (
+    <section className="rounded border border-vin-border bg-vin-shell px-3 py-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-wide text-vin-muted">Phân quyền theo vai trò</div>
+          <div className="mt-1 text-sm font-bold text-white">{roleLabels[role] || role}</div>
+          <div className="mt-0.5 text-[11px] leading-relaxed text-vin-muted">{roleDescriptions[role]}</div>
+        </div>
+        <RoleBadge role={role} />
+      </div>
+
+      <div className="mt-3 grid grid-cols-1 gap-2">
+        {permissionGroups.map(group => {
+          const active = group.permissions.filter(permission => permissions.has(permission));
+          if (active.length === 0) return null;
+
+          return (
+            <div key={group.title} className="rounded border border-vin-border/70 bg-vin-panel px-2.5 py-2">
+              <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-vin-muted">{group.title}</div>
+              <div className="grid grid-cols-1 gap-1.5">
+                {active.map(permission => (
+                  <div key={permission} className="flex items-center gap-1.5 text-[11px] text-vin-text2">
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
+                    <span>{permissionLabels[permission]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function PermissionMatrix() {
+  const roles = Object.keys(roleDescriptions) as AppRole[];
+
+  return (
+    <section className="rounded border border-vin-border bg-vin-shell p-3 text-left">
+      <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-vin-muted">Ma trận quyền</div>
+      <div className="max-h-72 overflow-auto scr-dark">
+        <table className="w-full text-[10px]">
+          <thead className="sticky top-0 bg-vin-shell text-vin-muted">
+            <tr>
+              <th className="py-1.5 pr-2 text-left">Quyền</th>
+              {roles.map(role => (
+                <th key={role} className="px-1.5 py-1.5 text-center">{roleLabels[role] || role}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-vin-border/50">
+            {permissionGroups.flatMap(group => group.permissions).map(permission => (
+              <tr key={permission}>
+                <td className="py-1.5 pr-2 text-vin-text2">{permissionLabels[permission]}</td>
+                {roles.map(role => (
+                  <td key={`${role}-${permission}`} className="px-1.5 py-1.5 text-center">
+                    {getPermissionsForRole(role).includes(permission) ? (
+                      <CheckCircle2 className="mx-auto h-3.5 w-3.5 text-emerald-300" />
+                    ) : (
+                      <span className="text-vin-faint">-</span>
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 function StatusBadge({ active }: { active: boolean }) {
   return (
     <span
@@ -61,6 +145,8 @@ export default function UserManagementPage() {
   const [mode, setMode] = useState<"view" | "create">("view");
   const [isSaving, setIsSaving] = useState(false);
   const [createFormKey, setCreateFormKey] = useState(0);
+  const [createRole, setCreateRole] = useState<AppRole>("DOCTOR");
+  const [editRole, setEditRole] = useState<AppRole>("DOCTOR");
 
   const loadUsers = async () => {
     try {
@@ -92,6 +178,12 @@ export default function UserManagementPage() {
 
   const selectedUser = users.find(u => u.id === selectedUserId) || null;
 
+  useEffect(() => {
+    if (selectedUser?.role) {
+      setEditRole(selectedUser.role as AppRole);
+    }
+  }, [selectedUser?.id, selectedUser?.role]);
+
   const handleCreateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSaving(true);
@@ -100,6 +192,7 @@ export default function UserManagementPage() {
       await createUserAction(formData);
       await loadUsers();
       setMode("view");
+      setCreateRole("DOCTOR");
       (e.target as HTMLFormElement).reset();
     } catch (error) {
       console.error(error);
@@ -122,7 +215,7 @@ export default function UserManagementPage() {
     }
   };
 
-  const isDoctor = selectedUser?.role === "DOCTOR";
+  const isDoctor = editRole === "DOCTOR";
   const profile = selectedUser?.doctorProfile;
 
   return (
@@ -144,6 +237,7 @@ export default function UserManagementPage() {
                 setMode("create");
                 setSelectedUserId(null);
                 setCreateFormKey(k => k + 1);
+                setCreateRole("DOCTOR");
               }}
               className="flex items-center gap-1.5 rounded border border-vin-accent/50 bg-vin-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-vin-accentHover"
             >
@@ -306,7 +400,8 @@ export default function UserManagementPage() {
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Vai trò</label>
                   <select
                     name="role"
-                    defaultValue="DOCTOR"
+                    value={createRole}
+                    onChange={event => setCreateRole(event.target.value as AppRole)}
                     className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent"
                   >
                     <option value="ADMIN">Admin</option>
@@ -316,6 +411,8 @@ export default function UserManagementPage() {
                   </select>
                 </div>
               </div>
+
+              <RolePermissionSummary role={createRole} />
 
               <div className="border-t border-vin-border/50 pt-4">
                 <p className="mb-3 text-[10px] font-bold uppercase tracking-wide text-vin-muted">Hồ sơ bác sĩ (nếu có)</p>
@@ -429,7 +526,8 @@ export default function UserManagementPage() {
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Vai trò</label>
                   <select
                     name="role"
-                    defaultValue={selectedUser.role}
+                    value={editRole}
+                    onChange={event => setEditRole(event.target.value as AppRole)}
                     className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent"
                   >
                     <option value="ADMIN">Admin</option>
@@ -452,6 +550,8 @@ export default function UserManagementPage() {
                   />
                 </div>
               </div>
+
+              <RolePermissionSummary role={editRole} />
 
               <label className="flex items-center gap-2 text-sm text-vin-text2">
                 <input name="isActive" type="checkbox" defaultChecked={selectedUser.isActive} className="h-4 w-4 accent-vin-accent" />
@@ -544,6 +644,9 @@ export default function UserManagementPage() {
             <p className="max-w-[250px] text-[11px] leading-relaxed text-vin-muted">
               Click vào tài khoản bên trái để chỉnh sửa, hoặc nhấn &quot;Tạo mới&quot; để thêm tài khoản.
             </p>
+            <div className="mt-5 w-[min(92%,620px)]">
+              <PermissionMatrix />
+            </div>
           </div>
         )}
       </section>

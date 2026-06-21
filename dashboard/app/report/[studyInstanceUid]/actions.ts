@@ -3,8 +3,12 @@
 import { auth } from '@/auth';
 import { prisma } from '../../db';
 import { syncOrthancStudyToRis, updateStudyStatusForReport } from '@/lib/studyStatus';
+import { requirePermission } from '@/lib/authz';
+import { hasPermission } from '@/lib/permissions';
 
 export async function getStudyDetails(studyInstanceUID: string) {
+  await requirePermission("reports.read");
+
   const orthancUrl = process.env.ORTHANC_API_URL || 'http://orthanc:8042';
   const username = process.env.ORTHANC_USERNAME || 'admin';
   const password = process.env.ORTHANC_PASSWORD || 'admin_password';
@@ -49,6 +53,8 @@ export async function getStudyDetails(studyInstanceUID: string) {
 }
 
 export async function getReport(studyInstanceUid: string) {
+  await requirePermission("reports.read");
+
   try {
     return prisma.report.findUnique({
       where: { studyInstanceUid },
@@ -73,6 +79,12 @@ export async function upsertReport(studyInstanceUid: string, data: {
 }) {
   try {
     const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Bạn cần đăng nhập để lưu báo cáo.' };
+    }
+    if (!hasPermission(session.user.role, "reports.write")) {
+      return { success: false, error: 'Bạn không có quyền lưu hoặc ký báo cáo.' };
+    }
     const doctorId = session?.user?.id && ['DOCTOR', 'ADMIN'].includes(session.user.role)
       ? session.user.id
       : undefined;
@@ -110,6 +122,8 @@ export async function upsertReport(studyInstanceUid: string, data: {
 }
 
 export async function getDefaultTemplate() {
+  await requirePermission("reports.read");
+
   try {
     const template = await (prisma as any).printTemplate?.findFirst({
       where: { isDefault: true },

@@ -1,10 +1,10 @@
 "use server";
 
-import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { setStudyStatus } from "@/lib/studyStatus";
+import { requirePermission } from "@/lib/authz";
+import { hasPermission } from "@/lib/permissions";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import {
   archiveStudyStatuses,
   finalReportStatuses,
@@ -14,13 +14,8 @@ import {
   type ArchiveStudyRow,
 } from "./types";
 
-const archiveRoles = new Set(["ADMIN", "DOCTOR", "RECEPTION", "TECHNICIAN"]);
-
 async function requireArchiveAccess() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  if (!archiveRoles.has(session.user.role)) redirect("/");
-  return session.user;
+  return requirePermission("archive.read");
 }
 
 function cleanText(value?: string | null) {
@@ -422,7 +417,7 @@ export async function logArchivePrintAction(studyInstanceUid: string, mode: "PRI
 export async function markArchiveDeliveredAction(studyInstanceUid: string) {
   const actor = await requireArchiveAccess();
 
-  if (!["ADMIN", "RECEPTION"].includes(actor.role)) {
+  if (!hasPermission(actor.role, "archive.deliver")) {
     return { success: false, error: "Chi le tan hoac admin duoc ghi nhan tra ket qua." };
   }
 

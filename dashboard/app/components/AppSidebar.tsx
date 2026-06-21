@@ -1,21 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
+import { getSession, signOut } from "next-auth/react";
 import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X } from "lucide-react";
+import { hasPermission, type PermissionKey } from "@/lib/permissions";
 
 type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "clinic" | "pacs" | "storage";
 
 const mainMenuItems = [
-  { key: "studies", label: "Ca chụp", href: "/", icon: LayoutDashboard },
-  { key: "worklist", label: "Tiếp đón", href: "/worklist", icon: FileText },
-  { key: "archive", label: "Lưu trữ", href: "/archive", icon: Archive },
-  { key: "statistics", label: "Thống kê", href: "/statistics", icon: BarChart3 },
-  { key: "users", label: "Người dùng", href: "/admin/users", icon: UserCog },
-  { key: "templates", label: "Mẫu báo cáo", href: "/settings/report-templates", icon: FileText },
-  { key: "clinic", label: "Phòng khám", href: "/settings/clinic-profile", icon: Building2 },
-  { key: "pacs", label: "PACS / IT", href: "/admin/pacs/nodes", icon: Settings },
+  { key: "studies", label: "Ca chụp", href: "/", icon: LayoutDashboard, permission: "studies.read" },
+  { key: "worklist", label: "Tiếp đón", href: "/worklist", icon: FileText, permission: "worklist.manage" },
+  { key: "archive", label: "Lưu trữ", href: "/archive", icon: Archive, permission: "archive.read" },
+  { key: "statistics", label: "Thống kê", href: "/statistics", icon: BarChart3, permission: "statistics.read" },
+  { key: "users", label: "Người dùng", href: "/admin/users", icon: UserCog, permission: "users.manage" },
+  { key: "templates", label: "Mẫu báo cáo", href: "/settings/report-templates", icon: FileText, permission: "templates.manage" },
+  { key: "clinic", label: "Phòng khám", href: "/settings/clinic-profile", icon: Building2, permission: "clinic.manage" },
+  { key: "pacs", label: "PACS / IT", href: "/admin/pacs/nodes", icon: Settings, permission: "pacs.manage" },
 ] as const;
 
 const upcomingMenuItems = [
@@ -25,12 +26,27 @@ const upcomingMenuItems = [
 export function AppSidebar({ active }: { active: ActiveMenu }) {
   const [collapsed, setCollapsed] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    getSession().then(session => {
+      if (mounted) setRole(session?.user?.role || null);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleLogout = async () => {
     setLoggingOut(true);
     await signOut({ redirect: false });
     window.location.href = "/login";
   };
+
+  const visibleMenuItems = role
+    ? mainMenuItems.filter(item => hasPermission(role, item.permission as PermissionKey))
+    : mainMenuItems.filter(item => item.key === active || item.key === "studies");
 
   return (
     <aside
@@ -67,7 +83,7 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
 
       {/* Menu Items */}
       <nav className="flex-1 space-y-1 px-2 py-3">
-        {mainMenuItems.map(item => {
+        {visibleMenuItems.map(item => {
           const Icon = item.icon;
           const isActive = active === item.key;
 

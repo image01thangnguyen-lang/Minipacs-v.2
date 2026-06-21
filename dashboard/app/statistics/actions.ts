@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { redirect } from "next/navigation";
+import { hasPermission } from "@/lib/permissions";
 import type {
   StatisticsDoctorRow,
   StatisticsFilters,
@@ -12,8 +13,6 @@ import type {
   StatisticsStatusCount,
   StatisticsStorage,
 } from "./types";
-
-const statisticsRoles = new Set(["ADMIN", "DOCTOR", "RECEPTION", "TECHNICIAN"]);
 
 const statusLabels: Record<string, string> = {
   ORDERED: "Chờ chụp",
@@ -36,7 +35,7 @@ const statusLabels: Record<string, string> = {
 async function requireStatisticsAccess() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  if (!statisticsRoles.has(session.user.role)) redirect("/");
+  if (!hasPermission(session.user.role, "statistics.read")) redirect("/");
   return session.user;
 }
 
@@ -224,7 +223,7 @@ async function getAverageTurnaround(start: Date, endExclusive: Date) {
 }
 
 async function getDoctorRows(start: Date, endExclusive: Date, role: string, userId: string): Promise<StatisticsDoctorRow[]> {
-  if (!["ADMIN", "DOCTOR"].includes(role)) return [];
+  if (!hasPermission(role, "statistics.doctorStats")) return [];
 
   const thisMonthInput = vietnamDateInput();
   const [year, month] = thisMonthInput.split("-").map(Number);
@@ -356,7 +355,7 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     dateTo: range.dateTo,
     generatedAt: new Date().toISOString(),
     role: user.role,
-    canViewDoctorStats: ["ADMIN", "DOCTOR"].includes(user.role),
+    canViewDoctorStats: hasPermission(user.role, "statistics.doctorStats"),
     kpis: {
       studiesInPeriod,
       readyToRead,

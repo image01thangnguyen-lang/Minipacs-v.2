@@ -4,8 +4,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { hasPermission } from "@/lib/permissions";
 
-const editableRoles = new Set(["ADMIN", "DOCTOR"]);
 const allowedScopes = new Set(["GLOBAL", "PRIVATE"]);
 
 type TemplateFilters = {
@@ -32,7 +32,7 @@ function normalizeShortcut(value: string) {
 async function requireTemplateAccess() {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
-  if (!editableRoles.has(session.user.role)) redirect("/");
+  if (!hasPermission(session.user.role, "templates.manage")) redirect("/");
   return session.user;
 }
 

@@ -6,7 +6,7 @@ import crypto from "crypto";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { requirePermission } from "@/lib/authz";
 
 const CLINIC_UPLOAD_DIR =
   process.env.NODE_ENV === "production"
@@ -56,10 +56,7 @@ function serializeClinicProfile(profile: any) {
 }
 
 async function requireAdmin() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  if (session.user.role !== "ADMIN") redirect("/");
-  return session.user;
+  return requirePermission("clinic.manage");
 }
 
 async function saveClinicLogo(file: File | null) {

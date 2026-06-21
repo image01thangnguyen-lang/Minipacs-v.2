@@ -1,19 +1,13 @@
 "use server";
 
-import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { orthancClient, DicomModalityConfig } from "@/lib/orthancClient";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { requirePermission } from "@/lib/authz";
 import { dicomNodeSchema, type DicomNodeInput } from "./schema";
 
-const adminRoles = new Set(["ADMIN"]);
-
 async function requireAdminAccess() {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/login");
-  if (!adminRoles.has(session.user.role)) redirect("/");
-  return session.user;
+  return requirePermission("pacs.manage");
 }
 
 export async function getNodesAction() {
