@@ -3,14 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { Archive, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X } from "lucide-react";
+import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X } from "lucide-react";
 
-type ActiveMenu = "studies" | "worklist" | "archive" | "users" | "templates" | "clinic" | "pacs" | "storage";
+type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "clinic" | "pacs" | "storage";
 
 const mainMenuItems = [
   { key: "studies", label: "Ca chụp", href: "/", icon: LayoutDashboard },
   { key: "worklist", label: "Tiếp đón", href: "/worklist", icon: FileText },
   { key: "archive", label: "Lưu trữ", href: "/archive", icon: Archive },
+  { key: "statistics", label: "Thống kê", href: "/statistics", icon: BarChart3 },
   { key: "users", label: "Người dùng", href: "/admin/users", icon: UserCog },
   { key: "templates", label: "Mẫu báo cáo", href: "/settings/report-templates", icon: FileText },
   { key: "clinic", label: "Phòng khám", href: "/settings/clinic-profile", icon: Building2 },
