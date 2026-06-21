@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getSession, signOut } from "next-auth/react";
-import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X } from "lucide-react";
+import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X, User } from "lucide-react";
 import { hasPermission, type PermissionKey } from "@/lib/permissions";
 
 type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "clinic" | "pacs" | "storage";
@@ -23,11 +23,19 @@ const upcomingMenuItems = [
   { key: "storage", label: "Dung lượng", icon: HardDrive },
 ] as const;
 
+let globalSidebarCollapsed = true;
+
 export function AppSidebar({ active }: { active: ActiveMenu }) {
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsedState] = useState(globalSidebarCollapsed);
   const [loggingOut, setLoggingOut] = useState(false);
   const [role, setRole] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<string[] | null>(null);
+  const [userInfo, setUserInfo] = useState<{ username?: string; fullName?: string } | null>(null);
+
+  const setCollapsed = (val: boolean) => {
+    globalSidebarCollapsed = val;
+    setCollapsedState(val);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -35,6 +43,12 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
       if (mounted) {
         setRole(session?.user?.role || null);
         setPermissions(session?.user?.permissions || null);
+        if (session?.user) {
+          setUserInfo({
+            username: (session.user as any).username || session.user.name,
+            fullName: (session.user as any).fullName || session.user.name
+          });
+        }
       }
     });
     return () => {
@@ -86,7 +100,7 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
       </div>
 
       {/* Menu Items */}
-      <nav className="flex-1 space-y-1 px-2 py-3">
+      <nav className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-2 py-3 scr-dark">
         {visibleMenuItems.map(item => {
           const Icon = item.icon;
           const isActive = active === item.key;
@@ -134,8 +148,21 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
         })}
       </nav>
 
-      {/* Logout Button */}
+      {/* User Info & Logout */}
       <div className="border-t border-vin-border px-2 py-2.5">
+        {!collapsed && userInfo && (
+          <div className="mb-2 flex items-center gap-2 px-2 py-1.5">
+            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-vin-shell border border-vin-border">
+              <User className="h-4 w-4 text-vin-muted" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[11px] font-bold text-white">{userInfo.fullName || userInfo.username}</div>
+              {userInfo.fullName && userInfo.username && (
+                <div className="truncate text-[9px] text-vin-muted">@{userInfo.username}</div>
+              )}
+            </div>
+          </div>
+        )}
         <button
           onClick={handleLogout}
           disabled={loggingOut}
@@ -151,4 +178,5 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
     </aside>
   );
 }
+
 

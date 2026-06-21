@@ -329,7 +329,7 @@ export default function ArchivePage() {
               onChange={val => handleFilterChange("status", val)}
               compact
             />
-            <button type="submit" disabled={isLoading} className="flex h-9 items-center justify-center gap-1.5 rounded border border-vin-accent/50 bg-vin-accent px-3 text-[11px] font-bold text-white transition hover:bg-vin-accentHover disabled:opacity-40">
+            <button type="submit" disabled={isLoading} className="flex h-9 items-center justify-center gap-1.5 rounded border-0 bg-vin-accent px-3 text-[11px] font-bold text-white transition hover:bg-vin-accentHover disabled:opacity-40">
               <Search className="h-3.5 w-3.5" />
               Tìm
             </button>

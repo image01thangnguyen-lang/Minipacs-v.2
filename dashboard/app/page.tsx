@@ -650,7 +650,7 @@ export default function DashboardPage() {
                 <button
                   onClick={() => handleSave("COMPLETED")}
                   disabled={isSaving}
-                  className="flex items-center gap-1.5 rounded-lg border border-vin-accent/50 bg-vin-accent px-3 py-1.5 text-[11px] font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex items-center gap-1.5 rounded-lg border-0 bg-vin-accent px-3 py-1.5 text-[11px] font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
                   Hoàn tất

@@ -669,13 +669,15 @@ Theo doi suc khoe he thong PACS va cac node DICOM.
 
 ### Viec can lam
 
-- [ ] Tao health check Orthanc `/system`.
-- [ ] Tao storage snapshot tu `/statistics`.
-- [ ] Tao C-ECHO scheduler cho `DicomNode`.
-- [ ] Luu health check history.
-- [ ] Tao widget last received per modality.
-- [ ] Tao duplicate/missing metadata detector.
-- [ ] Tao storage forecast.
+- [x] Tao health check Orthanc `/system`.
+- [x] Tao storage snapshot tu `/statistics`.
+- [x] Tao C-ECHO scheduler cho `DicomNode`.
+- [x] Luu health check history.
+- [x] Tao widget last received per modality.
+- [x] Tao duplicate/missing metadata detector.
+- [x] Tao storage forecast.
+
+Ghi chu 2026-06-21: Da them PACS / DICOM Health tren `/statistics`, gom Orthanc `/system`, `/statistics`, C-ECHO cac node active, snapshot history `PacsHealthSnapshot`, last received theo modality/AE, detector thieu PID/accession/modality va duplicate accession. Storage forecast dung `PACS_STORAGE_CAPACITY_MB` hoac `ORTHANC_STORAGE_CAPACITY_MB` neu duoc cau hinh; C-ECHO hien chay theo dashboard refresh, co the tach scheduler doc lap sau.
 
 ### Acceptance criteria
 
@@ -691,12 +693,14 @@ Quan ly chat luong hinh anh, bao cao va rui ro lam sang.
 
 ### Viec can lam
 
-- [ ] Them `StudyQcEvent`.
-- [ ] Bat buoc ly do khi QC reject.
-- [ ] Tao QC dashboard.
-- [ ] Them critical result model/flow.
-- [ ] Them addendum tracking.
+- [x] Them `StudyQcEvent`.
+- [x] Bat buoc ly do khi QC reject.
+- [x] Tao QC dashboard.
+- [x] Them critical result model/flow.
+- [x] Them addendum tracking.
 - [ ] Neu co du lieu, ingest dose RDSR/dose tags.
+
+Ghi chu 2026-06-21: Da them Quality & Safety tren `/statistics`, gom QC reject rate/ly do/recent list, missing critical data, critical result pending communication, action tao/danh dau critical result da thong bao, va addendum tracking khi sua report da final/completed. Chua ingest dose vi chua co nguon RDSR/dose tag.
 
 ### Acceptance criteria
 

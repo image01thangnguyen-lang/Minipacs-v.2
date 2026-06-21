@@ -90,6 +90,16 @@ function getInitialOrthancStatus(study: OrthancStudy): StudyStatusValue {
   return study.IsStable === false ? "RECEIVED" : "READY_TO_READ";
 }
 
+function metadataRecord(metadata?: unknown) {
+  return metadata && typeof metadata === "object" && !Array.isArray(metadata)
+    ? metadata as Record<string, unknown>
+    : {};
+}
+
+function cleanText(value?: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
 function resolveSyncedStatus(
   currentStatus: StudyStatusValue | null | undefined,
   reportStatus: string | null | undefined,
@@ -163,6 +173,21 @@ async function writeStatusHistory(params: {
       ...(params.metadata && typeof params.metadata === "object" ? params.metadata as Record<string, unknown> : { metadata: params.metadata }),
     },
   });
+
+  const metadata = metadataRecord(params.metadata);
+  const isQcRejected = params.toStatus === "QC_REJECTED";
+  const isQcPassed = params.toStatus === "READY_TO_READ" && params.source !== "ORTHANC_SYNC";
+  if (isQcRejected || isQcPassed) {
+    await params.tx.studyQcEvent.create({
+      data: {
+        imagingStudyId: params.imagingStudyId,
+        status: isQcRejected ? "QC_REJECTED" : "QC_PASSED",
+        reasonCode: cleanText(metadata.reasonCode) || cleanText(params.reason) || null,
+        note: cleanText(metadata.note) || cleanText(params.reason) || null,
+        actorUserId: params.actorUserId,
+      },
+    });
+  }
 }
 
 function eventTypeForStatusChange(source: StatusSource, toStatus: StudyStatusValue): ImagingStudyEventType {
@@ -188,6 +213,13 @@ export async function setStudyStatus(
   } = {}
 ) {
   const source = options.source || "SYSTEM";
+  if (nextStatus === "QC_REJECTED") {
+    const metadata = metadataRecord(options.metadata);
+    const reasonCode = cleanText(metadata.reasonCode) || cleanText(options.reason);
+    if (!reasonCode) {
+      throw new Error("QC reject bat buoc co ly do.");
+    }
+  }
 
   return prisma.$transaction(async tx => {
     const existing = await tx.imagingStudy.findUnique({

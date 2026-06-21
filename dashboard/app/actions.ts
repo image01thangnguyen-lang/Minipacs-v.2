@@ -154,6 +154,24 @@ export async function saveReportAction(data: {
         ? session.user.id
         : undefined
     );
+    const existingReport = await prisma.report.findUnique({
+      where: { studyInstanceUid: data.studyInstanceUid },
+      select: {
+        id: true,
+        status: true,
+        findings: true,
+        conclusion: true,
+        recommendation: true,
+        doctorId: true,
+        imagingStudyId: true,
+      },
+    });
+    const completedStatuses = new Set(["FINAL", "COMPLETED"]);
+    const contentChanged = Boolean(existingReport && (
+      (existingReport.findings || "") !== (data.findings || "") ||
+      (existingReport.conclusion || "") !== (data.conclusion || "") ||
+      (existingReport.recommendation || "") !== (data.recommendation || "")
+    ));
 
     const report = await prisma.report.upsert({
       where: {
@@ -178,6 +196,26 @@ export async function saveReportAction(data: {
     });
 
     await updateStudyStatusForReport(data.studyInstanceUid, data.status);
+    if (
+      existingReport &&
+      completedStatuses.has(String(existingReport.status)) &&
+      completedStatuses.has(String(data.status)) &&
+      contentChanged
+    ) {
+      await prisma.reportAddendum.create({
+        data: {
+          reportId: report.id,
+          imagingStudyId: report.imagingStudyId || existingReport.imagingStudyId,
+          doctorId: signingDoctorId || existingReport.doctorId,
+          reasonCode: "REPORT_UPDATED_AFTER_FINAL",
+          content: JSON.stringify({
+            findings: data.findings || "",
+            conclusion: data.conclusion || "",
+            recommendation: data.recommendation || "",
+          }),
+        },
+      });
+    }
 
     return {
       success: true,

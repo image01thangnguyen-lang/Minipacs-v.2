@@ -5,9 +5,11 @@ import { prisma } from "@/app/db";
 import { redirect } from "next/navigation";
 import { hasPermission } from "@/lib/permissions";
 import { recordStudyEventInTx } from "@/lib/studyEvents";
+import { orthancClient } from "@/lib/orthancClient";
 import type {
   StatisticsAlerts,
   StatisticsBreakdownRow,
+  StatisticsCriticalResultRow,
   StatisticsDoctorOption,
   StatisticsDoctorRow,
   StatisticsDurationSummary,
@@ -15,9 +17,18 @@ import type {
   StatisticsModalityCount,
   StatisticsOperations,
   StatisticsOperationRow,
+  StatisticsPacsDuplicateAccessionRow,
+  StatisticsPacsHealth,
+  StatisticsPacsLastReceivedRow,
+  StatisticsPacsMetadataIssueRow,
+  StatisticsPacsNodeHealthRow,
   StatisticsPayload,
   StatisticsPerformance,
   StatisticsPerformanceOutlier,
+  StatisticsQualityBreakdownRow,
+  StatisticsQualityReasonRow,
+  StatisticsQualitySafety,
+  StatisticsQualityStudyRow,
   StatisticsQueueRow,
   StatisticsRoomUtilizationRow,
   StatisticsStatusCount,
@@ -55,6 +66,11 @@ const SLA_MINUTES_BY_PRIORITY: Record<string, number> = {
 };
 
 const ROOM_CAPACITY_MINUTES_PER_DAY = 480;
+const NODE_ECHO_WARNING_MINUTES = 30;
+const NODE_ECHO_CRITICAL_MINUTES = 120;
+const MODALITY_IDLE_WARNING_MINUTES = 24 * 60;
+const STORAGE_WARNING_DAYS = 30;
+const STORAGE_CRITICAL_DAYS = 7;
 const DEFAULT_SCAN_MINUTES_BY_MODALITY: Record<string, number> = {
   CT: 20,
   MR: 30,
@@ -93,6 +109,14 @@ function canManageOperationalAlerts(user: any) {
   );
 }
 
+function canManageQualitySafety(user: any) {
+  return (
+    hasPermission(user.role, "reports.write", user.permissions) ||
+    hasPermission(user.role, "worklist.manage", user.permissions) ||
+    hasPermission(user.role, "pacs.manage", user.permissions)
+  );
+}
+
 function isDoctorOnlyWorkloadView(user: any) {
   return (user.baseRole || user.role) === "DOCTOR" && !canManageAssignments(user);
 }
@@ -106,6 +130,12 @@ async function requireAssignmentAccess() {
 async function requireAlertAccess() {
   const user = await requireStatisticsAccess();
   if (!canManageOperationalAlerts(user)) throw new Error("Tài khoản không có quyền xử lý alert vận hành.");
+  return user;
+}
+
+async function requireQualitySafetyAccess() {
+  const user = await requireStatisticsAccess();
+  if (!canManageQualitySafety(user)) throw new Error("Tai khoan khong co quyen xu ly quality/safety.");
   return user;
 }
 
@@ -195,6 +225,31 @@ function percentile(values: number[], percentileValue: number) {
 
 function rate(part: number, total: number) {
   return total ? Math.round((part / total) * 100) : 0;
+}
+
+function clampPositive(value: number) {
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+function optionalIso(value?: Date | null) {
+  return value ? value.toISOString() : null;
+}
+
+function isHealthyStatus(value?: string | null) {
+  const status = cleanText(value).toUpperCase();
+  return Boolean(status && ["OK", "SUCCESS", "ONLINE", "UP", "PONG"].includes(status));
+}
+
+function warningLevelFromForecast(forecastDays: number | null): "normal" | "warning" | "critical" | "unknown" {
+  if (forecastDays === null) return "unknown";
+  if (forecastDays <= STORAGE_CRITICAL_DAYS) return "critical";
+  if (forecastDays <= STORAGE_WARNING_DAYS) return "warning";
+  return "normal";
+}
+
+function storageCapacityMb() {
+  const value = Number(process.env.PACS_STORAGE_CAPACITY_MB || process.env.ORTHANC_STORAGE_CAPACITY_MB || 0);
+  return clampPositive(value);
 }
 
 function vietnamDateKey(date?: Date | null) {
@@ -647,25 +702,40 @@ async function syncOperationalAlerts() {
 }
 
 async function getOrthancStorage(): Promise<StatisticsStorage> {
-  const orthancUrl = process.env.ORTHANC_API_URL || "http://orthanc:8042";
-  const username = process.env.ORTHANC_USERNAME || "admin";
-  const password = process.env.ORTHANC_PASSWORD || "admin_password";
-
   try {
-    const response = await fetch(`${orthancUrl}/statistics`, {
-      headers: {
-        Authorization: "Basic " + Buffer.from(`${username}:${password}`).toString("base64"),
-        Accept: "application/json",
-      },
-      cache: "no-store",
-    });
-
-    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-
-    const data = await response.json();
+    const [data, snapshots] = await Promise.all([
+      orthancClient.getStatistics(),
+      prisma.pacsHealthSnapshot.findMany({
+        where: { nodeId: null, orthancOnline: true },
+        orderBy: { createdAt: "desc" },
+        take: 14,
+      }),
+    ]);
     const diskSizeMb = Number(data.TotalDiskSizeMB || 0);
     const uncompressedSizeMb = Number(data.TotalUncompressedSizeMB || 0);
+    const newestSnapshot = snapshots[0] || null;
+    const oldestSnapshot = snapshots[snapshots.length - 1] || null;
+    const daysBetweenSnapshots =
+      newestSnapshot && oldestSnapshot
+        ? Math.max(0, (newestSnapshot.createdAt.getTime() - oldestSnapshot.createdAt.getTime()) / 86400000)
+        : 0;
+    const historicalGrowth =
+      daysBetweenSnapshots > 0.05 && newestSnapshot && oldestSnapshot
+        ? (newestSnapshot.storageDiskSizeMb - oldestSnapshot.storageDiskSizeMb) / daysBetweenSnapshots
+        : null;
+    const currentGrowth =
+      oldestSnapshot && (Date.now() - oldestSnapshot.createdAt.getTime()) > 3600000
+        ? (diskSizeMb - oldestSnapshot.storageDiskSizeMb) / Math.max(1 / 24, (Date.now() - oldestSnapshot.createdAt.getTime()) / 86400000)
+        : null;
+    const growthMbPerDay = clampPositive(Math.round(currentGrowth || historicalGrowth || 0));
+    const capacityMb = storageCapacityMb();
+    const forecastDays =
+      capacityMb && growthMbPerDay
+        ? Math.max(0, Math.round((capacityMb - diskSizeMb) / growthMbPerDay))
+        : null;
+    const forecastLevel = warningLevelFromForecast(forecastDays);
     const warningLevel =
+      forecastLevel !== "unknown" ? forecastLevel :
       diskSizeMb >= 102400 ? "critical" :
       diskSizeMb >= 51200 ? "warning" :
       "normal";
@@ -678,6 +748,9 @@ async function getOrthancStorage(): Promise<StatisticsStorage> {
       instances: Number(data.CountInstances || 0),
       diskSizeMb,
       uncompressedSizeMb,
+      growthMbPerDay,
+      forecastDays,
+      latestSnapshotAt: newestSnapshot?.createdAt.toISOString() || null,
       warningLevel,
       message: "Dung lượng PACS từ Orthanc statistics. Chưa bao gồm free disk của host.",
     };
@@ -690,10 +763,526 @@ async function getOrthancStorage(): Promise<StatisticsStorage> {
       instances: 0,
       diskSizeMb: 0,
       uncompressedSizeMb: 0,
+      growthMbPerDay: null,
+      forecastDays: null,
+      latestSnapshotAt: null,
       warningLevel: "unknown",
       message: `Không đọc được Orthanc statistics: ${error?.message || "unknown error"}`,
     };
   }
+}
+
+function studyHref(study: any) {
+  return study.studyInstanceUid ? `/report/${encodeURIComponent(study.studyInstanceUid)}` : "/worklist";
+}
+
+function serializeMetadataIssueStudy(study: any, issue: string): StatisticsPacsMetadataIssueRow {
+  return {
+    id: study.id,
+    studyInstanceUid: study.studyInstanceUid || "",
+    patientName: formatPatientName(study.patientName),
+    patientId: study.patientId || "-",
+    accessionNumber: study.accessionNumber || "-",
+    modality: study.modality || "-",
+    stationAeTitle: stationOf(study),
+    issue,
+    href: studyHref(study),
+  };
+}
+
+function serializeQualityStudy(study: any, status: string, reason: string, createdAt?: Date | null): StatisticsQualityStudyRow {
+  return {
+    id: study.id,
+    studyInstanceUid: study.studyInstanceUid || "",
+    patientName: formatPatientName(study.patientName),
+    patientId: study.patientId || "-",
+    accessionNumber: study.accessionNumber || "-",
+    modality: study.modality || "-",
+    stationAeTitle: stationOf(study),
+    status,
+    reason,
+    createdAt: optionalIso(createdAt || study.updatedAt || study.createdAt),
+    href: studyHref(study),
+  };
+}
+
+function nodeWarningLevel(node: any, lastStudyAt: Date | null): "normal" | "warning" | "critical" | "unknown" {
+  if (!cleanText(node.lastEchoStatus)) return "unknown";
+  if (!isHealthyStatus(node.lastEchoStatus)) return "critical";
+  const minutesSinceEcho = minutesBetween(node.lastEchoAt, new Date());
+  if (minutesSinceEcho !== null && minutesSinceEcho >= NODE_ECHO_CRITICAL_MINUTES) return "critical";
+  if (minutesSinceEcho !== null && minutesSinceEcho >= NODE_ECHO_WARNING_MINUTES) return "warning";
+  if (!lastStudyAt) return "unknown";
+  return "normal";
+}
+
+async function runDicomEchoHealthChecks(nodes: any[]) {
+  return Promise.all(nodes.map(async node => {
+    const checkedAt = new Date();
+    try {
+      await orthancClient.pingModality(node.orthancAlias);
+      return prisma.dicomNode.update({
+        where: { id: node.id },
+        data: {
+          lastEchoStatus: "OK",
+          lastEchoMessage: "C-ECHO OK",
+          lastEchoAt: checkedAt,
+        },
+      });
+    } catch (error: any) {
+      return prisma.dicomNode.update({
+        where: { id: node.id },
+        data: {
+          lastEchoStatus: "FAIL",
+          lastEchoMessage: error?.message || "C-ECHO failed",
+          lastEchoAt: checkedAt,
+        },
+      });
+    }
+  }));
+}
+
+async function writePacsHealthSnapshots(params: {
+  storage: StatisticsStorage;
+  system: StatisticsPacsHealth["system"];
+  nodes: StatisticsPacsNodeHealthRow[];
+  missingMetadataCount: number;
+  duplicateAccessionCount: number;
+}) {
+  const latest = await prisma.pacsHealthSnapshot.findFirst({
+    where: { nodeId: null },
+    orderBy: { createdAt: "desc" },
+    select: { createdAt: true },
+  });
+  if (latest && Date.now() - latest.createdAt.getTime() < 5 * 60000) return;
+
+  const capacityMb = storageCapacityMb();
+  const storageFreeMb = capacityMb ? Math.max(0, capacityMb - params.storage.diskSizeMb) : null;
+  const metadataJson = JSON.stringify({
+    message: params.system.message,
+    warningLevel: params.storage.warningLevel,
+  });
+
+  await prisma.pacsHealthSnapshot.create({
+    data: {
+      orthancOnline: params.system.orthancOnline,
+      orthancVersion: params.system.version,
+      dicomReceiveStatus: params.system.orthancOnline ? "ONLINE" : "OFFLINE",
+      patients: params.storage.patients,
+      studies: params.storage.studies,
+      series: params.storage.series,
+      instances: params.storage.instances,
+      storageDiskSizeMb: params.storage.diskSizeMb,
+      storageUncompressedMb: params.storage.uncompressedSizeMb,
+      storageFreeMb,
+      storageGrowthMbPerDay: params.storage.growthMbPerDay,
+      storageForecastDays: params.storage.forecastDays,
+      missingMetadataCount: params.missingMetadataCount,
+      duplicateAccessionCount: params.duplicateAccessionCount,
+      metadataJson,
+    },
+  });
+
+  if (params.nodes.length) {
+    await prisma.pacsHealthSnapshot.createMany({
+      data: params.nodes.map(node => ({
+        orthancOnline: params.system.orthancOnline,
+        dicomReceiveStatus: node.warningLevel === "critical" ? "NODE_DOWN" : "ONLINE",
+        nodeId: node.id,
+        nodeEchoStatus: node.echoStatus,
+        nodeEchoMessage: node.echoMessage,
+        lastStudyReceivedAt: node.lastStudyReceivedAt ? new Date(node.lastStudyReceivedAt) : null,
+        metadataJson: JSON.stringify({
+          aeTitle: node.aeTitle,
+          modality: node.modality,
+          room: node.room,
+          warningLevel: node.warningLevel,
+        }),
+      })),
+    });
+  }
+}
+
+async function getPacsHealthDashboard(start: Date, endExclusive: Date, storage: StatisticsStorage): Promise<StatisticsPacsHealth> {
+  const now = new Date();
+  const [systemResult, activeNodes, receivedStudies, metadataStudies] = await Promise.all([
+    orthancClient.getSystem()
+      .then(system => ({
+        orthancOnline: true,
+        version: system.Version || "-",
+        dicomAet: system.DicomAet || "-",
+        dicomPort: typeof system.DicomPort === "number" ? system.DicomPort : null,
+        message: "Orthanc API online",
+      }))
+      .catch((error: any) => ({
+        orthancOnline: false,
+        version: "-",
+        dicomAet: "-",
+        dicomPort: null,
+        message: error?.message || "Orthanc API offline",
+      })),
+    prisma.dicomNode.findMany({
+      where: { isActive: true },
+      orderBy: [{ modality: "asc" }, { name: "asc" }],
+      take: 50,
+    }),
+    prisma.imagingStudy.findMany({
+      where: { receivedAt: { not: null } },
+      select: {
+        id: true,
+        studyInstanceUid: true,
+        patientName: true,
+        patientId: true,
+        accessionNumber: true,
+        modality: true,
+        stationAeTitle: true,
+        receivedAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { receivedAt: "desc" },
+      take: 1000,
+    }),
+    prisma.imagingStudy.findMany({
+      where: studyDateWhere(start, endExclusive),
+      include: { order: true },
+      orderBy: { createdAt: "desc" },
+      take: 1000,
+    }),
+  ]);
+
+  const checkedNodes = await runDicomEchoHealthChecks(activeNodes);
+  const lastByStation = new Map<string, Date>();
+  const receivedByModality = new Map<string, StatisticsPacsLastReceivedRow>();
+
+  receivedStudies.forEach(study => {
+    const station = stationOf(study);
+    const modality = study.modality || "UNKNOWN";
+    const receivedAt = study.receivedAt || null;
+    if (!receivedAt) return;
+
+    if (station !== "-" && (!lastByStation.has(station) || lastByStation.get(station)!.getTime() < receivedAt.getTime())) {
+      lastByStation.set(station, receivedAt);
+    }
+
+    const key = `${modality}::${station}`;
+    const existing = receivedByModality.get(key);
+    const inRange = receivedAt >= start && receivedAt < endExclusive;
+    if (!existing) {
+      receivedByModality.set(key, {
+        modality,
+        stationAeTitle: station,
+        studyCount: inRange ? 1 : 0,
+        lastReceivedAt: receivedAt.toISOString(),
+        minutesSinceLastStudy: minutesBetween(receivedAt, now),
+        warningLevel: "normal",
+      });
+    } else {
+      if (inRange) existing.studyCount += 1;
+      if (!existing.lastReceivedAt || new Date(existing.lastReceivedAt).getTime() < receivedAt.getTime()) {
+        existing.lastReceivedAt = receivedAt.toISOString();
+        existing.minutesSinceLastStudy = minutesBetween(receivedAt, now);
+      }
+    }
+  });
+
+  const lastReceivedByModality = Array.from(receivedByModality.values())
+    .map(row => ({
+      ...row,
+      warningLevel:
+        row.minutesSinceLastStudy === null ? "unknown" :
+        row.minutesSinceLastStudy >= MODALITY_IDLE_WARNING_MINUTES ? "warning" :
+        "normal" as StatisticsPacsLastReceivedRow["warningLevel"],
+    }))
+    .sort((a, b) => (b.lastReceivedAt || "").localeCompare(a.lastReceivedAt || ""))
+    .slice(0, 12);
+
+  const nodes: StatisticsPacsNodeHealthRow[] = checkedNodes.map(node => {
+    const lastStudyAt = lastByStation.get(node.aeTitle) || null;
+    const minutesSinceLastEcho = minutesBetween(node.lastEchoAt, now);
+    const minutesSinceLastStudy = minutesBetween(lastStudyAt, now);
+    return {
+      id: node.id,
+      name: node.name,
+      aeTitle: node.aeTitle,
+      modality: node.modality || "-",
+      room: node.room || "-",
+      orthancAlias: node.orthancAlias,
+      echoStatus: node.lastEchoStatus || "UNKNOWN",
+      echoMessage: node.lastEchoMessage || "-",
+      lastEchoAt: optionalIso(node.lastEchoAt),
+      minutesSinceLastEcho,
+      lastStudyReceivedAt: optionalIso(lastStudyAt),
+      minutesSinceLastStudy,
+      warningLevel: nodeWarningLevel(node, lastStudyAt),
+    };
+  });
+
+  let missingPatientId = 0;
+  let missingAccession = 0;
+  let missingModality = 0;
+  const metadataIssueRows: StatisticsPacsMetadataIssueRow[] = [];
+  const accessionMap = new Map<string, any[]>();
+
+  metadataStudies.forEach(study => {
+    const issues: string[] = [];
+    if (!cleanText(study.patientId)) {
+      missingPatientId += 1;
+      issues.push("Missing PID");
+    }
+    if (!cleanText(study.accessionNumber)) {
+      missingAccession += 1;
+      issues.push("Missing accession");
+    }
+    if (!cleanText(study.modality)) {
+      missingModality += 1;
+      issues.push("Missing modality");
+    }
+
+    if (issues.length && metadataIssueRows.length < 20) {
+      metadataIssueRows.push(serializeMetadataIssueStudy(study, issues.join(", ")));
+    }
+
+    const accession = cleanText(study.accessionNumber);
+    if (accession) {
+      const rows = accessionMap.get(accession) || [];
+      rows.push(study);
+      accessionMap.set(accession, rows);
+    }
+  });
+
+  const duplicateRows: StatisticsPacsDuplicateAccessionRow[] = Array.from(accessionMap.entries())
+    .filter(([, rows]) => rows.length > 1)
+    .map(([accessionNumber, rows]) => ({
+      accessionNumber,
+      count: rows.length,
+      patientNames: Array.from(new Set(rows.map(row => formatPatientName(row.patientName)))).slice(0, 3).join(", "),
+      modalities: Array.from(new Set(rows.map(row => row.modality || "UNKNOWN"))).join(", "),
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  const metadataIssueCount = missingPatientId + missingAccession + missingModality;
+  await writePacsHealthSnapshots({
+    storage,
+    system: systemResult,
+    nodes,
+    missingMetadataCount: metadataIssueCount,
+    duplicateAccessionCount: duplicateRows.length,
+  });
+
+  return {
+    system: systemResult,
+    nodes,
+    lastReceivedByModality,
+    metadataIssues: {
+      missingPatientId,
+      missingAccession,
+      missingModality,
+      duplicateAccessions: duplicateRows.length,
+      rows: metadataIssueRows,
+      duplicateRows,
+    },
+    storageForecast: {
+      growthMbPerDay: storage.growthMbPerDay,
+      forecastDays: storage.forecastDays,
+      warningLevel: storage.warningLevel,
+    },
+  };
+}
+
+function isRejectedQcStatus(status?: string | null) {
+  const value = cleanText(status).toUpperCase();
+  return value.includes("REJECT") || value.includes("FAIL");
+}
+
+function qualityReasonLabel(value?: string | null) {
+  return cleanText(value) || "NO_REASON";
+}
+
+async function getQualitySafetyDashboard(start: Date, endExclusive: Date): Promise<StatisticsQualitySafety> {
+  const [studies, qcEvents, criticalResults, criticalPending, addenda, finalizedStudies, finalizedReports] = await Promise.all([
+    prisma.imagingStudy.findMany({
+      where: studyDateWhere(start, endExclusive),
+      include: { order: true },
+      orderBy: { createdAt: "desc" },
+      take: 1000,
+    }),
+    prisma.studyQcEvent.findMany({
+      where: { createdAt: rangeFilter(start, endExclusive) },
+      include: { imagingStudy: { include: { order: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 500,
+    }),
+    prisma.criticalResult.findMany({
+      where: {
+        OR: [
+          { createdAt: rangeFilter(start, endExclusive) },
+          { communicationStatus: { notIn: ["COMMUNICATED", "RESOLVED", "CLOSED"] } },
+        ],
+      },
+      include: { imagingStudy: true },
+      orderBy: { createdAt: "desc" },
+      take: 30,
+    }),
+    prisma.criticalResult.count({
+      where: { communicationStatus: { notIn: ["COMMUNICATED", "RESOLVED", "CLOSED"] } },
+    }),
+    prisma.reportAddendum.findMany({
+      where: { createdAt: rangeFilter(start, endExclusive) },
+      include: {
+        imagingStudy: true,
+        report: { select: { doctorId: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 1000,
+    }),
+    prisma.imagingStudy.findMany({
+      where: { finalizedAt: rangeFilter(start, endExclusive) },
+      include: { reports: { select: { doctorId: true } } },
+      take: 1000,
+    }),
+    prisma.report.findMany({
+      where: reportFinalWhere(start, endExclusive),
+      select: { doctorId: true, imagingStudy: { select: { modality: true } } },
+      take: 1000,
+    }),
+  ]);
+
+  const totalStudies = studies.length;
+  const rejectedStudyIds = new Set<string>();
+  const reasonCounts = new Map<string, number>();
+  const qcRecent: StatisticsQualityStudyRow[] = [];
+
+  qcEvents.forEach(event => {
+    if (!isRejectedQcStatus(event.status)) return;
+    rejectedStudyIds.add(event.imagingStudyId);
+    const reason = qualityReasonLabel(event.reasonCode || event.note);
+    reasonCounts.set(reason, (reasonCounts.get(reason) || 0) + 1);
+    if (event.imagingStudy && qcRecent.length < 12) {
+      qcRecent.push(serializeQualityStudy(event.imagingStudy, event.status, reason, event.createdAt));
+    }
+  });
+
+  studies
+    .filter(study => study.status === "QC_REJECTED")
+    .forEach(study => {
+      if (!rejectedStudyIds.has(study.id)) {
+        rejectedStudyIds.add(study.id);
+        const reason = "LEGACY_NO_REASON";
+        reasonCounts.set(reason, (reasonCounts.get(reason) || 0) + 1);
+        if (qcRecent.length < 12) {
+          qcRecent.push(serializeQualityStudy(study, "QC_REJECTED", reason, study.updatedAt));
+        }
+      }
+    });
+
+  const missingCriticalDataRows = studies
+    .map(study => {
+      const issues: string[] = [];
+      if (!cleanText(study.patientId)) issues.push("Missing PID");
+      if (!cleanText(study.accessionNumber)) issues.push("Missing accession");
+      if (!cleanText(study.modality)) issues.push("Missing modality");
+      if (study.order && !study.order.dob) issues.push("Missing DOB");
+      if (study.order && !cleanText(study.order.gender)) issues.push("Missing sex");
+      return issues.length ? serializeQualityStudy(study, study.status, issues.join(", "), study.updatedAt) : null;
+    })
+    .filter((row): row is StatisticsQualityStudyRow => Boolean(row))
+    .slice(0, 20);
+
+  const qcReasons: StatisticsQualityReasonRow[] = Array.from(reasonCounts.entries())
+    .map(([key, count]) => ({
+      key,
+      label: key,
+      count,
+      percent: rate(count, rejectedStudyIds.size),
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  const criticalRows: StatisticsCriticalResultRow[] = criticalResults.map(result => ({
+    id: result.id,
+    studyInstanceUid: result.imagingStudy.studyInstanceUid || "",
+    patientName: formatPatientName(result.imagingStudy.patientName),
+    patientId: result.imagingStudy.patientId || "-",
+    accessionNumber: result.imagingStudy.accessionNumber || "-",
+    modality: result.imagingStudy.modality || "-",
+    severity: result.severity,
+    communicationStatus: result.communicationStatus,
+    finding: result.finding,
+    createdAt: result.createdAt.toISOString(),
+    communicatedAt: optionalIso(result.communicatedAt),
+    href: studyHref(result.imagingStudy),
+  }));
+
+  const doctorIds = Array.from(new Set(addenda.map(row => row.doctorId || row.report?.doctorId).filter(Boolean))) as string[];
+  const doctors = doctorIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: doctorIds } },
+        select: { id: true, fullName: true, username: true },
+      })
+    : [];
+  const doctorNames = new Map(doctors.map(doctor => [doctor.id, doctor.fullName || doctor.username]));
+  const addendaByDoctor = new Map<string, number>();
+  const finalByDoctor = new Map<string, number>();
+  const addendaByModality = new Map<string, number>();
+  const studiesByModality = new Map<string, number>();
+
+  addenda.forEach(row => {
+    const doctorId = row.doctorId || row.report?.doctorId || "UNKNOWN";
+    addendaByDoctor.set(doctorId, (addendaByDoctor.get(doctorId) || 0) + 1);
+    const modality = row.imagingStudy?.modality || "UNKNOWN";
+    addendaByModality.set(modality, (addendaByModality.get(modality) || 0) + 1);
+  });
+
+  finalizedReports.forEach(report => {
+    const doctorId = report.doctorId || "UNKNOWN";
+    finalByDoctor.set(doctorId, (finalByDoctor.get(doctorId) || 0) + 1);
+  });
+
+  studies.forEach(study => {
+    const modality = study.modality || "UNKNOWN";
+    studiesByModality.set(modality, (studiesByModality.get(modality) || 0) + 1);
+  });
+
+  const addendumByDoctor: StatisticsQualityBreakdownRow[] = Array.from(addendaByDoctor.entries())
+    .map(([doctorId, count]) => ({
+      key: doctorId,
+      label: doctorId === "UNKNOWN" ? "Unknown doctor" : doctorNames.get(doctorId) || "Unknown doctor",
+      count,
+      rate: rate(count, finalByDoctor.get(doctorId) || count),
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
+
+  const addendumByModality: StatisticsQualityBreakdownRow[] = Array.from(addendaByModality.entries())
+    .map(([modality, count]) => ({
+      key: modality,
+      label: modality,
+      count,
+      rate: rate(count, studiesByModality.get(modality) || count),
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
+
+  return {
+    kpis: {
+      qcEvents: qcEvents.length,
+      qcRejected: rejectedStudyIds.size,
+      qcRejectRate: rate(rejectedStudyIds.size, totalStudies),
+      repeatStudyRate: rate(rejectedStudyIds.size, totalStudies),
+      missingCriticalData: missingCriticalDataRows.length,
+      criticalPending,
+      addendumCount: addenda.length,
+      addendumRate: rate(addenda.length, finalizedStudies.length),
+      doseOutliers: null,
+    },
+    qcReasons,
+    qcRecent,
+    missingCriticalDataRows,
+    criticalResults: criticalRows,
+    addendumByDoctor,
+    addendumByModality,
+  };
 }
 
 async function getAverageTurnaround(start: Date, endExclusive: Date) {
@@ -1562,10 +2151,142 @@ export async function resolveOperationalAlertAction(alertId: string) {
   return { success: true };
 }
 
+export async function recordStudyQcAction(input: {
+  studyId: string;
+  status: "QC_PASSED" | "QC_REJECTED" | "NEEDS_QC";
+  reasonCode?: string;
+  note?: string;
+}) {
+  const user = await requireQualitySafetyAccess();
+  const reasonCode = cleanText(input.reasonCode);
+  if (input.status === "QC_REJECTED" && !reasonCode) {
+    throw new Error("QC reject bat buoc co ly do.");
+  }
+
+  const study = await prisma.imagingStudy.findUnique({ where: { id: input.studyId } });
+  if (!study) throw new Error("Khong tim thay study de ghi QC.");
+
+  const nextStatus =
+    input.status === "QC_REJECTED" ? "QC_REJECTED" :
+    input.status === "QC_PASSED" ? "READY_TO_READ" :
+    "NEEDS_QC";
+  const now = new Date();
+
+  await prisma.$transaction(async tx => {
+    await tx.imagingStudy.update({
+      where: { id: study.id },
+      data: {
+        status: nextStatus as any,
+        qcCompletedAt: input.status === "NEEDS_QC" ? study.qcCompletedAt : now,
+      },
+    });
+    await tx.studyQcEvent.create({
+      data: {
+        imagingStudyId: study.id,
+        status: input.status,
+        reasonCode: reasonCode || null,
+        note: cleanText(input.note) || null,
+        actorUserId: user.id,
+        createdAt: now,
+      },
+    });
+    await recordStudyEventInTx(tx, {
+      imagingStudyId: study.id,
+      eventType: input.status === "QC_REJECTED" ? "QC_REJECTED" : input.status === "QC_PASSED" ? "QC_PASSED" : "STATUS_CHANGED",
+      fromStatus: study.status as any,
+      toStatus: nextStatus as any,
+      actorUserId: user.id,
+      source: "QC",
+      createdAt: now,
+      metadata: {
+        reasonCode: reasonCode || null,
+        note: cleanText(input.note) || null,
+      },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorUserId: user.id,
+        action: "STUDY_QC_RECORDED",
+        entityType: "ImagingStudy",
+        entityId: study.id,
+        message: `Recorded ${input.status} for ${study.studyInstanceUid}`,
+        metadataJson: JSON.stringify({ reasonCode, note: input.note }),
+      },
+    });
+  });
+
+  return { success: true };
+}
+
+export async function createCriticalResultAction(input: {
+  studyId: string;
+  finding: string;
+  severity?: string;
+}) {
+  const user = await requireQualitySafetyAccess();
+  const finding = cleanText(input.finding);
+  if (!finding) throw new Error("Critical result bat buoc co noi dung.");
+
+  const study = await prisma.imagingStudy.findUnique({ where: { id: input.studyId } });
+  if (!study) throw new Error("Khong tim thay study de ghi critical result.");
+
+  const result = await prisma.criticalResult.create({
+    data: {
+      imagingStudyId: study.id,
+      severity: cleanText(input.severity) || "critical",
+      finding,
+      communicationStatus: "PENDING",
+      createdByUserId: user.id,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      actorUserId: user.id,
+      action: "CRITICAL_RESULT_CREATED",
+      entityType: "CriticalResult",
+      entityId: result.id,
+      message: `Created critical result for ${study.studyInstanceUid}`,
+      metadataJson: JSON.stringify({ severity: result.severity }),
+    },
+  });
+
+  return { success: true, id: result.id };
+}
+
+export async function communicateCriticalResultAction(resultId: string, communicatedTo: string) {
+  const user = await requireQualitySafetyAccess();
+  const target = cleanText(communicatedTo);
+  if (!target) throw new Error("Can ghi nguoi/bo phan da nhan thong bao.");
+
+  const result = await prisma.criticalResult.update({
+    where: { id: resultId },
+    data: {
+      communicationStatus: "COMMUNICATED",
+      communicatedTo: target,
+      communicatedAt: new Date(),
+      communicatedByUserId: user.id,
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      actorUserId: user.id,
+      action: "CRITICAL_RESULT_COMMUNICATED",
+      entityType: "CriticalResult",
+      entityId: result.id,
+      message: `Communicated critical result to ${target}`,
+    },
+  });
+
+  return { success: true };
+}
+
 export async function getStatisticsDashboardAction(filters: StatisticsFilters = {}): Promise<StatisticsPayload> {
   const user = await requireStatisticsAccess();
   const range = toVietnamRange(filters.dateFrom, filters.dateTo);
   const endExclusive = plusOneDay(range.end);
+  const storagePromise = getOrthancStorage();
 
   await syncOperationalAlerts();
 
@@ -1588,6 +2309,8 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     workload,
     alerts,
     storage,
+    pacsHealth,
+    qualitySafety,
   ] = await Promise.all([
     prisma.imagingStudy.count({ where: studyDateWhere(range.start, endExclusive) }),
     prisma.imagingStudy.count({ where: { status: "READY_TO_READ" } }),
@@ -1623,7 +2346,9 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     getUtilizationAnalytics(range.start, endExclusive),
     getRadiologistWorkload(range.start, endExclusive, user),
     getOperationalAlerts(user),
-    getOrthancStorage(),
+    storagePromise,
+    storagePromise.then(storage => getPacsHealthDashboard(range.start, endExclusive, storage)),
+    getQualitySafetyDashboard(range.start, endExclusive),
   ]);
 
   const totalModality = modalityGroups.reduce((sum, row) => sum + row._count._all, 0);
@@ -1668,5 +2393,7 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     workload,
     alerts,
     storage,
+    pacsHealth,
+    qualitySafety,
   };
 }

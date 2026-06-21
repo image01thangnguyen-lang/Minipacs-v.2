@@ -501,7 +501,7 @@ export default function App() {
                       </div>
                     </div>
                     <div className="pt-4 flex justify-end">
-                      <button type="submit" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/20 transition-all">
+                      <button type="submit" className="inline-flex items-center gap-2 px-6 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold shadow-lg shadow-blue-500/20 transition-all border-0">
                         <PlusCircle className="h-5 w-5" /> Tạo Order
                       </button>
                     </div>

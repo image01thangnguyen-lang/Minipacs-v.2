@@ -28,13 +28,22 @@ import type {
   StatisticsAlertRow,
   StatisticsAlerts,
   StatisticsBreakdownRow,
+  StatisticsCriticalResultRow,
   StatisticsDoctorOption,
   StatisticsDurationSummary,
   StatisticsFilters,
   StatisticsHourlyUtilizationRow,
   StatisticsOperationRow,
+  StatisticsPacsHealth,
+  StatisticsPacsLastReceivedRow,
+  StatisticsPacsMetadataIssueRow,
+  StatisticsPacsNodeHealthRow,
   StatisticsPayload,
   StatisticsPerformanceOutlier,
+  StatisticsQualityBreakdownRow,
+  StatisticsQualityReasonRow,
+  StatisticsQualitySafety,
+  StatisticsQualityStudyRow,
   StatisticsRoomUtilizationRow,
   StatisticsWorkload,
   StatisticsWorkloadDoctorRow,
@@ -75,6 +84,21 @@ function formatStorageMb(value: number) {
 
 function formatPercent(value: number | null) {
   return value === null ? "-" : `${value}%`;
+}
+
+function formatOptionalStorageMb(value: number | null) {
+  return value === null ? "-" : formatStorageMb(value);
+}
+
+function formatForecastDays(value: number | null) {
+  return value === null ? "-" : `${value} ngày`;
+}
+
+function healthBadgeClass(level: "normal" | "warning" | "critical" | "unknown") {
+  if (level === "critical") return "bg-vin-status-danger-bg text-white";
+  if (level === "warning") return "bg-vin-status-warning-bg text-white";
+  if (level === "normal") return "bg-vin-status-approved-bg text-white";
+  return "border border-white/10 text-vin-muted";
 }
 
 const statusTone: Record<string, string> = {
@@ -244,7 +268,7 @@ export default function StatisticsPage() {
               <button
                 type="submit"
                 disabled={isLoading || isRefreshing}
-                className="flex h-9 items-center gap-1.5 rounded border border-vin-accent/50 bg-vin-accent px-3 text-[11px] font-bold text-white transition hover:bg-vin-accentHover disabled:opacity-40"
+                className="flex h-9 items-center gap-1.5 rounded border-0 bg-vin-accent px-3 text-[11px] font-bold text-white transition hover:bg-vin-accentHover disabled:opacity-40"
               >
                 <RefreshCcw className={`h-3.5 w-3.5 ${isLoading || isRefreshing ? "animate-spin" : ""}`} />
                 Cập nhật
@@ -397,6 +421,11 @@ export default function StatisticsPage() {
               </div>
             </section>
 
+            <div className="mt-3 grid gap-3 xl:grid-cols-[1.1fr_0.9fr]">
+              <PacsHealthPanel pacsHealth={data.pacsHealth} storage={data.storage} />
+              <QualitySafetyPanel quality={data.qualitySafety} />
+            </div>
+
             <div className="mt-3 grid grid-cols-6 gap-3">
               {kpiItems.map(item => {
                 const Icon = item.icon;
@@ -461,6 +490,8 @@ export default function StatisticsPage() {
                   <StorageMetric label="Instances" value={data.storage.instances} />
                   <StorageMetric label="Disk" value={formatStorageMb(data.storage.diskSizeMb)} />
                   <StorageMetric label="Uncompressed" value={formatStorageMb(data.storage.uncompressedSizeMb)} />
+                  <StorageMetric label="Growth/day" value={formatOptionalStorageMb(data.storage.growthMbPerDay)} />
+                  <StorageMetric label="Forecast" value={formatForecastDays(data.storage.forecastDays)} />
                   <div className="col-span-2 rounded border border-vin-border bg-vin-shell px-3 py-2 text-vin-muted">
                     {data.storage.message}
                   </div>
@@ -838,6 +869,327 @@ function RoomUtilizationTable({ rows }: { rows: StatisticsRoomUtilizationRow[] }
           </table>
         </div>
       )}
+    </section>
+  );
+}
+
+function PacsHealthPanel({ pacsHealth, storage }: { pacsHealth: StatisticsPacsHealth; storage: StatisticsPayload["storage"] }) {
+  const metadataIssueCount =
+    pacsHealth.metadataIssues.missingPatientId +
+    pacsHealth.metadataIssues.missingAccession +
+    pacsHealth.metadataIssues.missingModality +
+    pacsHealth.metadataIssues.duplicateAccessions;
+
+  return (
+    <section className="overflow-hidden rounded border border-vin-border bg-vin-panel">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <div>
+          <h2 className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-vin-text2">
+            <Database className="h-3.5 w-3.5 text-vin-accent" />
+            PACS / DICOM health
+          </h2>
+          <div className="mt-0.5 text-[10px] text-vin-muted">
+            Orthanc system, C-ECHO node, last received, metadata issue và storage forecast.
+          </div>
+        </div>
+        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${pacsHealth.system.orthancOnline ? "bg-vin-status-approved-bg text-white" : "bg-vin-status-danger-bg text-white"}`}>
+          {pacsHealth.system.orthancOnline ? "ONLINE" : "OFFLINE"}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 border-b border-white/5 md:grid-cols-4">
+        <MiniMetric label="Orthanc" value={pacsHealth.system.version || "-"} />
+        <MiniMetric label="DICOM AET" value={pacsHealth.system.dicomAet || "-"} />
+        <MiniMetric label="Growth/day" value={formatOptionalStorageMb(storage.growthMbPerDay)} />
+        <MiniMetric label="Forecast" value={formatForecastDays(storage.forecastDays)} />
+      </div>
+
+      <div className="grid gap-3 p-3 xl:grid-cols-[1.15fr_0.85fr]">
+        <PacsNodeTable rows={pacsHealth.nodes} />
+        <div className="grid gap-3">
+          <PacsLastReceivedList rows={pacsHealth.lastReceivedByModality} />
+          <MetadataIssueList
+            total={metadataIssueCount}
+            rows={pacsHealth.metadataIssues.rows}
+            duplicateRows={pacsHealth.metadataIssues.duplicateRows}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PacsNodeTable({ rows }: { rows: StatisticsPacsNodeHealthRow[] }) {
+  return (
+    <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">C-ECHO node</h3>
+        <span className="text-[10px] text-vin-muted">{rows.length} node</span>
+      </div>
+      {rows.length === 0 ? (
+        <div className="px-3 py-8 text-center text-[11px] text-vin-muted">Chưa cấu hình DICOM node active.</div>
+      ) : (
+        <div className="max-h-[320px] overflow-auto scr-dark">
+          <table className="w-full text-left text-[10px]">
+            <thead className="sticky top-0 border-b border-white/5 bg-vin-shell text-vin-muted">
+              <tr>
+                <th className="px-3 py-2">Node</th>
+                <th className="px-2 py-2">Echo</th>
+                <th className="px-2 py-2">Last study</th>
+                <th className="px-3 py-2 text-right">Level</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(row => (
+                <tr key={row.id} className="border-b border-white/5 last:border-b-0">
+                  <td className="px-3 py-2">
+                    <div className="truncate font-bold text-white">{row.name}</div>
+                    <div className="mt-0.5 font-mono text-[9px] text-vin-muted">{row.aeTitle} · {row.modality} · {row.room}</div>
+                  </td>
+                  <td className="px-2 py-2">
+                    <div className="font-bold text-vin-text2">{row.echoStatus}</div>
+                    <div className="mt-0.5 max-w-[160px] truncate text-[9px] text-vin-muted">{row.echoMessage}</div>
+                  </td>
+                  <td className="px-2 py-2 text-vin-muted">
+                    {row.lastStudyReceivedAt ? formatDateTime(row.lastStudyReceivedAt) : "-"}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${healthBadgeClass(row.warningLevel)}`}>
+                      {row.warningLevel.toUpperCase()}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function PacsLastReceivedList({ rows }: { rows: StatisticsPacsLastReceivedRow[] }) {
+  return (
+    <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Last received</h3>
+        <span className="text-[10px] text-vin-muted">{rows.length} nguồn</span>
+      </div>
+      <div className="max-h-[150px] overflow-auto scr-dark">
+        {rows.length === 0 ? (
+          <div className="px-3 py-6 text-center text-[11px] text-vin-muted">Chưa có study nhận từ PACS.</div>
+        ) : (
+          rows.map(row => (
+            <div key={`${row.modality}-${row.stationAeTitle}`} className="flex items-center justify-between gap-2 border-b border-white/5 px-3 py-2 last:border-b-0">
+              <div className="min-w-0">
+                <div className="font-mono text-[10px] font-bold text-vin-accent">{row.modality} · {row.stationAeTitle}</div>
+                <div className="mt-0.5 truncate text-[9px] text-vin-muted">{row.lastReceivedAt ? formatDateTime(row.lastReceivedAt) : "-"}</div>
+              </div>
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${healthBadgeClass(row.warningLevel)}`}>
+                {row.studyCount} ca
+              </span>
+            </div>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function MetadataIssueList({
+  total,
+  rows,
+  duplicateRows,
+}: {
+  total: number;
+  rows: StatisticsPacsMetadataIssueRow[];
+  duplicateRows: StatisticsPayload["pacsHealth"]["metadataIssues"]["duplicateRows"];
+}) {
+  return (
+    <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Metadata issue</h3>
+        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${total ? "bg-vin-status-warning-bg text-white" : "border border-white/10 text-vin-muted"}`}>
+          {total}
+        </span>
+      </div>
+      <div className="max-h-[150px] overflow-auto scr-dark">
+        {rows.length === 0 && duplicateRows.length === 0 ? (
+          <div className="px-3 py-6 text-center text-[11px] text-vin-muted">Chưa phát hiện thiếu PID/accession/modality hoặc trùng accession.</div>
+        ) : (
+          <>
+            {rows.slice(0, 6).map(row => (
+              <a key={`${row.id}-${row.issue}`} href={row.href} className="block border-b border-white/5 px-3 py-2 text-[10px] transition hover:bg-white/[0.03]">
+                <div className="truncate font-bold text-white">{row.patientName}</div>
+                <div className="mt-0.5 truncate text-vin-muted">{row.issue} · {row.modality} · {row.stationAeTitle}</div>
+              </a>
+            ))}
+            {duplicateRows.slice(0, 4).map(row => (
+              <div key={row.accessionNumber} className="border-b border-white/5 px-3 py-2 text-[10px] last:border-b-0">
+                <div className="font-mono font-bold text-amber-200">{row.accessionNumber}</div>
+                <div className="mt-0.5 truncate text-vin-muted">{row.count} study · {row.patientNames}</div>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function QualitySafetyPanel({ quality }: { quality: StatisticsQualitySafety }) {
+  return (
+    <section className="overflow-hidden rounded border border-vin-border bg-vin-panel">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <div>
+          <h2 className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-vin-text2">
+            <AlertTriangle className="h-3.5 w-3.5 text-vin-accent" />
+            Quality & safety
+          </h2>
+          <div className="mt-0.5 text-[10px] text-vin-muted">
+            QC reject, missing critical data, critical result communication và addendum.
+          </div>
+        </div>
+        <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-vin-muted">
+          Dose {quality.kpis.doseOutliers === null ? "N/A" : quality.kpis.doseOutliers}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 border-b border-white/5 md:grid-cols-4">
+        <MiniMetric label="QC reject" value={`${quality.kpis.qcRejected} (${quality.kpis.qcRejectRate}%)`} />
+        <MiniMetric label="Repeat rate" value={`${quality.kpis.repeatStudyRate}%`} />
+        <MiniMetric label="Critical pending" value={quality.kpis.criticalPending} />
+        <MiniMetric label="Addendum" value={`${quality.kpis.addendumCount} (${quality.kpis.addendumRate}%)`} />
+      </div>
+
+      <div className="grid gap-3 p-3 xl:grid-cols-2">
+        <QcReasonList rows={quality.qcReasons} />
+        <CriticalResultList rows={quality.criticalResults} />
+        <QualityStudyList title="QC gần đây" rows={quality.qcRecent} emptyText="Chưa có QC reject trong kỳ." />
+        <QualityStudyList title="Thiếu dữ liệu quan trọng" rows={quality.missingCriticalDataRows} emptyText="Chưa phát hiện thiếu PID/accession/DOB/sex." />
+        <QualityBreakdown title="Addendum theo bác sĩ" rows={quality.addendumByDoctor} />
+        <QualityBreakdown title="Addendum theo modality" rows={quality.addendumByModality} />
+      </div>
+    </section>
+  );
+}
+
+function QcReasonList({ rows }: { rows: StatisticsQualityReasonRow[] }) {
+  const maxCount = Math.max(1, ...rows.map(row => row.count));
+  return (
+    <section className="rounded border border-white/10 bg-vin-shell px-3 py-3">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Lý do QC reject</h3>
+        <span className="text-[10px] text-vin-muted">{rows.length} lý do</span>
+      </div>
+      {rows.length === 0 ? (
+        <div className="py-5 text-center text-[11px] text-vin-muted">Chưa có lý do reject.</div>
+      ) : (
+        <div className="space-y-2">
+          {rows.slice(0, 6).map(row => (
+            <div key={row.key} className="grid grid-cols-[minmax(0,1fr)_3rem] items-center gap-2 text-[10px]">
+              <div className="min-w-0">
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <span className="truncate font-bold text-white">{row.label}</span>
+                  <span className="shrink-0 text-vin-muted">{row.percent}%</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded bg-vin-panel">
+                  <div className="h-full rounded bg-vin-status-danger-bg" style={{ width: `${Math.max(8, (row.count / maxCount) * 100)}%` }} />
+                </div>
+              </div>
+              <div className="text-right font-mono font-bold text-vin-text2">{row.count}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function CriticalResultList({ rows }: { rows: StatisticsCriticalResultRow[] }) {
+  return (
+    <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Critical result</h3>
+        <span className="text-[10px] text-vin-muted">{rows.length} dòng</span>
+      </div>
+      <div className="max-h-[190px] overflow-auto scr-dark">
+        {rows.length === 0 ? (
+          <div className="px-3 py-6 text-center text-[11px] text-vin-muted">Không có critical result đang theo dõi.</div>
+        ) : (
+          rows.slice(0, 8).map(row => (
+            <a key={row.id} href={row.href} className="block border-b border-white/5 px-3 py-2 transition hover:bg-white/[0.03] last:border-b-0">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 truncate text-[11px] font-bold text-white">{row.patientName}</div>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${row.communicationStatus === "COMMUNICATED" ? "bg-vin-status-approved-bg text-white" : "bg-vin-status-danger-bg text-white"}`}>
+                  {row.communicationStatus}
+                </span>
+              </div>
+              <div className="mt-1 line-clamp-2 text-[10px] text-vin-muted">{row.finding}</div>
+            </a>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function QualityStudyList({
+  title,
+  rows,
+  emptyText,
+}: {
+  title: string;
+  rows: StatisticsQualityStudyRow[];
+  emptyText: string;
+}) {
+  return (
+    <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
+        <span className="text-[10px] text-vin-muted">{rows.length}</span>
+      </div>
+      <div className="max-h-[190px] overflow-auto scr-dark">
+        {rows.length === 0 ? (
+          <div className="px-3 py-6 text-center text-[11px] text-vin-muted">{emptyText}</div>
+        ) : (
+          rows.slice(0, 8).map(row => (
+            <a key={`${row.id}-${row.reason}`} href={row.href} className="block border-b border-white/5 px-3 py-2 transition hover:bg-white/[0.03] last:border-b-0">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="truncate text-[11px] font-bold text-white">{row.patientName}</div>
+                  <div className="mt-0.5 truncate font-mono text-[9px] text-vin-muted">{row.patientId} · {row.accessionNumber}</div>
+                </div>
+                <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 text-[9px] font-bold text-vin-muted">{row.modality}</span>
+              </div>
+              <div className="mt-1 truncate text-[10px] text-vin-muted">{row.reason}</div>
+            </a>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function QualityBreakdown({ title, rows }: { title: string; rows: StatisticsQualityBreakdownRow[] }) {
+  return (
+    <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
+        <span className="text-[10px] text-vin-muted">{rows.length}</span>
+      </div>
+      <div className="max-h-[160px] overflow-auto scr-dark">
+        {rows.length === 0 ? (
+          <div className="px-3 py-6 text-center text-[11px] text-vin-muted">Chưa có addendum trong kỳ.</div>
+        ) : (
+          rows.map(row => (
+            <div key={row.key} className="flex items-center justify-between gap-2 border-b border-white/5 px-3 py-2 text-[10px] last:border-b-0">
+              <span className="min-w-0 truncate font-bold text-white">{row.label}</span>
+              <span className="shrink-0 font-mono text-vin-muted">{row.count} · {row.rate}%</span>
+            </div>
+          ))
+        )}
+      </div>
     </section>
   );
 }

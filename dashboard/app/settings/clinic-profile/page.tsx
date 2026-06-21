@@ -225,7 +225,7 @@ export default function ClinicProfilePage() {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="flex min-w-[160px] items-center justify-center gap-2 rounded-lg border border-vin-accent/50 bg-vin-accent px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex min-w-[160px] items-center justify-center gap-2 rounded-lg border-0 bg-vin-accent px-4 py-1.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                 Lưu thông tin

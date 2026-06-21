@@ -266,8 +266,143 @@ export type StatisticsStorage = {
   instances: number;
   diskSizeMb: number;
   uncompressedSizeMb: number;
+  growthMbPerDay: number | null;
+  forecastDays: number | null;
+  latestSnapshotAt: string | null;
   warningLevel: "normal" | "warning" | "critical" | "unknown";
   message: string;
+};
+
+export type StatisticsPacsNodeHealthRow = {
+  id: string;
+  name: string;
+  aeTitle: string;
+  modality: string;
+  room: string;
+  orthancAlias: string;
+  echoStatus: string;
+  echoMessage: string;
+  lastEchoAt: string | null;
+  minutesSinceLastEcho: number | null;
+  lastStudyReceivedAt: string | null;
+  minutesSinceLastStudy: number | null;
+  warningLevel: "normal" | "warning" | "critical" | "unknown";
+};
+
+export type StatisticsPacsLastReceivedRow = {
+  modality: string;
+  stationAeTitle: string;
+  studyCount: number;
+  lastReceivedAt: string | null;
+  minutesSinceLastStudy: number | null;
+  warningLevel: "normal" | "warning" | "critical" | "unknown";
+};
+
+export type StatisticsPacsMetadataIssueRow = {
+  id: string;
+  studyInstanceUid: string;
+  patientName: string;
+  patientId: string;
+  accessionNumber: string;
+  modality: string;
+  stationAeTitle: string;
+  issue: string;
+  href: string;
+};
+
+export type StatisticsPacsDuplicateAccessionRow = {
+  accessionNumber: string;
+  count: number;
+  patientNames: string;
+  modalities: string;
+};
+
+export type StatisticsPacsHealth = {
+  system: {
+    orthancOnline: boolean;
+    version: string;
+    dicomAet: string;
+    dicomPort: number | null;
+    message: string;
+  };
+  nodes: StatisticsPacsNodeHealthRow[];
+  lastReceivedByModality: StatisticsPacsLastReceivedRow[];
+  metadataIssues: {
+    missingPatientId: number;
+    missingAccession: number;
+    missingModality: number;
+    duplicateAccessions: number;
+    rows: StatisticsPacsMetadataIssueRow[];
+    duplicateRows: StatisticsPacsDuplicateAccessionRow[];
+  };
+  storageForecast: {
+    growthMbPerDay: number | null;
+    forecastDays: number | null;
+    warningLevel: "normal" | "warning" | "critical" | "unknown";
+  };
+};
+
+export type StatisticsQualityReasonRow = {
+  key: string;
+  label: string;
+  count: number;
+  percent: number;
+};
+
+export type StatisticsQualityStudyRow = {
+  id: string;
+  studyInstanceUid: string;
+  patientName: string;
+  patientId: string;
+  accessionNumber: string;
+  modality: string;
+  stationAeTitle: string;
+  status: string;
+  reason: string;
+  createdAt: string | null;
+  href: string;
+};
+
+export type StatisticsCriticalResultRow = {
+  id: string;
+  studyInstanceUid: string;
+  patientName: string;
+  patientId: string;
+  accessionNumber: string;
+  modality: string;
+  severity: string;
+  communicationStatus: string;
+  finding: string;
+  createdAt: string;
+  communicatedAt: string | null;
+  href: string;
+};
+
+export type StatisticsQualityBreakdownRow = {
+  key: string;
+  label: string;
+  count: number;
+  rate: number;
+};
+
+export type StatisticsQualitySafety = {
+  kpis: {
+    qcEvents: number;
+    qcRejected: number;
+    qcRejectRate: number;
+    repeatStudyRate: number;
+    missingCriticalData: number;
+    criticalPending: number;
+    addendumCount: number;
+    addendumRate: number;
+    doseOutliers: number | null;
+  };
+  qcReasons: StatisticsQualityReasonRow[];
+  qcRecent: StatisticsQualityStudyRow[];
+  missingCriticalDataRows: StatisticsQualityStudyRow[];
+  criticalResults: StatisticsCriticalResultRow[];
+  addendumByDoctor: StatisticsQualityBreakdownRow[];
+  addendumByModality: StatisticsQualityBreakdownRow[];
 };
 
 export type StatisticsPayload = {
@@ -287,4 +422,6 @@ export type StatisticsPayload = {
   workload: StatisticsWorkload;
   alerts: StatisticsAlerts;
   storage: StatisticsStorage;
+  pacsHealth: StatisticsPacsHealth;
+  qualitySafety: StatisticsQualitySafety;
 };

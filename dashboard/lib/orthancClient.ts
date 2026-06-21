@@ -66,7 +66,37 @@ export type DicomModalityConfig = {
   AllowTranscoding?: boolean;
 };
 
+export type OrthancSystemInfo = {
+  ApiVersion?: number;
+  DatabaseBackendPlugin?: string | null;
+  DatabaseVersion?: number;
+  DicomAet?: string;
+  DicomPort?: number;
+  HttpPort?: number;
+  Name?: string;
+  Version?: string;
+};
+
+export type OrthancStatistics = {
+  CountInstances?: number;
+  CountPatients?: number;
+  CountSeries?: number;
+  CountStudies?: number;
+  TotalDiskSize?: string | number;
+  TotalDiskSizeMB?: number;
+  TotalUncompressedSize?: string | number;
+  TotalUncompressedSizeMB?: number;
+};
+
 export const orthancClient = {
+  async getSystem(): Promise<OrthancSystemInfo> {
+    return orthancFetch("/system");
+  },
+
+  async getStatistics(): Promise<OrthancStatistics> {
+    return orthancFetch("/statistics");
+  },
+
   /**
    * Lấy danh sách tất cả các Dicom Modalities
    */

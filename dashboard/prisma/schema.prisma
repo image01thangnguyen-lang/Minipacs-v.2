@@ -45,23 +45,24 @@ enum StudyStatus {
 }
 
 model Report {
-  id               String       @id @default(uuid())
-  studyInstanceUid String       @unique
-  status           ReportStatus @default(DRAFT)
+  id               String        @id @default(uuid())
+  studyInstanceUid String        @unique
+  status           ReportStatus  @default(DRAFT)
   imagingStudyId   String?
   imagingStudy     ImagingStudy? @relation(fields: [imagingStudyId], references: [id])
-  
+
   // Rich text HTML bindings
-  findings         String?      @db.Text
-  conclusion       String?      @db.Text
-  recommendation   String?      @db.Text
+  findings       String? @db.Text
+  conclusion     String? @db.Text
+  recommendation String? @db.Text
 
   // Foreign key for Doctor/User (1-N Relationship)
-  doctorId         String?
-  doctor           User?        @relation("DoctorReports", fields: [doctorId], references: [id])
+  doctorId String?
+  doctor   User?            @relation("DoctorReports", fields: [doctorId], references: [id])
+  addenda  ReportAddendum[]
 
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("reports")
 }
@@ -74,20 +75,20 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  username  String   @unique
-  password  String
-  fullName  String
-  role      Role     @default(DOCTOR)
+  id            String          @id @default(uuid())
+  username      String          @unique
+  password      String
+  fullName      String
+  role          Role            @default(DOCTOR)
   roleProfileId String?
-  roleProfile AppRoleProfile? @relation(fields: [roleProfileId], references: [id])
-  isActive  Boolean  @default(true)
-  
+  roleProfile   AppRoleProfile? @relation(fields: [roleProfileId], references: [id])
+  isActive      Boolean         @default(true)
+
   // Relation back to reports
-  reports   Report[] @relation("DoctorReports")
-  doctorProfile DoctorProfile?
+  reports             Report[]             @relation("DoctorReports")
+  doctorProfile       DoctorProfile?
   reportTemplateTexts ReportTemplateText[] @relation("ReportTemplateOwner")
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -129,13 +130,13 @@ model DoctorProfile {
 }
 
 model PrintTemplate {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   name        String
-  htmlContent String   @db.Text
-  isDefault   Boolean  @default(false)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  htmlContent String  @db.Text
+  isDefault   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("print_templates")
 }
@@ -185,36 +186,36 @@ model ClinicProfile {
 }
 
 model WorklistOrder {
-  id               String   @id @default(uuid())
-  patientName      String
-  patientId        String
-  dob              DateTime?
-  gender           String?   // M, F, O
-  phone            String?
-  referringPhysician String?
-  modality         String
-  bodyPart         String?
-  procedureCode    String?
-  procedureDescription String?
-  priority         String   @default("ROUTINE")
-  scheduledStationAeTitle String?
-  scheduledStationName String?
-  accessionNumber  String   @unique
+  id                        String    @id @default(uuid())
+  patientName               String
+  patientId                 String
+  dob                       DateTime?
+  gender                    String? // M, F, O
+  phone                     String?
+  referringPhysician        String?
+  modality                  String
+  bodyPart                  String?
+  procedureCode             String?
+  procedureDescription      String?
+  priority                  String    @default("ROUTINE")
+  scheduledStationAeTitle   String?
+  scheduledStationName      String?
+  accessionNumber           String    @unique
   requestedStudyInstanceUid String?
-  scheduledDate    DateTime @default(now())
-  arrivedAt        DateTime?
-  cancelledAt      DateTime?
-  notes            String?  @db.Text
-  worklistFilePath String?
-  
+  scheduledDate             DateTime  @default(now())
+  arrivedAt                 DateTime?
+  cancelledAt               DateTime?
+  notes                     String?   @db.Text
+  worklistFilePath          String?
+
   // Legacy string status kept for compatibility with existing data.
-  status           String   @default("PENDING")
-  orderStatus      OrderStatus @default(REQUESTED)
+  status      String      @default("PENDING")
+  orderStatus OrderStatus @default(REQUESTED)
 
-  imagingStudies   ImagingStudy[]
+  imagingStudies ImagingStudy[]
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([scheduledDate])
   @@index([patientId])
@@ -224,9 +225,9 @@ model WorklistOrder {
 }
 
 model ImagingStudy {
-  id               String      @id @default(uuid())
-  studyInstanceUid String      @unique
-  orthancStudyId   String?     @unique
+  id               String         @id @default(uuid())
+  studyInstanceUid String         @unique
+  orthancStudyId   String?        @unique
   accessionNumber  String?
   patientId        String?
   patientName      String?
@@ -236,7 +237,7 @@ model ImagingStudy {
   assignedDoctorId String?
   bodyPart         String?
   studyDescription String?
-  status           StudyStatus @default(ORDERED)
+  status           StudyStatus    @default(ORDERED)
   orderId          String?
   order            WorklistOrder? @relation(fields: [orderId], references: [id])
   reports          Report[]
@@ -251,11 +252,14 @@ model ImagingStudy {
   finalizedAt      DateTime?
   deliveredAt      DateTime?
   archivedAt       DateTime?
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
-  statusHistory    StudyStatusHistory[]
-  events           ImagingStudyEvent[]
+  statusHistory   StudyStatusHistory[]
+  events          ImagingStudyEvent[]
+  qcEvents        StudyQcEvent[]
+  criticalResults CriticalResult[]
+  reportAddenda   ReportAddendum[]
 
   @@index([status])
   @@index([patientId])
@@ -272,16 +276,16 @@ model ImagingStudy {
 }
 
 model StudyStatusHistory {
-  id             String      @id @default(uuid())
+  id             String       @id @default(uuid())
   imagingStudyId String
   imagingStudy   ImagingStudy @relation(fields: [imagingStudyId], references: [id], onDelete: Cascade)
   fromStatus     StudyStatus?
   toStatus       StudyStatus
   reason         String?
   actorUserId    String?
-  source         String      @default("SYSTEM")
-  metadataJson   String?     @db.Text
-  createdAt      DateTime    @default(now())
+  source         String       @default("SYSTEM")
+  metadataJson   String?      @db.Text
+  createdAt      DateTime     @default(now())
 
   @@index([imagingStudyId])
   @@index([createdAt])
@@ -307,12 +311,12 @@ model ImagingStudyEvent {
 }
 
 model OperationalAlert {
-  id                   String   @id @default(uuid())
+  id                   String    @id @default(uuid())
   alertType            String
-  severity             String   @default("warning")
-  status               String   @default("OPEN")
+  severity             String    @default("warning")
+  status               String    @default("OPEN")
   title                String
-  message              String?  @db.Text
+  message              String?   @db.Text
   entityType           String
   entityId             String?
   ruleKey              String?
@@ -327,9 +331,9 @@ model OperationalAlert {
   acknowledgedByUserId String?
   resolvedAt           DateTime?
   resolvedByUserId     String?
-  metadataJson         String?  @db.Text
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  metadataJson         String?   @db.Text
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   @@index([alertType])
   @@index([severity])
@@ -341,6 +345,93 @@ model OperationalAlert {
   @@index([dicomNodeId])
   @@index([createdAt])
   @@map("operational_alerts")
+}
+
+model PacsHealthSnapshot {
+  id                      String     @id @default(uuid())
+  orthancOnline           Boolean    @default(false)
+  orthancVersion          String?
+  dicomReceiveStatus      String?
+  patients                Int        @default(0)
+  studies                 Int        @default(0)
+  series                  Int        @default(0)
+  instances               Int        @default(0)
+  storageDiskSizeMb       Int        @default(0)
+  storageUncompressedMb   Int        @default(0)
+  storageFreeMb           Int?
+  storageGrowthMbPerDay   Int?
+  storageForecastDays     Int?
+  nodeId                  String?
+  node                    DicomNode? @relation(fields: [nodeId], references: [id], onDelete: SetNull)
+  nodeEchoStatus          String?
+  nodeEchoMessage         String?
+  lastStudyReceivedAt     DateTime?
+  missingMetadataCount    Int        @default(0)
+  duplicateAccessionCount Int        @default(0)
+  metadataJson            String?    @db.Text
+  createdAt               DateTime   @default(now())
+
+  @@index([createdAt])
+  @@index([nodeId])
+  @@index([nodeEchoStatus])
+  @@map("pacs_health_snapshots")
+}
+
+model StudyQcEvent {
+  id             String       @id @default(uuid())
+  imagingStudyId String
+  imagingStudy   ImagingStudy @relation(fields: [imagingStudyId], references: [id], onDelete: Cascade)
+  status         String
+  reasonCode     String?
+  note           String?
+  actorUserId    String?
+  createdAt      DateTime     @default(now())
+
+  @@index([imagingStudyId])
+  @@index([status])
+  @@index([reasonCode])
+  @@index([createdAt])
+  @@map("study_qc_events")
+}
+
+model CriticalResult {
+  id                   String       @id @default(uuid())
+  imagingStudyId       String
+  imagingStudy         ImagingStudy @relation(fields: [imagingStudyId], references: [id], onDelete: Cascade)
+  severity             String       @default("critical")
+  finding              String       @db.Text
+  communicationStatus  String       @default("PENDING")
+  communicatedTo       String?
+  communicatedAt       DateTime?
+  communicatedByUserId String?
+  createdByUserId      String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  @@index([imagingStudyId])
+  @@index([severity])
+  @@index([communicationStatus])
+  @@index([createdAt])
+  @@map("critical_results")
+}
+
+model ReportAddendum {
+  id             String        @id @default(uuid())
+  imagingStudyId String?
+  imagingStudy   ImagingStudy? @relation(fields: [imagingStudyId], references: [id], onDelete: Cascade)
+  reportId       String?
+  report         Report?       @relation(fields: [reportId], references: [id], onDelete: SetNull)
+  doctorId       String?
+  reasonCode     String?
+  content        String?       @db.Text
+  createdAt      DateTime      @default(now())
+
+  @@index([imagingStudyId])
+  @@index([reportId])
+  @@index([doctorId])
+  @@index([reasonCode])
+  @@index([createdAt])
+  @@map("report_addenda")
 }
 
 model AuditLog {
@@ -361,20 +452,21 @@ model AuditLog {
 }
 
 model DicomNode {
-  id              String    @id @default(uuid())
+  id              String               @id @default(uuid())
   name            String
   aeTitle         String
   ipAddress       String
   port            Int
   modality        String
   room            String?
-  isActive        Boolean   @default(true)
-  orthancAlias    String    @unique
+  isActive        Boolean              @default(true)
+  orthancAlias    String               @unique
   lastEchoStatus  String?
   lastEchoMessage String?
   lastEchoAt      DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  healthSnapshots PacsHealthSnapshot[]
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
 
   @@index([aeTitle])
   @@map("dicom_nodes")

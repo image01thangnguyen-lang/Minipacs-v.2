@@ -319,7 +319,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
               <button
                 onClick={() => handleSave("COMPLETED")}
                 disabled={isSaving}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-vin-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border-0 bg-vin-accent px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
                 Hoàn tất

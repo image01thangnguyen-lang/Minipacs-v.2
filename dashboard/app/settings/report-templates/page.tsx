@@ -195,7 +195,7 @@ export default function ReportTemplateTextPage() {
                 setSelectedTemplateId(null);
                 setCreateFormKey(key => key + 1);
               }}
-              className="flex items-center gap-1.5 rounded border border-vin-accent/50 bg-vin-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-vin-accentHover"
+              className="flex items-center gap-1.5 rounded border-0 bg-vin-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-vin-accentHover"
             >
               <FilePlus2 className="h-3.5 w-3.5" />
               Tạo mẫu
@@ -523,7 +523,7 @@ function TemplateForm({
         <button
           type="submit"
           disabled={isSaving}
-          className="flex min-w-[150px] items-center justify-center gap-2 rounded-lg border border-vin-accent/50 bg-vin-accent px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex min-w-[150px] items-center justify-center gap-2 rounded-lg border-0 bg-vin-accent px-4 py-1.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
         >
           {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />}
           {submitLabel}

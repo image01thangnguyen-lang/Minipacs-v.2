@@ -426,7 +426,7 @@ export default function DicomNodesPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg border border-vin-accent/50 bg-vin-accent px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg border-0 bg-vin-accent px-4 py-1.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
             >
               {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
               {editingNode ? "Cập nhật" : "Tạo máy chụp"}

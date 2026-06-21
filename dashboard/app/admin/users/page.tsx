@@ -431,7 +431,7 @@ export default function UserManagementPage() {
                   setCreateRoleFormKey(key => key + 1);
                 }
               }}
-              className="flex items-center gap-1.5 rounded border border-vin-accent/50 bg-vin-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-vin-accentHover"
+              className="flex items-center gap-1.5 rounded border-0 bg-vin-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-vin-accentHover"
             >
               {activeTab === "users" ? <UserPlus className="h-3.5 w-3.5" /> : <ShieldCheck className="h-3.5 w-3.5" />}
               {activeTab === "users" ? "Tạo tài khoản" : "Tạo vai trò"}
@@ -671,7 +671,7 @@ export default function UserManagementPage() {
                 </div>
               </div>
 
-              <button type="submit" disabled={isSaving} className="flex w-full items-center justify-center gap-2 rounded-lg border border-vin-accent/50 bg-vin-accent px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40">
+              <button type="submit" disabled={isSaving} className="flex w-full items-center justify-center gap-2 rounded-lg border-0 bg-vin-accent px-4 py-1.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40">
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
                 Tạo tài khoản
               </button>
@@ -720,7 +720,7 @@ export default function UserManagementPage() {
                 <textarea name="description" rows={3} className="w-full resize-none rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" placeholder="Chỉ tra cứu Archive và in lại kết quả." />
               </div>
               <PermissionChecklist defaultPermissions={["archive.read"]} />
-              <button type="submit" disabled={isSaving} className="flex w-full items-center justify-center gap-2 rounded-lg border border-vin-accent/50 bg-vin-accent px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40">
+              <button type="submit" disabled={isSaving} className="flex w-full items-center justify-center gap-2 rounded-lg border-0 bg-vin-accent px-4 py-1.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40">
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
                 Tạo vai trò
               </button>
@@ -824,7 +824,7 @@ export default function UserManagementPage() {
                 </div>
               </div>
 
-              <button type="submit" disabled={isSaving} className="flex w-full items-center justify-center gap-2 rounded-lg border border-vin-accent/50 bg-vin-accent px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40">
+              <button type="submit" disabled={isSaving} className="flex w-full items-center justify-center gap-2 rounded-lg border-0 bg-vin-accent px-4 py-1.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40">
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />}
                 Lưu thay đổi
               </button>
@@ -887,7 +887,7 @@ export default function UserManagementPage() {
                 <textarea name="description" defaultValue={selectedRole.description || ""} rows={3} className="w-full resize-none rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" />
               </div>
               <PermissionChecklist defaultPermissions={selectedRole.permissions} disabled={selectedRole.isSystem} />
-              <button type="submit" disabled={isSaving} className="flex w-full items-center justify-center gap-2 rounded-lg border border-vin-accent/50 bg-vin-accent px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40">
+              <button type="submit" disabled={isSaving} className="flex w-full items-center justify-center gap-2 rounded-lg border-0 bg-vin-accent px-4 py-1.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40">
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <BadgeCheck className="h-4 w-4" />}
                 Lưu vai trò
               </button>
