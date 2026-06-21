@@ -375,11 +375,45 @@ export default function UserManagementPage() {
       <section className="flex h-full w-[52%] min-w-[640px] flex-col border-r border-vin-border bg-vin-shell">
         <div className="flex-none border-b border-vin-border/70 px-3 py-2">
           <div className="mb-2 flex items-center justify-between gap-3">
-            <div>
-              <h1 className="text-sm font-bold tracking-tight text-white">Quản lý người dùng</h1>
-              <p className="mt-0.5 text-[10px] text-vin-muted">
-                {activeTab === "users" ? `${filteredUsers.length} tài khoản` : `${filteredRoles.length} vai trò`}
-              </p>
+            <div className="min-w-0 flex items-center gap-3">
+              <div className="min-w-[132px]">
+                <h1 className="truncate text-sm font-bold tracking-tight text-white">Quản lý người dùng</h1>
+                <p className="mt-0.5 text-[10px] text-vin-muted">
+                  {activeTab === "users" ? `${filteredUsers.length} tài khoản` : `${filteredRoles.length} vai trò`}
+                </p>
+              </div>
+              <div className="flex h-8 shrink-0 items-center rounded border border-vin-border bg-vin-panel p-0.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("users");
+                    setMode("view");
+                    setErrorMessage("");
+                  }}
+                  className={`flex h-7 items-center gap-1.5 rounded px-2.5 text-[11px] font-semibold transition ${
+                    activeTab === "users" ? "bg-vin-tableSelected text-white" : "text-vin-muted hover:text-white"
+                  }`}
+                  title="Người dùng"
+                >
+                  <Users className="h-3.5 w-3.5" />
+                  Người dùng
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("roles");
+                    setMode("view");
+                    setErrorMessage("");
+                  }}
+                  className={`flex h-7 items-center gap-1.5 rounded px-2.5 text-[11px] font-semibold transition ${
+                    activeTab === "roles" ? "bg-vin-tableSelected text-white" : "text-vin-muted hover:text-white"
+                  }`}
+                  title="Vai trò & quyền"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Vai trò & quyền
+                </button>
+              </div>
             </div>
             <button
               onClick={() => {
@@ -399,37 +433,6 @@ export default function UserManagementPage() {
             >
               {activeTab === "users" ? <UserPlus className="h-3.5 w-3.5" /> : <ShieldCheck className="h-3.5 w-3.5" />}
               {activeTab === "users" ? "Tạo tài khoản" : "Tạo vai trò"}
-            </button>
-          </div>
-
-          <div className="mb-2 grid grid-cols-2 gap-1 rounded border border-vin-border bg-vin-panel p-1">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("users");
-                setMode("view");
-                setErrorMessage("");
-              }}
-              className={`flex items-center justify-center gap-1.5 rounded px-2 py-1.5 text-[11px] font-semibold transition ${
-                activeTab === "users" ? "bg-vin-tableSelected text-white" : "text-vin-muted hover:text-white"
-              }`}
-            >
-              <Users className="h-3.5 w-3.5" />
-              Người dùng
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("roles");
-                setMode("view");
-                setErrorMessage("");
-              }}
-              className={`flex items-center justify-center gap-1.5 rounded px-2 py-1.5 text-[11px] font-semibold transition ${
-                activeTab === "roles" ? "bg-vin-tableSelected text-white" : "text-vin-muted hover:text-white"
-              }`}
-            >
-              <ShieldCheck className="h-3.5 w-3.5" />
-              Vai trò & quyền
             </button>
           </div>
 
