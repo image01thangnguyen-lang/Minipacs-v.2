@@ -13,10 +13,10 @@ const mainMenuItems = [
   { key: "users", label: "Người dùng", href: "/admin/users", icon: UserCog },
   { key: "templates", label: "Mẫu báo cáo", href: "/settings/report-templates", icon: FileText },
   { key: "clinic", label: "Phòng khám", href: "/settings/clinic-profile", icon: Building2 },
+  { key: "pacs", label: "PACS / IT", href: "/admin/pacs/nodes", icon: Settings },
 ] as const;
 
 const upcomingMenuItems = [
-  { key: "pacs", label: "PACS / IT", icon: Settings },
   { key: "storage", label: "Dung lượng", icon: HardDrive },
 ] as const;
 

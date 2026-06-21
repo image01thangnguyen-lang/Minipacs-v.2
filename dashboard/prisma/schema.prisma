@@ -267,3 +267,23 @@ model AuditLog {
   @@index([createdAt])
   @@map("audit_logs")
 }
+
+model DicomNode {
+  id              String    @id @default(uuid())
+  name            String
+  aeTitle         String
+  ipAddress       String
+  port            Int
+  modality        String
+  room            String?
+  isActive        Boolean   @default(true)
+  orthancAlias    String    @unique
+  lastEchoStatus  String?
+  lastEchoMessage String?
+  lastEchoAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([aeTitle])
+  @@map("dicom_nodes")
+}
