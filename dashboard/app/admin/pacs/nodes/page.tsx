@@ -20,10 +20,9 @@ import {
   getNodesAction, 
   upsertNodeAction, 
   deleteNodeAction, 
-  pingNodeAction,
-  dicomNodeSchema,
-  DicomNodeInput
+  pingNodeAction
 } from "./actions";
+import { dicomNodeSchema, type DicomNodeInput } from "./schema";
 
 type DicomNodeView = {
   id: string;

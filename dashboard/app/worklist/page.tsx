@@ -17,18 +17,17 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { AppSidebar } from "@/app/components/AppSidebar";
 import {
   cancelWorklistOrderAction,
   checkInWorklistOrderAction,
   createWorklistAction,
   getWorklistOrdersAction,
-  regenerateWorklistFileAction,
-  worklistSchema,
+  regenerateWorklistFileAction
 } from "./actions";
+import { worklistSchema, type WorklistInput } from "./schema";
 
-type FormValues = z.infer<typeof worklistSchema>;
+type FormValues = WorklistInput;
 
 type WorklistOrderView = {
   id: string;

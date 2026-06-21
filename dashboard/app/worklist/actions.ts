@@ -7,36 +7,15 @@ import fs from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
+import { worklistSchema, type WorklistInput } from "./schema";
 
 const worklistRoles = new Set(["ADMIN", "RECEPTION", "TECHNICIAN"]);
-const priorityValues = ["ROUTINE", "URGENT", "STAT"] as const;
 const orderStatusValues = ["REQUESTED", "SCHEDULED", "ARRIVED", "CANCELLED", "EXPIRED"] as const;
 
 const WORKLIST_DIR =
   process.env.NODE_ENV === "production"
     ? "/app/pacs_data/worklists"
     : path.resolve(process.cwd(), "../pacs_data/worklists");
-
-export const worklistSchema = z.object({
-  patientName: z.string().min(1, "Vui lòng nhập tên bệnh nhân"),
-  patientId: z.string().min(1, "Vui lòng nhập mã bệnh nhân"),
-  dob: z.string().optional(),
-  gender: z.string().optional(),
-  phone: z.string().optional(),
-  referringPhysician: z.string().optional(),
-  modality: z.string().min(1, "Vui lòng chọn loại máy chụp"),
-  bodyPart: z.string().optional(),
-  procedureCode: z.string().optional(),
-  procedureDescription: z.string().optional(),
-  priority: z.enum(priorityValues).default("ROUTINE"),
-  scheduledDateTime: z.string().optional(),
-  scheduledStationAeTitle: z.string().optional(),
-  scheduledStationName: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-type WorklistInput = z.infer<typeof worklistSchema>;
 
 function readDateRange(date?: string) {
   const base = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(`${date}T00:00:00`) : new Date();
