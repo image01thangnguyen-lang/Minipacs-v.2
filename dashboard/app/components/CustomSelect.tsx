@@ -127,8 +127,11 @@ export function CustomSelect({
   );
 
   const triggerHeight = compact ? "h-[2.25rem]" : "h-10";
-  const triggerPadding = compact ? "px-2 py-1.5" : "px-3 py-2";
+  const triggerPadding = compact ? "px-2.5 py-1.5" : "px-3 py-2";
   const fontSize = compact ? "text-[11px]" : "text-sm";
+  const baseBgBorder = compact
+    ? "border-white/10 bg-transparent"
+    : "border-vin-border bg-vin-shell";
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
@@ -144,16 +147,16 @@ export function CustomSelect({
         disabled={disabled}
         onClick={() => (isOpen ? setIsOpen(false) : openDropdown())}
         onKeyDown={handleKeyDown}
-        className={`flex w-full items-center justify-between gap-2 rounded-md border border-[rgb(143_178_191_/_0.34)] bg-transparent ${triggerPadding} ${triggerHeight} ${fontSize} text-left outline-none transition
+        className={`flex w-full items-center justify-between gap-2 rounded-md border ${baseBgBorder} ${triggerPadding} ${triggerHeight} ${fontSize} text-left outline-none transition
           ${mono ? "font-mono" : ""}
-          ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:border-vin-borderStrong focus-visible:border-vin-accent focus-visible:bg-[rgb(8_31_42_/_0.18)] focus-visible:ring-2 focus-visible:ring-[rgb(24_185_208_/_0.15)]"}
-          ${isOpen ? "border-vin-accent bg-[rgb(8_31_42_/_0.18)] ring-2 ring-[rgb(24_185_208_/_0.15)]" : ""}
+          ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:border-vin-borderStrong"}
+          ${isOpen ? "border-vin-accent bg-vin-root/20" : ""}
           ${selectedOption ? "text-vin-text" : "text-vin-faint"}
         `}
       >
         <span className="min-w-0 truncate">{displayLabel}</span>
         <ChevronDown
-          className={`h-3.5 w-3.5 shrink-0 text-vin-muted transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          className={`h-3.5 w-3.5 shrink-0 text-vin-faint transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 

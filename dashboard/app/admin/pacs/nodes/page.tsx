@@ -436,7 +436,7 @@ export default function DicomNodesPage() {
       </section>
 
       <style>{`
-        .field-input { width: 100%; border-radius: 0.25rem; border: 1px solid var(--vin-border-subtle); background: var(--vin-bg-sidebar); padding: 0.5rem 0.75rem; font-size: 0.875rem; color: var(--vin-text-primary); outline: none; transition: border-color 0.2s; }
+        .field-input { width: 100%; height: 2.5rem; border-radius: 0.25rem; border: 1px solid var(--vin-border-subtle); background: var(--vin-bg-sidebar); padding: 0.5rem 0.75rem; font-size: 0.875rem; color: var(--vin-text-primary); outline: none; transition: border-color 0.2s; }
         .field-input:focus { border-color: var(--vin-accent); }
         .scr-dark::-webkit-scrollbar { width: 5px; height: 5px; }
         .scr-dark::-webkit-scrollbar-track { background: transparent; }

@@ -18,7 +18,7 @@ import {
 import { AppSidebar } from "@/app/components/AppSidebar";
 import { CustomDatePicker } from "@/app/components/CustomDatePicker";
 import { getStatisticsDashboardAction } from "./actions";
-import type { StatisticsFilters, StatisticsPayload } from "./types";
+import type { StatisticsFilters, StatisticsOperationRow, StatisticsPayload } from "./types";
 
 function todayInput() {
   const now = new Date();
@@ -76,10 +76,15 @@ export default function StatisticsPage() {
   });
   const [data, setData] = useState<StatisticsPayload | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState("");
 
-  const loadData = async (nextFilters = filters) => {
-    setIsLoading(true);
+  const loadData = async (nextFilters = filters, options: { silent?: boolean } = {}) => {
+    if (options.silent) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
     setError("");
     try {
       const result = await getStatisticsDashboardAction(nextFilters);
@@ -88,7 +93,11 @@ export default function StatisticsPage() {
     } catch (err: any) {
       setError(err?.message || "Không tải được dashboard thống kê.");
     } finally {
-      setIsLoading(false);
+      if (options.silent) {
+        setIsRefreshing(false);
+      } else {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -96,6 +105,16 @@ export default function StatisticsPage() {
     document.title = "Dashboard thống kê RIS/PACS";
     loadData();
   }, []);
+
+  useEffect(() => {
+    if (!data?.operations.autoRefreshSeconds) return undefined;
+
+    const timer = window.setInterval(() => {
+      loadData(filters, { silent: true });
+    }, data.operations.autoRefreshSeconds * 1000);
+
+    return () => window.clearInterval(timer);
+  }, [data?.operations.autoRefreshSeconds, filters.dateFrom, filters.dateTo]);
 
   const maxModalityCount = useMemo(
     () => Math.max(1, ...(data?.modalityCounts || []).map(item => item.count)),
@@ -113,6 +132,19 @@ export default function StatisticsPage() {
       ]
     : [];
 
+  const operationItems = data
+    ? [
+        { label: "Đã hẹn", value: data.operations.kpis.scheduled, icon: Clock3, tone: "text-sky-300" },
+        { label: "Đã đến", value: data.operations.kpis.arrived, icon: UserRoundCheck, tone: "text-emerald-300" },
+        { label: "Sẵn sàng chụp", value: data.operations.kpis.readyForScan, icon: Activity, tone: "text-cyan-300" },
+        { label: "Đã nhận ảnh", value: data.operations.kpis.received, icon: Database, tone: "text-vin-accent" },
+        { label: "Chờ đọc", value: data.operations.kpis.readyToRead, icon: Clock3, tone: "text-amber-300" },
+        { label: "Đang đọc", value: data.operations.kpis.reading, icon: Stethoscope, tone: "text-purple-300" },
+        { label: "Quá SLA", value: data.operations.kpis.slaBreaches, icon: AlertTriangle, tone: "text-red-300" },
+        { label: "Kẹt luồng", value: data.operations.kpis.stuckWorkflow, icon: Timer, tone: "text-orange-300" },
+      ]
+    : [];
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
       <AppSidebar active="statistics" />
@@ -127,6 +159,7 @@ export default function StatisticsPage() {
               </h1>
               <div className="mt-1 text-[11px] text-vin-muted">
                 {data ? `Cập nhật ${formatDateTime(data.generatedAt)}` : "Đang tải dữ liệu"}
+                {isRefreshing && <span className="ml-2 text-vin-accent">Đang làm mới...</span>}
               </div>
             </div>
 
@@ -149,10 +182,10 @@ export default function StatisticsPage() {
               />
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || isRefreshing}
                 className="flex h-9 items-center gap-1.5 rounded border border-vin-accent/50 bg-vin-accent px-3 text-[11px] font-bold text-white transition hover:bg-vin-accentHover disabled:opacity-40"
               >
-                <RefreshCcw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+                <RefreshCcw className={`h-3.5 w-3.5 ${isLoading || isRefreshing ? "animate-spin" : ""}`} />
                 Cập nhật
               </button>
             </form>
@@ -172,7 +205,60 @@ export default function StatisticsPage() {
           </div>
         ) : data ? (
           <main className="min-h-0 flex-1 overflow-auto p-4 scr-dark">
-            <div className="grid grid-cols-6 gap-3">
+            <section className="rounded border border-vin-border bg-vin-panel">
+              <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+                <div>
+                  <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Điều hành realtime</h2>
+                  <div className="mt-0.5 text-[10px] text-vin-muted">
+                    Luồng order, nhận ảnh, đọc phim và các ca cần can thiệp.
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-vin-muted">
+                  <span className="rounded-full border border-white/10 px-2 py-0.5">
+                    Auto {data.operations.autoRefreshSeconds}s
+                  </span>
+                  {isRefreshing && <Loader2 className="h-3.5 w-3.5 animate-spin text-vin-accent" />}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 border-b border-white/5 md:grid-cols-4 xl:grid-cols-8">
+                {operationItems.map(item => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={item.label} className="border-r border-b border-white/5 px-3 py-2 last:border-r-0 xl:border-b-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate text-[10px] font-bold uppercase tracking-wide text-vin-muted">{item.label}</span>
+                        <Icon className={`h-3.5 w-3.5 ${item.tone}`} />
+                      </div>
+                      <div className="mt-1 text-xl font-bold text-white">{item.value}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="grid gap-3 p-3 xl:grid-cols-3">
+                <OperationList
+                  title="Quá SLA"
+                  rows={data.operations.slaBreaches}
+                  emptyText="Không có ca quá SLA."
+                  tone="danger"
+                />
+                <OperationList
+                  title="Kẹt workflow"
+                  rows={data.operations.stuckWorkflow}
+                  emptyText="Chưa phát hiện ca kẹt luồng."
+                  tone="warning"
+                />
+                <OperationList
+                  title="Live queue"
+                  rows={data.operations.liveQueue}
+                  emptyText="Không có ca chờ đọc."
+                  tone="normal"
+                />
+              </div>
+            </section>
+
+            <div className="mt-3 grid grid-cols-6 gap-3">
               {kpiItems.map(item => {
                 const Icon = item.icon;
                 return (
@@ -395,5 +481,83 @@ function StorageMetric({ label, value }: { label: string; value: number | string
       <div className="text-[10px] font-bold uppercase tracking-wide text-vin-muted">{label}</div>
       <div className="mt-1 font-mono text-sm font-bold text-white">{value}</div>
     </div>
+  );
+}
+
+function OperationList({
+  title,
+  rows,
+  emptyText,
+  tone,
+}: {
+  title: string;
+  rows: StatisticsOperationRow[];
+  emptyText: string;
+  tone: "danger" | "warning" | "normal";
+}) {
+  const toneClass =
+    tone === "danger"
+      ? "border-red-400/25"
+      : tone === "warning"
+        ? "border-amber-300/25"
+        : "border-white/10";
+
+  return (
+    <section className={`min-h-[260px] overflow-hidden rounded border bg-vin-shell ${toneClass}`}>
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
+        <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[10px] font-bold text-white">
+          {rows.length}
+        </span>
+      </div>
+      <div className="max-h-[340px] overflow-auto scr-dark">
+        {rows.length === 0 ? (
+          <div className="px-3 py-8 text-center text-[11px] text-vin-muted">{emptyText}</div>
+        ) : (
+          rows.map(row => <OperationRowItem key={row.id} row={row} />)
+        )}
+      </div>
+    </section>
+  );
+}
+
+function OperationRowItem({ row }: { row: StatisticsOperationRow }) {
+  return (
+    <a
+      href={row.href}
+      className="block border-b border-white/5 px-3 py-2.5 transition hover:bg-white/[0.03] last:border-b-0"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="truncate text-[12px] font-bold uppercase text-white">{row.patientName}</div>
+          <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
+            {row.patientId} · {row.accessionNumber}
+          </div>
+        </div>
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${priorityTone[row.priority] || priorityTone.ROUTINE}`}>
+          {row.priority}
+        </span>
+      </div>
+
+      <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-vin-muted">
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusTone[row.status] || "bg-vin-border"}`} />
+          <span className="truncate">{row.statusLabel}</span>
+        </span>
+        <span className="whitespace-nowrap font-semibold text-vin-text2">{formatDuration(row.waitingMinutes)}</span>
+      </div>
+
+      <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-vin-muted">
+        <span className="rounded-full border border-white/10 px-1.5 py-px font-mono text-[9px] font-bold text-vin-text2">
+          {row.modality}
+        </span>
+        <span className="min-w-0 truncate">{row.studyDescription}</span>
+      </div>
+
+      <div className="mt-1.5 truncate text-[10px] text-vin-muted">
+        {row.stationAeTitle !== "-" && <span>{row.stationAeTitle} · </span>}
+        {row.reason}
+      </div>
+    </a>
   );
 }

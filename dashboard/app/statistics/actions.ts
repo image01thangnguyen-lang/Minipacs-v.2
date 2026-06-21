@@ -8,6 +8,8 @@ import type {
   StatisticsDoctorRow,
   StatisticsFilters,
   StatisticsModalityCount,
+  StatisticsOperations,
+  StatisticsOperationRow,
   StatisticsPayload,
   StatisticsQueueRow,
   StatisticsStatusCount,
@@ -30,6 +32,19 @@ const statusLabels: Record<string, string> = {
   ARCHIVED: "Lưu trữ",
   DELETED_FROM_PACS: "Đã xóa ảnh",
   ERROR: "Lỗi",
+};
+
+const AUTO_REFRESH_SECONDS = 30;
+const SLA_MINUTES_BY_PRIORITY: Record<string, number> = {
+  STAT: 30,
+  URGENT: 120,
+  ROUTINE: 1440,
+};
+
+const priorityRank: Record<string, number> = {
+  STAT: 0,
+  URGENT: 1,
+  ROUTINE: 2,
 };
 
 async function requireStatisticsAccess() {
@@ -139,6 +154,100 @@ function serializeQueueRow(study: any): StatisticsQueueRow {
     waitingMinutes: minutesBetween(waitingSince, new Date()) || 0,
     waitingSince: waitingSince ? waitingSince.toISOString() : null,
   };
+}
+
+function priorityOf(study: any) {
+  return study.priority || study.order?.priority || "ROUTINE";
+}
+
+function stationOf(study: any) {
+  return study.stationAeTitle || study.order?.scheduledStationAeTitle || "-";
+}
+
+function waitingSinceForStudy(study: any) {
+  if (study.status === "FINALIZED") return study.finalizedAt || study.updatedAt || study.createdAt || null;
+  return study.receivedAt || study.stableAt || study.scheduledAt || study.createdAt || null;
+}
+
+function slaThresholdForPriority(priority: string) {
+  return SLA_MINUTES_BY_PRIORITY[priority] || SLA_MINUTES_BY_PRIORITY.ROUTINE;
+}
+
+function serializeOperationStudyRow(study: any, reason: string): StatisticsOperationRow {
+  const waitingSince = waitingSinceForStudy(study);
+  return {
+    id: study.id,
+    studyInstanceUid: study.studyInstanceUid || "",
+    accessionNumber: study.accessionNumber || "-",
+    patientName: formatPatientName(study.patientName),
+    patientId: study.patientId || "-",
+    modality: study.modality || "-",
+    studyDescription: study.studyDescription || "-",
+    status: study.status,
+    statusLabel: statusLabels[study.status] || study.status,
+    priority: priorityOf(study),
+    stationAeTitle: stationOf(study),
+    waitingMinutes: minutesBetween(waitingSince, new Date()) || 0,
+    waitingSince: waitingSince ? waitingSince.toISOString() : null,
+    reason,
+    href: study.studyInstanceUid ? `/report/${encodeURIComponent(study.studyInstanceUid)}` : "/worklist",
+  };
+}
+
+function serializeNoStudyOrderRow(order: any): StatisticsOperationRow {
+  const waitingSince = order.arrivedAt || order.scheduledDate || order.createdAt || null;
+  return {
+    id: `order-${order.id}`,
+    studyInstanceUid: order.requestedStudyInstanceUid || "",
+    accessionNumber: order.accessionNumber || "-",
+    patientName: formatPatientName(order.patientName),
+    patientId: order.patientId || "-",
+    modality: order.modality || "-",
+    studyDescription: order.procedureDescription || "-",
+    status: order.orderStatus,
+    statusLabel: orderStatusLabel(order.orderStatus),
+    priority: order.priority || "ROUTINE",
+    stationAeTitle: order.scheduledStationAeTitle || "-",
+    waitingMinutes: minutesBetween(waitingSince, new Date()) || 0,
+    waitingSince: waitingSince ? waitingSince.toISOString() : null,
+    reason: "Có order/check-in nhưng chưa thấy study trong PACS/RIS.",
+    href: "/worklist",
+  };
+}
+
+function orderStatusLabel(status?: string) {
+  if (status === "REQUESTED") return "Mới tạo";
+  if (status === "SCHEDULED") return "Đã hẹn";
+  if (status === "ARRIVED") return "Đã đến";
+  if (status === "CANCELLED") return "Đã hủy";
+  if (status === "EXPIRED") return "Quá hạn";
+  return status || "-";
+}
+
+function stuckReason(study: any) {
+  const row = serializeOperationStudyRow(study, "");
+  const threshold = slaThresholdForPriority(row.priority);
+  if ((study.status === "ORDERED" || study.status === "READY_FOR_SCAN") && row.waitingMinutes >= 60) {
+    return "Đã có order/worklist nhưng chưa thấy ảnh về PACS.";
+  }
+  if ((study.status === "RECEIVED" || study.status === "STABLE" || study.status === "NEEDS_QC") && row.waitingMinutes >= 30) {
+    return "Ảnh đã về nhưng chưa sẵn sàng đọc hoặc chưa hoàn tất QC.";
+  }
+  if ((study.status === "READY_TO_READ" || study.status === "READING") && row.waitingMinutes >= threshold) {
+    return "Ca đọc đang vượt ngưỡng SLA theo mức ưu tiên.";
+  }
+  if (study.status === "FINALIZED" && row.waitingMinutes >= 120) {
+    return "Đã ký nhưng chưa ghi nhận trả kết quả.";
+  }
+  return "";
+}
+
+function sortOperationRows(rows: StatisticsOperationRow[]) {
+  return rows.sort((a, b) => {
+    const priorityDelta = (priorityRank[a.priority] ?? 9) - (priorityRank[b.priority] ?? 9);
+    if (priorityDelta !== 0) return priorityDelta;
+    return b.waitingMinutes - a.waitingMinutes;
+  });
 }
 
 async function getOrthancStorage(): Promise<StatisticsStorage> {
@@ -281,6 +390,120 @@ async function getDoctorRows(start: Date, endExclusive: Date, role: string, user
     .sort((a, b) => b.finalInPeriod - a.finalInPeriod || b.finalThisMonth - a.finalThisMonth);
 }
 
+async function getOperationsDashboard(start: Date, endExclusive: Date): Promise<StatisticsOperations> {
+  const activeStatuses = ["ORDERED", "READY_FOR_SCAN", "RECEIVED", "STABLE", "NEEDS_QC", "READY_TO_READ", "READING", "FINALIZED"] as any[];
+
+  const [
+    scheduled,
+    arrived,
+    readyForScan,
+    received,
+    readyToRead,
+    reading,
+    finalized,
+    delivered,
+    liveQueueStudies,
+    activeStudies,
+    noStudyOrders,
+  ] = await Promise.all([
+    prisma.worklistOrder.count({
+      where: {
+        scheduledDate: rangeFilter(start, endExclusive),
+        orderStatus: "SCHEDULED",
+      },
+    }),
+    prisma.worklistOrder.count({
+      where: {
+        arrivedAt: rangeFilter(start, endExclusive),
+      },
+    }),
+    prisma.imagingStudy.count({ where: { status: "READY_FOR_SCAN" } }),
+    prisma.imagingStudy.count({ where: { receivedAt: rangeFilter(start, endExclusive) } }),
+    prisma.imagingStudy.count({ where: { status: "READY_TO_READ" } }),
+    prisma.imagingStudy.count({ where: { status: { in: ["READING", "REPORTED"] as any[] } } }),
+    prisma.imagingStudy.count({ where: { finalizedAt: rangeFilter(start, endExclusive) } }),
+    prisma.imagingStudy.count({ where: { deliveredAt: rangeFilter(start, endExclusive) } }),
+    prisma.imagingStudy.findMany({
+      where: { status: { in: ["READY_TO_READ", "READING"] as any[] } },
+      include: { order: true },
+      orderBy: [
+        { receivedAt: "asc" },
+        { stableAt: "asc" },
+        { scheduledAt: "asc" },
+        { createdAt: "asc" },
+      ],
+      take: 30,
+    }),
+    prisma.imagingStudy.findMany({
+      where: { status: { in: activeStatuses } },
+      include: { order: true },
+      orderBy: [
+        { receivedAt: "asc" },
+        { stableAt: "asc" },
+        { scheduledAt: "asc" },
+        { createdAt: "asc" },
+      ],
+      take: 100,
+    }),
+    prisma.worklistOrder.findMany({
+      where: {
+        orderStatus: { in: ["SCHEDULED", "ARRIVED"] as any[] },
+        imagingStudies: { none: {} },
+        scheduledDate: { lt: endExclusive },
+      },
+      orderBy: [
+        { arrivedAt: "asc" },
+        { scheduledDate: "asc" },
+        { createdAt: "asc" },
+      ],
+      take: 20,
+    }),
+  ]);
+
+  const liveQueueRows = sortOperationRows(
+    liveQueueStudies.map(study => serializeOperationStudyRow(study, "Đang chờ hoặc đang được bác sĩ đọc."))
+  );
+
+  const slaBreaches = sortOperationRows(
+    liveQueueRows.filter(row => row.waitingMinutes >= slaThresholdForPriority(row.priority))
+  ).slice(0, 12);
+
+  const liveQueue = liveQueueRows.slice(0, 12);
+
+  const studyStuckRows = activeStudies
+    .map(study => {
+      const reason = stuckReason(study);
+      return reason ? serializeOperationStudyRow(study, reason) : null;
+    })
+    .filter((row): row is StatisticsOperationRow => Boolean(row));
+
+  const orderStuckRows = noStudyOrders
+    .map(serializeNoStudyOrderRow)
+    .filter(row => row.waitingMinutes >= (row.status === "ARRIVED" ? 30 : 120));
+
+  const stuckWorkflow = sortOperationRows([...studyStuckRows, ...orderStuckRows]).slice(0, 12);
+
+  return {
+    generatedAt: new Date().toISOString(),
+    autoRefreshSeconds: AUTO_REFRESH_SECONDS,
+    kpis: {
+      scheduled,
+      arrived,
+      readyForScan,
+      received,
+      readyToRead,
+      reading,
+      finalized,
+      delivered,
+      slaBreaches: slaBreaches.length,
+      stuckWorkflow: stuckWorkflow.length,
+    },
+    slaBreaches,
+    stuckWorkflow,
+    liveQueue,
+  };
+}
+
 export async function getStatisticsDashboardAction(filters: StatisticsFilters = {}): Promise<StatisticsPayload> {
   const user = await requireStatisticsAccess();
   const range = toVietnamRange(filters.dateFrom, filters.dateTo);
@@ -299,6 +522,7 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     averageReceivedToFinalizedMinutes,
     doctorRows,
     pendingStudies,
+    operations,
     storage,
   ] = await Promise.all([
     prisma.imagingStudy.count({ where: studyDateWhere(range.start, endExclusive) }),
@@ -330,6 +554,7 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
       ],
       take: 20,
     }),
+    getOperationsDashboard(range.start, endExclusive),
     getOrthancStorage(),
   ]);
 
@@ -369,6 +594,7 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     modalityCounts,
     doctorRows,
     pendingQueue: pendingStudies.map(serializeQueueRow),
+    operations,
     storage,
   };
 }

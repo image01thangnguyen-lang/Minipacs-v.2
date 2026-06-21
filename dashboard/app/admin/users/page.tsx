@@ -616,18 +616,18 @@ export default function UserManagementPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Username</label>
-                  <input name="username" required className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" placeholder="vd: thukybs" />
+                  <input name="username" required className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" placeholder="vd: thukybs" />
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Họ tên</label>
-                  <input name="fullName" required className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" placeholder="Nguyễn Văn A" />
+                  <input name="fullName" required className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" placeholder="Nguyễn Văn A" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Mật khẩu</label>
-                  <input name="password" type="password" required minLength={6} className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" placeholder="Tối thiểu 6 ký tự" />
+                  <input name="password" type="password" required minLength={6} className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" placeholder="Tối thiểu 6 ký tự" />
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Vai trò</label>
@@ -694,11 +694,11 @@ export default function UserManagementPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Tên vai trò</label>
-                  <input name="name" required className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" placeholder="Thư ký bác sĩ" />
+                  <input name="name" required className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" placeholder="Thư ký bác sĩ" />
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Mã vai trò</label>
-                  <input name="code" className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" placeholder="DOCTOR_SECRETARY" />
+                  <input name="code" className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" placeholder="DOCTOR_SECRETARY" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -779,7 +779,7 @@ export default function UserManagementPage() {
                     <KeyRound className="h-3 w-3" />
                     Đổi mật khẩu
                   </label>
-                  <input name="password" type="password" minLength={6} className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" placeholder="Bỏ trống nếu không đổi" />
+                  <input name="password" type="password" minLength={6} className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" placeholder="Bỏ trống nếu không đổi" />
                 </div>
               </div>
 
@@ -860,7 +860,7 @@ export default function UserManagementPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Tên vai trò</label>
-                  <input name="name" defaultValue={selectedRole.name} required className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" />
+                  <input name="name" defaultValue={selectedRole.name} required className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent" />
                 </div>
                 <div>
                   <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Mã vai trò</label>

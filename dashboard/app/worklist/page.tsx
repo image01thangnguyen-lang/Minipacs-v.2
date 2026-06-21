@@ -316,7 +316,7 @@ export default function WorklistPage() {
             </div>
           )}
 
-          <form onSubmit={handleSearchSubmit} className="grid grid-cols-[9rem_9rem_1fr] gap-2">
+          <form onSubmit={handleSearchSubmit} className="grid grid-cols-[9rem_9rem_1fr] items-center gap-2">
             <CustomDatePicker
               value={selectedDate}
               onChange={val => setSelectedDate(val)}
@@ -333,7 +333,7 @@ export default function WorklistPage() {
               <input
                 value={searchQuery}
                 onChange={event => setSearchQuery(event.target.value)}
-                className="w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-20 text-[11px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent focus:bg-vin-root/20"
+                className="h-[2.25rem] w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-20 text-[11px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent focus:bg-vin-root/20"
                 placeholder="Tìm tên, PID, accession, chỉ định..."
               />
               <button className="absolute right-1 top-1/2 -translate-y-1/2 rounded bg-vin-accent px-2 py-1 text-[10px] font-bold text-white">

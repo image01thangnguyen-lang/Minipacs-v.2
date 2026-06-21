@@ -231,6 +231,9 @@ model ImagingStudy {
   patientId        String?
   patientName      String?
   modality         String?
+  priority         String?
+  stationAeTitle   String?
+  assignedDoctorId String?
   bodyPart         String?
   studyDescription String?
   status           StudyStatus @default(ORDERED)
@@ -238,8 +241,13 @@ model ImagingStudy {
   order            WorklistOrder? @relation(fields: [orderId], references: [id])
   reports          Report[]
   scheduledAt      DateTime?
+  checkedInAt      DateTime?
+  scanStartedAt    DateTime?
+  scanEndedAt      DateTime?
   receivedAt       DateTime?
   stableAt         DateTime?
+  qcCompletedAt    DateTime?
+  firstOpenedAt    DateTime?
   finalizedAt      DateTime?
   deliveredAt      DateTime?
   archivedAt       DateTime?
@@ -247,11 +255,19 @@ model ImagingStudy {
   updatedAt        DateTime    @updatedAt
 
   statusHistory    StudyStatusHistory[]
+  events           ImagingStudyEvent[]
 
   @@index([status])
   @@index([patientId])
   @@index([accessionNumber])
   @@index([modality])
+  @@index([priority])
+  @@index([stationAeTitle])
+  @@index([assignedDoctorId])
+  @@index([scheduledAt])
+  @@index([receivedAt])
+  @@index([finalizedAt])
+  @@index([deliveredAt])
   @@map("imaging_studies")
 }
 
@@ -270,6 +286,24 @@ model StudyStatusHistory {
   @@index([imagingStudyId])
   @@index([createdAt])
   @@map("study_status_history")
+}
+
+model ImagingStudyEvent {
+  id             String       @id @default(uuid())
+  imagingStudyId String
+  imagingStudy   ImagingStudy @relation(fields: [imagingStudyId], references: [id], onDelete: Cascade)
+  eventType      String
+  fromStatus     StudyStatus?
+  toStatus       StudyStatus?
+  actorUserId    String?
+  source         String       @default("SYSTEM")
+  metadataJson   String?      @db.Text
+  createdAt      DateTime     @default(now())
+
+  @@index([imagingStudyId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("imaging_study_events")
 }
 
 model AuditLog {

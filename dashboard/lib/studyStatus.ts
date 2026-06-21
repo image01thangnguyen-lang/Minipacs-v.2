@@ -1,4 +1,5 @@
 import { prisma } from "@/app/db";
+import { recordStudyEventInTx, type ImagingStudyEventType } from "@/lib/studyEvents";
 
 type StudyStatusValue =
   | "ORDERED"
@@ -36,6 +37,8 @@ type WorklistStudyInput = {
   patientId: string;
   patientName: string;
   modality: string;
+  priority?: string;
+  stationAeTitle?: string;
   bodyPart?: string;
   studyDescription?: string;
   scheduledAt?: Date;
@@ -147,6 +150,31 @@ async function writeStatusHistory(params: {
       metadataJson: params.metadata ? JSON.stringify(params.metadata) : undefined,
     },
   });
+
+  await recordStudyEventInTx(params.tx, {
+    imagingStudyId: params.imagingStudyId,
+    eventType: eventTypeForStatusChange(params.source, params.toStatus),
+    fromStatus: params.fromStatus,
+    toStatus: params.toStatus,
+    source: params.source,
+    actorUserId: params.actorUserId,
+    metadata: {
+      reason: params.reason,
+      ...(params.metadata && typeof params.metadata === "object" ? params.metadata as Record<string, unknown> : { metadata: params.metadata }),
+    },
+  });
+}
+
+function eventTypeForStatusChange(source: StatusSource, toStatus: StudyStatusValue): ImagingStudyEventType {
+  if (source === "WORKLIST" && (toStatus === "ORDERED" || toStatus === "READY_FOR_SCAN")) return "ORDER_CREATED";
+  if (source === "ORTHANC_SYNC" && toStatus === "RECEIVED") return "DICOM_RECEIVED";
+  if (source === "ORTHANC_SYNC" && (toStatus === "STABLE" || toStatus === "READY_TO_READ")) return "STUDY_STABLE";
+  if (source === "REPORT" && (toStatus === "READING" || toStatus === "REPORTED")) return "REPORT_DRAFTED";
+  if (source === "REPORT" && toStatus === "FINALIZED") return "REPORT_FINALIZED";
+  if (toStatus === "DELIVERED") return "RESULT_DELIVERED";
+  if (toStatus === "QC_REJECTED") return "QC_REJECTED";
+  if (toStatus === "READY_TO_READ") return "QC_PASSED";
+  return "STATUS_CHANGED";
 }
 
 export async function setStudyStatus(
@@ -174,6 +202,7 @@ export async function setStudyStatus(
           finalizedAt: nextStatus === "FINALIZED" ? new Date() : undefined,
           deliveredAt: nextStatus === "DELIVERED" ? new Date() : undefined,
           archivedAt: nextStatus === "ARCHIVED" ? new Date() : undefined,
+          firstOpenedAt: nextStatus === "READING" ? new Date() : undefined,
         },
       });
 
@@ -203,6 +232,7 @@ export async function setStudyStatus(
         finalizedAt: nextStatus === "FINALIZED" && !existing.finalizedAt ? new Date() : existing.finalizedAt,
         deliveredAt: nextStatus === "DELIVERED" && !existing.deliveredAt ? new Date() : existing.deliveredAt,
         archivedAt: nextStatus === "ARCHIVED" && !existing.archivedAt ? new Date() : existing.archivedAt,
+        firstOpenedAt: nextStatus === "READING" && !existing.firstOpenedAt ? new Date() : existing.firstOpenedAt,
       },
     });
 
@@ -269,6 +299,8 @@ export async function syncOrthancStudyToRis(study: OrthancStudy) {
           patientId: snapshot.patientId,
           patientName: snapshot.patientName,
           modality: snapshot.modality,
+          priority: order?.priority,
+          stationAeTitle: order?.scheduledStationAeTitle,
           bodyPart: snapshot.bodyPart,
           studyDescription: snapshot.studyDescription,
           status: nextStatus,
@@ -311,6 +343,8 @@ export async function syncOrthancStudyToRis(study: OrthancStudy) {
         patientId: snapshot.patientId || existing.patientId,
         patientName: snapshot.patientName || existing.patientName,
         modality: snapshot.modality || existing.modality,
+        priority: existing.priority || order?.priority,
+        stationAeTitle: existing.stationAeTitle || order?.scheduledStationAeTitle,
         bodyPart: snapshot.bodyPart || existing.bodyPart,
         studyDescription: snapshot.studyDescription || existing.studyDescription,
         status: nextStatus,
@@ -373,6 +407,8 @@ export async function upsertWorklistStudy(input: WorklistStudyInput) {
           patientId: input.patientId,
           patientName: input.patientName,
           modality: input.modality,
+          priority: input.priority,
+          stationAeTitle: input.stationAeTitle,
           bodyPart: input.bodyPart,
           studyDescription: input.studyDescription,
           orderId: input.orderId,
@@ -404,6 +440,8 @@ export async function upsertWorklistStudy(input: WorklistStudyInput) {
         patientId: input.patientId || existing.patientId,
         patientName: input.patientName || existing.patientName,
         modality: input.modality || existing.modality,
+        priority: input.priority || existing.priority,
+        stationAeTitle: input.stationAeTitle || existing.stationAeTitle,
         bodyPart: input.bodyPart || existing.bodyPart,
         studyDescription: input.studyDescription || existing.studyDescription,
         orderId: existing.orderId || input.orderId,

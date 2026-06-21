@@ -208,13 +208,13 @@ export default function ReportTemplateTextPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-[1fr_7rem] gap-2">
+          <div className="grid grid-cols-[1fr_7rem] items-center gap-2">
             <div className="relative">
               <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-vin-faint" />
               <input
                 value={searchQuery}
                 onChange={event => setSearchQuery(event.target.value)}
-                className="w-full rounded border border-vin-border bg-vin-panel py-1.5 pl-7 pr-7 text-[11px] text-vin-text placeholder:text-vin-faint outline-none transition focus:border-vin-accent"
+                className="h-[2.25rem] w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-7 text-[11px] text-vin-text placeholder:text-vin-faint outline-none transition focus:border-vin-accent focus:bg-vin-root/20"
                 placeholder="Tìm tên, shortcut, nội dung..."
               />
               {searchQuery && (
@@ -418,7 +418,7 @@ function TemplateForm({
           name="name"
           required
           defaultValue={template?.name || ""}
-          className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent"
+          className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent"
           placeholder="Ví dụ: Phổi bình thường"
         />
       </div>
@@ -437,7 +437,7 @@ function TemplateForm({
           <input
             name="bodyPart"
             defaultValue={template?.bodyPart || ""}
-            className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent"
+            className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent"
             placeholder="CHEST"
           />
         </div>
@@ -446,7 +446,7 @@ function TemplateForm({
           <input
             name="shortcut"
             defaultValue={template?.shortcut || ""}
-            className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent"
+            className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none placeholder:text-vin-faint focus:border-vin-accent"
             placeholder="/phoi"
           />
         </div>

@@ -47,6 +47,46 @@ export type StatisticsQueueRow = {
   waitingSince: string | null;
 };
 
+export type StatisticsOperationKpis = {
+  scheduled: number;
+  arrived: number;
+  readyForScan: number;
+  received: number;
+  readyToRead: number;
+  reading: number;
+  finalized: number;
+  delivered: number;
+  slaBreaches: number;
+  stuckWorkflow: number;
+};
+
+export type StatisticsOperationRow = {
+  id: string;
+  studyInstanceUid: string;
+  accessionNumber: string;
+  patientName: string;
+  patientId: string;
+  modality: string;
+  studyDescription: string;
+  status: string;
+  statusLabel: string;
+  priority: string;
+  stationAeTitle: string;
+  waitingMinutes: number;
+  waitingSince: string | null;
+  reason: string;
+  href: string;
+};
+
+export type StatisticsOperations = {
+  generatedAt: string;
+  autoRefreshSeconds: number;
+  kpis: StatisticsOperationKpis;
+  slaBreaches: StatisticsOperationRow[];
+  stuckWorkflow: StatisticsOperationRow[];
+  liveQueue: StatisticsOperationRow[];
+};
+
 export type StatisticsStorage = {
   available: boolean;
   patients: number;
@@ -70,5 +110,6 @@ export type StatisticsPayload = {
   modalityCounts: StatisticsModalityCount[];
   doctorRows: StatisticsDoctorRow[];
   pendingQueue: StatisticsQueueRow[];
+  operations: StatisticsOperations;
   storage: StatisticsStorage;
 };

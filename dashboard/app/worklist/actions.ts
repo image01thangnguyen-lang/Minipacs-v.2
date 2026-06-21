@@ -2,6 +2,7 @@
 
 import { prisma } from "@/app/db";
 import { upsertWorklistStudy } from "@/lib/studyStatus";
+import { recordStudyEvent } from "@/lib/studyEvents";
 import fs from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
@@ -262,6 +263,8 @@ export async function createWorklistAction(data: WorklistInput) {
       patientId: validatedData.patientId,
       patientName: validatedData.patientName,
       modality: validatedData.modality,
+      priority: validatedData.priority || "ROUTINE",
+      stationAeTitle: cleanText(validatedData.scheduledStationAeTitle) || "AETITLE",
       bodyPart: cleanText(validatedData.bodyPart),
       studyDescription: procedureDescription,
       scheduledAt: scheduledDate,
@@ -293,12 +296,13 @@ export async function createWorklistAction(data: WorklistInput) {
 
 export async function checkInWorklistOrderAction(orderId: string) {
   const actor = await requireWorklistAccess();
+  const arrivedAt = new Date();
   const order = await prisma.worklistOrder.update({
     where: { id: orderId },
     data: {
       orderStatus: "ARRIVED",
       status: "ARRIVED",
-      arrivedAt: new Date(),
+      arrivedAt,
     },
     include: { imagingStudies: true },
   });
@@ -312,6 +316,25 @@ export async function checkInWorklistOrderAction(orderId: string) {
       message: `Checked in worklist order ${order.accessionNumber}`,
     },
   });
+
+  await prisma.imagingStudy.updateMany({
+    where: { orderId: order.id, checkedInAt: null },
+    data: { checkedInAt: arrivedAt },
+  });
+
+  await Promise.all(order.imagingStudies.map(study => recordStudyEvent({
+    imagingStudyId: study.id,
+    eventType: "PATIENT_CHECKED_IN",
+    fromStatus: study.status,
+    toStatus: study.status,
+    actorUserId: actor.id,
+    source: "WORKLIST",
+    createdAt: arrivedAt,
+    metadata: {
+      orderId: order.id,
+      accessionNumber: order.accessionNumber,
+    },
+  })));
 
   revalidatePath("/worklist");
   return { success: true, order: serializeOrder(order) };
@@ -347,6 +370,20 @@ export async function cancelWorklistOrderAction(orderId: string) {
     },
   });
 
+  await Promise.all(order.imagingStudies.map(study => recordStudyEvent({
+    imagingStudyId: study.id,
+    eventType: "ORDER_CANCELLED",
+    fromStatus: study.status,
+    toStatus: study.status,
+    actorUserId: actor.id,
+    source: "WORKLIST",
+    createdAt: order.cancelledAt || new Date(),
+    metadata: {
+      orderId: order.id,
+      accessionNumber: order.accessionNumber,
+    },
+  })));
+
   revalidatePath("/worklist");
   return { success: true, order: serializeOrder(order) };
 }
@@ -381,6 +418,20 @@ export async function regenerateWorklistFileAction(orderId: string) {
       metadataJson: JSON.stringify({ worklistFilePath }),
     },
   });
+
+  await Promise.all(order.imagingStudies.map(study => recordStudyEvent({
+    imagingStudyId: study.id,
+    eventType: "WORKLIST_REGENERATED",
+    fromStatus: study.status,
+    toStatus: study.status,
+    actorUserId: actor.id,
+    source: "WORKLIST",
+    metadata: {
+      orderId: order.id,
+      accessionNumber: order.accessionNumber,
+      worklistFilePath,
+    },
+  })));
 
   revalidatePath("/worklist");
   return { success: true, order: serializeOrder(order) };

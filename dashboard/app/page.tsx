@@ -368,7 +368,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-[1fr_7rem] gap-2">
+          <div className="grid grid-cols-[1fr_7rem] items-center gap-2">
             <div className="relative">
               <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-vin-faint" />
               <input
@@ -377,7 +377,7 @@ export default function DashboardPage() {
                   setSearchQuery(event.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-7 text-[11px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent focus:bg-vin-root/20"
+                className="h-[2.25rem] w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-7 text-[11px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent focus:bg-vin-root/20"
                 placeholder="Tìm tên, mã bệnh nhân, accession..."
               />
               {searchQuery && (
