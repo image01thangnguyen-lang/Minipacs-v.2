@@ -148,7 +148,7 @@ wait_for_database() {
 
 apply_database_schema() {
   info "[7/8] Applying dashboard Prisma schema..."
-  compose run --rm --no-deps dashboard npx prisma db push --skip-generate
+  compose run --rm --no-deps dashboard ./node_modules/.bin/prisma db push --skip-generate
 }
 
 build_and_start() {
