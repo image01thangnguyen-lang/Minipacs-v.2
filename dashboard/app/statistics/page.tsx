@@ -18,7 +18,16 @@ import {
 import { AppSidebar } from "@/app/components/AppSidebar";
 import { CustomDatePicker } from "@/app/components/CustomDatePicker";
 import { getStatisticsDashboardAction } from "./actions";
-import type { StatisticsFilters, StatisticsOperationRow, StatisticsPayload } from "./types";
+import type {
+  StatisticsBreakdownRow,
+  StatisticsDurationSummary,
+  StatisticsFilters,
+  StatisticsHourlyUtilizationRow,
+  StatisticsOperationRow,
+  StatisticsPayload,
+  StatisticsPerformanceOutlier,
+  StatisticsRoomUtilizationRow,
+} from "./types";
 
 function todayInput() {
   const now = new Date();
@@ -50,6 +59,10 @@ function formatDuration(minutes: number | null) {
 function formatStorageMb(value: number) {
   if (value >= 1024) return `${(value / 1024).toFixed(1)} GB`;
   return `${value} MB`;
+}
+
+function formatPercent(value: number | null) {
+  return value === null ? "-" : `${value}%`;
 }
 
 const statusTone: Record<string, string> = {
@@ -119,6 +132,16 @@ export default function StatisticsPage() {
   const maxModalityCount = useMemo(
     () => Math.max(1, ...(data?.modalityCounts || []).map(item => item.count)),
     [data?.modalityCounts]
+  );
+
+  const maxTatMinutes = useMemo(
+    () => Math.max(1, ...(data?.performance.dailyTrend || []).map(item => item.p90TatMinutes || item.averageTatMinutes || 0)),
+    [data?.performance.dailyTrend]
+  );
+
+  const maxHourlyBusyMinutes = useMemo(
+    () => Math.max(1, ...(data?.utilization.hourly || []).map(item => item.busyMinutes)),
+    [data?.utilization.hourly]
   );
 
   const kpiItems = data
@@ -255,6 +278,70 @@ export default function StatisticsPage() {
                   emptyText="Không có ca chờ đọc."
                   tone="normal"
                 />
+              </div>
+            </section>
+
+            <section className="mt-3 rounded border border-vin-border bg-vin-panel">
+              <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+                <div>
+                  <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">SLA / TAT analytics</h2>
+                  <div className="mt-0.5 text-[10px] text-vin-muted">
+                    P50, P90, P95 theo từng chặng workflow và outlier vượt SLA.
+                  </div>
+                </div>
+                <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-vin-muted">
+                  {data.performance.outliers.length} outlier
+                </span>
+              </div>
+
+              <div className="grid gap-3 p-3 xl:grid-cols-[1.35fr_0.65fr]">
+                <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                  {data.performance.segments.map(segment => (
+                    <TatSegmentCard key={segment.key} segment={segment} />
+                  ))}
+                </div>
+
+                <div className="rounded border border-white/10 bg-vin-shell px-3 py-3">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">TAT theo ngày</h3>
+                    <span className="text-[10px] text-vin-muted">Avg / P90</span>
+                  </div>
+                  <DailyTatChart rows={data.performance.dailyTrend} maxMinutes={maxTatMinutes} />
+                </div>
+              </div>
+
+              <div className="grid gap-3 px-3 pb-3 xl:grid-cols-[0.9fr_0.7fr_1.1fr]">
+                <BreakdownTable title="Theo modality" rows={data.performance.modalityBreakdown} />
+                <BreakdownTable title="Theo priority" rows={data.performance.priorityBreakdown} />
+                <PerformanceOutlierList rows={data.performance.outliers} />
+              </div>
+            </section>
+
+            <section className="mt-3 rounded border border-vin-border bg-vin-panel">
+              <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+                <div>
+                  <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Utilization phòng / máy</h2>
+                  <div className="mt-0.5 text-[10px] text-vin-muted">
+                    Tải máy theo AE title, khung giờ cao điểm, no-show/cancel và QC reject.
+                  </div>
+                </div>
+                <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-vin-muted">
+                  Peak {data.utilization.kpis.peakHour}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 border-b border-white/5 md:grid-cols-3 xl:grid-cols-6">
+                <MiniMetric label="Ca vận hành" value={data.utilization.kpis.totalStudies} />
+                <MiniMetric label="Phòng active" value={data.utilization.kpis.activeRooms} />
+                <MiniMetric label="Utilization" value={formatPercent(data.utilization.kpis.estimatedUtilizationPercent)} />
+                <MiniMetric label="Busy time" value={formatDuration(data.utilization.kpis.estimatedBusyMinutes)} />
+                <MiniMetric label="No-show / cancel" value={`${data.utilization.kpis.noShow} / ${data.utilization.kpis.cancelled}`} />
+                <MiniMetric label="QC reject" value={data.utilization.kpis.qcRejected} />
+              </div>
+
+              <div className="grid gap-3 p-3 xl:grid-cols-[0.75fr_1.25fr]">
+                <HourlyUtilizationChart rows={data.utilization.hourly} maxBusyMinutes={maxHourlyBusyMinutes} />
+                <RoomUtilizationTable rows={data.utilization.rooms} />
               </div>
             </section>
 
@@ -481,6 +568,225 @@ function StorageMetric({ label, value }: { label: string; value: number | string
       <div className="text-[10px] font-bold uppercase tracking-wide text-vin-muted">{label}</div>
       <div className="mt-1 font-mono text-sm font-bold text-white">{value}</div>
     </div>
+  );
+}
+
+function MiniMetric({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="border-r border-b border-white/5 px-3 py-2 last:border-r-0 xl:border-b-0">
+      <div className="truncate text-[10px] font-bold uppercase tracking-wide text-vin-muted">{label}</div>
+      <div className="mt-1 truncate text-xl font-bold text-white">{value}</div>
+    </div>
+  );
+}
+
+function TatSegmentCard({ segment }: { segment: StatisticsDurationSummary }) {
+  return (
+    <div className="rounded border border-white/10 bg-vin-shell px-3 py-2.5">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="truncate text-[11px] font-bold uppercase tracking-wide text-vin-text2">{segment.label}</div>
+          <div className="mt-0.5 text-[10px] text-vin-muted">{segment.count} ca</div>
+        </div>
+        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
+          segment.breachRate > 20 ? "bg-vin-status-danger-bg text-white" : "border border-white/10 text-vin-muted"
+        }`}>
+          {formatPercent(segment.breachRate)}
+        </span>
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-2 text-[10px]">
+        <StatCell label="Avg" value={formatDuration(segment.averageMinutes)} />
+        <StatCell label="P90" value={formatDuration(segment.p90Minutes)} />
+        <StatCell label="P95" value={formatDuration(segment.p95Minutes)} />
+      </div>
+      <div className="mt-2 flex items-center justify-between text-[10px] text-vin-muted">
+        <span>Target {segment.targetMinutes === null ? "theo priority" : formatDuration(segment.targetMinutes)}</span>
+        <span>{segment.breachCount} breach</span>
+      </div>
+    </div>
+  );
+}
+
+function StatCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="text-vin-muted">{label}</div>
+      <div className="mt-0.5 font-mono font-bold text-white">{value}</div>
+    </div>
+  );
+}
+
+function DailyTatChart({ rows, maxMinutes }: { rows: Array<{ date: string; count: number; averageTatMinutes: number | null; p90TatMinutes: number | null; breachRate: number }>; maxMinutes: number }) {
+  if (rows.every(row => row.count === 0)) {
+    return <div className="py-8 text-center text-[11px] text-vin-muted">Chưa có ca final trong kỳ.</div>;
+  }
+
+  return (
+    <div className="space-y-2">
+      {rows.map(row => {
+        const avgWidth = Math.max(2, ((row.averageTatMinutes || 0) / maxMinutes) * 100);
+        const p90Width = Math.max(2, ((row.p90TatMinutes || 0) / maxMinutes) * 100);
+        return (
+          <div key={row.date} className="grid grid-cols-[5.5rem_1fr_4.5rem] items-center gap-2 text-[10px]">
+            <div className="font-mono text-vin-muted">{row.date.slice(5)}</div>
+            <div className="space-y-1">
+              <div className="h-2 overflow-hidden rounded-full bg-vin-panel">
+                <div className="h-full rounded-full bg-vin-accent" style={{ width: `${avgWidth}%` }} />
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-vin-panel">
+                <div className="h-full rounded-full bg-amber-300" style={{ width: `${p90Width}%` }} />
+              </div>
+            </div>
+            <div className="text-right text-vin-muted">{row.count} ca · {formatPercent(row.breachRate)}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function BreakdownTable({ title, rows }: { title: string; rows: StatisticsBreakdownRow[] }) {
+  return (
+    <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
+        <span className="text-[10px] text-vin-muted">{rows.length} nhóm</span>
+      </div>
+      {rows.length === 0 ? (
+        <div className="px-3 py-8 text-center text-[11px] text-vin-muted">Chưa có dữ liệu.</div>
+      ) : (
+        <table className="w-full text-left text-[10px]">
+          <thead className="border-b border-white/5 text-vin-muted">
+            <tr>
+              <th className="px-3 py-2">Nhóm</th>
+              <th className="px-2 py-2 text-right">Ca</th>
+              <th className="px-2 py-2 text-right">Avg</th>
+              <th className="px-2 py-2 text-right">P90</th>
+              <th className="px-3 py-2 text-right">Breach</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(row => (
+              <tr key={row.key} className="border-b border-white/5 last:border-b-0">
+                <td className="px-3 py-2 font-mono font-bold text-vin-accent">{row.label}</td>
+                <td className="px-2 py-2 text-right text-white">{row.count}</td>
+                <td className="px-2 py-2 text-right text-vin-text2">{formatDuration(row.averageTatMinutes)}</td>
+                <td className="px-2 py-2 text-right text-vin-text2">{formatDuration(row.p90TatMinutes)}</td>
+                <td className="px-3 py-2 text-right text-vin-muted">{row.breachCount} · {formatPercent(row.breachRate)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+  );
+}
+
+function PerformanceOutlierList({ rows }: { rows: StatisticsPerformanceOutlier[] }) {
+  return (
+    <section className="overflow-hidden rounded border border-red-400/20 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Outlier vượt SLA</h3>
+        <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[10px] font-bold text-white">{rows.length}</span>
+      </div>
+      <div className="max-h-[280px] overflow-auto scr-dark">
+        {rows.length === 0 ? (
+          <div className="px-3 py-8 text-center text-[11px] text-vin-muted">Không có outlier trong kỳ.</div>
+        ) : (
+          rows.map(row => (
+            <a key={row.id} href={row.href} className="block border-b border-white/5 px-3 py-2 transition hover:bg-white/[0.03] last:border-b-0">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="truncate text-[12px] font-bold uppercase text-white">{row.patientName}</div>
+                  <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">{row.patientId} · {row.accessionNumber}</div>
+                </div>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${priorityTone[row.priority] || priorityTone.ROUTINE}`}>
+                  {row.priority}
+                </span>
+              </div>
+              <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-vin-muted">
+                <span className="truncate">{row.modality} · {row.stationAeTitle}</span>
+                <span className="whitespace-nowrap text-red-200">
+                  {formatDuration(row.turnaroundMinutes)} / {formatDuration(row.thresholdMinutes)}
+                </span>
+              </div>
+            </a>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function HourlyUtilizationChart({ rows, maxBusyMinutes }: { rows: StatisticsHourlyUtilizationRow[]; maxBusyMinutes: number }) {
+  return (
+    <section className="rounded border border-white/10 bg-vin-shell px-3 py-3">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Theo giờ</h3>
+        <span className="text-[10px] text-vin-muted">Busy minutes</span>
+      </div>
+      <div className="grid h-44 grid-cols-[repeat(24,minmax(0,1fr))] items-end gap-1">
+        {rows.map(row => {
+          const height = Math.max(4, (row.busyMinutes / maxBusyMinutes) * 100);
+          return (
+            <div key={row.hour} className="flex h-full min-w-0 flex-col justify-end gap-1">
+              <div className="flex flex-1 items-end rounded bg-vin-panel">
+                <div
+                  className="w-full rounded bg-vin-accent"
+                  style={{ height: row.busyMinutes ? `${height}%` : "4px" }}
+                  title={`${row.label}: ${formatDuration(row.busyMinutes)} · ${row.studyCount} ca`}
+                />
+              </div>
+              <div className="text-center font-mono text-[8px] text-vin-muted">{row.hour % 3 === 0 ? row.hour : ""}</div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function RoomUtilizationTable({ rows }: { rows: StatisticsRoomUtilizationRow[] }) {
+  return (
+    <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
+      <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
+        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Ranking phòng / máy</h3>
+        <span className="text-[10px] text-vin-muted">{rows.length} phòng</span>
+      </div>
+      {rows.length === 0 ? (
+        <div className="px-3 py-8 text-center text-[11px] text-vin-muted">Chưa có dữ liệu phòng máy.</div>
+      ) : (
+        <div className="max-h-[320px] overflow-auto scr-dark">
+          <table className="w-full text-left text-[10px]">
+            <thead className="sticky top-0 border-b border-white/5 bg-vin-shell text-vin-muted">
+              <tr>
+                <th className="px-3 py-2">Phòng / AE</th>
+                <th className="px-2 py-2 text-right">Ca</th>
+                <th className="px-2 py-2 text-right">Final</th>
+                <th className="px-2 py-2 text-right">Busy</th>
+                <th className="px-2 py-2 text-right">Util</th>
+                <th className="px-3 py-2 text-right">No-show / QC</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(row => (
+                <tr key={row.stationAeTitle} className="border-b border-white/5 last:border-b-0">
+                  <td className="px-3 py-2">
+                    <div className="truncate font-bold text-white">{row.roomName}</div>
+                    <div className="mt-0.5 font-mono text-[9px] text-vin-muted">{row.stationAeTitle} · {row.modality}</div>
+                  </td>
+                  <td className="px-2 py-2 text-right text-white">{row.studyCount}</td>
+                  <td className="px-2 py-2 text-right text-vin-text2">{row.finalizedCount}</td>
+                  <td className="px-2 py-2 text-right text-vin-text2">{formatDuration(row.estimatedBusyMinutes)}</td>
+                  <td className="px-2 py-2 text-right text-vin-text2">{formatPercent(row.utilizationPercent)}</td>
+                  <td className="px-3 py-2 text-right text-vin-muted">{row.noShowCount} / {row.qcRejectedCount}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }
 

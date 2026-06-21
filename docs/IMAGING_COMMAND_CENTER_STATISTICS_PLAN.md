@@ -574,12 +574,14 @@ Do duoc hieu nang van hanh that su.
 
 ### Viec can lam
 
-- [ ] Tinh duration tung chang workflow.
-- [ ] Tinh average, P50, P90, P95.
-- [ ] Chart TAT theo ngay.
-- [ ] Breakdown theo modality.
-- [ ] Breakdown theo priority.
-- [ ] Drilldown outliers.
+- [x] Tinh duration tung chang workflow.
+- [x] Tinh average, P50, P90, P95.
+- [x] Chart TAT theo ngay.
+- [x] Breakdown theo modality.
+- [x] Breakdown theo priority.
+- [x] Drilldown outliers.
+
+Ghi chu 2026-06-21: Da them section SLA/TAT tren `/statistics`, tinh chặng workflow, trend theo ngay, breakdown modality/priority va outlier click ve report.
 
 ### Acceptance criteria
 
@@ -595,13 +597,15 @@ Quan ly nang luc may chup va phong chup.
 
 ### Viec can lam
 
-- [ ] Dam bao `DicomNode` co `room`, `modality`, `aeTitle`.
-- [ ] Map study/order vao `stationAeTitle`.
+- [x] Dam bao `DicomNode` co `room`, `modality`, `aeTitle`.
+- [x] Map study/order vao `stationAeTitle`.
 - [ ] Ghi `scanStartedAt`, `scanEndedAt` neu co MPPS/manual event.
-- [ ] Tao utilization chart theo gio.
-- [ ] Tao ranking may/phong theo so ca.
-- [ ] Tao no-show/cancel widget.
-- [ ] Tao QC reject theo may.
+- [x] Tao utilization chart theo gio.
+- [x] Tao ranking may/phong theo so ca.
+- [x] Tao no-show/cancel widget.
+- [x] Tao QC reject theo may.
+
+Ghi chu 2026-06-21: Da them section utilization tren `/statistics`. Khi chua co MPPS/manual scan event, busy time dung uoc tinh tu scheduled/received hoac default theo modality.
 
 ### Acceptance criteria
 

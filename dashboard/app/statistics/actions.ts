@@ -5,15 +5,22 @@ import { prisma } from "@/app/db";
 import { redirect } from "next/navigation";
 import { hasPermission } from "@/lib/permissions";
 import type {
+  StatisticsBreakdownRow,
   StatisticsDoctorRow,
+  StatisticsDurationSummary,
   StatisticsFilters,
   StatisticsModalityCount,
   StatisticsOperations,
   StatisticsOperationRow,
   StatisticsPayload,
+  StatisticsPerformance,
+  StatisticsPerformanceOutlier,
   StatisticsQueueRow,
+  StatisticsRoomUtilizationRow,
   StatisticsStatusCount,
   StatisticsStorage,
+  StatisticsTrendPoint,
+  StatisticsUtilization,
 } from "./types";
 
 const statusLabels: Record<string, string> = {
@@ -39,6 +46,17 @@ const SLA_MINUTES_BY_PRIORITY: Record<string, number> = {
   STAT: 30,
   URGENT: 120,
   ROUTINE: 1440,
+};
+
+const ROOM_CAPACITY_MINUTES_PER_DAY = 480;
+const DEFAULT_SCAN_MINUTES_BY_MODALITY: Record<string, number> = {
+  CT: 20,
+  MR: 30,
+  MRI: 30,
+  US: 20,
+  DX: 8,
+  CR: 8,
+  SRDX: 8,
 };
 
 const priorityRank: Record<string, number> = {
@@ -129,6 +147,41 @@ function minutesBetween(start?: Date | null, end?: Date | null) {
 function average(values: number[]) {
   if (!values.length) return null;
   return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+function percentile(values: number[], percentileValue: number) {
+  if (!values.length) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  const index = Math.ceil((percentileValue / 100) * sorted.length) - 1;
+  return sorted[Math.max(0, Math.min(sorted.length - 1, index))];
+}
+
+function rate(part: number, total: number) {
+  return total ? Math.round((part / total) * 100) : 0;
+}
+
+function vietnamDateKey(date?: Date | null) {
+  return date ? vietnamDateInput(date) : "";
+}
+
+function vietnamHour(date?: Date | null) {
+  if (!date) return 0;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    hour: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  return Number(parts.find(part => part.type === "hour")?.value || 0);
+}
+
+function dateKeysInRange(start: Date, endExclusive: Date) {
+  const keys: string[] = [];
+  const cursor = new Date(start);
+  while (cursor < endExclusive) {
+    keys.push(vietnamDateKey(cursor));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return keys;
 }
 
 function cleanText(value?: string | null) {
@@ -248,6 +301,74 @@ function sortOperationRows(rows: StatisticsOperationRow[]) {
     if (priorityDelta !== 0) return priorityDelta;
     return b.waitingMinutes - a.waitingMinutes;
   });
+}
+
+function durationSummary(key: string, label: string, values: number[], targetMinutes: number | null): StatisticsDurationSummary {
+  const breachCount = targetMinutes === null ? 0 : values.filter(value => value > targetMinutes).length;
+  return {
+    key,
+    label,
+    targetMinutes,
+    count: values.length,
+    averageMinutes: average(values),
+    p50Minutes: percentile(values, 50),
+    p90Minutes: percentile(values, 90),
+    p95Minutes: percentile(values, 95),
+    breachCount,
+    breachRate: rate(breachCount, values.length),
+  };
+}
+
+function breakdownRow(key: string, label: string, rows: Array<{ turnaroundMinutes: number; thresholdMinutes: number }>): StatisticsBreakdownRow {
+  const values = rows.map(row => row.turnaroundMinutes);
+  const breachCount = rows.filter(row => row.turnaroundMinutes > row.thresholdMinutes).length;
+  return {
+    key,
+    label,
+    count: rows.length,
+    averageTatMinutes: average(values),
+    p90TatMinutes: percentile(values, 90),
+    breachCount,
+    breachRate: rate(breachCount, rows.length),
+  };
+}
+
+function scanDurationMinutes(study: any) {
+  const actual = minutesBetween(study.scanStartedAt, study.scanEndedAt);
+  if (actual !== null) return Math.max(1, actual);
+
+  const scheduledToReceived = minutesBetween(study.scheduledAt || study.order?.scheduledDate, study.receivedAt);
+  if (scheduledToReceived !== null) return Math.min(Math.max(scheduledToReceived, 1), 180);
+
+  const modality = cleanText(study.modality || study.order?.modality).toUpperCase();
+  return DEFAULT_SCAN_MINUTES_BY_MODALITY[modality] || 15;
+}
+
+function operationDateForStudy(study: any) {
+  return study.scanStartedAt || study.receivedAt || study.scheduledAt || study.order?.scheduledDate || study.createdAt || null;
+}
+
+function serializePerformanceOutlier(row: {
+  study: any;
+  turnaroundMinutes: number;
+  thresholdMinutes: number;
+  finalizedAt: Date | null;
+}): StatisticsPerformanceOutlier {
+  const study = row.study;
+  return {
+    id: study.id,
+    studyInstanceUid: study.studyInstanceUid || "",
+    patientName: formatPatientName(study.patientName),
+    patientId: study.patientId || "-",
+    accessionNumber: study.accessionNumber || "-",
+    modality: study.modality || "-",
+    priority: priorityOf(study),
+    stationAeTitle: stationOf(study),
+    turnaroundMinutes: row.turnaroundMinutes,
+    thresholdMinutes: row.thresholdMinutes,
+    finalizedAt: row.finalizedAt ? row.finalizedAt.toISOString() : null,
+    href: study.studyInstanceUid ? `/report/${encodeURIComponent(study.studyInstanceUid)}` : "/worklist",
+  };
 }
 
 async function getOrthancStorage(): Promise<StatisticsStorage> {
@@ -504,6 +625,331 @@ async function getOperationsDashboard(start: Date, endExclusive: Date): Promise<
   };
 }
 
+async function getPerformanceAnalytics(start: Date, endExclusive: Date): Promise<StatisticsPerformance> {
+  const studies = await prisma.imagingStudy.findMany({
+    where: {
+      finalizedAt: rangeFilter(start, endExclusive),
+    },
+    include: { order: true },
+    orderBy: { finalizedAt: "desc" },
+    take: 1000,
+  });
+
+  const segmentDefinitions = [
+    {
+      key: "checkin_to_received",
+      label: "Check-in -> nhận ảnh",
+      targetMinutes: 120,
+      startAt: (study: any) => study.checkedInAt || study.order?.arrivedAt || study.scheduledAt || study.createdAt,
+      endAt: (study: any) => study.receivedAt,
+    },
+    {
+      key: "received_to_ready",
+      label: "Nhận ảnh -> sẵn sàng đọc",
+      targetMinutes: 30,
+      startAt: (study: any) => study.receivedAt,
+      endAt: (study: any) => study.stableAt || study.qcCompletedAt,
+    },
+    {
+      key: "received_to_first_open",
+      label: "Nhận ảnh -> mở đọc đầu tiên",
+      targetMinutes: 60,
+      startAt: (study: any) => study.receivedAt || study.stableAt,
+      endAt: (study: any) => study.firstOpenedAt,
+    },
+    {
+      key: "first_open_to_final",
+      label: "Mở đọc -> ký",
+      targetMinutes: 120,
+      startAt: (study: any) => study.firstOpenedAt,
+      endAt: (study: any) => study.finalizedAt,
+    },
+    {
+      key: "received_to_final",
+      label: "Nhận ảnh -> ký",
+      targetMinutes: null,
+      startAt: (study: any) => study.receivedAt || study.stableAt,
+      endAt: (study: any) => study.finalizedAt,
+    },
+    {
+      key: "final_to_delivery",
+      label: "Ký -> trả kết quả",
+      targetMinutes: 120,
+      startAt: (study: any) => study.finalizedAt,
+      endAt: (study: any) => study.deliveredAt,
+    },
+  ];
+
+  const segments = segmentDefinitions.map(definition => {
+    const values = studies
+      .map(study => minutesBetween(definition.startAt(study), definition.endAt(study)))
+      .filter((value): value is number => typeof value === "number");
+    return durationSummary(definition.key, definition.label, values, definition.targetMinutes);
+  });
+
+  const tatRows = studies
+    .map(study => {
+      const startAt = study.receivedAt || study.stableAt || study.scanEndedAt || study.scheduledAt || null;
+      const finalizedAt = study.finalizedAt || null;
+      const turnaroundMinutes = minutesBetween(startAt, finalizedAt);
+      if (turnaroundMinutes === null) return null;
+      const priority = priorityOf(study);
+      return {
+        study,
+        priority,
+        modality: study.modality || "UNKNOWN",
+        finalizedAt,
+        turnaroundMinutes,
+        thresholdMinutes: slaThresholdForPriority(priority),
+      };
+    })
+    .filter((row): row is {
+      study: any;
+      priority: string;
+      modality: string;
+      finalizedAt: Date;
+      turnaroundMinutes: number;
+      thresholdMinutes: number;
+    } => Boolean(row));
+
+  const dailyTrend: StatisticsTrendPoint[] = dateKeysInRange(start, endExclusive).map(date => {
+    const rows = tatRows.filter(row => vietnamDateKey(row.finalizedAt) === date);
+    const values = rows.map(row => row.turnaroundMinutes);
+    const breachCount = rows.filter(row => row.turnaroundMinutes > row.thresholdMinutes).length;
+    return {
+      date,
+      count: rows.length,
+      averageTatMinutes: average(values),
+      p90TatMinutes: percentile(values, 90),
+      breachRate: rate(breachCount, rows.length),
+    };
+  });
+
+  const modalityMap = new Map<string, typeof tatRows>();
+  const priorityMap = new Map<string, typeof tatRows>();
+  tatRows.forEach(row => {
+    const modalityKey = row.modality || "UNKNOWN";
+    const priorityKey = row.priority || "ROUTINE";
+    modalityMap.set(modalityKey, [...(modalityMap.get(modalityKey) || []), row]);
+    priorityMap.set(priorityKey, [...(priorityMap.get(priorityKey) || []), row]);
+  });
+
+  const modalityBreakdown = Array.from(modalityMap.entries())
+    .map(([key, rows]) => breakdownRow(key, key, rows))
+    .sort((a, b) => b.count - a.count || b.breachRate - a.breachRate)
+    .slice(0, 8);
+
+  const priorityBreakdown = Array.from(priorityMap.entries())
+    .map(([key, rows]) => breakdownRow(key, key, rows))
+    .sort((a, b) => (priorityRank[a.key] ?? 9) - (priorityRank[b.key] ?? 9));
+
+  const outliers = tatRows
+    .filter(row => row.turnaroundMinutes > row.thresholdMinutes)
+    .sort((a, b) => (b.turnaroundMinutes - b.thresholdMinutes) - (a.turnaroundMinutes - a.thresholdMinutes))
+    .slice(0, 12)
+    .map(serializePerformanceOutlier);
+
+  return {
+    segments,
+    dailyTrend,
+    modalityBreakdown,
+    priorityBreakdown,
+    outliers,
+  };
+}
+
+async function getUtilizationAnalytics(start: Date, endExclusive: Date): Promise<StatisticsUtilization> {
+  const range = rangeFilter(start, endExclusive);
+  const dateCount = Math.max(1, dateKeysInRange(start, endExclusive).length);
+  const now = new Date();
+
+  const [nodes, studies, orders] = await Promise.all([
+    prisma.dicomNode.findMany({
+      where: { isActive: true },
+      select: {
+        aeTitle: true,
+        name: true,
+        modality: true,
+        room: true,
+      },
+      orderBy: [
+        { modality: "asc" },
+        { name: "asc" },
+      ],
+    }),
+    prisma.imagingStudy.findMany({
+      where: studyDateWhere(start, endExclusive),
+      include: { order: true },
+      orderBy: [
+        { receivedAt: "desc" },
+        { scheduledAt: "desc" },
+        { createdAt: "desc" },
+      ],
+      take: 1000,
+    }),
+    prisma.worklistOrder.findMany({
+      where: {
+        OR: [
+          { scheduledDate: range },
+          { arrivedAt: range },
+          { cancelledAt: range },
+        ],
+      },
+      select: {
+        id: true,
+        modality: true,
+        scheduledStationAeTitle: true,
+        scheduledStationName: true,
+        scheduledDate: true,
+        arrivedAt: true,
+        cancelledAt: true,
+        orderStatus: true,
+        imagingStudies: { select: { id: true } },
+      },
+      orderBy: { scheduledDate: "asc" },
+      take: 1000,
+    }),
+  ]);
+
+  const nodeMap = new Map(nodes.map(node => [node.aeTitle.toUpperCase(), node]));
+  const rooms = new Map<string, StatisticsRoomUtilizationRow>();
+
+  function stationKey(value?: string | null) {
+    const key = cleanText(value).toUpperCase();
+    return key && key !== "-" ? key : "UNKNOWN";
+  }
+
+  function getRoomRow(stationAeTitle?: string | null, fallback?: { roomName?: string | null; modality?: string | null }) {
+    const key = stationKey(stationAeTitle);
+    const node = nodeMap.get(key);
+    const existing = rooms.get(key);
+    if (existing) return existing;
+
+    const row: StatisticsRoomUtilizationRow = {
+      stationAeTitle: key,
+      roomName: node?.room || node?.name || fallback?.roomName || key,
+      modality: node?.modality || fallback?.modality || "-",
+      studyCount: 0,
+      scheduledCount: 0,
+      finalizedCount: 0,
+      qcRejectedCount: 0,
+      noShowCount: 0,
+      cancelledCount: 0,
+      averageScanMinutes: null,
+      estimatedBusyMinutes: 0,
+      utilizationPercent: null,
+      lastActivityAt: null,
+    };
+    rooms.set(key, row);
+    return row;
+  }
+
+  nodes.forEach(node => getRoomRow(node.aeTitle, { roomName: node.room || node.name, modality: node.modality }));
+
+  const hourly = Array.from({ length: 24 }, (_, hour) => ({
+    hour,
+    label: `${String(hour).padStart(2, "0")}:00`,
+    studyCount: 0,
+    scheduledCount: 0,
+    arrivedCount: 0,
+    finalizedCount: 0,
+    busyMinutes: 0,
+  }));
+
+  function isInRange(value?: Date | null) {
+    return Boolean(value && value >= start && value < endExclusive);
+  }
+
+  function markActivity(row: StatisticsRoomUtilizationRow, value?: Date | null) {
+    if (!value) return;
+    if (!row.lastActivityAt || new Date(row.lastActivityAt).getTime() < value.getTime()) {
+      row.lastActivityAt = value.toISOString();
+    }
+  }
+
+  studies.forEach(study => {
+    const station = stationOf(study);
+    const room = getRoomRow(station, {
+      roomName: study.order?.scheduledStationName,
+      modality: study.modality || study.order?.modality,
+    });
+    const activityAt = operationDateForStudy(study);
+    const busyMinutes = scanDurationMinutes(study);
+
+    room.studyCount += 1;
+    room.estimatedBusyMinutes += busyMinutes;
+    if (isInRange(study.finalizedAt)) room.finalizedCount += 1;
+    if (study.status === "QC_REJECTED") room.qcRejectedCount += 1;
+    markActivity(room, activityAt);
+
+    if (isInRange(activityAt)) {
+      const hour = hourly[vietnamHour(activityAt)];
+      hour.studyCount += 1;
+      hour.busyMinutes += busyMinutes;
+    }
+    if (isInRange(study.finalizedAt)) {
+      hourly[vietnamHour(study.finalizedAt)].finalizedCount += 1;
+    }
+  });
+
+  orders.forEach(order => {
+    const room = getRoomRow(order.scheduledStationAeTitle, {
+      roomName: order.scheduledStationName,
+      modality: order.modality,
+    });
+    const hasStudy = order.imagingStudies.length > 0;
+    const isCancelled = Boolean(order.cancelledAt && isInRange(order.cancelledAt));
+    const isNoShow =
+      !hasStudy &&
+      !order.arrivedAt &&
+      !order.cancelledAt &&
+      order.scheduledDate < now &&
+      ["REQUESTED", "SCHEDULED"].includes(String(order.orderStatus));
+
+    if (isInRange(order.scheduledDate)) {
+      room.scheduledCount += 1;
+      hourly[vietnamHour(order.scheduledDate)].scheduledCount += 1;
+    }
+    if (isInRange(order.arrivedAt)) {
+      hourly[vietnamHour(order.arrivedAt)].arrivedCount += 1;
+    }
+    if (isCancelled) {
+      room.cancelledCount += 1;
+    }
+    if (isNoShow) {
+      room.noShowCount += 1;
+    }
+    markActivity(room, order.arrivedAt || order.scheduledDate);
+  });
+
+  const capacityPerRoom = ROOM_CAPACITY_MINUTES_PER_DAY * dateCount;
+  const roomRows = Array.from(rooms.values()).map(row => ({
+    ...row,
+    averageScanMinutes: row.studyCount ? Math.round(row.estimatedBusyMinutes / row.studyCount) : null,
+    utilizationPercent: capacityPerRoom ? Math.round((row.estimatedBusyMinutes / capacityPerRoom) * 100) : null,
+  })).sort((a, b) => b.estimatedBusyMinutes - a.estimatedBusyMinutes || b.studyCount - a.studyCount);
+
+  const activeRooms = Math.max(nodes.length, roomRows.filter(row => row.studyCount || row.scheduledCount).length);
+  const estimatedBusyMinutes = roomRows.reduce((sum, row) => sum + row.estimatedBusyMinutes, 0);
+  const totalCapacity = activeRooms * capacityPerRoom;
+  const peakHour = [...hourly].sort((a, b) => b.studyCount - a.studyCount || b.busyMinutes - a.busyMinutes)[0];
+
+  return {
+    kpis: {
+      totalStudies: studies.length,
+      activeRooms,
+      noShow: roomRows.reduce((sum, row) => sum + row.noShowCount, 0),
+      cancelled: roomRows.reduce((sum, row) => sum + row.cancelledCount, 0),
+      qcRejected: roomRows.reduce((sum, row) => sum + row.qcRejectedCount, 0),
+      estimatedBusyMinutes,
+      estimatedUtilizationPercent: totalCapacity ? Math.round((estimatedBusyMinutes / totalCapacity) * 100) : null,
+      peakHour: peakHour?.studyCount ? peakHour.label : "-",
+    },
+    rooms: roomRows.slice(0, 12),
+    hourly,
+  };
+}
+
 export async function getStatisticsDashboardAction(filters: StatisticsFilters = {}): Promise<StatisticsPayload> {
   const user = await requireStatisticsAccess();
   const range = toVietnamRange(filters.dateFrom, filters.dateTo);
@@ -523,6 +969,8 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     doctorRows,
     pendingStudies,
     operations,
+    performance,
+    utilization,
     storage,
   ] = await Promise.all([
     prisma.imagingStudy.count({ where: studyDateWhere(range.start, endExclusive) }),
@@ -555,6 +1003,8 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
       take: 20,
     }),
     getOperationsDashboard(range.start, endExclusive),
+    getPerformanceAnalytics(range.start, endExclusive),
+    getUtilizationAnalytics(range.start, endExclusive),
     getOrthancStorage(),
   ]);
 
@@ -595,6 +1045,8 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     doctorRows,
     pendingQueue: pendingStudies.map(serializeQueueRow),
     operations,
+    performance,
+    utilization,
     storage,
   };
 }
