@@ -267,7 +267,7 @@ export default function DashboardPage() {
     const uid = study.MainDicomTags?.StudyInstanceUID;
     if (!uid) return;
     const currentHost = window.location.hostname;
-    window.open(`http://${currentHost}:3000/viewer/${encodeURIComponent(uid)}`, "_blank");
+    window.open(`http://${currentHost}:3000/viewer?StudyInstanceUIDs=${encodeURIComponent(uid)}`, "_blank");
   };
 
   const applyReportTemplate = (template: ReportTemplateOption, mode: TemplateApplyMode) => {

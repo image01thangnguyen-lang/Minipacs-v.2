@@ -131,7 +131,7 @@ export default function ArchivePage() {
 
   const viewerLink = useMemo(() => {
     if (!detail?.canOpenViewer || !host) return "";
-    return `http://${host}:3000/viewer/${encodeURIComponent(detail.studyInstanceUid)}`;
+    return `http://${host}:3000/viewer?StudyInstanceUIDs=${encodeURIComponent(detail.studyInstanceUid)}`;
   }, [detail?.canOpenViewer, detail?.studyInstanceUid, host]);
 
   const runSearch = async (nextFilters = filters, keepSelection = false) => {

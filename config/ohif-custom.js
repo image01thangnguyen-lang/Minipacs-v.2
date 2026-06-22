@@ -67,40 +67,44 @@
   ];
 
   var LEGACY_PANEL_LABELS = [
-    'Tap anh',
     'Measurements',
-    'Chest',
-    'Ser:',
+    'Measurement Tools',
+    'Advanced Tools',
+    'Image Tools',
+    'Sync Tools',
+    'Display Sets',
+    'Series',
+    'Study Browser',
   ];
 
   var TOP_TOOLS = [
-    { key: 'select', label: 'Select', icon: 'PTR', commandLabels: ['Select', 'Pointer'] },
-    { key: 'window', label: 'Window/Level', icon: 'W/L', commandLabels: ['Window Level', 'Window/Level', 'Window'] },
-    { key: 'zoom', label: 'Zoom', icon: 'Z', commandLabels: ['Zoom'] },
-    { key: 'pan', label: 'Pan', icon: 'PAN', commandLabels: ['Pan'] },
-    { key: 'stack', label: 'Stack scroll', icon: 'STK', commandLabels: ['Stack Scroll', 'Stack'] },
-    { key: 'layout', label: 'Layout', icon: 'LAY', commandLabels: ['Layout'] },
-    { key: 'length', label: 'Length', icon: 'LEN', commandLabels: ['Length', 'Ruler'] },
-    { key: 'angle', label: 'Angle', icon: 'ANG', commandLabels: ['Angle'] },
-    { key: 'cine', label: 'Cine', icon: 'CINE', commandLabels: ['Cine', 'Play'], action: toggleCine },
-    { key: 'arrow', label: 'Arrow annotate', icon: 'ARR', commandLabels: ['Arrow Annotate', 'Arrow', 'Annotate'] },
-    { key: 'reset', label: 'Reset view', icon: 'RST', commandLabels: ['Reset', 'Reset View'] },
+    { key: 'select', label: 'Select', icon: '↖', commandLabels: ['Select', 'Pointer'] },
+    { key: 'window', label: 'Window/Level', icon: '☼', commandLabels: ['Window Level', 'Window/Level', 'Window'] },
+    { key: 'zoom', label: 'Zoom', icon: '⌕', commandLabels: ['Zoom'] },
+    { key: 'pan', label: 'Pan', icon: '✥', commandLabels: ['Pan'] },
+    { key: 'stack', label: 'Stack scroll', icon: '▱', commandLabels: ['Stack Scroll', 'Stack'] },
+    { key: 'layout', label: 'Layout', icon: '▦', commandLabels: ['Layout'] },
+    { key: 'length', label: 'Length', icon: '━', commandLabels: ['Length', 'Ruler'] },
+    { key: 'angle', label: 'Angle', icon: '∠', commandLabels: ['Angle'] },
+    { key: 'cine', label: 'Cine', icon: '▶', commandLabels: ['Cine', 'Play'], action: toggleCine },
+    { key: 'arrow', label: 'Arrow annotate', icon: '↗', commandLabels: ['Arrow Annotate', 'Arrow', 'Annotate'] },
+    { key: 'reset', label: 'Reset view', icon: '↶', commandLabels: ['Reset', 'Reset View'] },
   ];
 
   var RIGHT_ACTIONS = [
-    { key: 'capture', label: 'Capture', icon: 'CAP', commandLabels: ['Capture', 'Screenshot'] },
-    { key: 'print', label: 'Print', icon: 'PRN', action: printViewer },
-    { key: 'report', label: 'Report', icon: 'RPT', action: openReport },
-    { key: 'close', label: 'Close', icon: 'X', action: closeViewer },
+    { key: 'capture', label: 'Capture', icon: '▣', commandLabels: ['Capture', 'Screenshot'] },
+    { key: 'print', label: 'Print', icon: '▤', action: printViewer },
+    { key: 'report', label: 'Report', icon: '☰', action: openReport },
+    { key: 'close', label: 'Close', icon: '×', action: closeViewer },
   ];
 
   var PANEL_GROUPS = [
     {
       title: 'History',
       tools: [
-        { key: 'history-current', label: 'Current', icon: 'NOW' },
-        { key: 'history-prior', label: 'Prior', icon: 'PRI' },
-        { key: 'history-report', label: 'Report', icon: 'RPT', action: openReport },
+        { key: 'history-current', label: 'Current', icon: '●' },
+        { key: 'history-prior', label: 'Prior', icon: '◐' },
+        { key: 'history-report', label: 'Report', icon: '☰', action: openReport },
       ],
       note: 'RIS history API se noi o giai doan sau.',
     },
@@ -116,59 +120,59 @@
     {
       title: 'Measurement Tools',
       tools: [
-        { key: 'measure-length', label: 'Length', icon: 'LEN', commandLabels: ['Length'] },
-        { key: 'measure-angle', label: 'Angle', icon: 'ANG', commandLabels: ['Angle'] },
-        { key: 'measure-bidir', label: 'Bidirectional', icon: 'BID', commandLabels: ['Bidirectional'] },
-        { key: 'measure-rect', label: 'Rectangle', icon: 'REC', commandLabels: ['Rectangle'] },
-        { key: 'measure-ellipse', label: 'Ellipse', icon: 'ELL', commandLabels: ['Ellipse'] },
-        { key: 'measure-probe', label: 'Probe', icon: 'PRB', commandLabels: ['Probe'] },
+        { key: 'measure-length', label: 'Length', icon: '━', commandLabels: ['Length'] },
+        { key: 'measure-angle', label: 'Angle', icon: '∠', commandLabels: ['Angle'] },
+        { key: 'measure-bidir', label: 'Bidirectional', icon: '↔', commandLabels: ['Bidirectional'] },
+        { key: 'measure-rect', label: 'Rectangle', icon: '□', commandLabels: ['Rectangle'] },
+        { key: 'measure-ellipse', label: 'Ellipse', icon: '○', commandLabels: ['Ellipse'] },
+        { key: 'measure-probe', label: 'Probe', icon: '•', commandLabels: ['Probe'] },
       ],
     },
     {
       title: 'Advanced Tools',
       tools: [
-        { key: 'advanced-crosshair', label: 'Crosshair', icon: 'CRS', commandLabels: ['Crosshair'] },
+        { key: 'advanced-crosshair', label: 'Crosshair', icon: '⌖', commandLabels: ['Crosshair'] },
         { key: 'advanced-mpr', label: 'MPR', icon: 'MPR', commandLabels: ['MPR'] },
         { key: 'advanced-3d', label: '3D', icon: '3D', commandLabels: ['3D'] },
-        { key: 'advanced-seg', label: 'Segmentation', icon: 'SEG', commandLabels: ['Segmentation'] },
-        { key: 'advanced-roi', label: 'ROI', icon: 'ROI', commandLabels: ['ROI'] },
-        { key: 'advanced-capture', label: 'Capture', icon: 'CAP', commandLabels: ['Capture', 'Screenshot'] },
+        { key: 'advanced-seg', label: 'Segmentation', icon: '▧', commandLabels: ['Segmentation'] },
+        { key: 'advanced-roi', label: 'ROI', icon: '◌', commandLabels: ['ROI'] },
+        { key: 'advanced-capture', label: 'Capture', icon: '▣', commandLabels: ['Capture', 'Screenshot'] },
       ],
     },
     {
       title: 'Image Tools',
       tools: [
-        { key: 'image-reset', label: 'Reset', icon: 'RST', commandLabels: ['Reset', 'Reset View'] },
-        { key: 'image-invert', label: 'Invert', icon: 'INV', commandLabels: ['Invert'] },
-        { key: 'image-rotate', label: 'Rotate', icon: 'ROT', commandLabels: ['Rotate'] },
-        { key: 'image-flip', label: 'Flip', icon: 'FLP', commandLabels: ['Flip'] },
-        { key: 'image-fit', label: 'Fit', icon: 'FIT', commandLabels: ['Fit', 'Zoom to fit'] },
-        { key: 'image-zoom', label: 'Zoom', icon: 'Z', commandLabels: ['Zoom'] },
+        { key: 'image-reset', label: 'Reset', icon: '↶', commandLabels: ['Reset', 'Reset View'] },
+        { key: 'image-invert', label: 'Invert', icon: '◐', commandLabels: ['Invert'] },
+        { key: 'image-rotate', label: 'Rotate', icon: '↻', commandLabels: ['Rotate'] },
+        { key: 'image-flip', label: 'Flip', icon: '⇄', commandLabels: ['Flip'] },
+        { key: 'image-fit', label: 'Fit', icon: '⛶', commandLabels: ['Fit', 'Zoom to fit'] },
+        { key: 'image-zoom', label: 'Zoom', icon: '⌕', commandLabels: ['Zoom'] },
       ],
     },
     {
       title: 'Sync Tools',
       tools: [
-        { key: 'sync-scroll', label: 'Scroll', icon: 'SCR', syncMode: 'scroll', commandLabels: ['Sync Scroll', 'Scroll'], action: toggleSync },
+        { key: 'sync-scroll', label: 'Scroll', icon: '⇅', syncMode: 'scroll', commandLabels: ['Sync Scroll', 'Scroll'], action: toggleSync },
         { key: 'sync-wwl', label: 'W/L', icon: 'W/L', syncMode: 'wwl', commandLabels: ['Sync Window', 'Window Level'], action: toggleSync },
-        { key: 'sync-zoom', label: 'Zoom/Pan', icon: 'Z/P', syncMode: 'zoom', commandLabels: ['Sync Zoom', 'Zoom'], action: toggleSync },
-        { key: 'sync-unlink', label: 'Unlink', icon: 'OFF', commandLabels: ['Unlink', 'Disable Sync'], action: clearSync },
+        { key: 'sync-zoom', label: 'Zoom/Pan', icon: '⌕', syncMode: 'zoom', commandLabels: ['Sync Zoom', 'Zoom'], action: toggleSync },
+        { key: 'sync-unlink', label: 'Unlink', icon: '⊘', commandLabels: ['Unlink', 'Disable Sync'], action: clearSync },
       ],
     },
   ];
 
   var OVERLAY_TOOLS = [
-    { key: 'overlay-fit', label: 'Fit', icon: 'FIT', commandLabels: ['Fit', 'Zoom to fit'] },
-    { key: 'overlay-fullscreen', label: 'Fullscreen', icon: 'FUL', commandLabels: ['Fullscreen', 'Full Screen'] },
+    { key: 'overlay-fit', label: 'Fit', icon: '⛶', commandLabels: ['Fit', 'Zoom to fit'] },
+    { key: 'overlay-fullscreen', label: 'Fullscreen', icon: '□', commandLabels: ['Fullscreen', 'Full Screen'] },
     { key: 'overlay-window', label: 'Window/Level', icon: 'W/L', commandLabels: ['Window Level', 'Window/Level'] },
-    { key: 'overlay-link', label: 'Link', icon: 'LNK', commandLabels: ['Link', 'Sync'], action: toggleAllSync },
-    { key: 'overlay-capture', label: 'Capture', icon: 'CAP', commandLabels: ['Capture', 'Screenshot'] },
+    { key: 'overlay-link', label: 'Link', icon: '∞', commandLabels: ['Link', 'Sync'], action: toggleAllSync },
+    { key: 'overlay-capture', label: 'Capture', icon: '▣', commandLabels: ['Capture', 'Screenshot'] },
   ];
 
   var CINE_TOOLS = [
-    { key: 'cine-prev', label: 'Previous frame', icon: 'PREV', commandLabels: ['Previous Frame', 'Previous Image', 'Previous'], action: stepCine, direction: -1, noActive: true },
-    { key: 'cine-toggle', label: 'Play/Pause', icon: 'PLAY', commandLabels: ['Cine', 'Play', 'Pause'], action: toggleCine, noActive: true },
-    { key: 'cine-next', label: 'Next frame', icon: 'NEXT', commandLabels: ['Next Frame', 'Next Image', 'Next'], action: stepCine, direction: 1, noActive: true },
+    { key: 'cine-prev', label: 'Previous frame', icon: '◀', commandLabels: ['Previous Frame', 'Previous Image', 'Previous'], action: stepCine, direction: -1, noActive: true },
+    { key: 'cine-toggle', label: 'Play/Pause', icon: '▶', commandLabels: ['Cine', 'Play', 'Pause'], action: toggleCine, noActive: true },
+    { key: 'cine-next', label: 'Next frame', icon: '▶', commandLabels: ['Next Frame', 'Next Image', 'Next'], action: stepCine, direction: 1, noActive: true },
   ];
 
   function normalizeText(value) {
@@ -192,9 +196,41 @@
     return window.location.pathname === '/viewer' || window.location.pathname.indexOf('/viewer/') === 0;
   }
 
-  function getStudyInstanceUid() {
+  function getPathStudyInstanceUid() {
     var match = window.location.pathname.match(/\/viewer\/([^/?#]+)/);
     return match ? decodeURIComponent(match[1]) : '';
+  }
+
+  function getQueryStudyInstanceUid() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var value = params.get('StudyInstanceUIDs') || params.get('StudyInstanceUID') || params.get('studyInstanceUid') || '';
+      return value ? decodeURIComponent(String(value).split(',')[0]) : '';
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function getStudyInstanceUid() {
+    return getQueryStudyInstanceUid() || getPathStudyInstanceUid();
+  }
+
+  function normalizeViewerRoute() {
+    var pathStudyUid = getPathStudyInstanceUid();
+
+    if (!pathStudyUid || getQueryStudyInstanceUid()) {
+      return true;
+    }
+
+    try {
+      var params = new URLSearchParams(window.location.search);
+      params.set('StudyInstanceUIDs', pathStudyUid);
+      window.location.replace('/viewer?' + params.toString() + window.location.hash);
+      return false;
+    } catch (error) {
+      window.location.replace('/viewer?StudyInstanceUIDs=' + encodeURIComponent(pathStudyUid) + window.location.hash);
+      return false;
+    }
   }
 
   function getShell() {
@@ -257,7 +293,7 @@
     );
 
     Array.prototype.forEach.call(
-      document.querySelectorAll('[' + NATIVE_CHROME_ATTR + '="true"]'),
+      document.querySelectorAll('[' + NATIVE_CHROME_ATTR + ']'),
       function(element) {
         element.removeAttribute(NATIVE_CHROME_ATTR);
       }
@@ -346,12 +382,16 @@
     return false;
   }
 
-  function markNativeChrome(element) {
-    if (!element || isInsideShell(element) || element.getAttribute(NATIVE_CHROME_ATTR) === 'true') {
+  function markNativeChrome(element, kind) {
+    if (!element || isInsideShell(element) || element.hasAttribute(NATIVE_CHROME_ATTR)) {
       return;
     }
 
-    element.setAttribute(NATIVE_CHROME_ATTR, 'true');
+    if (element.querySelector && element.querySelector('canvas, [data-cy*="viewport"], [class*="ViewportGrid"], [class*="viewport-grid"]')) {
+      return;
+    }
+
+    element.setAttribute(NATIVE_CHROME_ATTR, kind || 'toolbar');
     element.setAttribute('aria-hidden', 'true');
   }
 
@@ -378,29 +418,6 @@
     return best;
   }
 
-  function findPanelContainer(element) {
-    var current = element;
-    var best = null;
-    var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 800;
-
-    while (current && current !== document.body && current.getBoundingClientRect) {
-      var rect = current.getBoundingClientRect();
-
-      if (
-        rect.top >= TOP_BAR_LIMIT - 10 &&
-        rect.width >= 180 &&
-        rect.width <= 520 &&
-        rect.height >= viewportHeight * 0.45
-      ) {
-        best = current;
-      }
-
-      current = current.parentElement;
-    }
-
-    return best;
-  }
-
   function hideLegacyOhifChrome() {
     var elements = Array.prototype.slice.call(
       document.querySelectorAll('button, a, span, div, [role="button"], [tabindex]')
@@ -414,15 +431,7 @@
       var text = normalizeText(element.textContent);
 
       if (textMatchesAny(text, LEGACY_TOOLBAR_LABELS)) {
-        markNativeChrome(findToolbarContainer(element) || closestInteractive(element));
-      }
-
-      if (textMatchesAny(text, LEGACY_PANEL_LABELS)) {
-        var panel = findPanelContainer(element);
-
-        if (panel) {
-          markNativeChrome(panel);
-        }
+        markNativeChrome(findToolbarContainer(element) || closestInteractive(element), 'toolbar');
       }
     });
   }
@@ -450,6 +459,7 @@
     var icon = document.createElement('span');
     icon.className = 'mpacs-ws-button-icon';
     icon.textContent = config.icon || config.label.slice(0, 3).toUpperCase();
+    icon.setAttribute('aria-hidden', 'true');
     button.appendChild(icon);
 
     if (extraClassName && extraClassName.indexOf('mpacs-ws-button-icon-only') === -1) {
@@ -848,7 +858,7 @@
     Array.prototype.forEach.call(
       document.querySelectorAll('[data-mpacs-tool-key="cine-toggle"] .mpacs-ws-button-icon'),
       function(element) {
-        var text = cineState.playing ? 'PAUS' : 'PLAY';
+        var text = cineState.playing ? '❚❚' : '▶';
         if (element.textContent !== text) {
           element.textContent = text;
         }
@@ -1481,6 +1491,11 @@
     }
 
     resetStudyStateIfNeeded();
+
+    if (!normalizeViewerRoute()) {
+      return;
+    }
+
     ensureWorkstationShell();
     loadSeriesForCurrentStudy();
     updateViewportOverlay();

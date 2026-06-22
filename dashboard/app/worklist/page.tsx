@@ -282,7 +282,7 @@ export default function WorklistPage() {
   const openViewer = (order: WorklistOrderView) => {
     if (!order.studyInstanceUid) return;
     const host = window.location.hostname;
-    window.open(`http://${host}:3000/viewer/${encodeURIComponent(order.studyInstanceUid)}`, "_blank");
+    window.open(`http://${host}:3000/viewer?StudyInstanceUIDs=${encodeURIComponent(order.studyInstanceUid)}`, "_blank");
   };
 
   const canOpenViewer = (order: WorklistOrderView) => {
