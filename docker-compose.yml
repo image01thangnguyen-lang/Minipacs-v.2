@@ -50,12 +50,10 @@ services:
       - |
         set -e
         sed -i "s|https://[^\"']*polyfill\.io[^\"']*|https://cdnjs.cloudflare.com/ajax/libs/polyfill/3.41.0/polyfill.min.js|g" /usr/share/nginx/html/index.html
-        if ! grep -q "ohif-custom.css" /usr/share/nginx/html/index.html; then
-          sed -i "s|</head>|<link rel=\"stylesheet\" href=\"/ohif-custom.css\"></head>|" /usr/share/nginx/html/index.html
-        fi
-        if ! grep -q "ohif-custom.js" /usr/share/nginx/html/index.html; then
-          sed -i "s|</body>|<script src=\"/ohif-custom.js\"></script></body>|" /usr/share/nginx/html/index.html
-        fi
+        sed -i "/ohif-custom\.css/d" /usr/share/nginx/html/index.html
+        sed -i "/ohif-custom\.js/d" /usr/share/nginx/html/index.html
+        sed -i "s|</head>|<link rel=\"stylesheet\" href=\"/ohif-custom.css?v=mpacs-20260623-1\"></head>|" /usr/share/nginx/html/index.html
+        sed -i "s|</body>|<script src=\"/ohif-custom.js?v=mpacs-20260623-1\"></script></body>|" /usr/share/nginx/html/index.html
         nginx -g 'daemon off;'
     depends_on:
       - orthanc
