@@ -2,6 +2,7 @@
   var BODY_CLASS = 'mpacs-clean-viewer';
   var WORKSTATION_CLASS = 'mpacs-workstation-viewer';
   var HIDDEN_ATTR = 'data-mpacs-hidden';
+  var NATIVE_CHROME_ATTR = 'data-mpacs-native-chrome';
   var SHELL_ID = 'mpacs-workstation-shell';
   var SERIES_LIST_ID = 'mpacs-series-list';
   var OVERLAY_ID = 'mpacs-viewport-overlay';
@@ -42,6 +43,34 @@
     { text: 'Study List', exact: true },
     { text: 'Chi dung cho nghien cuu', exact: false },
     { text: 'For research use only', exact: false },
+  ];
+
+  var LEGACY_TOOLBAR_LABELS = [
+    'Tap anh',
+    'Duyet',
+    'Thu phong',
+    'Do sang',
+    'Di chuyen',
+    'Thuoc do chieu dai',
+    'Annotate',
+    'Goc',
+    'Dat lai',
+    'Duyet tu dong',
+    'Them',
+    'Cach bo tri',
+    'Measurements',
+    'Window Level',
+    'Zoom',
+    'Pan',
+    'Length',
+    'Layout',
+  ];
+
+  var LEGACY_PANEL_LABELS = [
+    'Tap anh',
+    'Measurements',
+    'Chest',
+    'Ser:',
   ];
 
   var TOP_TOOLS = [
@@ -177,6 +206,10 @@
     return Boolean(shell && element && shell.contains(element));
   }
 
+  function isInsideNativeChrome(element) {
+    return Boolean(element && element.closest && element.closest('[' + NATIVE_CHROME_ATTR + '="true"]'));
+  }
+
   function isVisibleTopElement(element, maxTop) {
     if (!element || !element.getBoundingClientRect || isInsideShell(element)) {
       return false;
@@ -220,6 +253,13 @@
       function(element) {
         element.removeAttribute(HIDDEN_ATTR);
         element.removeAttribute('aria-hidden');
+      }
+    );
+
+    Array.prototype.forEach.call(
+      document.querySelectorAll('[' + NATIVE_CHROME_ATTR + '="true"]'),
+      function(element) {
+        element.removeAttribute(NATIVE_CHROME_ATTR);
       }
     );
   }
@@ -290,6 +330,103 @@
     });
   }
 
+  function textMatchesAny(text, labels) {
+    var normalizedText = normalizeSearch(text);
+
+    if (!normalizedText) {
+      return false;
+    }
+
+    for (var i = 0; i < labels.length; i += 1) {
+      if (normalizedText.indexOf(normalizeSearch(labels[i])) !== -1) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function markNativeChrome(element) {
+    if (!element || isInsideShell(element) || element.getAttribute(NATIVE_CHROME_ATTR) === 'true') {
+      return;
+    }
+
+    element.setAttribute(NATIVE_CHROME_ATTR, 'true');
+    element.setAttribute('aria-hidden', 'true');
+  }
+
+  function findToolbarContainer(element) {
+    var current = element;
+    var best = null;
+
+    while (current && current !== document.body && current.getBoundingClientRect) {
+      var rect = current.getBoundingClientRect();
+
+      if (
+        rect.top >= TOP_BAR_LIMIT - 10 &&
+        rect.top < 190 &&
+        rect.width > 520 &&
+        rect.height >= 42 &&
+        rect.height <= 120
+      ) {
+        best = current;
+      }
+
+      current = current.parentElement;
+    }
+
+    return best;
+  }
+
+  function findPanelContainer(element) {
+    var current = element;
+    var best = null;
+    var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 800;
+
+    while (current && current !== document.body && current.getBoundingClientRect) {
+      var rect = current.getBoundingClientRect();
+
+      if (
+        rect.top >= TOP_BAR_LIMIT - 10 &&
+        rect.width >= 180 &&
+        rect.width <= 520 &&
+        rect.height >= viewportHeight * 0.45
+      ) {
+        best = current;
+      }
+
+      current = current.parentElement;
+    }
+
+    return best;
+  }
+
+  function hideLegacyOhifChrome() {
+    var elements = Array.prototype.slice.call(
+      document.querySelectorAll('button, a, span, div, [role="button"], [tabindex]')
+    );
+
+    elements.forEach(function(element) {
+      if (isInsideShell(element) || !element.getBoundingClientRect) {
+        return;
+      }
+
+      var text = normalizeText(element.textContent);
+
+      if (textMatchesAny(text, LEGACY_TOOLBAR_LABELS)) {
+        markNativeChrome(findToolbarContainer(element) || closestInteractive(element));
+      }
+
+      if (textMatchesAny(text, LEGACY_PANEL_LABELS)) {
+        var panel = findPanelContainer(element);
+
+        if (panel) {
+          markNativeChrome(panel);
+        }
+      }
+    });
+  }
+
   function createButton(config, extraClassName) {
     var button = document.createElement('button');
     button.type = 'button';
@@ -315,7 +452,7 @@
     icon.textContent = config.icon || config.label.slice(0, 3).toUpperCase();
     button.appendChild(icon);
 
-    if (extraClassName && extraClassName.indexOf('mpacs-ws-panel-button') !== -1) {
+    if (extraClassName && extraClassName.indexOf('mpacs-ws-button-icon-only') === -1) {
       var label = document.createElement('span');
       label.className = 'mpacs-ws-button-label';
       label.textContent = config.label;
@@ -794,7 +931,11 @@
     for (var i = 0; i < candidates.length; i += 1) {
       var candidate = candidates[i];
 
-      if (isInsideShell(candidate) || candidate.getAttribute(HIDDEN_ATTR) === 'true' || !isElementVisible(candidate)) {
+      if (
+        isInsideShell(candidate) ||
+        candidate.getAttribute(HIDDEN_ATTR) === 'true' ||
+        (!isInsideNativeChrome(candidate) && !isElementVisible(candidate))
+      ) {
         continue;
       }
 
@@ -1345,6 +1486,7 @@
     updateViewportOverlay();
     hideTextLabels();
     hideLogoAndSeparators();
+    hideLegacyOhifChrome();
   }
 
   function scheduleCustomization() {

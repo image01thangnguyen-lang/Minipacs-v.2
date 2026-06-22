@@ -18,6 +18,10 @@ body.mpacs-clean-viewer [data-mpacs-hidden="true"] {
   display: none !important;
 }
 
+body.mpacs-workstation-viewer [data-mpacs-native-chrome="true"] {
+  display: none !important;
+}
+
 body.mpacs-workstation-viewer {
   background: var(--mpacs-ws-bg) !important;
   overflow: hidden;
@@ -90,6 +94,16 @@ body.mpacs-workstation-viewer #root {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.mpacs-ws-toolbar {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.mpacs-ws-toolbar::-webkit-scrollbar {
+  display: none;
 }
 
 .mpacs-ws-spacer {
@@ -174,8 +188,11 @@ body.mpacs-workstation-viewer #root {
 
 .mpacs-ws-top-button,
 .mpacs-ws-action-button {
-  width: 34px;
-  height: 34px;
+  width: 62px;
+  height: 42px;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 5px;
 }
 
 .mpacs-ws-action-button {
@@ -260,7 +277,7 @@ body.mpacs-workstation-viewer #root {
 
 .mpacs-ws-group-body {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   padding: 10px 8px 12px;
   background: var(--mpacs-ws-panel);
@@ -279,10 +296,10 @@ body.mpacs-workstation-viewer #root {
 }
 
 .mpacs-ws-panel-button {
-  height: 43px;
+  min-height: 48px;
   flex-direction: column;
-  gap: 5px;
-  padding: 4px 2px;
+  gap: 4px;
+  padding: 5px 4px;
   border-color: rgba(148, 163, 184, 0.18);
   background: rgba(15, 23, 42, 0.55);
 }
@@ -297,9 +314,9 @@ body.mpacs-workstation-viewer #root {
   width: 100%;
   overflow: hidden;
   color: var(--mpacs-ws-muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
-  line-height: 1;
+  line-height: 1.15;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -469,6 +486,7 @@ body.mpacs-workstation-viewer #root {
 .mpacs-viewport-top-right,
 .mpacs-viewport-bottom-left,
 .mpacs-viewport-bottom-right {
+  display: none;
   position: absolute;
   max-width: min(42vw, 520px);
   color: rgba(248, 250, 252, 0.94);
@@ -551,8 +569,11 @@ body.mpacs-workstation-viewer #root {
 }
 
 .mpacs-ws-overlay-button {
-  width: 34px;
-  height: 34px;
+  width: 42px;
+  min-height: 42px;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 3px;
   border-color: rgba(148, 163, 184, 0.28);
   color: rgba(248, 250, 252, 0.95);
   background: rgba(2, 6, 23, 0.78);
@@ -631,8 +652,8 @@ body.mpacs-workstation-viewer[data-mpacs-layout="2x2"] [data-cy*="viewport-grid"
 
   .mpacs-ws-top-button,
   .mpacs-ws-action-button {
-    width: 31px;
-    height: 31px;
+    width: 54px;
+    height: 40px;
   }
 
   .mpacs-ws-toolbar {
