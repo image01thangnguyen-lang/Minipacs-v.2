@@ -15,6 +15,7 @@ NC='\033[0m'
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUN_USER="${SUDO_USER:-$(id -un)}"
 UPDATE_REEXECED="${MINIPACS_UPDATE_REEXECED:-0}"
+OHIF_CUSTOM_MARKER="mpacs-workstation-shell"
 
 cd "$PROJECT_DIR"
 
@@ -38,6 +39,16 @@ compose() {
     docker-compose "$@"
   else
     fail "Docker Compose is not installed."
+  fi
+}
+
+http_get() {
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsS "$1"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -qO- "$1"
+  else
+    return 127
   fi
 }
 
@@ -151,6 +162,16 @@ apply_database_schema() {
   compose run --rm --no-deps dashboard ./node_modules/.bin/prisma db push --skip-generate
 }
 
+validate_ohif_custom_assets() {
+  info "Validating OHIF custom viewer assets..."
+
+  [ -f config/ohif-custom.js ] || fail "Missing config/ohif-custom.js"
+  [ -f config/ohif-custom.css ] || fail "Missing config/ohif-custom.css"
+
+  grep -q "$OHIF_CUSTOM_MARKER" config/ohif-custom.js || fail "config/ohif-custom.js does not contain the MiniPACS workstation shell marker."
+  grep -q "mpacs-workstation-viewer" config/ohif-custom.css || fail "config/ohif-custom.css does not contain the MiniPACS workstation viewer styles."
+}
+
 build_and_start() {
   info "[4/8] Stopping old containers..."
   compose down
@@ -165,6 +186,9 @@ build_and_start() {
 
   info "[8/8] Starting Mini PACS..."
   compose up -d
+
+  info "Recreating OHIF viewer so custom viewer shell is mounted..."
+  compose up -d --force-recreate --no-deps ohif
 }
 
 wait_for_dashboard() {
@@ -192,11 +216,62 @@ wait_for_dashboard() {
   fail_with_logs
 }
 
+wait_for_ohif_custom_assets() {
+  info "Checking OHIF custom viewer shell..."
+
+  if ! command -v curl >/dev/null 2>&1 && ! command -v wget >/dev/null 2>&1; then
+    warn "curl/wget is not installed. Skipping HTTP verification of OHIF custom assets."
+    return 0
+  fi
+
+  local max_attempts=35
+  local attempt=1
+  local index_content
+  local js_content
+  local css_content
+
+  while [ "$attempt" -le "$max_attempts" ]; do
+    index_content="$(http_get http://127.0.0.1:3000/index.html 2>/dev/null || true)"
+    js_content="$(http_get http://127.0.0.1:3000/ohif-custom.js 2>/dev/null || true)"
+    css_content="$(http_get http://127.0.0.1:3000/ohif-custom.css 2>/dev/null || true)"
+
+    if echo "$index_content" | grep -q "ohif-custom.js" &&
+       echo "$index_content" | grep -q "ohif-custom.css" &&
+       echo "$js_content" | grep -q "$OHIF_CUSTOM_MARKER" &&
+       echo "$css_content" | grep -q "mpacs-workstation-viewer"; then
+      info "OHIF custom viewer shell is active."
+      return 0
+    fi
+
+    sleep 2
+    attempt=$((attempt + 1))
+  done
+
+  echo
+  warn "OHIF did not serve the new custom viewer shell."
+  echo "Local asset sizes:"
+  wc -c config/ohif-custom.js config/ohif-custom.css || true
+  echo
+  echo "Served asset sizes:"
+  http_get http://127.0.0.1:3000/ohif-custom.js 2>/dev/null | wc -c || true
+  http_get http://127.0.0.1:3000/ohif-custom.css 2>/dev/null | wc -c || true
+  echo
+  fail_ohif_with_logs
+}
+
 fail_with_logs() {
   echo -e "${RED}Dashboard did not become healthy. Recent logs:${NC}"
   compose ps || true
   echo
   compose logs --tail=160 dashboard || true
+  exit 1
+}
+
+fail_ohif_with_logs() {
+  echo -e "${RED}OHIF custom viewer shell was not verified. Recent logs:${NC}"
+  compose ps || true
+  echo
+  compose logs --tail=160 ohif || true
   exit 1
 }
 
@@ -227,7 +302,9 @@ generate_config config_templates/orthanc.json.template config/orthanc.json
 info "[3/8] Validating Docker access..."
 docker info >/dev/null 2>&1 || fail "Docker is not accessible. Run with sudo or add your user to the docker group."
 
+validate_ohif_custom_assets
 build_and_start
 wait_for_dashboard
+wait_for_ohif_custom_assets
 docker image prune -f >/dev/null 2>&1 || true
 print_urls
