@@ -52,6 +52,13 @@ http_get() {
   fi
 }
 
+contains_text() {
+  local haystack="$1"
+  local needle="$2"
+
+  grep -Fq -- "$needle" <<< "$haystack"
+}
+
 run_as_repo_user() {
   if [ "$(id -u)" -eq 0 ] && [ -n "${SUDO_USER:-}" ]; then
     sudo -u "$RUN_USER" -H bash -lc "cd '$PROJECT_DIR' && $*"
@@ -235,10 +242,10 @@ wait_for_ohif_custom_assets() {
     js_content="$(http_get http://127.0.0.1:3000/ohif-custom.js 2>/dev/null || true)"
     css_content="$(http_get http://127.0.0.1:3000/ohif-custom.css 2>/dev/null || true)"
 
-    if echo "$index_content" | grep -q "ohif-custom.js" &&
-       echo "$index_content" | grep -q "ohif-custom.css" &&
-       echo "$js_content" | grep -q "$OHIF_CUSTOM_MARKER" &&
-       echo "$css_content" | grep -q "mpacs-workstation-viewer"; then
+    if contains_text "$index_content" "ohif-custom.js" &&
+       contains_text "$index_content" "ohif-custom.css" &&
+       contains_text "$js_content" "$OHIF_CUSTOM_MARKER" &&
+       contains_text "$css_content" "mpacs-workstation-viewer"; then
       info "OHIF custom viewer shell is active."
       return 0
     fi

@@ -383,6 +383,20 @@
       return;
     }
 
+    if (element.id === 'root' || element === document.body || element === document.documentElement) {
+      return;
+    }
+
+    if (element.getBoundingClientRect) {
+      var rect = element.getBoundingClientRect();
+      var viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+      var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+
+      if (rect.width >= viewportWidth * 0.75 && rect.height >= viewportHeight * 0.5) {
+        return;
+      }
+    }
+
     if (element.querySelector && element.querySelector('canvas, [data-cy*="viewport"], [class*="ViewportGrid"], [class*="viewport-grid"]')) {
       return;
     }
@@ -427,7 +441,17 @@
       var text = normalizeText(element.textContent);
 
       if (textMatchesAny(text, LEGACY_TOOLBAR_LABELS)) {
-        markNativeChrome(findToolbarContainer(element) || closestInteractive(element), 'toolbar');
+        var toolbar = findToolbarContainer(element);
+        var interactive = closestInteractive(element);
+        var isInteractiveSelf =
+          interactive === element &&
+          ['button', 'a'].indexOf((interactive.tagName || '').toLowerCase()) !== -1;
+
+        if (toolbar) {
+          markNativeChrome(toolbar, 'toolbar');
+        } else if (interactive !== element || isInteractiveSelf) {
+          markNativeChrome(interactive, 'toolbar');
+        }
       }
     });
   }
