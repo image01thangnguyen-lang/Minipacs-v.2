@@ -16,6 +16,7 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUN_USER="${SUDO_USER:-$(id -un)}"
 UPDATE_REEXECED="${MINIPACS_UPDATE_REEXECED:-0}"
 OHIF_CUSTOM_MARKER="mpacs-workstation-shell"
+OHIF_VIEWPORT_GUARD_MARKER="element.id === 'root'"
 
 cd "$PROJECT_DIR"
 
@@ -175,8 +176,9 @@ validate_ohif_custom_assets() {
   [ -f config/ohif-custom.js ] || fail "Missing config/ohif-custom.js"
   [ -f config/ohif-custom.css ] || fail "Missing config/ohif-custom.css"
 
-  grep -q "$OHIF_CUSTOM_MARKER" config/ohif-custom.js || fail "config/ohif-custom.js does not contain the MiniPACS workstation shell marker."
-  grep -q "mpacs-workstation-viewer" config/ohif-custom.css || fail "config/ohif-custom.css does not contain the MiniPACS workstation viewer styles."
+  grep -Fq "$OHIF_CUSTOM_MARKER" config/ohif-custom.js || fail "config/ohif-custom.js does not contain the MiniPACS workstation shell marker."
+  grep -Fq "$OHIF_VIEWPORT_GUARD_MARKER" config/ohif-custom.js || fail "config/ohif-custom.js does not contain the MiniPACS viewport root guard."
+  grep -Fq "mpacs-workstation-viewer" config/ohif-custom.css || fail "config/ohif-custom.css does not contain the MiniPACS workstation viewer styles."
 }
 
 build_and_start() {
@@ -245,6 +247,7 @@ wait_for_ohif_custom_assets() {
     if contains_text "$index_content" "ohif-custom.js" &&
        contains_text "$index_content" "ohif-custom.css" &&
        contains_text "$js_content" "$OHIF_CUSTOM_MARKER" &&
+       contains_text "$js_content" "$OHIF_VIEWPORT_GUARD_MARKER" &&
        contains_text "$css_content" "mpacs-workstation-viewer"; then
       info "OHIF custom viewer shell is active."
       return 0
