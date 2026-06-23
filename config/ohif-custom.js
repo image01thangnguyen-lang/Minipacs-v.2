@@ -216,21 +216,17 @@
   }
 
   function normalizeViewerRoute() {
+    var queryStudyUid = getQueryStudyInstanceUid();
     var pathStudyUid = getPathStudyInstanceUid();
 
-    if (!pathStudyUid || getQueryStudyInstanceUid()) {
-      return true;
+    // In OHIF v2, the viewer route is /viewer/:studyInstanceUIDs
+    // If the URL has a query parameter (from an external link) but no path parameter, redirect.
+    if (queryStudyUid && !pathStudyUid) {
+      window.location.replace('/viewer/' + encodeURIComponent(queryStudyUid) + window.location.hash);
+      return false;
     }
 
-    try {
-      var params = new URLSearchParams(window.location.search);
-      params.set('StudyInstanceUIDs', pathStudyUid);
-      window.location.replace('/viewer?' + params.toString() + window.location.hash);
-      return false;
-    } catch (error) {
-      window.location.replace('/viewer?StudyInstanceUIDs=' + encodeURIComponent(pathStudyUid) + window.location.hash);
-      return false;
-    }
+    return true;
   }
 
   function getShell() {

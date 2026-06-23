@@ -10,6 +10,7 @@ window.config = {
         wadoUriRoot: '/wado',
         qidoRoot: '/dicom-web',
         wadoRoot: '/dicom-web',
+        active: true,
         qidoSupportsIncludeField: false,
         imageRendering: 'wadors',
         thumbnailRendering: 'wadors',
