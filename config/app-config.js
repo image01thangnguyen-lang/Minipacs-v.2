@@ -7,7 +7,7 @@ window.config = {
     dicomWeb: [
       {
         name: 'Orthanc',
-        wadoUriRoot: '/dicom-web',
+        wadoUriRoot: '/wado',
         qidoRoot: '/dicom-web',
         wadoRoot: '/dicom-web',
         qidoSupportsIncludeField: false,
@@ -28,7 +28,7 @@ window.config = {
       sourceName: 'dicomweb',
       configuration: {
         name: 'Orthanc',
-        wadoUriRoot: '/dicom-web',
+        wadoUriRoot: '/wado',
         qidoRoot: '/dicom-web',
         wadoRoot: '/dicom-web',
         qidoSupportsIncludeField: false,
