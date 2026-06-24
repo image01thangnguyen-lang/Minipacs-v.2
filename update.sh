@@ -15,8 +15,15 @@ NC='\033[0m'
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUN_USER="${SUDO_USER:-$(id -un)}"
 UPDATE_REEXECED="${MINIPACS_UPDATE_REEXECED:-0}"
+OHIF_VERSION="v3.7.0"
+OHIF_IMAGE_NAME="minipacs-ohif:v3.7.0"
+OHIF_SOURCE_DOCKERFILE="docker/ohif-v3.7/Dockerfile"
 OHIF_CUSTOM_MARKER="mpacs-workstation-shell"
 OHIF_VIEWPORT_GUARD_MARKER="element.id === 'root'"
+OHIF_ROUTE_FIX_MARKER="OHIF v3 accepts /viewer?StudyInstanceUIDs=..."
+OHIF_INDEX_MARKER="mpacs-20260624-ohif370-source"
+OHIF_CONFIG_MARKER="defaultDataSourceName: 'dicomweb'"
+OHIF_NGINX_HEADER_MARKER="Cross-Origin-Embedder-Policy require-corp"
 
 cd "$PROJECT_DIR"
 
@@ -125,7 +132,7 @@ ensure_data_dirs() {
 }
 
 update_code() {
-  info "[1/8] Pulling latest code..."
+  info "[1/9] Pulling latest code..."
 
   [ -d .git ] || fail "This folder is not a git repository: $PROJECT_DIR"
 
@@ -166,7 +173,7 @@ wait_for_database() {
 }
 
 apply_database_schema() {
-  info "[7/8] Applying dashboard Prisma schema..."
+  info "[8/9] Applying dashboard Prisma schema..."
   compose run --rm --no-deps dashboard ./node_modules/.bin/prisma db push --skip-generate
 }
 
@@ -175,28 +182,38 @@ validate_ohif_custom_assets() {
 
   [ -f config/ohif-custom.js ] || fail "Missing config/ohif-custom.js"
   [ -f config/ohif-custom.css ] || fail "Missing config/ohif-custom.css"
+  [ -f config/ohif-nginx.conf ] || fail "Missing config/ohif-nginx.conf"
+  [ -f "$OHIF_SOURCE_DOCKERFILE" ] || fail "Missing $OHIF_SOURCE_DOCKERFILE"
 
   grep -Fq "$OHIF_CUSTOM_MARKER" config/ohif-custom.js || fail "config/ohif-custom.js does not contain the MiniPACS workstation shell marker."
   grep -Fq "$OHIF_VIEWPORT_GUARD_MARKER" config/ohif-custom.js || fail "config/ohif-custom.js does not contain the MiniPACS viewport root guard."
+  grep -Fq "$OHIF_ROUTE_FIX_MARKER" config/ohif-custom.js || fail "config/ohif-custom.js still looks like it may rewrite OHIF v3 viewer routes."
   grep -Fq "mpacs-workstation-viewer" config/ohif-custom.css || fail "config/ohif-custom.css does not contain the MiniPACS workstation viewer styles."
+  grep -Fq "OHIF_GIT_REF=$OHIF_VERSION" "$OHIF_SOURCE_DOCKERFILE" || fail "$OHIF_SOURCE_DOCKERFILE is not pinned to OHIF $OHIF_VERSION."
+  grep -Fq "$OHIF_INDEX_MARKER" "$OHIF_SOURCE_DOCKERFILE" || fail "$OHIF_SOURCE_DOCKERFILE does not inject the MiniPACS OHIF v3.7 assets."
+  grep -Fq "$OHIF_IMAGE_NAME" docker-compose.yml || fail "docker-compose.yml is not configured to use $OHIF_IMAGE_NAME."
+  grep -Fq "$OHIF_NGINX_HEADER_MARKER" config/ohif-nginx.conf || fail "config/ohif-nginx.conf is missing the OHIF v3 cross-origin isolation header."
 }
 
 build_and_start() {
-  info "[4/8] Stopping old containers..."
-  compose down
-
-  info "[5/8] Rebuilding dashboard image..."
+  info "[4/9] Rebuilding dashboard image..."
   compose build dashboard
 
-  info "[6/8] Starting database and PACS services..."
+  info "[5/9] Building OHIF Viewer $OHIF_VERSION from OHIF/Viewers source..."
+  compose build ohif
+
+  info "[6/9] Stopping old containers..."
+  compose down
+
+  info "[7/9] Starting database and PACS services..."
   compose up -d db orthanc
   wait_for_database
   apply_database_schema
 
-  info "[8/8] Starting Mini PACS..."
+  info "[9/9] Starting Mini PACS..."
   compose up -d
 
-  info "Recreating OHIF viewer so custom viewer shell is mounted..."
+  info "Recreating OHIF viewer so $OHIF_IMAGE_NAME and custom viewer shell are active..."
   compose up -d --force-recreate --no-deps ohif
 }
 
@@ -226,7 +243,7 @@ wait_for_dashboard() {
 }
 
 wait_for_ohif_custom_assets() {
-  info "Checking OHIF custom viewer shell..."
+  info "Checking OHIF $OHIF_VERSION custom viewer shell and DICOMweb config..."
 
   if ! command -v curl >/dev/null 2>&1 && ! command -v wget >/dev/null 2>&1; then
     warn "curl/wget is not installed. Skipping HTTP verification of OHIF custom assets."
@@ -238,18 +255,25 @@ wait_for_ohif_custom_assets() {
   local index_content
   local js_content
   local css_content
+  local app_config_content
 
   while [ "$attempt" -le "$max_attempts" ]; do
     index_content="$(http_get http://127.0.0.1:3000/index.html 2>/dev/null || true)"
     js_content="$(http_get http://127.0.0.1:3000/ohif-custom.js 2>/dev/null || true)"
     css_content="$(http_get http://127.0.0.1:3000/ohif-custom.css 2>/dev/null || true)"
+    app_config_content="$(http_get http://127.0.0.1:3000/app-config.js 2>/dev/null || true)"
 
     if contains_text "$index_content" "ohif-custom.js" &&
        contains_text "$index_content" "ohif-custom.css" &&
+       contains_text "$index_content" "$OHIF_INDEX_MARKER" &&
        contains_text "$js_content" "$OHIF_CUSTOM_MARKER" &&
        contains_text "$js_content" "$OHIF_VIEWPORT_GUARD_MARKER" &&
-       contains_text "$css_content" "mpacs-workstation-viewer"; then
-      info "OHIF custom viewer shell is active."
+       contains_text "$js_content" "$OHIF_ROUTE_FIX_MARKER" &&
+       contains_text "$css_content" "mpacs-workstation-viewer" &&
+       contains_text "$app_config_content" "$OHIF_CONFIG_MARKER" &&
+       contains_text "$app_config_content" "qidoRoot: '/dicom-web'" &&
+       contains_text "$app_config_content" "wadoRoot: '/dicom-web'"; then
+      info "OHIF $OHIF_VERSION custom viewer shell is active and points to Orthanc DICOMweb."
       return 0
     fi
 
@@ -265,6 +289,7 @@ wait_for_ohif_custom_assets() {
   echo "Served asset sizes:"
   http_get http://127.0.0.1:3000/ohif-custom.js 2>/dev/null | wc -c || true
   http_get http://127.0.0.1:3000/ohif-custom.css 2>/dev/null | wc -c || true
+  http_get http://127.0.0.1:3000/app-config.js 2>/dev/null | wc -c || true
   echo
   fail_ohif_with_logs
 }
@@ -303,13 +328,13 @@ load_env_file
 fix_repo_permissions
 update_code
 
-info "[2/8] Preparing local storage and config..."
+info "[2/9] Preparing local storage and config..."
 load_env_file
 ensure_data_dirs
 generate_config config_templates/app-config.js.template config/app-config.js
 generate_config config_templates/orthanc.json.template config/orthanc.json
 
-info "[3/8] Validating Docker access..."
+info "[3/9] Validating Docker access..."
 docker info >/dev/null 2>&1 || fail "Docker is not accessible. Run with sudo or add your user to the docker group."
 
 validate_ohif_custom_assets

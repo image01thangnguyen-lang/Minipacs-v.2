@@ -150,8 +150,17 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
 
       {/* User Info & Logout */}
       <div className="border-t border-vin-border px-2 py-2.5">
-        {!collapsed && userInfo && (
-          <div className="mb-2 flex items-center gap-2 px-2 py-1.5">
+        {collapsed ? (
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            title="Đăng xuất"
+            className="flex w-full items-center justify-center rounded py-2 text-[12px] font-semibold text-red-400 transition hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <LogOut className={`h-4 w-4 flex-shrink-0 ${loggingOut ? "animate-pulse" : ""}`} />
+          </button>
+        ) : userInfo ? (
+          <div className="flex items-center gap-2 px-2 py-1.5">
             <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-vin-shell border border-vin-border">
               <User className="h-4 w-4 text-vin-muted" />
             </div>
@@ -161,19 +170,26 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
                 <div className="truncate text-[9px] text-vin-muted">@{userInfo.username}</div>
               )}
             </div>
+            <button
+              onClick={handleLogout}
+              disabled={loggingOut}
+              title="Đăng xuất"
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded text-red-400 transition hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <LogOut className={`h-4 w-4 ${loggingOut ? "animate-pulse" : ""}`} />
+            </button>
           </div>
+        ) : (
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            title="Đăng xuất"
+            className="flex w-full items-center gap-2 rounded px-3 py-2 text-[12px] font-semibold text-red-400 transition hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <LogOut className={`h-4 w-4 flex-shrink-0 ${loggingOut ? "animate-pulse" : ""}`} />
+            <span className="truncate">{loggingOut ? "Đang xuất..." : "Đăng xuất"}</span>
+          </button>
         )}
-        <button
-          onClick={handleLogout}
-          disabled={loggingOut}
-          title="Đăng xuất"
-          className={`flex w-full items-center gap-2 rounded px-3 py-2 text-[12px] font-semibold text-red-400 transition hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50 ${
-            collapsed ? "justify-center px-0" : ""
-          }`}
-        >
-          <LogOut className={`h-4 w-4 flex-shrink-0 ${loggingOut ? "animate-pulse" : ""}`} />
-          {!collapsed && <span className="truncate">{loggingOut ? "Đang xuất..." : "Đăng xuất"}</span>}
-        </button>
       </div>
     </aside>
   );

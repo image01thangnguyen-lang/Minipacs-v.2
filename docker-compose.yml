@@ -34,7 +34,13 @@ services:
         condition: service_healthy
 
   ohif:
-    image: ohif/viewer:latest
+    # Build OHIF from upstream source, pinned to the 3.7 release.
+    image: minipacs-ohif:v3.7.0
+    build:
+      context: ./docker/ohif-v3.7
+      args:
+        OHIF_REPO: https://github.com/OHIF/Viewers.git
+        OHIF_GIT_REF: v3.7.0
     restart: always
     ports:
       - "3000:80"
@@ -45,16 +51,9 @@ services:
       - ./config/ohif-nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./dashboard/public/favicon.svg:/usr/share/nginx/html/favicon.ico:ro
     entrypoint:
-      - /bin/sh
-      - -c
-      - |
-        set -e
-        sed -i "s|https://[^\"']*polyfill\.io[^\"']*|https://cdnjs.cloudflare.com/ajax/libs/polyfill/3.41.0/polyfill.min.js|g" /usr/share/nginx/html/index.html
-        sed -i "/ohif-custom\.css/d" /usr/share/nginx/html/index.html
-        sed -i "/ohif-custom\.js/d" /usr/share/nginx/html/index.html
-        sed -i "s|</head>|<link rel=\"stylesheet\" href=\"/ohif-custom.css?v=mpacs-20260624-routefix\"></head>|" /usr/share/nginx/html/index.html
-        sed -i "s|</body>|<script src=\"/ohif-custom.js?v=mpacs-20260624-routefix\"></script></body>|" /usr/share/nginx/html/index.html
-        nginx -g 'daemon off;'
+      - nginx
+      - -g
+      - daemon off;
     depends_on:
       - orthanc
 
