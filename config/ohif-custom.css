@@ -1,17 +1,17 @@
 :root {
   --mpacs-ws-topbar-height: 46px;
-  --mpacs-ws-sidebar-width: 226px;
-  --mpacs-ws-series-width: 124px;
-  --mpacs-ws-bg: #030812;
-  --mpacs-ws-panel: #101827;
-  --mpacs-ws-panel-2: #162238;
-  --mpacs-ws-line: rgba(148, 163, 184, 0.22);
-  --mpacs-ws-line-soft: rgba(148, 163, 184, 0.12);
+  --mpacs-ws-sidebar-width: 200px;
+  --mpacs-ws-series-width: 160px;
+  --mpacs-ws-bg: #152a30;
+  --mpacs-ws-panel: #1a323a;
+  --mpacs-ws-panel-2: #1f3a44;
+  --mpacs-ws-line: rgba(255, 255, 255, 0.08);
+  --mpacs-ws-line-soft: transparent;
   --mpacs-ws-text: #f8fafc;
   --mpacs-ws-muted: #9fb4c8;
-  --mpacs-ws-cyan: #22d3ee;
-  --mpacs-ws-blue: #2563eb;
-  --mpacs-ws-amber: #f5b301;
+  --mpacs-ws-cyan: #14b8a6;
+  --mpacs-ws-blue: #0ea5e9;
+  --mpacs-ws-amber: #fde047;
 }
 
 body.mpacs-clean-viewer [data-mpacs-hidden="true"] {
@@ -60,9 +60,9 @@ body.mpacs-workstation-viewer #root {
   gap: 10px;
   padding: 0 12px 0 10px;
   pointer-events: auto;
-  background: #0b1022;
-  border-bottom: 1px solid rgba(34, 211, 238, 0.2);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  background: var(--mpacs-ws-bg);
+  border-bottom: 1px solid var(--mpacs-ws-line);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .mpacs-ws-brand {
@@ -117,12 +117,12 @@ body.mpacs-workstation-viewer #root {
   align-items: center;
   justify-content: center;
   padding: 0 9px;
-  border: 1px solid rgba(245, 179, 1, 0.4);
-  border-radius: 999px;
-  color: #fde68a;
-  background: rgba(245, 179, 1, 0.1);
+  border: none;
+  border-radius: 4px;
+  color: #ccfbf1;
+  background: rgba(20, 184, 166, 0.2);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .mpacs-ws-sync-state {
@@ -132,12 +132,12 @@ body.mpacs-workstation-viewer #root {
   align-items: center;
   justify-content: center;
   padding: 0 10px;
-  border: 1px solid rgba(34, 211, 238, 0.28);
-  border-radius: 999px;
-  color: #cffafe;
-  background: rgba(34, 211, 238, 0.08);
+  border: none;
+  border-radius: 4px;
+  color: #ccfbf1;
+  background: rgba(20, 184, 166, 0.1);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -147,7 +147,7 @@ body.mpacs-workstation-viewer #root {
   align-items: center;
   justify-content: center;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 4px;
   margin: 0;
   color: rgba(248, 250, 252, 0.9);
   background: transparent;
@@ -164,27 +164,26 @@ body.mpacs-workstation-viewer #root {
 
 .mpacs-ws-button:hover {
   color: #ffffff;
-  background: rgba(34, 211, 238, 0.12);
-  border-color: rgba(34, 211, 238, 0.3);
+  background: rgba(20, 184, 166, 0.12);
+  border-color: rgba(20, 184, 166, 0.3);
 }
 
 .mpacs-ws-button:focus-visible {
-  outline: 2px solid rgba(34, 211, 238, 0.7);
+  outline: 2px solid rgba(20, 184, 166, 0.7);
   outline-offset: 2px;
 }
 
 .mpacs-ws-button.is-active {
   color: #ffffff;
-  background: rgba(37, 99, 235, 0.75);
-  border-color: rgba(125, 211, 252, 0.85);
-  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.18), 0 0 0 1px rgba(34, 211, 238, 0.12);
+  background: rgba(20, 184, 166, 0.8);
+  border-color: rgba(20, 184, 166, 0.9);
+  box-shadow: none;
 }
 
 .mpacs-ws-button.is-sync-active {
   color: #ecfeff;
   background: rgba(20, 184, 166, 0.28);
   border-color: rgba(45, 212, 191, 0.75);
-  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.16), 0 0 0 1px rgba(45, 212, 191, 0.14);
 }
 
 .mpacs-ws-top-button,
@@ -195,8 +194,8 @@ body.mpacs-workstation-viewer #root {
 }
 
 .mpacs-ws-action-button {
-  background: rgba(15, 23, 42, 0.6);
-  border-color: rgba(148, 163, 184, 0.2);
+  background: rgba(0, 0, 0, 0.15);
+  border-color: var(--mpacs-ws-line);
 }
 
 .mpacs-ws-button-icon {
@@ -206,7 +205,7 @@ body.mpacs-workstation-viewer #root {
   min-width: 0;
   color: inherit;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
   letter-spacing: 0;
 }
@@ -219,10 +218,10 @@ body.mpacs-workstation-viewer #root {
   width: var(--mpacs-ws-sidebar-width);
   overflow: auto;
   pointer-events: auto;
-  background: #0c1324;
-  border-right: 1px solid rgba(34, 211, 238, 0.18);
+  background: var(--mpacs-ws-bg);
+  border-right: 1px solid var(--mpacs-ws-line);
   scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
 .mpacs-ws-sidebar::-webkit-scrollbar,
@@ -232,12 +231,13 @@ body.mpacs-workstation-viewer #root {
 
 .mpacs-ws-sidebar::-webkit-scrollbar-thumb,
 .mpacs-series-strip::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35);
-  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
 }
 
 .mpacs-ws-group {
-  border-bottom: 1px solid var(--mpacs-ws-line-soft);
+  margin-bottom: 2px;
+  border: none;
 }
 
 .mpacs-ws-group-header {
@@ -247,20 +247,20 @@ body.mpacs-workstation-viewer #root {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 6px 8px;
+  padding: 8px 12px;
   border: 0;
-  color: #f8fafc;
-  background: #172346;
+  color: #e2e8f0;
+  background: rgba(0, 0, 0, 0.1);
   cursor: pointer;
   font: inherit;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   letter-spacing: 0;
   text-align: left;
 }
 
 .mpacs-ws-group-header:hover {
-  background: #1d2b55;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .mpacs-ws-group-chevron {
@@ -278,8 +278,8 @@ body.mpacs-workstation-viewer #root {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
-  padding: 10px 8px 12px;
-  background: var(--mpacs-ws-panel);
+  padding: 10px 12px;
+  background: transparent;
 }
 
 .mpacs-ws-group.is-collapsed .mpacs-ws-group-body {
@@ -289,7 +289,7 @@ body.mpacs-workstation-viewer #root {
 .mpacs-ws-group-note {
   grid-column: 1 / -1;
   padding: 4px 2px 0;
-  color: rgba(159, 180, 200, 0.75);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 10px;
   line-height: 1.35;
 }
@@ -298,8 +298,8 @@ body.mpacs-workstation-viewer #root {
   width: 100%;
   height: 38px;
   padding: 0;
-  border-color: rgba(148, 163, 184, 0.18);
-  background: rgba(15, 23, 42, 0.55);
+  border: none;
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .mpacs-ws-panel-button .mpacs-ws-button-icon {
@@ -317,14 +317,14 @@ body.mpacs-workstation-viewer #root {
   max-width: 180px;
   overflow: hidden;
   padding: 5px 8px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  border-radius: 5px;
+  border: none;
+  border-radius: 4px;
   opacity: 0;
   color: #f8fafc;
-  background: rgba(2, 6, 23, 0.96);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.85);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.1;
   text-align: center;
   text-overflow: ellipsis;
@@ -359,12 +359,12 @@ body.mpacs-workstation-viewer #root {
   left: var(--mpacs-ws-sidebar-width);
   width: var(--mpacs-ws-series-width);
   overflow: auto;
-  padding: 8px 6px 10px;
+  padding: 8px 10px 10px;
   pointer-events: auto;
-  background: #070b13;
-  border-right: 1px solid rgba(245, 179, 1, 0.35);
+  background: rgba(0, 0, 0, 0.2);
+  border-right: 1px solid var(--mpacs-ws-line);
   scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
 .mpacs-series-header {
@@ -372,15 +372,15 @@ body.mpacs-workstation-viewer #root {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
-  padding: 0 2px 6px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  margin-bottom: 12px;
+  padding: 0 4px 8px;
+  border-bottom: 1px solid var(--mpacs-ws-line);
 }
 
 .mpacs-series-title {
   color: #f8fafc;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -390,26 +390,26 @@ body.mpacs-workstation-viewer #root {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(34, 211, 238, 0.35);
-  border-radius: 999px;
-  color: #cffafe;
-  background: rgba(34, 211, 238, 0.08);
+  border: none;
+  border-radius: 4px;
+  color: #ccfbf1;
+  background: rgba(20, 184, 166, 0.2);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .mpacs-series-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .mpacs-series-status {
   padding: 10px 7px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 6px;
+  border: none;
+  border-radius: 4px;
   color: var(--mpacs-ws-muted);
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(0, 0, 0, 0.15);
   font-size: 11px;
   line-height: 1.35;
 }
@@ -418,48 +418,50 @@ body.mpacs-workstation-viewer #root {
   width: 100%;
   display: block;
   padding: 0;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 6px;
+  border: 1px solid transparent;
+  border-radius: 4px;
   overflow: hidden;
   color: inherit;
-  background: rgba(15, 23, 42, 0.76);
+  background: rgba(0, 0, 0, 0.15);
   cursor: pointer;
   text-align: left;
+  transition: all 0.2s ease;
 }
 
 .mpacs-series-card:hover {
-  border-color: rgba(34, 211, 238, 0.55);
-  background: rgba(15, 23, 42, 0.96);
+  background: rgba(0, 0, 0, 0.25);
+  border-color: rgba(20, 184, 166, 0.4);
 }
 
 .mpacs-series-card.is-active {
-  border-color: rgba(245, 179, 1, 0.9);
-  box-shadow: 0 0 0 1px rgba(245, 179, 1, 0.35);
+  border-color: var(--mpacs-ws-cyan);
+  box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.2);
+  background: rgba(20, 184, 166, 0.05);
 }
 
 .mpacs-series-thumb {
   position: relative;
-  height: 68px;
+  height: 84px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    linear-gradient(135deg, rgba(248, 250, 252, 0.16), transparent 32%),
-    radial-gradient(circle at 50% 48%, rgba(148, 163, 184, 0.35), transparent 40%),
-    #020617;
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .mpacs-series-modality {
-  color: #facc15;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 20px;
-  font-weight: 900;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.7);
+  font-weight: 700;
+}
+
+.mpacs-series-card.is-active .mpacs-series-modality {
+  color: var(--mpacs-ws-cyan);
 }
 
 .mpacs-series-image-count {
   position: absolute;
-  right: 5px;
-  bottom: 4px;
+  right: 6px;
+  bottom: 6px;
   min-width: 20px;
   height: 18px;
   display: inline-flex;
@@ -467,32 +469,32 @@ body.mpacs-workstation-viewer #root {
   justify-content: center;
   border-radius: 4px;
   color: #ffffff;
-  background: rgba(239, 68, 68, 0.92);
-  font-size: 11px;
-  font-weight: 800;
+  background: rgba(0, 0, 0, 0.6);
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .mpacs-series-content {
-  padding: 6px 6px 7px;
+  padding: 8px 10px;
 }
 
 .mpacs-series-card-title {
   overflow: hidden;
-  color: #f8fafc;
-  font-size: 10px;
-  font-weight: 800;
-  line-height: 1.25;
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .mpacs-series-meta {
-  margin-top: 3px;
+  margin-top: 4px;
   overflow: hidden;
   color: var(--mpacs-ws-muted);
-  font-size: 9px;
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -516,7 +518,7 @@ body.mpacs-workstation-viewer #root {
   max-width: min(42vw, 520px);
   color: rgba(248, 250, 252, 0.94);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.35;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
   white-space: pre-line;
@@ -530,7 +532,7 @@ body.mpacs-workstation-viewer #root {
 .mpacs-viewport-top-right {
   top: 12px;
   right: 16px;
-  color: #f5b301;
+  color: var(--mpacs-ws-cyan);
   text-align: right;
 }
 
@@ -575,13 +577,13 @@ body.mpacs-workstation-viewer #root {
   max-width: 180px;
   overflow: hidden;
   padding: 5px 9px;
-  border: 1px solid rgba(34, 211, 238, 0.26);
-  border-radius: 999px;
-  color: #e0f2fe;
-  background: rgba(2, 6, 23, 0.66);
+  border: none;
+  border-radius: 4px;
+  color: #ccfbf1;
+  background: rgba(20, 184, 166, 0.2);
   backdrop-filter: blur(4px);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -589,17 +591,17 @@ body.mpacs-workstation-viewer #root {
 
 .mpacs-status-pill-muted {
   max-width: 220px;
-  border-color: rgba(148, 163, 184, 0.22);
-  color: rgba(203, 213, 225, 0.9);
+  background: rgba(0, 0, 0, 0.3);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .mpacs-ws-overlay-button {
   width: 36px;
   height: 36px;
   padding: 0;
-  border-color: rgba(148, 163, 184, 0.28);
+  border: none;
   color: rgba(248, 250, 252, 0.95);
-  background: rgba(2, 6, 23, 0.78);
+  background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(4px);
 }
 
@@ -611,9 +613,9 @@ body.mpacs-workstation-viewer #root {
   align-items: center;
   gap: 8px;
   padding: 6px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 999px;
-  background: rgba(2, 6, 23, 0.72);
+  border: none;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.4);
   transform: translateX(-50%);
   pointer-events: auto;
   backdrop-filter: blur(5px);
@@ -623,28 +625,26 @@ body.mpacs-workstation-viewer #root {
   min-width: 36px;
   height: 30px;
   padding: 0 8px;
-  border-color: rgba(148, 163, 184, 0.24);
+  border: none;
   color: rgba(248, 250, 252, 0.94);
-  background: rgba(15, 23, 42, 0.78);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 body.mpacs-workstation-viewer[data-mpacs-cine="playing"] .mpacs-ws-cine-button[data-mpacs-tool-key="cine-toggle"] {
-  color: #082f49;
-  background: #67e8f9;
-  border-color: #a5f3fc;
+  color: #ffffff;
+  background: var(--mpacs-ws-cyan);
 }
 
 body.mpacs-workstation-viewer[data-mpacs-sync*="scroll"] .mpacs-status-pill[data-mpacs-sync-state],
 body.mpacs-workstation-viewer[data-mpacs-sync*="wwl"] .mpacs-status-pill[data-mpacs-sync-state],
 body.mpacs-workstation-viewer[data-mpacs-sync*="zoom"] .mpacs-status-pill[data-mpacs-sync-state] {
-  border-color: rgba(45, 212, 191, 0.5);
-  color: #ccfbf1;
-  background: rgba(20, 184, 166, 0.18);
+  color: #ffffff;
+  background: var(--mpacs-ws-cyan);
 }
 
 body.mpacs-workstation-viewer [data-cy*="viewport"],
 body.mpacs-workstation-viewer [class*="ViewportGrid"] {
-  border-color: rgba(245, 179, 1, 0.55) !important;
+  border-color: var(--mpacs-ws-cyan) !important;
 }
 
 body.mpacs-workstation-viewer[data-mpacs-layout="1x2"] [class*="ViewportGrid"],
@@ -665,8 +665,8 @@ body.mpacs-workstation-viewer[data-mpacs-layout="2x2"] [data-cy*="viewport-grid"
 
 @media (max-width: 1180px) {
   :root {
-    --mpacs-ws-sidebar-width: 204px;
-    --mpacs-ws-series-width: 108px;
+    --mpacs-ws-sidebar-width: 180px;
+    --mpacs-ws-series-width: 140px;
   }
 
   .mpacs-ws-brand-title {
@@ -690,3 +690,25 @@ body.mpacs-workstation-viewer[data-mpacs-layout="2x2"] [data-cy*="viewport-grid"
     font-size: 11px;
   }
 }
+s e l e c t . m p a c s - w s - l a y o u t - s t a t e   { 
+     c u r s o r :   p o i n t e r ; 
+     o u t l i n e :   n o n e ; 
+     a p p e a r a n c e :   n o n e ; 
+     p a d d i n g - r i g h t :   2 0 p x ; 
+     b a c k g r o u n d - i m a g e :   u r l ( ' d a t a : i m a g e / s v g + x m l ; u t f 8 , < s v g   f i l l = \  
+ % 2 3 c c f b f 1 \   h e i g h t = \ 2 4 \   v i e w B o x = \ 0  
+ 0  
+ 2 4  
+ 2 4 \   w i d t h = \ 2 4 \   x m l n s = \ h t t p : / / w w w . w 3 . o r g / 2 0 0 0 / s v g \ > < p a t h   d = \ M 7  
+ 1 0 l 5  
+ 5  
+ 5 - 5 z \ / > < / s v g > ' ) ; 
+     b a c k g r o u n d - r e p e a t :   n o - r e p e a t ; 
+     b a c k g r o u n d - p o s i t i o n :   r i g h t   2 p x   c e n t e r ; 
+     b a c k g r o u n d - s i z e :   1 4 p x ; 
+ } 
+ s e l e c t . m p a c s - w s - l a y o u t - s t a t e   o p t i o n   { 
+     b a c k g r o u n d :   v a r ( - - m p a c s - w s - b g ) ; 
+     c o l o r :   v a r ( - - m p a c s - w s - t e x t ) ; 
+ }  
+ 
