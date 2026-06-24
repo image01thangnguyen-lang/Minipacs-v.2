@@ -75,3 +75,7 @@
 
   startObserver();
 })();
+
+// mpacs-workstation-shell
+// element.id === 'root'
+// OHIF v3 accepts /viewer?StudyInstanceUIDs=...
