@@ -52,8 +52,8 @@ services:
         sed -i "s|https://[^\"']*polyfill\.io[^\"']*|https://cdnjs.cloudflare.com/ajax/libs/polyfill/3.41.0/polyfill.min.js|g" /usr/share/nginx/html/index.html
         sed -i "/ohif-custom\.css/d" /usr/share/nginx/html/index.html
         sed -i "/ohif-custom\.js/d" /usr/share/nginx/html/index.html
-        sed -i "s|</head>|<link rel=\"stylesheet\" href=\"/ohif-custom.css?v=mpacs-20260623-rootguard\"></head>|" /usr/share/nginx/html/index.html
-        sed -i "s|</body>|<script src=\"/ohif-custom.js?v=mpacs-20260623-rootguard\"></script></body>|" /usr/share/nginx/html/index.html
+        sed -i "s|</head>|<link rel=\"stylesheet\" href=\"/ohif-custom.css?v=mpacs-20260624-routefix\"></head>|" /usr/share/nginx/html/index.html
+        sed -i "s|</body>|<script src=\"/ohif-custom.js?v=mpacs-20260624-routefix\"></script></body>|" /usr/share/nginx/html/index.html
         nginx -g 'daemon off;'
     depends_on:
       - orthanc

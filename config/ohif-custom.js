@@ -216,16 +216,9 @@
   }
 
   function normalizeViewerRoute() {
-    var queryStudyUid = getQueryStudyInstanceUid();
-    var pathStudyUid = getPathStudyInstanceUid();
-
-    // In OHIF v2, the viewer route is /viewer/:studyInstanceUIDs
-    // If the URL has a query parameter (from an external link) but no path parameter, redirect.
-    if (queryStudyUid && !pathStudyUid) {
-      window.location.replace('/viewer/' + encodeURIComponent(queryStudyUid) + window.location.hash);
-      return false;
-    }
-
+    // OHIF v3 accepts /viewer?StudyInstanceUIDs=... as the canonical route.
+    // Do not rewrite it to the old /viewer/:studyInstanceUIDs shape because
+    // that can leave OHIF's own display-set initialization without the study.
     return true;
   }
 
