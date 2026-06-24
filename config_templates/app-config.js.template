@@ -44,4 +44,88 @@ window.config = {
     },
   ],
   defaultDataSourceName: 'dicomweb',
+  customizationService: {
+    'ohif.leftPanel': function() {
+      return [
+        {
+          id: 'StudyBrowser',
+          iconName: 'tab-studies',
+          label: 'Studies',
+          target: 'ohif-study-browser',
+          customComponent: '@ohif/extension-default.panelModule.studyBrowser',
+        }
+      ];
+    },
+    'ohif.toolbar': function() {
+      return [
+        {
+          id: 'Zoom',
+          icon: 'tool-zoom',
+          label: 'Zoom',
+          type: 'ohif.toolButton',
+          commandName: 'setToolActive',
+          commandOptions: { toolName: 'Zoom' },
+        },
+        {
+          id: 'Pan',
+          icon: 'tool-pan',
+          label: 'Pan',
+          type: 'ohif.toolButton',
+          commandName: 'setToolActive',
+          commandOptions: { toolName: 'Pan' },
+        },
+        {
+          id: 'WindowLevel',
+          icon: 'tool-window-level',
+          label: 'Window Level',
+          type: 'ohif.toolButton',
+          commandName: 'setToolActive',
+          commandOptions: { toolName: 'WindowLevel' },
+        },
+        {
+          id: 'Layout',
+          type: 'ohif.layoutSelector',
+          props: {
+            rows: 3,
+            columns: 3,
+          }
+        },
+        {
+          id: 'AdvancedActions',
+          type: 'ohif.splitButton',
+          props: {
+            groupId: 'AdvancedActions',
+            primary: {
+              id: 'Rotate',
+              icon: 'tool-rotate',
+              label: 'Rotate',
+              type: 'ohif.toolButton',
+              commandName: 'rotateViewportCW',
+            },
+            secondary: {
+              icon: 'chevron-down',
+              label: '',
+              tooltip: 'Advanced Tools',
+            },
+            items: [
+              {
+                id: 'FlipHorizontal',
+                icon: 'tool-flip-horizontal',
+                label: 'Flip',
+                type: 'ohif.toolButton',
+                commandName: 'flipViewportHorizontal',
+              },
+              {
+                id: 'Invert',
+                icon: 'tool-invert',
+                label: 'Invert',
+                type: 'ohif.toolButton',
+                commandName: 'invertViewport',
+              }
+            ]
+          }
+        }
+      ];
+    }
+  }
 };
