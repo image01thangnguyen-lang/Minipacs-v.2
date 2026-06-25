@@ -79,6 +79,7 @@ mkdir -p ./config
 export SERVER_IP ORTHANC_ADMIN_USER ORTHANC_ADMIN_PASSWORD POSTGRES_PASSWORD
 envsubst < ./config_templates/orthanc.json.template > ./config/orthanc.json
 envsubst < ./config_templates/app-config.js.template > ./config/app-config.js
+envsubst < ./config_templates/nginx.conf.template > ./config/nginx.conf
 
 # 5. Phân quyền thư mục Data (Volume Mount sống còn)
 echo -e "${YELLOW}[*] Đang tạo thư mục Data lưu trữ...${NC}"

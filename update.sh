@@ -333,6 +333,7 @@ load_env_file
 ensure_data_dirs
 generate_config config_templates/app-config.js.template config/app-config.js
 generate_config config_templates/orthanc.json.template config/orthanc.json
+generate_config config_templates/nginx.conf.template config/nginx.conf
 
 info "[3/9] Validating Docker access..."
 docker info >/dev/null 2>&1 || fail "Docker is not accessible. Run with sudo or add your user to the docker group."

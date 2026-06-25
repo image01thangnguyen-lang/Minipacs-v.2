@@ -120,6 +120,12 @@ else
     echo -e "${RED}LỖI: Không tìm thấy config_templates/orthanc.json.template${NC}"
 fi
 
+if [ -f config_templates/nginx.conf.template ]; then
+    generate_config config_templates/nginx.conf.template config/nginx.conf
+else
+    echo -e "${RED}LỖI: Không tìm thấy config_templates/nginx.conf.template${NC}"
+fi
+
 # 3.5. Kiểm tra và Tự động phục hồi Frontend Dashboard (Self-Healing)
 echo -e "${YELLOW}[3.5] Kiểm tra cấu trúc thư mục dashboard (Next.js)...${NC}"
 if [ ! -f ./dashboard/package.json ] || [ ! -f ./dashboard/Dockerfile ] || ! grep -q "legacy-peer-deps" ./dashboard/Dockerfile; then
