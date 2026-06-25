@@ -226,7 +226,7 @@ wait_for_dashboard() {
   while [ "$attempt" -le "$max_attempts" ]; do
     if compose ps dashboard 2>/dev/null | grep -q "Up"; then
       if command -v curl >/dev/null 2>&1; then
-        if curl -fsS -o /dev/null http://127.0.0.1; then
+        if curl -fsS -o /dev/null http://127.0.0.1:8080; then
           return 0
         fi
       else
@@ -258,10 +258,10 @@ wait_for_ohif_custom_assets() {
   local app_config_content
 
   while [ "$attempt" -le "$max_attempts" ]; do
-    index_content="$(http_get http://127.0.0.1:3000/index.html 2>/dev/null || true)"
-    js_content="$(http_get http://127.0.0.1:3000/ohif-custom.js 2>/dev/null || true)"
-    css_content="$(http_get http://127.0.0.1:3000/ohif-custom.css 2>/dev/null || true)"
-    app_config_content="$(http_get http://127.0.0.1:3000/app-config.js 2>/dev/null || true)"
+    index_content="$(http_get http://127.0.0.1:8080/viewer/index.html 2>/dev/null || true)"
+    js_content="$(http_get http://127.0.0.1:8080/viewer/ohif-custom.js 2>/dev/null || true)"
+    css_content="$(http_get http://127.0.0.1:8080/viewer/ohif-custom.css 2>/dev/null || true)"
+    app_config_content="$(http_get http://127.0.0.1:8080/viewer/app-config.js 2>/dev/null || true)"
 
     if contains_text "$index_content" "ohif-custom.js" &&
        contains_text "$index_content" "ohif-custom.css" &&
@@ -287,9 +287,9 @@ wait_for_ohif_custom_assets() {
   wc -c config/ohif-custom.js config/ohif-custom.css || true
   echo
   echo "Served asset sizes:"
-  http_get http://127.0.0.1:3000/ohif-custom.js 2>/dev/null | wc -c || true
-  http_get http://127.0.0.1:3000/ohif-custom.css 2>/dev/null | wc -c || true
-  http_get http://127.0.0.1:3000/app-config.js 2>/dev/null | wc -c || true
+  http_get http://127.0.0.1:8080/viewer/ohif-custom.js 2>/dev/null | wc -c || true
+  http_get http://127.0.0.1:8080/viewer/ohif-custom.css 2>/dev/null | wc -c || true
+  http_get http://127.0.0.1:8080/viewer/app-config.js 2>/dev/null | wc -c || true
   echo
   fail_ohif_with_logs
 }
