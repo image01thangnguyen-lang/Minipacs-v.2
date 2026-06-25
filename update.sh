@@ -316,9 +316,9 @@ print_urls() {
   echo -e "\n${CYAN}============================================================${NC}"
   echo -e "${GREEN}Mini PACS updated and running.${NC}"
   echo -e "${CYAN}============================================================${NC}"
-  echo -e "RIS Dashboard : ${GREEN}http://${server_ip}${NC}"
-  echo -e "OHIF Viewer   : ${GREEN}http://${server_ip}/viewer${NC}"
-  echo -e "Orthanc       : ${GREEN}http://${server_ip}/orthanc/${NC}"
+  echo -e "RIS Dashboard : ${GREEN}http://${server_ip}:8080${NC}"
+  echo -e "OHIF Viewer   : ${GREEN}http://${server_ip}:8080/viewer${NC}"
+  echo -e "Orthanc       : ${GREEN}http://${server_ip}:8080/orthanc/${NC}"
   echo -e "${CYAN}============================================================${NC}\n"
 }
 

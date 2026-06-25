@@ -36,9 +36,9 @@ print_ports() {
   echo -e "\n${CYAN}====================================================================================================${NC}"
   echo -e "${GREEN}                             CÁC DỊCH VỤ PACS/RIS ĐANG CHẠY TRÊN CỔNG:${NC}"
   echo -e "${CYAN}====================================================================================================${NC}"
-  echo -e " 🚀 ${GREEN}RIS Dashboard (Next.js)  : http://${SERVER_IP}${NC} (Cổng 80)"
-  echo -e " 👁️  ${GREEN}OHIF Viewer (DICOM)      : http://${SERVER_IP}/viewer${NC} (Cổng 80)"
-  echo -e " ⚙️  ${GREEN}Orthanc Web Interface    : http://${SERVER_IP}/orthanc/${NC} (Cổng 80) - Tài khoản: ${YELLOW}${ORTHANC_ADMIN_USER}${NC} / Mật khẩu: ${YELLOW}${ORTHANC_ADMIN_PASSWORD}${NC}"
+  echo -e " 🚀 ${GREEN}RIS Dashboard (Next.js)  : http://${SERVER_IP}:8080${NC} (Cổng 8080)"
+  echo -e " 👁️  ${GREEN}OHIF Viewer (DICOM)      : http://${SERVER_IP}:8080/viewer${NC} (Cổng 8080)"
+  echo -e " ⚙️  ${GREEN}Orthanc Web Interface    : http://${SERVER_IP}:8080/orthanc/${NC} (Cổng 8080) - Tài khoản: ${YELLOW}${ORTHANC_ADMIN_USER}${NC} / Mật khẩu: ${YELLOW}${ORTHANC_ADMIN_PASSWORD}${NC}"
   echo -e " 📦 ${GREEN}Orthanc DICOM Server     : Cổng 4242${NC}"
   echo -e "${CYAN}====================================================================================================${NC}\n"
 }
