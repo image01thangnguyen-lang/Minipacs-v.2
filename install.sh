@@ -97,9 +97,9 @@ docker compose up -d --build || docker-compose up -d --build
 echo -e "\n${GREEN}======================================================${NC}"
 echo -e "${GREEN}[THÀNH CÔNG] Hệ thống Mini PACS đã chạy ngầm!${NC}"
 echo -e "\n${CYAN}Truy cập các dịch vụ:${NC}"
-echo -e " 🚀 ${GREEN}Dashboard (Next.js)      : http://${SERVER_IP}:8080${NC}"
-echo -e " 👁️  ${GREEN}OHIF Viewer (DICOM)      : http://${SERVER_IP}:3000${NC}"
-echo -e " ⚙️  ${GREEN}Orthanc Admin Portal     : http://${SERVER_IP}:8042${NC}"
+echo -e " 🚀 ${GREEN}Dashboard (Next.js)      : http://${SERVER_IP}${NC}"
+echo -e " 👁️  ${GREEN}OHIF Viewer (DICOM)      : http://${SERVER_IP}/viewer${NC}"
+echo -e " ⚙️  ${GREEN}Orthanc Admin Portal     : http://${SERVER_IP}/orthanc/${NC}"
 echo -e "\n${YELLOW}Tài khoản Orthanc: ${ORTHANC_ADMIN_USER} / <Mật khẩu bạn đã điền>${NC}"
 echo -e "${GREEN}======================================================${NC}"
 
