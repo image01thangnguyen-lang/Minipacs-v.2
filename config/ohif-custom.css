@@ -48,4 +48,23 @@ button,
   display: none !important;
 }
 
-/* mpacs-workstation-viewer */
+/* Series List / Thumbnail overrides to match Mockup */
+.text-blue-300,
+.hover\:border-blue-300:hover {
+  color: var(--custom-primary) !important;
+  border-color: var(--custom-primary) !important;
+}
+
+[data-cy="study-browser-thumbnail"] .border-secondary-light {
+  border-color: transparent !important;
+}
+[data-cy="study-browser-thumbnail"] .bg-black {
+  background-color: var(--custom-bg-dark) !important;
+}
+[data-cy="study-browser-thumbnail"] .text-white {
+  color: #a0aec0 !important; /* Grayish text like mockup */
+}
+[data-cy="study-browser-thumbnail"].group:hover .border-secondary-light,
+[data-cy="study-browser-thumbnail"].group:hover .bg-black {
+  border-color: var(--custom-primary) !important;
+}

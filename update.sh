@@ -138,10 +138,10 @@ update_code() {
 
   if [ "$(id -u)" -eq 0 ] && [ -n "${SUDO_USER:-}" ]; then
     run_as_repo_user "git fetch origin"
-    run_as_repo_user "git reset --hard origin/main"
+    # run_as_repo_user "git reset --hard origin/main" # DISABLED to protect OHIF Customizations
   else
     git fetch origin
-    git reset --hard origin/main
+    # git reset --hard origin/main # DISABLED to protect OHIF Customizations
   fi
 
   if [ "$UPDATE_REEXECED" != "1" ]; then

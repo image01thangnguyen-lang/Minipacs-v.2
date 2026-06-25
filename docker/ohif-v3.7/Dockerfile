@@ -8,15 +8,13 @@ ARG OHIF_REPO=https://github.com/OHIF/Viewers.git
 ARG OHIF_GIT_REF=v3.7.0
 
 FROM node:18.16.1-slim AS source
-ARG OHIF_REPO
-ARG OHIF_GIT_REF
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates git \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src
-RUN git clone --depth 1 --branch "${OHIF_GIT_REF}" "${OHIF_REPO}" app
+COPY ohif-viewer app
 
 FROM node:18.16.1-slim AS json-copier
 

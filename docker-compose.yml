@@ -33,13 +33,11 @@ services:
         condition: service_healthy
 
   ohif:
-    # Build OHIF from upstream source, pinned to the 3.7 release.
+    # Build OHIF from local source
     image: minipacs-ohif:v3.7.0
     build:
-      context: ./docker/ohif-v3.7
-      args:
-        OHIF_REPO: https://github.com/OHIF/Viewers.git
-        OHIF_GIT_REF: v3.7.0
+      context: .
+      dockerfile: ./docker/ohif-v3.7/Dockerfile
     restart: always
     volumes:
       - ./config/app-config.js:/usr/share/nginx/html/app-config.js:ro
