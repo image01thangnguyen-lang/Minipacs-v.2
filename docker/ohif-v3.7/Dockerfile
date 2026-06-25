@@ -48,7 +48,9 @@ RUN yarn install --frozen-lockfile --verbose
 
 ENV PATH=/usr/src/app/node_modules/.bin:$PATH
 ENV QUICK_BUILD=true
+ENV PUBLIC_URL=/viewer/
 
+RUN sed -i 's|PUBLIC_URL=/|PUBLIC_URL=/viewer/|g' package.json platform/app/package.json || true
 RUN yarn run build
 
 FROM nginxinc/nginx-unprivileged:1.25-alpine AS final
@@ -67,8 +69,8 @@ USER root
 RUN sed -i "s|https://[^\"']*polyfill\\.io[^\"']*|https://cdnjs.cloudflare.com/ajax/libs/polyfill/3.41.0/polyfill.min.js|g" /usr/share/nginx/html/index.html \
   && sed -i "/ohif-custom\\.css/d" /usr/share/nginx/html/index.html \
   && sed -i "/ohif-custom\\.js/d" /usr/share/nginx/html/index.html \
-  && sed -i "s|</head>|<link rel=\"stylesheet\" href=\"/ohif-custom.css?v=mpacs-20260624-ohif370-source\"></head>|" /usr/share/nginx/html/index.html \
-  && sed -i "s|</body>|<script src=\"/ohif-custom.js?v=mpacs-20260624-ohif370-source\"></script></body>|" /usr/share/nginx/html/index.html \
+  && sed -i "s|</head>|<link rel=\"stylesheet\" href=\"/viewer/ohif-custom.css?v=mpacs-20260624-ohif370-source\"></head>|" /usr/share/nginx/html/index.html \
+  && sed -i "s|</body>|<script src=\"/viewer/ohif-custom.js?v=mpacs-20260624-ohif370-source\"></script></body>|" /usr/share/nginx/html/index.html \
   && chmod 666 /usr/share/nginx/html/app-config.js
 
 USER nginx
