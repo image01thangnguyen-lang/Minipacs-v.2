@@ -62,7 +62,7 @@ services:
       context: ./dashboard
     restart: always
     ports:
-      - "80:3000"
+      - "8080:3000"
     command: sh -c "./node_modules/.bin/prisma db push --skip-generate && node prisma/seed.js && npm start"
     environment:
       - NEXT_PUBLIC_OHIF_URL=http://${SERVER_IP}:3000
