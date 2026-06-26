@@ -266,7 +266,7 @@ export default function DashboardPage() {
   const openViewer = (study: any) => {
     const uid = study.MainDicomTags?.StudyInstanceUID;
     if (!uid) return;
-    window.open(`/viewer/viewer?StudyInstanceUIDs=${encodeURIComponent(uid)}`, "_blank");
+    window.open(`/viewer/minipacs?StudyInstanceUIDs=${encodeURIComponent(uid)}`, "_blank");
   };
 
   const applyReportTemplate = (template: ReportTemplateOption, mode: TemplateApplyMode) => {
