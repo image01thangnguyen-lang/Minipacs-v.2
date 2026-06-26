@@ -35,6 +35,7 @@ services:
   ohif:
     # Build OHIF from upstream source, pinned to the 3.7 release.
     image: minipacs-ohif:v3.7.0
+    pull_policy: never
     build:
       context: ./docker/ohif-v3.7
       args:
