@@ -1,6 +1,7 @@
 window.config = {
   routerBasename: '/',
   showStudyList: true,
+  defaultMode: '@ohif/mode-minipacs-viewer',
   extensions: [],
   modes: [],
   servers: {
