@@ -16,15 +16,11 @@ RUN apt-get update \
 WORKDIR /usr/src
 COPY ohif-viewer app
 
-FROM node:18.16.1-slim AS json-copier
-
-RUN mkdir /usr/src/app
-WORKDIR /usr/src/app
-
-COPY --from=source /usr/src/app/package.json /usr/src/app/yarn.lock /usr/src/app/preinstall.js ./
-COPY --from=source /usr/src/app/extensions /usr/src/app/extensions
-COPY --from=source /usr/src/app/modes /usr/src/app/modes
-COPY --from=source /usr/src/app/platform /usr/src/app/platform
+# Tối ưu hoá: Chỉ copy các file package.json và yarn.lock ra một thư mục riêng để cache yarn install
+RUN mkdir -p /usr/src/json-only/app && \
+    cd /usr/src/app && \
+    find . -name "package.json" -exec cp --parents {} /usr/src/json-only/app/ \; && \
+    cp yarn.lock preinstall.js /usr/src/json-only/app/
 
 FROM node:18.16.1-slim AS builder
 
@@ -32,14 +28,15 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends build-essential python3 \
   && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /usr/src/app
 WORKDIR /usr/src/app
 
-COPY --from=json-copier /usr/src/app .
+# Copy chỉ các file package.json vào trước
+COPY --from=source /usr/src/json-only/app .
 
 RUN yarn config set workspaces-experimental true
 RUN yarn install --frozen-lockfile --verbose
 
+# Sau khi yarn install xong mới copy toàn bộ source code vào
 COPY --from=source /usr/src/app .
 
 RUN yarn install --frozen-lockfile --verbose
