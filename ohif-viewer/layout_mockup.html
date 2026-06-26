@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Layout Mockup - PACS VIEWER (Full Tools)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:#0D1B20; color:#fff; height:100vh; overflow:hidden; }
+
+    /* ── Variables ── */
+    :root {
+      --bg-darkest: #0D1B20;
+      --bg-dark:    #102126;
+      --bg-main:    #152A30;
+      --bg-light:   #1A323A;
+      --cyan:       #00B5B8;
+      --cyan-dim:   rgba(0,181,184,0.15);
+      --text-main:  #C0CDD4;
+      --text-dim:   #6B8290;
+      --border:     #1A323A;
+    }
+
+    /* ── Top Header ── */
+    .header {
+      height: 40px;
+      background: var(--bg-dark);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .header .logo {
+      color: var(--cyan);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1px;
+    }
+    .header .patient-info {
+      color: var(--text-dim);
+      font-size: 11px;
+      margin-left: auto;
+    }
+
+    /* ── Main Layout ── */
+    .main {
+      display: flex;
+      height: calc(100vh - 40px);
+    }
+
+    /* ── Sidebar (Tools) ── */
+    .sidebar {
+      width: 200px;
+      background: var(--bg-dark);
+      overflow-y: auto;
+      flex-shrink: 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--bg-light) var(--bg-dark);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: var(--bg-darkest);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .section-header:hover { background: var(--bg-main); }
+    .section-header .arrow { color: var(--cyan); font-size: 9px; transition: transform 0.2s; }
+    .section-header .arrow.closed { transform: rotate(-90deg); }
+
+    .section-body {
+      padding: 6px;
+      background: var(--bg-main);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Icon grid (3 col) */
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px;
+    }
+    .tool-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 46px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      color: var(--text-dim);
+      font-size: 9px;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: transparent;
+    }
+    .tool-btn:hover {
+      color: var(--cyan);
+      background: var(--bg-light);
+    }
+    .tool-btn.active {
+      color: var(--cyan);
+      background: var(--cyan-dim);
+      border-color: var(--cyan);
+    }
+    .tool-btn .icon {
+      width: 18px;
+      height: 18px;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tool-btn .icon svg { width:18px; height:18px; }
+
+    /* List items */
+    .tool-list-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      color: var(--text-dim);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+    }
+    .tool-list-item:hover {
+      color: var(--cyan);
+      background: var(--bg-light);
+    }
+    .tool-list-item.active {
+      color: var(--cyan);
+      background: var(--cyan-dim);
+    }
+    .tool-list-item .icon { width:16px; height:16px; flex-shrink:0; }
+    .tool-list-item .icon svg { width:16px; height:16px; }
+
+    /* Layout grid (3 col) */
+    .layout-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+    }
+    .layout-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 48px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: transparent;
+    }
+    .layout-btn:hover {
+      color: var(--cyan);
+      border-color: var(--cyan);
+      background: var(--bg-light);
+    }
+
+    /* ── Series Panel ── */
+    .series-panel {
+      width: 200px;
+      background: var(--bg-main);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    .series-panel .panel-title {
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--bg-darkest);
+      border-bottom: 1px solid var(--border);
+      color: var(--cyan);
+    }
+    .series-thumb {
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .series-thumb:hover { background: var(--bg-light); }
+    .series-thumb .thumb-img {
+      width: 100%;
+      height: 100px;
+      background: var(--bg-dark);
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      font-size: 10px;
+    }
+    .series-thumb .thumb-info {
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+    .series-thumb .thumb-info .series-num {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    /* ── Viewport ── */
+    .viewport {
+      flex: 1;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .viewport .placeholder-text {
+      color: #333;
+      font-size: 16px;
+      letter-spacing: 2px;
+    }
+    .viewport-overlay-tl,
+    .viewport-overlay-br {
+      position: absolute;
+      font-size: 10px;
+      color: var(--text-dim);
+      opacity: 0.6;
+    }
+    .viewport-overlay-tl { top: 12px; left: 12px; }
+    .viewport-overlay-br { bottom: 12px; right: 12px; }
+  </style>
+</head>
+<body>
+
+<!-- ════════ HEADER ════════ -->
+<div class="header">
+  <div class="logo">⚕ PACS VIEWER</div>
+  <div class="patient-info">Patient: — &nbsp;|&nbsp; Study: — &nbsp;|&nbsp; Series: —</div>
+</div>
+
+<!-- ════════ MAIN ════════ -->
+<div class="main">
+
+  <!-- ──── SIDEBAR: Tools ──── -->
+  <div class="sidebar">
+
+    <!-- 1. Navigation -->
+    <div class="section-header">🧭 Navigation <span class="arrow">▼</span></div>
+    <div class="section-body">
+      <div class="tool-grid">
+        <div class="tool-btn" title="Pan">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 9l-3 3 3 3"/><path d="M9 5l3-3 3 3"/><path d="M15 19l-3 3-3-3"/><path d="M19 9l3 3-3 3"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg></div>
+          Pan
+        </div>
+        <div class="tool-btn" title="Zoom">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></div>
+          Zoom
+        </div>
+        <div class="tool-btn" title="Stack Scroll">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="2" width="16" height="6" rx="1"/><rect x="4" y="10" width="16" height="4" rx="1"/><rect x="4" y="16" width="16" height="6" rx="1"/></svg></div>
+          Scroll
+        </div>
+        <div class="tool-btn" title="Magnify">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+          Magnify
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Window/Level -->
+    <div class="section-header">🌓 Window / Level <span class="arrow">▼</span></div>
+    <div class="section-body">
+      <button class="tool-list-item active">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20" fill="currentColor" opacity="0.3"/></svg></div>
+        W/L Manual
+      </button>
+      <button class="tool-list-item"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="10"/></svg></div>Soft Tissue (400/40)</button>
+      <button class="tool-list-item"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="10"/></svg></div>Lung (1500/−600)</button>
+      <button class="tool-list-item"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="10"/></svg></div>Liver (150/90)</button>
+      <button class="tool-list-item"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="10"/></svg></div>Bone (2500/480)</button>
+      <button class="tool-list-item"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="10"/></svg></div>Brain (80/40)</button>
+    </div>
+
+    <!-- 3. Measurement -->
+    <div class="section-header">📏 Measurement <span class="arrow">▼</span></div>
+    <div class="section-body">
+      <div class="tool-grid">
+        <div class="tool-btn" title="Length"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="4" y1="20" x2="20" y2="4"/><line x1="4" y1="20" x2="4" y2="16"/><line x1="4" y1="20" x2="8" y2="20"/><line x1="20" y1="4" x2="20" y2="8"/><line x1="20" y1="4" x2="16" y2="4"/></svg></div>Length</div>
+        <div class="tool-btn" title="Bidirectional"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="4" y1="20" x2="20" y2="4"/><line x1="8" y1="8" x2="16" y2="16"/></svg></div>Bidir</div>
+        <div class="tool-btn" title="Ellipse"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="12" rx="9" ry="6"/></svg></div>Ellipse</div>
+        <div class="tool-btn" title="Circle"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/></svg></div>Circle</div>
+        <div class="tool-btn" title="Rectangle"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="1"/></svg></div>Rect</div>
+        <div class="tool-btn" title="Angle"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20L12 4L20 20"/></svg></div>Angle</div>
+        <div class="tool-btn" title="Calibration"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="8" x2="4" y2="16"/><line x1="20" y1="8" x2="20" y2="16"/></svg></div>Calib</div>
+      </div>
+    </div>
+
+    <!-- 4. Annotation -->
+    <div class="section-header">✏️ Annotation <span class="arrow">▼</span></div>
+    <div class="section-body">
+      <div class="tool-grid">
+        <div class="tool-btn" title="Arrow Annotate"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="13 5 19 5 19 11"/></svg></div>Arrow</div>
+        <div class="tool-btn" title="Probe"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="2" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/></svg></div>Probe</div>
+        <div class="tool-btn" title="Freehand ROI"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16c2-4 4-8 8-8s4 4 8 0"/></svg></div>Freehand</div>
+      </div>
+    </div>
+
+    <!-- 5. Image Tools -->
+    <div class="section-header">🖼️ Image Tools <span class="arrow">▼</span></div>
+    <div class="section-body">
+      <div class="tool-grid">
+        <div class="tool-btn" title="Reset"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></div>Reset</div>
+        <div class="tool-btn" title="Rotate +90°"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></div>Rotate</div>
+        <div class="tool-btn" title="Flip Horizontal"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 8 2 12 5 16"/><polyline points="19 8 22 12 19 16"/></svg></div>Flip H</div>
+        <div class="tool-btn" title="Flip Vertical"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="2" y1="12" x2="22" y2="12"/><polyline points="8 5 12 2 16 5"/><polyline points="8 19 12 22 16 19"/></svg></div>Flip V</div>
+        <div class="tool-btn" title="Invert"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20" fill="currentColor" opacity="0.5"/></svg></div>Invert</div>
+        <div class="tool-btn" title="Capture"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>Capture</div>
+        <div class="tool-btn" title="Cine"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" opacity="0.3"/></svg></div>Cine</div>
+      </div>
+    </div>
+
+    <!-- 6. MPR & Sync (collapsed) -->
+    <div class="section-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display==='none'?'block':'none'; this.querySelector('.arrow').classList.toggle('closed')">
+      🔗 MPR & Sync <span class="arrow closed">▼</span>
+    </div>
+    <div class="section-body" style="display:none">
+      <div class="tool-grid">
+        <div class="tool-btn" title="MPR"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="2" width="9" height="9" rx="1"/><rect x="13" y="2" width="9" height="9" rx="1"/><rect x="2" y="13" width="9" height="9" rx="1"/></svg></div>MPR</div>
+        <div class="tool-btn" title="Crosshairs"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg></div>Cross</div>
+        <div class="tool-btn" title="Reference Lines"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="3 3"><line x1="2" y1="8" x2="22" y2="8"/><line x1="2" y1="16" x2="22" y2="16"/></svg></div>Ref Lines</div>
+        <div class="tool-btn" title="Stack Sync"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>Sync</div>
+      </div>
+    </div>
+
+    <!-- 7. Overlay & Info (collapsed) -->
+    <div class="section-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display==='none'?'block':'none'; this.querySelector('.arrow').classList.toggle('closed')">
+      📋 Overlay & Info <span class="arrow closed">▼</span>
+    </div>
+    <div class="section-body" style="display:none">
+      <div class="tool-grid">
+        <div class="tool-btn" title="Image Overlay"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>Overlay</div>
+        <div class="tool-btn" title="DICOM Tags"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg></div>Tags</div>
+      </div>
+    </div>
+
+    <!-- 8. Layout (collapsed) -->
+    <div class="section-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display==='none'?'block':'none'; this.querySelector('.arrow').classList.toggle('closed')">
+      🗂️ Layout <span class="arrow closed">▼</span>
+    </div>
+    <div class="section-body" style="display:none">
+      <div class="layout-grid">
+        <div class="layout-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>1×1</div>
+        <div class="layout-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>1×2</div>
+        <div class="layout-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="12" x2="21" y2="12"/></svg>2×1</div>
+        <div class="layout-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="3" y1="12" x2="21" y2="12"/></svg>2×2</div>
+        <div class="layout-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>3×3</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ──── SERIES PANEL ──── -->
+  <div class="series-panel">
+    <div class="panel-title">📂 Series List</div>
+    <div class="series-thumb">
+      <div class="thumb-img">CT Axial</div>
+      <div class="thumb-info"><span class="series-num">S:1</span> &nbsp; 🗂 256 img</div>
+    </div>
+    <div class="series-thumb">
+      <div class="thumb-img">CT Coronal</div>
+      <div class="thumb-info"><span class="series-num">S:2</span> &nbsp; 🗂 128 img</div>
+    </div>
+    <div class="series-thumb">
+      <div class="thumb-img">CT Sagittal</div>
+      <div class="thumb-info"><span class="series-num">S:3</span> &nbsp; 🗂 128 img</div>
+    </div>
+    <div class="series-thumb">
+      <div class="thumb-img">Scout</div>
+      <div class="thumb-info"><span class="series-num">S:4</span> &nbsp; 🗂 2 img</div>
+    </div>
+  </div>
+
+  <!-- ──── VIEWPORT ──── -->
+  <div class="viewport">
+    <div class="viewport-overlay-tl">Patient: ANONYMOUS<br>Study: CT Abdomen</div>
+    <div class="placeholder-text">CORNERSTONE VIEWPORT</div>
+    <div class="viewport-overlay-br">W: 400 &nbsp; L: 40<br>Zoom: 100%</div>
+  </div>
+
+</div>
+
+</body>
+</html>
