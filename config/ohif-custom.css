@@ -68,3 +68,5 @@ button,
 [data-cy="study-browser-thumbnail"].group:hover .bg-black {
   border-color: var(--custom-primary) !important;
 }
+
+/* mpacs-workstation-viewer */
