@@ -76,14 +76,6 @@ function MiniPacsViewerLayout({
         {/* CUSTOM LEFT PANEL 1: Tools Accordion */}
         <CustomToolsSidebar servicesManager={servicesManager} />
 
-        {/* CUSTOM LEFT PANEL 2: Series List (Thumbnails) */}
-        {leftPanelComponents.length > 0 && (
-          <div className="w-[120px] bg-[#152A30] h-full overflow-y-auto border-r border-[#102126]">
-            {leftPanelComponents.map(panel => (
-              <panel.content key={panel.id} servicesManager={servicesManager} />
-            ))}
-          </div>
-        )}
 
         {/* VIEWPORT GRID */}
         <div className="flex h-full flex-1 flex-col bg-black">
@@ -96,14 +88,6 @@ function MiniPacsViewerLayout({
           </ErrorBoundary>
         </div>
 
-        {/* RIGHT PANELS */}
-        {rightPanelComponents.length > 0 && (
-          <div className="w-[300px] bg-[#152A30] h-full">
-            {rightPanelComponents.map(panel => (
-              <panel.content key={panel.id} servicesManager={servicesManager} />
-            ))}
-          </div>
-        )}
       </div>
     </div>
   );
