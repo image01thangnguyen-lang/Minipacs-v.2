@@ -6,6 +6,7 @@ import { useAppConfig } from '@state';
 // If we can't import ViewerHeader, we will just create a basic one.
 // OHIF provides TopPanel components.
 
+import CustomTopToolbar from './Components/CustomTopToolbar';
 import CustomToolsSidebar from './Components/CustomToolsSidebar';
 
 function MiniPacsViewerLayout({
@@ -65,9 +66,11 @@ function MiniPacsViewerLayout({
   return (
     <div className="flex h-screen w-screen flex-col bg-black">
       {/* Header Area */}
-      <div className="h-[52px] bg-[#102126] flex items-center px-4 border-b border-[#1A323A]">
-        <h1 className="text-[#00B5B8] text-xl font-bold tracking-widest">PACS VIEWER</h1>
-        {/* We will add real toolbar components here later */}
+      <div className="h-[52px] bg-[#102126] flex items-center px-4 border-b border-[#1A323A] gap-4">
+        <h1 className="text-[#00B5B8] text-xl font-bold tracking-widest min-w-max">PACS VIEWER</h1>
+        <div className="flex-1 border-l border-[#1A323A] pl-4 h-[36px]">
+          <CustomTopToolbar servicesManager={servicesManager} />
+        </div>
       </div>
 
       <div className="relative flex flex-1 flex-row flex-nowrap items-stretch overflow-hidden">
