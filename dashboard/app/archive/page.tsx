@@ -116,7 +116,6 @@ export default function ArchivePage() {
   const [isActionBusy, setIsActionBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [host, setHost] = useState("");
 
   const printRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
@@ -126,13 +125,12 @@ export default function ArchivePage() {
 
   useEffect(() => {
     document.title = "Archive - Lịch sử & in lại";
-    setHost(window.location.hostname);
   }, []);
 
   const viewerLink = useMemo(() => {
-    if (!detail?.canOpenViewer || !host) return "";
-    return `http://${host}:3000/viewer?StudyInstanceUIDs=${encodeURIComponent(detail.studyInstanceUid)}`;
-  }, [detail?.canOpenViewer, detail?.studyInstanceUid, host]);
+    if (!detail?.canOpenViewer) return "";
+    return `/viewer/minipacs?StudyInstanceUIDs=${encodeURIComponent(detail.studyInstanceUid)}`;
+  }, [detail?.canOpenViewer, detail?.studyInstanceUid]);
 
   const runSearch = async (nextFilters = filters, keepSelection = false) => {
     setIsLoading(true);

@@ -64,7 +64,7 @@ function modeFactory({ modeConfiguration }) {
     // TODO: We're using this as a route segment
     // We should not be.
     id,
-    routeName: 'viewer',
+    routeName: 'minipacs',
     displayName: 'MiniPACS Viewer',
     /**
      * Lifecycle hooks

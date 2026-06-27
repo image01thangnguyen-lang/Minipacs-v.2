@@ -94,8 +94,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
   const [viewerLink, setViewerLink] = useState("");
 
   useEffect(() => {
-    const currentHost = window.location.hostname;
-    setViewerLink(`http://${currentHost}:3000/viewer?StudyInstanceUIDs=${encodeURIComponent(studyInstanceUid)}`);
+    setViewerLink(`/viewer/minipacs?StudyInstanceUIDs=${encodeURIComponent(studyInstanceUid)}`);
   }, [studyInstanceUid]);
 
   useEffect(() => {

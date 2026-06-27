@@ -1,5 +1,5 @@
 window.config = {
-  routerBasename: '/',
+  routerBasename: '/viewer',
   showStudyList: true,
   defaultMode: '@ohif/mode-minipacs-viewer',
   extensions: [],
