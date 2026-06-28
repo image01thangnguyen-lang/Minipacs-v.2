@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { getMiniPacsViewportState } from '../services/viewportStateAdapter';
 import MiniPacsViewportMiniToolbar from './MiniPacsViewportMiniToolbar';
+import { MiniPacsCineHud } from './MiniPacsCineHud';
 
 function safeFormatDate(dateStr?: string, timeStr?: string, formatters?: any) {
   if (!dateStr) return '';
@@ -83,7 +84,6 @@ export function MinipacsMiniToolbarOverlayItem(props: any) {
 }
 
 // A wrapper for the Cine HUD
-import { MiniPacsCineHud } from './MiniPacsCineHud';
 
 export function MinipacsCineHudOverlayItem(props: any) {
   const { servicesManager, viewportId } = props;

@@ -72,6 +72,7 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'AILabeling', label: 'AI Labeling', type: 'action', status: 'advanced', placement: ['left-panel'] },
 
   // --- Image Manipulation Tools ---
+  { id: 'RotateLeft', label: 'Rotate -90', type: 'action', commandName: 'rotateViewportCCW', status: 'ready', placement: ['left-panel'] },
   { id: 'RotateRight', label: 'Rotate +90', type: 'action', commandName: 'rotateViewportCW', status: 'ready', placement: ['left-panel'] },
   { id: 'FlipHorizontal', label: 'Flip H', type: 'action', commandName: 'flipViewportHorizontal', status: 'ready', placement: ['left-panel'] },
   { id: 'FlipVertical', label: 'Flip V', type: 'action', commandName: 'flipViewportVertical', status: 'ready', placement: ['left-panel'] },
@@ -86,8 +87,6 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'FusionMPR', label: 'Fusion on MPR', type: 'action', status: 'advanced', placement: ['left-panel'] },
 
   // --- Capture & Info Tools ---
-  { id: 'Capture', label: 'Capture (Local)', type: 'action', commandName: 'showDownloadViewportModal', status: 'ready', placement: ['left-panel'] },
-  { id: 'SaveSnapshot', label: 'Save Snapshot', type: 'action', status: 'ready', placement: ['left-panel'] },
   { id: 'Gallery', label: 'Gallery', type: 'action', status: 'ready', placement: ['left-panel'] },
   { id: 'TagBrowser', label: 'DICOM Tags', type: 'action', commandName: 'openDICOMTagViewer', context: 'DEFAULT', status: 'ready', placement: ['left-panel'] },
 
@@ -100,7 +99,6 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
 
   // --- Series Menu (Overflow) ---
   { id: 'DeleteSeries', label: 'Delete Series', type: 'action', status: 'guarded', placement: ['series-menu'], destructive: true },
-  { id: 'ExportVideo', label: 'Export Video', type: 'action', status: 'backend', placement: ['series-menu'] },
 
   // --- History & More Tools ---
   { id: 'StudyHistory', label: 'History', type: 'action', status: 'ready', placement: ['left-panel'] },
@@ -159,20 +157,12 @@ export const minipacsToolSections: MiniPacsToolSection[] = [
     toolIds: ['DoubleLength', 'NASCET', 'Volume'],
   },
   {
-    id: 'capture-tools',
-    title: 'Image Tools',
-    placement: 'left-panel',
-    renderType: 'icons',
-    defaultOpen: true,
-    toolIds: ['RotateRight', 'FlipHorizontal', 'FlipVertical', 'Invert', 'Capture', 'SaveSnapshot'],
-  },
-  {
     id: 'imagetools',
     title: 'Image Tools',
     placement: 'left-panel',
     renderType: 'icons',
     defaultOpen: true,
-    toolIds: ['RotateRight', 'FlipHorizontal', 'FlipVertical', 'Invert', 'Magnify', 'Cine'],
+    toolIds: ['RotateLeft', 'RotateRight', 'FlipHorizontal', 'FlipVertical', 'Invert', 'Magnify', 'Cine', 'Capture', 'SaveSnapshot'],
   },
   {
     id: 'sync-tools',

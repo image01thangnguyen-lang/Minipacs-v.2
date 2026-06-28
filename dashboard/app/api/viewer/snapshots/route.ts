@@ -4,23 +4,8 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const studyUid = searchParams.get('studyInstanceUid');
 
-  // Mock snapshots
-  return NextResponse.json([
-    {
-      id: 'snap-1',
-      studyInstanceUid: studyUid,
-      createdAt: new Date().toISOString(),
-      seriesDescription: 'Axial C+',
-      imageIndex: 12,
-    },
-    {
-      id: 'snap-2',
-      studyInstanceUid: studyUid,
-      createdAt: new Date().toISOString(),
-      seriesDescription: 'Coronal T2',
-      imageIndex: 45,
-    }
-  ]);
+  // Return empty array instead of fake mock data
+  return NextResponse.json([]);
 }
 
 export async function POST(request: Request) {

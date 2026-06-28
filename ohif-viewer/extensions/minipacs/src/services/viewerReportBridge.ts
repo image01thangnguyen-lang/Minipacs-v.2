@@ -18,9 +18,9 @@ class ViewerReportBridge {
     }
 
     if (result.data && result.data.url) {
-      // Check if we should open in new tab or same tab depending on your app's workflow. 
-      // Typically, a viewer might open the report editor in a new tab.
-      window.open(result.data.url, '_blank');
+      // Create an absolute URL to ensure cookies (SameSite=Lax) are sent properly if on the same origin.
+      const targetUrl = new URL(result.data.url, window.location.origin).toString();
+      window.open(targetUrl, '_blank');
     } else {
       commandFeedbackService.show('Chưa có báo cáo cho ca chụp này, hoặc URL không hợp lệ.', 'info');
     }
