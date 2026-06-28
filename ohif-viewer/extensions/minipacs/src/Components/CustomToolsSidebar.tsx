@@ -301,7 +301,7 @@ export default function CustomToolsSidebar({ servicesManager }) {
   };
 
   const handleToolClick = (item: MiniPacsTool) => {
-    const result = runMiniPacsTool(servicesManager, commandsManager, item, {
+    const result = runMiniPacsTool(servicesManager, item, {
       toggledState: !toggledTools[item.id],
     });
 

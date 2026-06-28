@@ -28,7 +28,26 @@ function MiniPacsViewerLayout({
 
   useEffect(() => {
     document.body.classList.add('bg-black', 'overflow-hidden');
-    return () => document.body.classList.remove('bg-black', 'overflow-hidden');
+    
+    // Add custom VRPACS active viewport styling
+    const styleEl = document.createElement('style');
+    styleEl.innerHTML = `
+      .minipacs-layout-root .viewport-pane.active, 
+      .minipacs-layout-root .border-primary-light.border-2 {
+        border-color: #f59e0b !important; /* amber-500 */
+        border-width: 2px !important;
+        box-shadow: inset 0 0 0 1px #f59e0b, 0 0 8px rgba(245, 158, 11, 0.4) !important;
+      }
+      .minipacs-layout-root .group-hover\\:border-transparent.border-transparent {
+        border-color: transparent !important;
+      }
+    `;
+    document.head.appendChild(styleEl);
+    
+    return () => {
+      document.body.classList.remove('bg-black', 'overflow-hidden');
+      document.head.removeChild(styleEl);
+    };
   }, []);
 
   useEffect(() => {
@@ -65,7 +84,7 @@ function MiniPacsViewerLayout({
   // Actually, we can just render the components directly or use the underlying OHIF UI SidePanel.
 
   return (
-    <div className="flex h-screen w-screen flex-col bg-black">
+    <div className="minipacs-layout-root flex h-screen w-screen flex-col bg-black">
       {/* Header Area */}
       <div className="h-[52px] bg-[#102126] flex items-center px-4 border-b border-[#1A323A] gap-4">
         <h1 className="text-[#00B5B8] text-xl font-bold tracking-widest min-w-max">PACS VIEWER</h1>

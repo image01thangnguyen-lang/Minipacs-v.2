@@ -125,7 +125,7 @@ export default function CustomTopToolbar({ servicesManager }) {
       return;
     }
 
-    const result = runMiniPacsTool(servicesManager, commandsManager, item, { 
+    const result = runMiniPacsTool(servicesManager, item, { 
       toggledState: !toggledTools[item.id] 
     });
 
