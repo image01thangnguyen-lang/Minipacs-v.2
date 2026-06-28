@@ -97,3 +97,21 @@ export function MinipacsMiniToolbarOverlayItem(props: any) {
   );
 }
 
+// A wrapper for the Cine HUD
+import { MiniPacsCineHud } from './MiniPacsCineHud';
+
+export function MinipacsCineHudOverlayItem(props: any) {
+  const { servicesManager, viewportId, element } = props;
+  
+  const viewportWrapper = element?.parentElement;
+  if (!viewportWrapper) return null;
+
+  return ReactDOM.createPortal(
+    <MiniPacsCineHud 
+      viewportId={viewportId} 
+      servicesManager={servicesManager} 
+    />,
+    viewportWrapper
+  );
+}
+

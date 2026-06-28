@@ -295,24 +295,39 @@ export default function CustomToolsSidebar({ servicesManager }) {
   const [toggledTools, setToggledTools] = useState<Record<string, boolean>>({});
 
   const { commandsManager } = servicesManager;
+  const { toolbarService } = servicesManager.services || servicesManager;
+
+  React.useEffect(() => {
+    if (!toolbarService) return;
+    const subscription = toolbarService.subscribe(
+      toolbarService.EVENTS.TOOL_BAR_STATE_MODIFIED,
+      (state: any) => {
+        setToggledTools({ ...state.toggles });
+        if (state.primaryToolId) {
+          setActiveTool(state.primaryToolId);
+        }
+      }
+    );
+    // Initial state
+    setToggledTools({ ...toolbarService.state.toggles });
+    if (toolbarService.state.primaryToolId) {
+      setActiveTool(toolbarService.state.primaryToolId);
+    }
+    return () => subscription.unsubscribe();
+  }, [toolbarService]);
 
   const toggleSection = (id: string) => {
     setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const handleToolClick = (item: MiniPacsTool) => {
+    const effectiveId = item.commandName === 'toggleSync' ? 'StackImageSync' : item.id;
     const result = runMiniPacsTool(servicesManager, item, {
-      toggledState: !toggledTools[item.id],
+      toggledState: !toggledTools[effectiveId],
     });
 
     if (result.ok) {
-      if (item.type === 'tool') {
-        setActiveTool(item.id);
-      } else if (item.type === 'toggle') {
-        setToggledTools((prev) => ({ ...prev, [item.id]: !prev[item.id] }));
-      }
-    } else if (result.reason === 'not_implemented') {
-      alert(result.message || 'Tính năng chưa được hỗ trợ.');
+      // State updates are now handled by toolbarService subscription
     }
   };
 

@@ -1,17 +1,17 @@
 export const VIEWPORT_MINI_TOOLS = [
   {
-    id: 'snapshot',
+    id: 'Snapshot',
     icon: 'Camera',
     label: 'Snapshot',
     action: 'snapshot',
-    isPlaceholder: true,
+    isPlaceholder: false,
   },
   {
-    id: 'fullscreen',
+    id: 'Fullscreen',
     icon: 'Maximize',
-    label: 'Fullscreen',
+    label: 'Fullscreen / Restore',
     action: 'fullscreen',
-    isPlaceholder: true,
+    isPlaceholder: false,
   },
   {
     id: 'windowLevel',
@@ -22,17 +22,17 @@ export const VIEWPORT_MINI_TOOLS = [
     isPlaceholder: false,
   },
   {
-    id: 'sync',
+    id: 'LinkViewport',
     icon: 'Link',
     label: 'Link / Sync',
     action: 'sync',
-    isPlaceholder: true,
+    isPlaceholder: false,
   },
   {
     id: 'overflow',
     icon: 'MoreVertical',
     label: 'More Actions',
     action: 'overflow',
-    isPlaceholder: true,
+    isPlaceholder: false,
   }
 ];

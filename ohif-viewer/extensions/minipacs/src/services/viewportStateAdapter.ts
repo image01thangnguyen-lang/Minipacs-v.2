@@ -21,6 +21,9 @@ export type MiniPacsViewportState = {
   isCineEnabled?: boolean;
   isCinePlaying?: boolean;
   seriesIndex?: number; // Order of this series in the study
+  isMultiFrame?: boolean;
+  isStack?: boolean;
+  canCine?: boolean;
 };
 
 export function getMiniPacsViewportState(
@@ -112,11 +115,26 @@ export function getMiniPacsViewportState(
       }
     }
 
-    // 4. Cine State
+    // 4. Cine / Stack State
+    const numFrames = displaySet?.numImageFrames || 1;
+    const numImages = displaySet?.images?.length || 1;
+    
+    defaultState.isMultiFrame = numFrames > 1;
+    defaultState.isStack = numImages > 1;
+    defaultState.canCine = defaultState.isMultiFrame || defaultState.isStack;
+    defaultState.imageCount = Math.max(numFrames, numImages);
+
+    if (cornerstoneViewportService) {
+      const csViewport = cornerstoneViewportService.getCornerstoneViewport(viewportId);
+      if (csViewport && typeof csViewport.getCurrentImageIdIndex === 'function') {
+        defaultState.imageIndex = csViewport.getCurrentImageIdIndex() + 1;
+      }
+    }
+
     if (cineService) {
       const cineState = cineService.getState();
-      defaultState.isCineEnabled = true; // Typically enabled for multiframe/stack
-      defaultState.isCinePlaying = cineState.isPlaying;
+      defaultState.isCineEnabled = defaultState.canCine;
+      defaultState.isCinePlaying = cineState.cines?.[viewportId]?.isPlaying || false;
     }
 
   } catch (error) {

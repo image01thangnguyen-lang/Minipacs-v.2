@@ -9,6 +9,7 @@ import { useAppConfig } from '@state';
 import CustomTopToolbar from './Components/CustomTopToolbar';
 import CustomToolsSidebar from './Components/CustomToolsSidebar';
 import MiniPacsSeriesRail from './Components/MiniPacsSeriesRail';
+import { MiniPacsCommandToast } from './Components/MiniPacsCommandToast';
 
 function MiniPacsViewerLayout({
   extensionManager,
@@ -106,8 +107,8 @@ function MiniPacsViewerLayout({
           commandsManager={commandsManager}
         />
 
-        {/* VIEWPORT GRID */}
-        <div className="flex h-full flex-1 flex-col bg-black">
+        {/* Main Content Area */}
+        <div className="relative flex flex-1 flex-col overflow-hidden">
           <ErrorBoundary context="Grid">
             <ViewportGridComp
               servicesManager={servicesManager}
@@ -117,6 +118,7 @@ function MiniPacsViewerLayout({
           </ErrorBoundary>
         </div>
 
+        <MiniPacsCommandToast />
       </div>
     </div>
   );

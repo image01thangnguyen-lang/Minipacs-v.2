@@ -39,6 +39,7 @@ export type MiniPacsToolSection = {
 };
 
 import { windowLevelPresets } from './windowLevelPresets';
+import { viewportWorkflowActions } from './viewportWorkflowActions';
 
 export const minipacsToolRegistry: MiniPacsTool[] = [
   // --- Top Toolbar Tools (Ready) ---
@@ -105,6 +106,9 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'PACSConfig', label: 'PACS Config', type: 'action', status: 'guarded', placement: ['left-panel'] },
   { id: 'UserConfig', label: 'User Config', type: 'action', status: 'guarded', placement: ['left-panel'] },
   { id: 'About', label: 'About', type: 'action', status: 'ready', placement: ['left-panel'] },
+
+  // --- Viewport Workflow Actions ---
+  ...viewportWorkflowActions,
 
   // --- Window/Level Presets ---
   ...windowLevelPresets.map(preset => ({

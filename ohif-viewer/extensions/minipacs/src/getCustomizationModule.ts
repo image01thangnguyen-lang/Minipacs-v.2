@@ -3,7 +3,8 @@ import {
   MinipacsStudyLineOverlayItem, 
   MinipacsSeriesLineOverlayItem, 
   MinipacsSeriesIndexOverlayItem, 
-  MinipacsMiniToolbarOverlayItem 
+  MinipacsMiniToolbarOverlayItem,
+  MinipacsCineHudOverlayItem
 } from './Components/MiniPacsOverlayItems';
 
 export default function getCustomizationModule() {
@@ -38,6 +39,13 @@ export default function getCustomizationModule() {
       value: {
         id: 'minipacs.overlayItem.miniToolbar',
         content: MinipacsMiniToolbarOverlayItem,
+      },
+    },
+    {
+      name: 'minipacs.overlayItem.cineHud',
+      value: {
+        id: 'minipacs.overlayItem.cineHud',
+        content: MinipacsCineHudOverlayItem,
       },
     },
   ];

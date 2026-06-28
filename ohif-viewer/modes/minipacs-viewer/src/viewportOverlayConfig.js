@@ -14,6 +14,6 @@ export const minipacsViewportOverlayConfig = {
     { id: 'minipacs-window-level', customizationType: 'ohif.overlayItem.windowLevel' },
   ],
   bottomLeft: [
-    // Placeholder for report note if needed
+    { id: 'minipacs-cine-hud', customizationType: 'minipacs.overlayItem.cineHud' },
   ]
 };
