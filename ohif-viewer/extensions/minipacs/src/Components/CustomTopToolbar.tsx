@@ -122,8 +122,8 @@ export default function CustomTopToolbar({ servicesManager }) {
                   w-[36px] h-[36px] flex items-center justify-center rounded-l
                   transition-all duration-150
                   ${isActive
-                    ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8] border border-[#00B5B8]'
-                    : 'text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A] border border-transparent'
+                    ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8] border-t border-b border-l border-[#00B5B8]'
+                    : 'text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A] border-t border-b border-l border-transparent'
                   }
                 `}
                 onClick={() => handleToolClick(item)}
@@ -132,11 +132,11 @@ export default function CustomTopToolbar({ servicesManager }) {
               </button>
               <button
                 className={`
-                  w-[16px] h-[36px] flex items-center justify-center rounded-r border-l border-[#1A323A]
+                  w-[16px] h-[36px] flex items-center justify-center rounded-r
                   transition-all duration-150
-                  ${isWlMenuOpen || isActive
-                    ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8] border-t border-r border-b border-[#00B5B8]'
-                    : 'text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A] border-t border-r border-b border-transparent'
+                  ${isWlMenuOpen
+                    ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8] border border-[#00B5B8]'
+                    : `text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A] border-t border-r border-b ${isActive ? 'border-l border-[#00B5B8] border-t-transparent border-r-transparent border-b-transparent' : 'border-l border-transparent'}`
                   }
                 `}
                 onClick={() => setIsWlMenuOpen(!isWlMenuOpen)}
