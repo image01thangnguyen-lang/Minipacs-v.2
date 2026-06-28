@@ -8,10 +8,6 @@ function initDefaultToolGroup(extensionManager, toolGroupService, commandsManage
   const tools = {
     active: [
       {
-        toolName: toolNames.WindowLevel,
-        bindings: [{ mouseButton: Enums.MouseBindings.Primary }],
-      },
-      {
         toolName: toolNames.Pan,
         bindings: [{ mouseButton: Enums.MouseBindings.Auxiliary }],
       },
@@ -22,6 +18,7 @@ function initDefaultToolGroup(extensionManager, toolGroupService, commandsManage
       { toolName: toolNames.StackScrollMouseWheel, bindings: [] },
     ],
     passive: [
+      { toolName: toolNames.WindowLevel },
       { toolName: toolNames.Length },
       {
         toolName: toolNames.ArrowAnnotate,
@@ -80,14 +77,6 @@ function initSRToolGroup(extensionManager, toolGroupService, commandsManager) {
   const tools = {
     active: [
       {
-        toolName: toolNames.WindowLevel,
-        bindings: [
-          {
-            mouseButton: Enums.MouseBindings.Primary,
-          },
-        ],
-      },
-      {
         toolName: toolNames.Pan,
         bindings: [
           {
@@ -109,6 +98,7 @@ function initSRToolGroup(extensionManager, toolGroupService, commandsManager) {
       },
     ],
     passive: [
+      { toolName: toolNames.WindowLevel },
       { toolName: SRToolNames.SRLength },
       { toolName: SRToolNames.SRArrowAnnotate },
       { toolName: SRToolNames.SRBidirectional },
@@ -138,10 +128,6 @@ function initMPRToolGroup(extensionManager, toolGroupService, commandsManager) {
   const tools = {
     active: [
       {
-        toolName: toolNames.WindowLevel,
-        bindings: [{ mouseButton: Enums.MouseBindings.Primary }],
-      },
-      {
         toolName: toolNames.Pan,
         bindings: [{ mouseButton: Enums.MouseBindings.Auxiliary }],
       },
@@ -152,6 +138,7 @@ function initMPRToolGroup(extensionManager, toolGroupService, commandsManager) {
       { toolName: toolNames.StackScrollMouseWheel, bindings: [] },
     ],
     passive: [
+      { toolName: toolNames.WindowLevel },
       { toolName: toolNames.Length },
       {
         toolName: toolNames.ArrowAnnotate,

@@ -56,12 +56,20 @@ const CrosshairsIcon = () => (
   </svg>
 );
 
+const CursorIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/>
+    <path d="M13 13l6 6"/>
+  </svg>
+);
+
 import { minipacsToolRegistry, MiniPacsTool } from '../config/minipacsToolRegistry';
 import { runMiniPacsTool } from '../services/commandBridge';
 
 // ──────────────────── Icon Registry ────────────────────
 
 const iconMap: Record<string, React.FC> = {
+  Cursor: CursorIcon,
   Pan: PanIcon,
   Zoom: ZoomIcon,
   StackScroll: StackScrollIcon,
@@ -74,7 +82,7 @@ const iconMap: Record<string, React.FC> = {
 };
 
 export default function CustomTopToolbar({ servicesManager }) {
-  const [activeTool, setActiveTool] = useState<string | null>('WindowLevel');
+  const [activeTool, setActiveTool] = useState<string | null>('Cursor');
   const [toggledTools, setToggledTools] = useState<Record<string, boolean>>({});
 
   const { commandsManager } = servicesManager;

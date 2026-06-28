@@ -42,6 +42,7 @@ import { windowLevelPresets } from './windowLevelPresets';
 
 export const minipacsToolRegistry: MiniPacsTool[] = [
   // --- Top Toolbar Tools (Ready) ---
+  { id: 'Cursor', label: 'Cursor', type: 'tool', status: 'ready', placement: ['top-toolbar'] },
   { id: 'Pan', label: 'Pan', type: 'tool', status: 'ready', placement: ['top-toolbar'] },
   { id: 'WindowLevel', label: 'W/L Manual', type: 'tool', status: 'ready', placement: ['top-toolbar'] },
   { id: 'Zoom', label: 'Zoom', type: 'tool', status: 'ready', placement: ['top-toolbar'] },
