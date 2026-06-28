@@ -42,9 +42,9 @@ const MiniPacsSeriesThumbnail: React.FC<MiniPacsSeriesThumbnailProps> = ({
   return (
     <div
       className={classNames(
-        'group relative flex select-none flex-col rounded-md border-2 p-1 transition-all duration-200',
+        'group relative flex select-none flex-col rounded border-2 p-[2px] transition-all duration-200',
         isUnsupported
-          ? 'cursor-not-allowed opacity-50 border-transparent'
+          ? 'cursor-not-allowed border-transparent opacity-50'
           : 'cursor-pointer',
         !isUnsupported && isActive
           ? 'border-[#00B5B8] bg-[#102126]'
@@ -55,36 +55,36 @@ const MiniPacsSeriesThumbnail: React.FC<MiniPacsSeriesThumbnailProps> = ({
       onClick={isUnsupported ? undefined : onClick}
       onDoubleClick={isUnsupported ? undefined : onDoubleClick}
       onContextMenu={onContextMenu}
+      title={SeriesDescription || 'No description'}
     >
       {/* Drag handle wraps the content */}
-      <div ref={drag}>
-        <div className="flex w-full items-center justify-between text-[11px] text-[#A0B0B5]">
-          <span className="font-bold text-white">S: {SeriesNumber}</span>
-          <span className="flex items-center gap-1">
-            {Modality}
-            <span className="text-[#00B5B8]">{numInstances > 0 ? numInstances : ''}</span>
-          </span>
-        </div>
+      <div ref={drag} className="relative aspect-square w-full overflow-hidden rounded bg-black">
+        
+        {thumbnailSrc ? (
+          <img
+            src={thumbnailSrc}
+            alt={SeriesDescription || 'Thumbnail'}
+            className="h-full w-full object-contain"
+            draggable={false}
+          />
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center text-[#A0B0B5]">
+            <Icon name={isUnsupported ? 'info' : 'group-layers'} className="mb-1 h-5 w-5" />
+          </div>
+        )}
 
-        <div className="relative mt-1 flex aspect-square w-full items-center justify-center overflow-hidden rounded bg-black">
-          {thumbnailSrc ? (
-            <img
-              src={thumbnailSrc}
-              alt={SeriesDescription || 'Thumbnail'}
-              className="h-full w-full object-contain"
-              draggable={false}
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center text-[#A0B0B5]">
-              <Icon name={isUnsupported ? 'info' : 'group-layers'} className="mb-1 h-6 w-6" />
-              <span className="text-[10px]">No Image</span>
-            </div>
-          )}
+        {/* Overlay Metadata */}
+        <div className="absolute top-0 left-0 p-[2px] text-[9px] font-bold text-white drop-shadow-md">
+          {SeriesNumber}
         </div>
-
-        <div className="mt-1 truncate text-center text-[10px] text-[#A0B0B5] group-hover:text-white">
-          {SeriesDescription || 'No description'}
+        <div className="absolute top-0 right-0 p-[2px] text-[9px] text-[#A0B0B5] drop-shadow-md">
+          {Modality}
         </div>
+        {numInstances > 0 && (
+          <div className="absolute right-0 bottom-0 bg-[#00B5B8]/80 px-1 py-[1px] text-[9px] font-bold text-white backdrop-blur-sm rounded-tl-sm">
+            {numInstances}
+          </div>
+        )}
       </div>
     </div>
   );
