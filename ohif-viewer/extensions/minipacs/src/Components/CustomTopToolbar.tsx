@@ -81,6 +81,9 @@ export default function CustomTopToolbar({ servicesManager }) {
 
   const topTools = minipacsToolRegistry.filter(tool => tool.placement.includes('top-toolbar'));
 
+  const windowLevelPresetIds = ['Default', 'Brain', 'Subdural', 'Stroke', 'Temporal', 'SoftTissue', 'Lung', 'Mediastinum', 'AbdomenSoft', 'Liver', 'SpineSoft', 'SpineBone'];
+  const windowLevelTools = minipacsToolRegistry.filter(t => windowLevelPresetIds.includes(t.id));
+
   const handleToolClick = (item: MiniPacsTool) => {
     const result = runMiniPacsTool(servicesManager, commandsManager, item, { 
       toggledState: !toggledTools[item.id] 
@@ -92,19 +95,74 @@ export default function CustomTopToolbar({ servicesManager }) {
       } else if (item.type === 'toggle') {
         setToggledTools(prev => ({ ...prev, [item.id]: !prev[item.id] }));
       }
+      setIsWlMenuOpen(false); // Close menu if an action is clicked
     } else if (result.reason === 'not_implemented') {
       alert(result.message || 'Tính năng chưa được hỗ trợ.');
     }
   };
 
+  const [isWlMenuOpen, setIsWlMenuOpen] = useState(false);
+
   return (
-    <div className="flex h-full items-center gap-1">
+    <div className="flex h-full items-center gap-1 relative">
       {topTools.map((item) => {
         const Icon = iconMap[item.id] || (() => <div className="w-4 h-4 rounded-full border border-current opacity-50" />);
         
         const isActive = item.type === 'tool' && activeTool === item.id;
         const isToggled = item.type === 'toggle' && toggledTools[item.id];
         const isDisabled = ['backend', 'advanced', 'guarded'].includes(item.status);
+
+        if (item.id === 'WindowLevel') {
+          return (
+            <div key={item.id} className="flex items-center">
+              <button
+                title={item.label}
+                disabled={isDisabled}
+                className={`
+                  w-[36px] h-[36px] flex items-center justify-center rounded-l
+                  transition-all duration-150
+                  ${isActive
+                    ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8] border border-[#00B5B8]'
+                    : 'text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A] border border-transparent'
+                  }
+                `}
+                onClick={() => handleToolClick(item)}
+              >
+                <Icon />
+              </button>
+              <button
+                className={`
+                  w-[16px] h-[36px] flex items-center justify-center rounded-r border-l border-[#1A323A]
+                  transition-all duration-150
+                  ${isWlMenuOpen || isActive
+                    ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8] border-t border-r border-b border-[#00B5B8]'
+                    : 'text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A] border-t border-r border-b border-transparent'
+                  }
+                `}
+                onClick={() => setIsWlMenuOpen(!isWlMenuOpen)}
+              >
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                  <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+
+              {/* Dropdown Menu */}
+              {isWlMenuOpen && (
+                <div className="absolute top-[40px] left-0 mt-1 w-[220px] bg-[#202020] border border-[#303030] rounded shadow-lg z-50 flex flex-col py-2">
+                  {windowLevelTools.map(wlTool => (
+                    <button
+                      key={wlTool.id}
+                      className="text-left px-4 py-1.5 text-[12px] text-white hover:bg-[#333333] transition-colors"
+                      onClick={() => handleToolClick(wlTool)}
+                    >
+                      {wlTool.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        }
 
         return (
           <button
