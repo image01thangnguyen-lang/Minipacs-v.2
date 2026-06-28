@@ -10,6 +10,11 @@ import CustomTopToolbar from './Components/CustomTopToolbar';
 import CustomToolsSidebar from './Components/CustomToolsSidebar';
 import MiniPacsSeriesRail from './Components/MiniPacsSeriesRail';
 import { MiniPacsCommandToast } from './Components/MiniPacsCommandToast';
+import { MiniPacsHistoryPanel } from './Components/MiniPacsHistoryPanel';
+import { MiniPacsSnapshotGallery } from './Components/MiniPacsSnapshotGallery';
+import { MiniPacsKeyImageDialog } from './Components/MiniPacsKeyImageDialog';
+import { viewerAuditService } from './services/viewerAuditService';
+import { viewerContextService } from './services/viewerContextService';
 
 function MiniPacsViewerLayout({
   extensionManager,
@@ -58,6 +63,20 @@ function MiniPacsViewerLayout({
     );
     return () => unsubscribe();
   }, [hangingProtocolService]);
+
+  useEffect(() => {
+    // We try to grab the study UID from the URL since the viewport might not be ready
+    const urlParams = new URLSearchParams(window.location.search);
+    const studyUids = urlParams.get('StudyInstanceUIDs');
+    let firstUid = undefined;
+    if (studyUids) {
+      firstUid = studyUids.split(',')[0];
+      viewerContextService.loadContext(firstUid).catch(() => {});
+    }
+
+    // Audit viewer open with the extracted UID
+    viewerAuditService.recordAction('viewer_opened', firstUid);
+  }, []);
 
   const getComponent = id => {
     const entry = extensionManager.getModuleEntry(id);
@@ -119,6 +138,11 @@ function MiniPacsViewerLayout({
         </div>
 
         <MiniPacsCommandToast />
+        
+        {/* Custom Workflow Modals/Panels */}
+        <MiniPacsHistoryPanel servicesManager={servicesManager} />
+        <MiniPacsSnapshotGallery servicesManager={servicesManager} />
+        <MiniPacsKeyImageDialog servicesManager={servicesManager} onClose={() => {}} />
       </div>
     </div>
   );

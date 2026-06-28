@@ -86,8 +86,9 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'FusionMPR', label: 'Fusion on MPR', type: 'action', status: 'advanced', placement: ['left-panel'] },
 
   // --- Capture & Info Tools ---
-  { id: 'Capture', label: 'Capture', type: 'action', commandName: 'showDownloadViewportModal', status: 'ready', placement: ['left-panel'] },
-  { id: 'Gallery', label: 'Gallery', type: 'action', status: 'backend', placement: ['left-panel'] },
+  { id: 'Capture', label: 'Capture (Local)', type: 'action', commandName: 'showDownloadViewportModal', status: 'ready', placement: ['left-panel'] },
+  { id: 'SaveSnapshot', label: 'Save Snapshot', type: 'action', status: 'ready', placement: ['left-panel'] },
+  { id: 'Gallery', label: 'Gallery', type: 'action', status: 'ready', placement: ['left-panel'] },
   { id: 'TagBrowser', label: 'DICOM Tags', type: 'action', commandName: 'openDICOMTagViewer', context: 'DEFAULT', status: 'ready', placement: ['left-panel'] },
 
   // --- Layout Tools ---
@@ -102,7 +103,8 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'ExportVideo', label: 'Export Video', type: 'action', status: 'backend', placement: ['series-menu'] },
 
   // --- History & More Tools ---
-  { id: 'StudyHistory', label: 'History', type: 'action', status: 'backend', placement: ['left-panel'] },
+  { id: 'StudyHistory', label: 'History', type: 'action', status: 'ready', placement: ['left-panel'] },
+  { id: 'Report', label: 'Report', type: 'action', status: 'ready', placement: ['left-panel'] },
   { id: 'PACSConfig', label: 'PACS Config', type: 'action', status: 'guarded', placement: ['left-panel'] },
   { id: 'UserConfig', label: 'User Config', type: 'action', status: 'guarded', placement: ['left-panel'] },
   { id: 'About', label: 'About', type: 'action', status: 'ready', placement: ['left-panel'] },
@@ -157,6 +159,14 @@ export const minipacsToolSections: MiniPacsToolSection[] = [
     toolIds: ['DoubleLength', 'NASCET', 'Volume'],
   },
   {
+    id: 'capture-tools',
+    title: 'Image Tools',
+    placement: 'left-panel',
+    renderType: 'icons',
+    defaultOpen: true,
+    toolIds: ['RotateRight', 'FlipHorizontal', 'FlipVertical', 'Invert', 'Capture', 'SaveSnapshot'],
+  },
+  {
     id: 'imagetools',
     title: 'Image Tools',
     placement: 'left-panel',
@@ -202,6 +212,6 @@ export const minipacsToolSections: MiniPacsToolSection[] = [
     placement: 'left-panel',
     renderType: 'icons',
     defaultOpen: true,
-    toolIds: ['TagBrowser', 'PACSConfig', 'UserConfig', 'About'],
+    toolIds: ['Report', 'TagBrowser', 'PACSConfig', 'UserConfig', 'About'],
   },
 ];

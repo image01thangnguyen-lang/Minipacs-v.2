@@ -88,17 +88,9 @@ function modeFactory({ modeConfiguration }) {
 
       const activateTool = () => {
         toolbarService.recordInteraction({
-          groupId: 'WindowLevel',
+          groupId: 'Cursor',
           interactionType: 'tool',
-          commands: [
-            {
-              commandName: 'setToolActive',
-              commandOptions: {
-                toolName: 'WindowLevel',
-              },
-              context: 'CORNERSTONE',
-            },
-          ],
+          commands: [],
         });
 
         // We don't need to reset the active tool whenever a viewport is getting

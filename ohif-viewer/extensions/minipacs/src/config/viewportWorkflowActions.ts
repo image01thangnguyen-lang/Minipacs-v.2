@@ -10,8 +10,15 @@ export const viewportWorkflowActions: MiniPacsTool[] = [
     placement: ['viewport-toolbar'],
   },
   {
-    id: 'Snapshot',
-    label: 'Snapshot',
+    id: 'SaveSnapshot',
+    label: 'Save Snapshot',
+    type: 'action',
+    status: 'ready',
+    placement: ['viewport-toolbar'],
+  },
+  {
+    id: 'Capture',
+    label: 'Download',
     type: 'action',
     commandName: 'showDownloadViewportModal',
     status: 'ready',
@@ -29,7 +36,7 @@ export const viewportWorkflowActions: MiniPacsTool[] = [
     id: 'KeyImage',
     label: 'Key Image',
     type: 'action',
-    status: 'backend',
+    status: 'ready',
     placement: ['viewport-toolbar'],
   },
   {

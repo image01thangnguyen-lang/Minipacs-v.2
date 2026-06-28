@@ -6,6 +6,8 @@ export type MiniPacsViewportState = {
   displaySetInstanceUID?: string;
   StudyInstanceUID?: string;
   SeriesInstanceUID?: string;
+  SOPInstanceUID?: string;
+  frameNumber?: number;
   Modality?: string;
   SeriesNumber?: number | string;
   SeriesDescription?: string;
@@ -127,7 +129,17 @@ export function getMiniPacsViewportState(
     if (cornerstoneViewportService) {
       const csViewport = cornerstoneViewportService.getCornerstoneViewport(viewportId);
       if (csViewport && typeof csViewport.getCurrentImageIdIndex === 'function') {
-        defaultState.imageIndex = csViewport.getCurrentImageIdIndex() + 1;
+        const idx = csViewport.getCurrentImageIdIndex();
+        defaultState.imageIndex = idx + 1;
+        
+        // Extract SOPInstanceUID and frameNumber for the active image
+        const instance = displaySet?.images?.[idx] || displaySet?.instances?.[idx] || displaySet?.instance;
+        if (instance) {
+          defaultState.SOPInstanceUID = instance.SOPInstanceUID;
+          // For multi-frame, instance might be the same but frameNumber differs. 
+          // If the metadata has frameNumber we use it, otherwise we fallback to the index + 1
+          defaultState.frameNumber = instance.frameNumber || (idx + 1);
+        }
       }
     }
 

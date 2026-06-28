@@ -1,5 +1,8 @@
 import { MiniPacsTool } from '../config/minipacsToolRegistry';
 import { commandFeedbackService } from './commandFeedbackService';
+import { viewerReportBridge } from './viewerReportBridge';
+import { getMiniPacsViewportState } from './viewportStateAdapter';
+import { viewerSnapshotService } from './viewerSnapshotService';
 
 type CommandBridgeResult = {
   ok: boolean;
@@ -71,6 +74,39 @@ export function runMiniPacsTool(
         },
       ],
     });
+    return { ok: true };
+  }
+
+  // --- FEATURE 7: Workflow Tools (Phase 7) ---
+  if (tool.id === 'Report') {
+    const state = getMiniPacsViewportState(options?.viewportId || viewportGridService.getActiveViewportId(), servicesManager);
+    if (state.StudyInstanceUID) {
+      viewerReportBridge.openReport(state.StudyInstanceUID);
+    } else {
+      commandFeedbackService.show('Không thể mở Report: Chưa tải Study', 'error');
+    }
+    return { ok: true };
+  }
+
+  if (tool.id === 'StudyHistory') {
+    window.dispatchEvent(new CustomEvent('minipacs:open-dialog', { detail: { dialogId: 'history' } }));
+    return { ok: true };
+  }
+
+  if (tool.id === 'Gallery') {
+    window.dispatchEvent(new CustomEvent('minipacs:open-dialog', { detail: { dialogId: 'gallery' } }));
+    return { ok: true };
+  }
+
+  if (tool.id === 'KeyImage') {
+    const activeViewportId = options?.viewportId || viewportGridService.getActiveViewportId();
+    window.dispatchEvent(new CustomEvent('minipacs:open-dialog', { detail: { dialogId: 'key-image', viewportId: activeViewportId } }));
+    return { ok: true };
+  }
+
+  if (tool.id === 'SaveSnapshot') {
+    const activeViewportId = options?.viewportId || viewportGridService.getActiveViewportId();
+    viewerSnapshotService.saveSnapshot(activeViewportId, servicesManager);
     return { ok: true };
   }
 

@@ -35,7 +35,7 @@ export const MiniPacsCineHud = ({ viewportId, servicesManager }) => {
   };
 
   return (
-    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center bg-[#102126]/90 border border-[#00B5B8]/30 rounded-full px-4 py-1.5 gap-3 pointer-events-auto backdrop-blur-sm z-40 select-none shadow-lg">
+    <div className="flex items-center bg-[#102126]/90 border border-[#00B5B8]/30 rounded-full px-4 py-1.5 gap-3 pointer-events-auto backdrop-blur-sm z-40 select-none shadow-lg">
       <div 
         className="text-[#00B5B8] hover:text-white cursor-pointer transition-colors p-1"
         onMouseDown={togglePlayPause}

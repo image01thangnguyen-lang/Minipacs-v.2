@@ -70,30 +70,15 @@ export function MinipacsSeriesIndexOverlayItem(props: any) {
 
 // A wrapper for the Mini Toolbar
 export function MinipacsMiniToolbarOverlayItem(props: any) {
-  const { servicesManager, viewportId, element } = props;
+  const { servicesManager, viewportId } = props;
   
-  // Render toolbar directly into the viewport wrapper to avoid TopRight overlay constraints
-  const viewportWrapper = element?.parentElement;
-
-  if (!viewportWrapper) return null;
-
-  return ReactDOM.createPortal(
-    <div 
-      className="absolute flex flex-col justify-center items-center h-full pointer-events-none"
-      style={{ 
-        right: '4px', 
-        top: '0', 
-        zIndex: 50 
-      }}
-    >
-      <div className="pointer-events-auto">
-        <MiniPacsViewportMiniToolbar 
-          viewportId={viewportId} 
-          servicesManager={servicesManager} 
-        />
-      </div>
-    </div>,
-    viewportWrapper
+  return (
+    <div className="pointer-events-auto mt-2">
+      <MiniPacsViewportMiniToolbar 
+        viewportId={viewportId} 
+        servicesManager={servicesManager} 
+      />
+    </div>
   );
 }
 
@@ -101,17 +86,15 @@ export function MinipacsMiniToolbarOverlayItem(props: any) {
 import { MiniPacsCineHud } from './MiniPacsCineHud';
 
 export function MinipacsCineHudOverlayItem(props: any) {
-  const { servicesManager, viewportId, element } = props;
-  
-  const viewportWrapper = element?.parentElement;
-  if (!viewportWrapper) return null;
+  const { servicesManager, viewportId } = props;
 
-  return ReactDOM.createPortal(
-    <MiniPacsCineHud 
-      viewportId={viewportId} 
-      servicesManager={servicesManager} 
-    />,
-    viewportWrapper
+  return (
+    <div className="pointer-events-auto mt-2">
+      <MiniPacsCineHud 
+        viewportId={viewportId} 
+        servicesManager={servicesManager} 
+      />
+    </div>
   );
 }
 
