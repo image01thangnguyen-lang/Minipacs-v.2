@@ -114,37 +114,39 @@ export default function CustomTopToolbar({ servicesManager }) {
 
         if (item.id === 'WindowLevel') {
           return (
-            <div key={item.id} className="flex items-center">
-              <button
-                title={item.label}
-                disabled={isDisabled}
+            <div key={item.id} className="flex items-center relative">
+              <div 
                 className={`
-                  w-[36px] h-[36px] flex items-center justify-center rounded-l
-                  transition-all duration-150
-                  ${isActive
-                    ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8] border-t border-b border-l border-[#00B5B8]'
-                    : 'text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A] border-t border-b border-l border-transparent'
-                  }
-                `}
-                onClick={() => handleToolClick(item)}
-              >
-                <Icon />
-              </button>
-              <button
-                className={`
-                  w-[16px] h-[36px] flex items-center justify-center rounded-r
-                  transition-all duration-150
-                  ${isWlMenuOpen
+                  flex items-center rounded transition-all duration-150
+                  ${isWlMenuOpen || isActive
                     ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8] border border-[#00B5B8]'
-                    : `text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A] border-t border-r border-b ${isActive ? 'border-l border-[#00B5B8] border-t-transparent border-r-transparent border-b-transparent' : 'border-l border-transparent'}`
+                    : 'text-[#8899A6] border border-transparent hover:border-[#1A323A]'
                   }
                 `}
-                onClick={() => setIsWlMenuOpen(!isWlMenuOpen)}
               >
-                <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
-                  <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
+                {/* Main Tool Button */}
+                <button
+                  title={item.label}
+                  disabled={isDisabled}
+                  className={`w-[36px] h-[36px] flex items-center justify-center rounded-l hover:text-[#00B5B8] ${isActive ? '' : 'hover:bg-[#1A323A]'}`}
+                  onClick={() => handleToolClick(item)}
+                >
+                  <Icon />
+                </button>
+
+                {/* Divider Line */}
+                <div className={`w-[1px] h-[24px] ${isActive || isWlMenuOpen ? 'bg-[#00B5B8] opacity-50' : 'bg-[#1A323A]'}`} />
+
+                {/* Dropdown Caret Button */}
+                <button
+                  className={`w-[16px] h-[36px] flex items-center justify-center rounded-r hover:text-[#00B5B8] ${isWlMenuOpen ? 'bg-[#00B5B8] text-white' : isActive ? '' : 'hover:bg-[#1A323A]'}`}
+                  onClick={() => setIsWlMenuOpen(!isWlMenuOpen)}
+                >
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
+                    <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              </div>
 
               {/* Dropdown Menu */}
               {isWlMenuOpen && (
