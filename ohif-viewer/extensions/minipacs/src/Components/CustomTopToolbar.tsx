@@ -93,6 +93,26 @@ export default function CustomTopToolbar({ servicesManager }) {
   const windowLevelTools = minipacsToolRegistry.filter(t => windowLevelPresetIds.includes(t.id));
 
   const handleToolClick = (item: MiniPacsTool) => {
+    if (item.id === 'Cursor') {
+      setActiveTool('Cursor');
+      setIsWlMenuOpen(false);
+      try {
+        const { toolGroupService } = servicesManager.services;
+        const toolGroupIds = toolGroupService.getToolGroupIds();
+        toolGroupIds.forEach(id => {
+          const toolGroup = toolGroupService.getToolGroup(id);
+          if (toolGroup) {
+            ['WindowLevel', 'Pan', 'Zoom', 'Length', 'ArrowAnnotate', 'Probe', 'Crosshairs', 'Angle', 'StackScrollMouseWheel'].forEach(t => {
+               try { toolGroup.setToolPassive(t); } catch(e) {}
+            });
+          }
+        });
+      } catch (e) {
+        console.error('Failed to set tools passive:', e);
+      }
+      return;
+    }
+
     const result = runMiniPacsTool(servicesManager, commandsManager, item, { 
       toggledState: !toggledTools[item.id] 
     });
@@ -136,7 +156,7 @@ export default function CustomTopToolbar({ servicesManager }) {
                 <button
                   title={item.label}
                   disabled={isDisabled}
-                  className={`w-[36px] h-[36px] flex items-center justify-center rounded-l hover:text-[#00B5B8] ${isActive ? '' : 'hover:bg-[#1A323A]'}`}
+                  className={`w-[36px] h-[36px] flex items-center justify-center rounded-l ${isActive ? 'hover:text-[#00B5B8]' : 'hover:text-[#00B5B8] hover:bg-[#1A323A]'}`}
                   onClick={() => handleToolClick(item)}
                 >
                   <Icon />
@@ -147,7 +167,7 @@ export default function CustomTopToolbar({ servicesManager }) {
 
                 {/* Dropdown Caret Button */}
                 <button
-                  className={`w-[16px] h-[36px] flex items-center justify-center rounded-r hover:text-[#00B5B8] ${isWlMenuOpen ? 'bg-[#00B5B8] text-white' : isActive ? '' : 'hover:bg-[#1A323A]'}`}
+                  className={`w-[16px] h-[36px] flex items-center justify-center rounded-r ${isWlMenuOpen ? 'bg-[#00B5B8] text-white hover:text-white' : isActive ? 'hover:text-[#00B5B8]' : 'hover:text-[#00B5B8] hover:bg-[#1A323A]'}`}
                   onClick={() => setIsWlMenuOpen(!isWlMenuOpen)}
                 >
                   <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
