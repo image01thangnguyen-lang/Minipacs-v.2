@@ -8,6 +8,7 @@ import { useAppConfig } from '@state';
 
 import CustomTopToolbar from './Components/CustomTopToolbar';
 import CustomToolsSidebar from './Components/CustomToolsSidebar';
+import MiniPacsSeriesRail from './Components/MiniPacsSeriesRail';
 
 function MiniPacsViewerLayout({
   extensionManager,
@@ -79,6 +80,12 @@ function MiniPacsViewerLayout({
         {/* CUSTOM LEFT PANEL 1: Tools Accordion */}
         <CustomToolsSidebar servicesManager={servicesManager} />
 
+        {/* CUSTOM LEFT PANEL 2: Series Rail */}
+        <MiniPacsSeriesRail
+          servicesManager={servicesManager}
+          extensionManager={extensionManager}
+          commandsManager={commandsManager}
+        />
 
         {/* VIEWPORT GRID */}
         <div className="flex h-full flex-1 flex-col bg-black">
