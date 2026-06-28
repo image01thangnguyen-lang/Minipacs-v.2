@@ -42,7 +42,7 @@ const MiniPacsSeriesThumbnail: React.FC<MiniPacsSeriesThumbnailProps> = ({
   return (
     <div
       className={classNames(
-        'group relative flex select-none flex-col rounded border-2 p-[2px] transition-all duration-200',
+        'group relative flex select-none flex-col rounded border-2 p-0.5 transition-all duration-200',
         isUnsupported
           ? 'cursor-not-allowed border-transparent opacity-50'
           : 'cursor-pointer',
@@ -74,14 +74,14 @@ const MiniPacsSeriesThumbnail: React.FC<MiniPacsSeriesThumbnailProps> = ({
         )}
 
         {/* Overlay Metadata */}
-        <div className="absolute top-0 left-0 p-[2px] text-[9px] font-bold text-white drop-shadow-md">
+        <div className="absolute top-0 left-0 font-bold text-white drop-shadow-md" style={{ padding: '2px', fontSize: '10px' }}>
           {SeriesNumber}
         </div>
-        <div className="absolute top-0 right-0 p-[2px] text-[9px] text-[#A0B0B5] drop-shadow-md">
+        <div className="absolute top-0 right-0 text-[#A0B0B5] drop-shadow-md" style={{ padding: '2px', fontSize: '10px' }}>
           {Modality}
         </div>
         {numInstances > 0 && (
-          <div className="absolute right-0 bottom-0 bg-[#00B5B8]/80 px-1 py-[1px] text-[9px] font-bold text-white backdrop-blur-sm rounded-tl-sm">
+          <div className="absolute right-0 bottom-0 bg-[#00B5B8] font-bold text-white rounded-tl-sm" style={{ padding: '1px 4px', fontSize: '10px' }}>
             {numInstances}
           </div>
         )}

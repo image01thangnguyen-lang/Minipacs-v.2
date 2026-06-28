@@ -225,7 +225,10 @@ const MiniPacsSeriesRail: React.FC<MiniPacsSeriesRailProps> = ({
   const emptyLabel = isLoaded ? 'No image series' : 'Loading series...';
 
   return (
-    <div className="flex h-full w-[72px] flex-col border-r border-[#1A323A] bg-[#0E1B1F]">
+    <div 
+      className="flex h-full flex-col border-r border-[#1A323A] bg-[#0E1B1F] shrink-0"
+      style={{ width: '76px', minWidth: '76px', maxWidth: '76px' }}
+    >
       <div className="flex items-center justify-between border-b border-[#1A323A] px-2 py-[6px] text-[#A0B0B5]">
         <span className="text-[10px] font-semibold tracking-wider">SERIES</span>
         <span className="text-[10px]">{seriesItems.length}</span>
