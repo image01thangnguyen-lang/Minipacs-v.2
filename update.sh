@@ -131,6 +131,17 @@ ensure_data_dirs() {
   chmod -R 777 pacs_data
 }
 
+patch_nginx_config() {
+  local template="config_templates/nginx.conf.template"
+  if [ -f "$template" ]; then
+    if grep -q "proxy_set_header Host \$host" "$template" || grep -q "proxy_set_header X-Forwarded-Host \$host" "$template"; then
+      info "Patching Nginx config template to use \$http_host for Next.js Server Actions..."
+      sed -i 's/proxy_set_header Host $host/proxy_set_header Host $http_host/g' "$template"
+      sed -i 's/proxy_set_header X-Forwarded-Host $host/proxy_set_header X-Forwarded-Host $http_host/g' "$template"
+    fi
+  fi
+}
+
 update_code() {
   info "[1/9] Pulling latest code..."
 
@@ -213,8 +224,8 @@ build_and_start() {
   info "[9/9] Starting Mini PACS..."
   compose up -d
 
-  info "Recreating OHIF viewer so $OHIF_IMAGE_NAME and custom viewer shell are active..."
-  compose up -d --force-recreate --no-deps ohif
+  info "Recreating OHIF viewer and Nginx Gateway to ensure fresh assets and configs..."
+  compose up -d --force-recreate --no-deps ohif nginx-gateway
 }
 
 wait_for_dashboard() {
@@ -331,6 +342,7 @@ update_code
 info "[2/9] Preparing local storage and config..."
 load_env_file
 ensure_data_dirs
+patch_nginx_config
 generate_config config_templates/app-config.js.template config/app-config.js
 generate_config config_templates/orthanc.json.template config/orthanc.json
 generate_config config_templates/nginx.conf.template config/nginx.conf
