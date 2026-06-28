@@ -42,7 +42,7 @@ const MiniPacsSeriesThumbnail: React.FC<MiniPacsSeriesThumbnailProps> = ({
   return (
     <div
       className={classNames(
-        'group relative flex select-none flex-col rounded border-2 p-0.5 transition-all duration-200',
+        'group relative flex select-none flex-col rounded border transition-all duration-200',
         isUnsupported
           ? 'cursor-not-allowed border-transparent opacity-50'
           : 'cursor-pointer',

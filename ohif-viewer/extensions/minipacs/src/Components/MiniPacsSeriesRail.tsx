@@ -234,11 +234,11 @@ const MiniPacsSeriesRail: React.FC<MiniPacsSeriesRailProps> = ({
         <span className="text-[10px]">{seriesItems.length}</span>
       </div>
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 hide-scrollbar">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar" style={{ padding: '2px' }}>
         {seriesItems.length === 0 ? (
           <div className="mt-4 text-center text-[11px] text-[#A0B0B5]">{emptyLabel}</div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col" style={{ gap: '2px' }}>
             {seriesItems.map(series => (
               <MiniPacsSeriesThumbnail
                 key={series.displaySetInstanceUID}
