@@ -97,7 +97,7 @@ export default function CustomTopToolbar({ servicesManager }) {
       setActiveTool('Cursor');
       setIsWlMenuOpen(false);
       try {
-        const { toolGroupService } = servicesManager.services;
+        const { toolGroupService, cornerstoneViewportService } = servicesManager.services;
         const toolGroupIds = toolGroupService.getToolGroupIds();
         toolGroupIds.forEach(id => {
           const toolGroup = toolGroupService.getToolGroup(id);
@@ -107,6 +107,18 @@ export default function CustomTopToolbar({ servicesManager }) {
             });
           }
         });
+
+        // Force reset cursors on all viewports
+        if (cornerstoneViewportService) {
+          const renderingEngine = cornerstoneViewportService.getRenderingEngine();
+          if (renderingEngine) {
+            renderingEngine.getViewports().forEach(vp => {
+              if (vp.element) {
+                vp.element.style.cursor = 'default';
+              }
+            });
+          }
+        }
       } catch (e) {
         console.error('Failed to set tools passive:', e);
       }
