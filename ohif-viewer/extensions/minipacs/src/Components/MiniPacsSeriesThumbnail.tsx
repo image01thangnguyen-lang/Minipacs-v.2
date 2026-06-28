@@ -74,11 +74,13 @@ const MiniPacsSeriesThumbnail: React.FC<MiniPacsSeriesThumbnailProps> = ({
         )}
 
         {/* Overlay Metadata */}
-        <div className="absolute top-0 left-0 font-bold text-white drop-shadow-md" style={{ padding: '2px', fontSize: '10px' }}>
-          {SeriesNumber}
-        </div>
-        <div className="absolute top-0 right-0 text-[#A0B0B5] drop-shadow-md" style={{ padding: '2px', fontSize: '10px' }}>
-          {Modality}
+        <div className="absolute top-0 left-0 flex w-full justify-between drop-shadow-md" style={{ padding: '2px 4px', fontSize: '10px' }}>
+          <div className="flex w-full items-center gap-1 overflow-hidden">
+            <span className="font-bold text-[#f59e0b] shrink-0">{SeriesNumber}</span>
+            <span className="truncate text-white" title={SeriesDescription || ''}>
+              {SeriesDescription}
+            </span>
+          </div>
         </div>
         {numInstances > 0 && (
           <div className="absolute right-0 bottom-0 bg-[#00B5B8] font-bold text-white rounded-tl-sm" style={{ padding: '1px 4px', fontSize: '10px' }}>
