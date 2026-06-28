@@ -27,7 +27,7 @@ export const MiniPacsKeyImageDialog = ({ servicesManager, onClose }) => {
     const state = getMiniPacsViewportState(viewportId, servicesManager);
     const success = await viewerKeyImageService.saveKeyImage(viewportId, servicesManager, note);
     if (success) {
-      viewerAuditService.recordAction('key_image_saved', state.StudyInstanceUID, { viewportId, note });
+      viewerAuditService.recordAction(state.StudyInstanceUID, 'key_image_saved', { viewportId, note });
     }
   };
 

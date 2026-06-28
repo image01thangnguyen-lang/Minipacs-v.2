@@ -40,7 +40,7 @@ class ViewerSnapshotService {
     const result = await viewerApiClient.post(`/api/viewer/snapshots`, metadata);
     
     if (result.ok) {
-      commandFeedbackService.show('Đã lưu Snapshot thành công (Mock Backend)!', 'info');
+      commandFeedbackService.show('Đã lưu Snapshot thành công!', 'info');
       return true;
     } else {
       commandFeedbackService.show(`Lưu Snapshot thất bại: ${result.message}`, 'warning');

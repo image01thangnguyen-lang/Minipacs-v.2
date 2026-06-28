@@ -3,7 +3,7 @@ import { commandFeedbackService } from './commandFeedbackService';
 
 type ReportLinkResponse = {
   url: string;
-  status: 'draft' | 'final' | 'none';
+  status: 'draft' | 'final' | 'unread' | 'drafting' | 'completed' | 'none';
 };
 
 class ViewerReportBridge {

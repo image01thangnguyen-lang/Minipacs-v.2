@@ -75,7 +75,7 @@ function MiniPacsViewerLayout({
     }
 
     // Audit viewer open with the extracted UID
-    viewerAuditService.recordAction('viewer_opened', firstUid);
+    viewerAuditService.recordAction(firstUid, 'viewer_opened');
   }, []);
 
   const getComponent = id => {

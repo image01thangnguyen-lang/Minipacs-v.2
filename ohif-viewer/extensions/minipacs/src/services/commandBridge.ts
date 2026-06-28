@@ -3,6 +3,7 @@ import { commandFeedbackService } from './commandFeedbackService';
 import { viewerReportBridge } from './viewerReportBridge';
 import { getMiniPacsViewportState } from './viewportStateAdapter';
 import { viewerSnapshotService } from './viewerSnapshotService';
+import { viewerAuditService } from './viewerAuditService';
 
 type CommandBridgeResult = {
   ok: boolean;
@@ -23,6 +24,16 @@ export function runMiniPacsTool(
     const msg = tool.status === 'guarded' ? 'Hành động này bị khóa để đảm bảo an toàn.' : 'Tính năng đang chờ API Backend.';
     commandFeedbackService.show(`${tool.label}: ${msg}`, 'warning');
     return { ok: false, reason: 'not_implemented', message: msg };
+  }
+
+  // Audit Tool Click
+  try {
+    const state = getMiniPacsViewportState(options?.viewportId || viewportGridService.getActiveViewportId(), servicesManager);
+    if (state?.StudyInstanceUID) {
+      viewerAuditService.recordAction(state.StudyInstanceUID, `TOOL_CLICK_${tool.id}`);
+    }
+  } catch (e) {
+    // Ignore error
   }
 
   // --- FEATURE 1: Fullscreen / Restore ---

@@ -54,7 +54,7 @@ class ViewerKeyImageService {
     const result = await viewerApiClient.post(`/api/viewer/studies/${state.StudyInstanceUID}/key-images`, metadata);
     
     if (result.ok) {
-      commandFeedbackService.show('Lưu Key Image thành công (Mock Backend)!', 'info');
+      commandFeedbackService.show('Lưu Key Image thành công!', 'info');
       return true;
     } else {
       commandFeedbackService.show(`Lưu thất bại: ${result.message}`, 'warning');

@@ -9,7 +9,19 @@ class ViewerApiClient {
     try {
       const response = await fetch(url, options);
       if (!response.ok) {
-        return { ok: false, message: `HTTP Error: ${response.status} ${response.statusText}` };
+        let errorMessage = `HTTP Error: ${response.status} ${response.statusText}`;
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            if (errorData && errorData.message) {
+              errorMessage = errorData.message;
+            }
+          }
+        } catch (e) {
+          // Fallback to default message
+        }
+        return { ok: false, message: errorMessage };
       }
       
       const contentType = response.headers.get('content-type');

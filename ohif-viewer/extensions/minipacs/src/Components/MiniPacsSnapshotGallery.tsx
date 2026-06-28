@@ -21,7 +21,7 @@ export const MiniPacsSnapshotGallery = ({ servicesManager }) => {
         const state = getMiniPacsViewportState(viewportGridService.getActiveViewportId(), servicesManager);
         
         if (state.StudyInstanceUID) {
-          viewerAuditService.recordAction('snapshot_opened', state.StudyInstanceUID);
+          viewerAuditService.recordAction(state.StudyInstanceUID, 'snapshot_opened');
           const res = await viewerApiClient.get<SnapshotRecord[]>(`/api/viewer/snapshots?studyInstanceUid=${state.StudyInstanceUID}`);
           if (res.ok && res.data) {
             setSnapshots(res.data);

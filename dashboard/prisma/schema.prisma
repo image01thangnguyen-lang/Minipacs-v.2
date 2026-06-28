@@ -537,3 +537,68 @@ model DicomNode {
   @@index([aeTitle])
   @@map("dicom_nodes")
 }
+
+model ViewerSnapshot {
+  id                    String   @id @default(uuid())
+  studyInstanceUid      String
+  seriesInstanceUid     String?
+  sopInstanceUid        String?
+  frameNumber           Int?
+  imageIndex            Int?
+  imageCount            Int?
+  modality              String?
+  bodyPartExamined      String?
+  seriesDescription     String?
+  viewportState         String?  @db.Text
+  windowWidth           Float?
+  windowCenter          Float?
+  zoom                  Float?
+  displaySetInstanceUID String?
+  note                  String?  @db.Text
+  imageUrl              String?  @db.Text
+  createdByUserId       String?
+  createdAt             DateTime @default(now())
+
+  @@index([studyInstanceUid])
+  @@index([createdAt])
+  @@map("viewer_snapshots")
+}
+
+model ViewerKeyImage {
+  id                    String   @id @default(uuid())
+  studyInstanceUid      String
+  seriesInstanceUid     String?
+  sopInstanceUid        String?
+  frameNumber           Int?
+  imageIndex            Int?
+  imageCount            Int?
+  modality              String?
+  bodyPartExamined      String?
+  seriesDescription     String?
+  viewportState         String?  @db.Text
+  windowWidth           Float?
+  windowCenter          Float?
+  zoom                  Float?
+  displaySetInstanceUID String?
+  note                  String?  @db.Text
+  createdByUserId       String?
+  createdAt             DateTime @default(now())
+
+  @@index([studyInstanceUid])
+  @@index([createdAt])
+  @@map("viewer_key_images")
+}
+
+model ViewerAuditLog {
+  id               String   @id @default(uuid())
+  studyInstanceUid String
+  action           String
+  metadataJson     String?  @db.Text
+  actorUserId      String?
+  createdAt        DateTime @default(now())
+
+  @@index([studyInstanceUid])
+  @@index([action])
+  @@index([createdAt])
+  @@map("viewer_audit_logs")
+}

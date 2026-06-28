@@ -30,7 +30,7 @@ export const MiniPacsHistoryPanel = ({ servicesManager }) => {
         const state = getMiniPacsViewportState(viewportGridService.getActiveViewportId(), servicesManager);
         
         if (state.StudyInstanceUID) {
-          viewerAuditService.recordAction('history_opened', state.StudyInstanceUID);
+          viewerAuditService.recordAction(state.StudyInstanceUID, 'history_opened');
           const res = await viewerApiClient.get<HistoryRecord[]>(`/api/viewer/studies/${state.StudyInstanceUID}/history`);
           if (res.ok && res.data) {
             setHistory(res.data);
