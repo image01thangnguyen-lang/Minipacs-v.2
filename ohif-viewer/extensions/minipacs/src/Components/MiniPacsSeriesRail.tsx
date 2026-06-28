@@ -227,7 +227,7 @@ const MiniPacsSeriesRail: React.FC<MiniPacsSeriesRailProps> = ({
   return (
     <div 
       className="flex h-full flex-col border-r border-[#1A323A] bg-[#0E1B1F] shrink-0"
-      style={{ width: '130px', minWidth: '130px', maxWidth: '130px' }}
+      style={{ width: '100px', minWidth: '100px', maxWidth: '100px' }}
     >
       <div className="flex items-center justify-between border-b border-[#1A323A] px-2 py-[6px] text-[#A0B0B5]">
         <span className="text-[10px] font-semibold tracking-wider">SERIES</span>
