@@ -602,3 +602,39 @@ model ViewerAuditLog {
   @@index([createdAt])
   @@map("viewer_audit_logs")
 }
+
+model ViewerMeasurement {
+  id                    String   @id @default(uuid())
+  studyInstanceUid      String
+  seriesInstanceUid     String?
+  sopInstanceUid        String?
+  frameNumber           Int?
+  displaySetInstanceUID String?
+  viewportId            String?
+
+  toolName              String
+  measurementType       String?
+  annotationUID         String?
+  measurementUID        String
+  label                 String?
+  displayText           String?  @db.Text
+  value                 Float?
+  unit                  String?
+
+  dataJson              String   @db.Text
+  isDeleted             Boolean  @default(false)
+  createdByUserId       String?
+  updatedByUserId       String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  deletedAt             DateTime?
+
+  @@unique([studyInstanceUid, measurementUID])
+  @@index([studyInstanceUid])
+  @@index([seriesInstanceUid])
+  @@index([sopInstanceUid])
+  @@index([toolName])
+  @@index([createdAt])
+  @@map("viewer_measurements")
+}
+

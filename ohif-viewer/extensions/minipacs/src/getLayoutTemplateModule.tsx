@@ -15,6 +15,7 @@ import { MiniPacsSnapshotGallery } from './Components/MiniPacsSnapshotGallery';
 import { MiniPacsKeyImageDialog } from './Components/MiniPacsKeyImageDialog';
 import { viewerAuditService } from './services/viewerAuditService';
 import { viewerContextService } from './services/viewerContextService';
+import { viewerMeasurementPersistenceService } from './services/viewerMeasurementPersistenceService';
 
 function MiniPacsViewerLayout({
   extensionManager,
@@ -29,7 +30,7 @@ function MiniPacsViewerLayout({
   rightPanelDefaultClosed = false,
 }) {
   const [appConfig] = useAppConfig();
-  const { hangingProtocolService } = servicesManager.services;
+  const { hangingProtocolService, viewportGridService } = servicesManager.services;
   const [showLoadingIndicator, setShowLoadingIndicator] = useState(appConfig.showLoadingIndicator);
 
   useEffect(() => {
@@ -72,6 +73,7 @@ function MiniPacsViewerLayout({
     if (studyUids) {
       firstUid = studyUids.split(',')[0];
       viewerContextService.loadContext(firstUid).catch(() => {});
+      viewerMeasurementPersistenceService.loadForStudy(firstUid).catch(() => {});
     }
 
     // Audit viewer open with the extracted UID
