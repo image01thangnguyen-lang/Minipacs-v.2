@@ -1,5 +1,6 @@
 import { viewerApiClient } from './viewerApiClient';
 import { commandFeedbackService } from './commandFeedbackService';
+import { viewerAuditService } from './viewerAuditService';
 
 type ReportLinkResponse = {
   url: string;
@@ -19,6 +20,7 @@ class ViewerReportBridge {
 
     if (result.data && result.data.url) {
       // Create an absolute URL to ensure cookies (SameSite=Lax) are sent properly if on the same origin.
+      viewerAuditService.recordAction(studyInstanceUid, 'report_opened');
       const targetUrl = new URL(result.data.url, window.location.origin).toString();
       window.open(targetUrl, '_blank');
     } else {

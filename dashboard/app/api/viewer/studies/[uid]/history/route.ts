@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/db';
+import { requireApiPermission } from '@/lib/api-auth';
 
 export async function GET(request: Request, { params }: { params: { uid: string } }) {
+  const authz = await requireApiPermission('studies.read');
+  if (!authz.ok) return authz.response;
+
   try {
     // 1. Find the current study to get patientId
     const currentStudy = await prisma.imagingStudy.findUnique({

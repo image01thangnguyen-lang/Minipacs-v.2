@@ -3,6 +3,7 @@ import { commandFeedbackService } from './commandFeedbackService';
 import { getMiniPacsViewportState } from './viewportStateAdapter';
 import { ServicesManager } from '@ohif/core';
 import { ViewerViewportMetadata } from './viewerKeyImageService';
+import { viewerAuditService } from './viewerAuditService';
 
 export type SnapshotRecord = ViewerViewportMetadata & {
   id: string;
@@ -40,6 +41,7 @@ class ViewerSnapshotService {
     const result = await viewerApiClient.post(`/api/viewer/snapshots`, metadata);
     
     if (result.ok) {
+      viewerAuditService.recordAction(state.StudyInstanceUID, 'snapshot_saved');
       commandFeedbackService.show('Đã lưu Snapshot thành công!', 'info');
       return true;
     } else {

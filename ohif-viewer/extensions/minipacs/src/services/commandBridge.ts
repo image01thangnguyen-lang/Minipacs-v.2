@@ -85,6 +85,12 @@ export function runMiniPacsTool(
         },
       ],
     });
+    
+    const state = getMiniPacsViewportState(options?.viewportId || viewportGridService.getActiveViewportId(), servicesManager);
+    if (state?.StudyInstanceUID) {
+      viewerAuditService.recordAction(state.StudyInstanceUID, 'download_opened');
+    }
+    
     return { ok: true };
   }
 

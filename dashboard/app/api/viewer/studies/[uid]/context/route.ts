@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/db';
+import { requireApiPermission } from '@/lib/api-auth';
 
 export async function GET(request: Request, { params }: { params: { uid: string } }) {
+  const authz = await requireApiPermission('studies.read');
+  if (!authz.ok) return authz.response;
+
   try {
     const study = await prisma.imagingStudy.findUnique({
       where: { studyInstanceUid: params.uid },

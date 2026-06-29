@@ -1,8 +1,22 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/db';
-import { auth } from '@/auth';
+import { requireApiPermission } from '@/lib/api-auth';
+
+function parseOptionalNumber(value: unknown) {
+  if (value === null || value === undefined || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function trimOptionalString(value: unknown, maxLength = 500) {
+  if (typeof value !== 'string') return null;
+  return value.trim().slice(0, maxLength);
+}
 
 export async function GET(request: Request, { params }: { params: { uid: string } }) {
+  const authz = await requireApiPermission('studies.read');
+  if (!authz.ok) return authz.response;
+
   try {
     const keyImages = await prisma.viewerKeyImage.findMany({
       where: { studyInstanceUid: params.uid },
@@ -16,8 +30,10 @@ export async function GET(request: Request, { params }: { params: { uid: string 
 }
 
 export async function POST(request: Request, { params }: { params: { uid: string } }) {
-  const session = await auth();
-  const userId = session?.user?.id;
+  const authz = await requireApiPermission('studies.read');
+  if (!authz.ok) return authz.response;
+
+  const userId = authz.user.id;
 
   try {
     const data = await request.json();
@@ -27,18 +43,18 @@ export async function POST(request: Request, { params }: { params: { uid: string
         studyInstanceUid: params.uid,
         seriesInstanceUid: data.seriesInstanceUid,
         sopInstanceUid: data.sopInstanceUid,
-        frameNumber: data.frameNumber ? parseInt(data.frameNumber) : null,
-        imageIndex: data.imageIndex ? parseInt(data.imageIndex) : null,
-        imageCount: data.imageCount ? parseInt(data.imageCount) : null,
+        frameNumber: parseOptionalNumber(data.frameNumber),
+        imageIndex: parseOptionalNumber(data.imageIndex),
+        imageCount: parseOptionalNumber(data.imageCount),
         modality: data.modality,
         bodyPartExamined: data.bodyPartExamined,
         seriesDescription: data.seriesDescription,
         viewportState: data.viewportState ? JSON.stringify(data.viewportState) : null,
-        windowWidth: data.windowWidth ? parseFloat(data.windowWidth) : null,
-        windowCenter: data.windowCenter ? parseFloat(data.windowCenter) : null,
-        zoom: data.zoom ? parseFloat(data.zoom) : null,
+        windowWidth: parseOptionalNumber(data.windowWidth),
+        windowCenter: parseOptionalNumber(data.windowCenter),
+        zoom: parseOptionalNumber(data.zoom),
         displaySetInstanceUID: data.displaySetInstanceUID,
-        note: data.note,
+        note: trimOptionalString(data.note),
         createdByUserId: userId,
       }
     });
