@@ -4,6 +4,7 @@ import { viewerReportBridge } from './viewerReportBridge';
 import { getMiniPacsViewportState } from './viewportStateAdapter';
 import { viewerSnapshotService } from './viewerSnapshotService';
 import { viewerAuditService } from './viewerAuditService';
+import { viewerHangingProtocolService } from './viewerHangingProtocolService';
 
 type CommandBridgeResult = {
   ok: boolean;
@@ -148,6 +149,7 @@ export function runMiniPacsTool(
     const cmdName = tool.commandName;
     if (!cmdName) {
       if (/^[1-9]x[1-9]$/.test(tool.id)) {
+        viewerHangingProtocolService.setUserHasManualLayoutOverride(true);
         const [rows, cols] = tool.id.split('x').map(Number);
         servicesManager.services.toolbarService.recordInteraction({
           groupId: 'default',

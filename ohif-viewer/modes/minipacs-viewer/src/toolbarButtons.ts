@@ -309,13 +309,40 @@ const toolbarButtons: Button[] = [
     },
   },
   {
-    id: 'Layout',
-    type: 'ohif.layoutSelector',
+    id: 'LayoutPresets',
+    type: 'ohif.splitButton',
     props: {
-      rows: 3,
-      columns: 3,
+      groupId: 'LayoutPresets',
+      isRadio: true, // ?
+      primary: _createActionButton(
+        'AutoLayout',
+        'icon-layout',
+        'Auto Layout',
+        [
+          {
+            commandName: 'applyLayoutPreset',
+            commandOptions: { presetId: 'auto' },
+            context: 'DEFAULT',
+          },
+        ],
+        'Auto Layout'
+      ),
+      secondary: {
+        icon: 'chevron-down',
+        label: '',
+        isActive: true,
+        tooltip: 'Layout Presets',
+      },
+      items: [
+        _createActionButton('auto', 'icon-layout', 'Auto Layout', [{ commandName: 'applyLayoutPreset', commandOptions: { presetId: 'auto' }, context: 'DEFAULT' }], 'Auto Layout'),
+        _createActionButton('xr_1x1', 'icon-layout', 'XR 1x1', [{ commandName: 'applyLayoutPreset', commandOptions: { presetId: 'xr_1x1' }, context: 'DEFAULT' }], 'XR 1x1'),
+        _createActionButton('ct_2x2', 'icon-layout', 'CT 2x2', [{ commandName: 'applyLayoutPreset', commandOptions: { presetId: 'ct_2x2' }, context: 'DEFAULT' }], 'CT 2x2'),
+        _createActionButton('mr_2x2', 'icon-layout', 'MR 2x2', [{ commandName: 'applyLayoutPreset', commandOptions: { presetId: 'mr_2x2' }, context: 'DEFAULT' }], 'MR 2x2'),
+        _createActionButton('us_cine', 'icon-layout', 'US Cine', [{ commandName: 'applyLayoutPreset', commandOptions: { presetId: 'us_cine' }, context: 'DEFAULT' }], 'US Cine'),
+      ],
     },
   },
+
   {
     id: 'MPR',
     type: 'ohif.action',

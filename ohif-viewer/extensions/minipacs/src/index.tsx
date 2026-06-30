@@ -11,6 +11,7 @@ import sameAs from './custom-attribute/sameAs';
 import numberOfDisplaySets from './custom-attribute/numberOfDisplaySets';
 import maxNumImageFrames from './custom-attribute/maxNumImageFrames';
 import { viewerMeasurementPersistenceService } from './services/viewerMeasurementPersistenceService';
+import commandsModule from './commandsModule';
 
 /**
  * The test extension provides additional behaviour for testing various
@@ -57,6 +58,10 @@ const testExtension: Types.Extensions.Extension = {
   getCustomizationModule,
 
   getLayoutTemplateModule,
+
+  getCommandsModule({ servicesManager, commandsManager, extensionManager }) {
+    return commandsModule({ servicesManager, commandsManager, extensionManager });
+  },
 
   getHangingProtocolModule: () => {
     return [

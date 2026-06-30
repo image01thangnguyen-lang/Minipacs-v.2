@@ -16,6 +16,7 @@ import { MiniPacsKeyImageDialog } from './Components/MiniPacsKeyImageDialog';
 import { viewerAuditService } from './services/viewerAuditService';
 import { viewerContextService } from './services/viewerContextService';
 import { viewerMeasurementPersistenceService } from './services/viewerMeasurementPersistenceService';
+import { viewerHangingProtocolService } from './services/viewerHangingProtocolService';
 
 function MiniPacsViewerLayout({
   extensionManager,
@@ -72,6 +73,8 @@ function MiniPacsViewerLayout({
     let firstUid = undefined;
     if (studyUids) {
       firstUid = studyUids.split(',')[0];
+      viewerHangingProtocolService.initialize(servicesManager, commandsManager, extensionManager);
+      viewerHangingProtocolService.runAutoLayoutWhenReady(firstUid);
       viewerContextService.loadContext(firstUid).catch(() => {});
       viewerMeasurementPersistenceService.loadForStudy(firstUid).catch(() => {});
     }

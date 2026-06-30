@@ -5,6 +5,7 @@ import { routeDisplaySetToActiveViewport } from '../services/viewportRouting';
 import { MiniPacsSeriesItem } from '../types/series';
 import MiniPacsSeriesThumbnail from './MiniPacsSeriesThumbnail';
 import MiniPacsSeriesContextMenu from './MiniPacsSeriesContextMenu';
+import { viewerHangingProtocolService } from '../services/viewerHangingProtocolService';
 
 // Helper to load thumbnail from OHIF Cornerstone
 function getImageSrcFromImageId(cornerstone: any, imageId: string): Promise<string> {
@@ -193,6 +194,7 @@ const MiniPacsSeriesRail: React.FC<MiniPacsSeriesRailProps> = ({
   // [P1 fix] Use routeDisplaySetToActiveViewport — it has its own fallback logic
   const handleSeriesClick = useCallback(
     (displaySetInstanceUID: string) => {
+      viewerHangingProtocolService.setUserHasManualLayoutOverride(true);
       routeDisplaySetToActiveViewport({
         servicesManager,
         displaySetInstanceUID,
@@ -203,6 +205,7 @@ const MiniPacsSeriesRail: React.FC<MiniPacsSeriesRailProps> = ({
 
   const handleSeriesDoubleClick = useCallback(
     (displaySetInstanceUID: string) => {
+      viewerHangingProtocolService.setUserHasManualLayoutOverride(true);
       routeDisplaySetToActiveViewport({
         servicesManager,
         displaySetInstanceUID,

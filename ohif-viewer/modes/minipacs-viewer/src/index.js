@@ -121,7 +121,7 @@ function modeFactory({ modeConfiguration }) {
         'WindowLevel',
         'Pan',
         'Capture',
-        'Layout',
+        'LayoutPresets',
         'MPR',
         'Crosshairs',
         'MoreTools',
