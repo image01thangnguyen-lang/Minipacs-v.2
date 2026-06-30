@@ -48,6 +48,11 @@ class ViewerMeasurementPersistenceService {
           return;
         }
 
+        // Ignore annotations from MPR/volumes lacking explicit SOPInstanceUID mapping
+        if (!record.sopInstanceUid) {
+          return;
+        }
+
         // Add to cornerstone
         annotationManager.addAnnotation(rawAnnotation);
 
@@ -72,6 +77,12 @@ class ViewerMeasurementPersistenceService {
 
     const rawAnnotation = annotation.state.getAnnotation(measurement.uid);
     if (!rawAnnotation) return;
+
+    if (!measurement.SOPInstanceUID) {
+      // Defer MPR measurement persistence to avoid mapping crashes upon reload
+      console.warn('Measurement lacks SOPInstanceUID (likely from MPR). Skipping persistence.');
+      return;
+    }
 
     fetch(`/api/viewer/studies/${this.studyInstanceUid}/measurements`, {
       method: 'POST',
@@ -103,6 +114,10 @@ class ViewerMeasurementPersistenceService {
     this.debounceTimers[uid] = setTimeout(() => {
       const rawAnnotation = annotation.state.getAnnotation(uid);
       if (!rawAnnotation) return;
+
+      if (!measurement.SOPInstanceUID) {
+        return;
+      }
 
       fetch(`/api/viewer/studies/${this.studyInstanceUid}/measurements/${uid}`, {
         method: 'PATCH',
