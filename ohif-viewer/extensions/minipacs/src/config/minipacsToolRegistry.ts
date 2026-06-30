@@ -51,7 +51,7 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'Length', label: 'Length', type: 'tool', status: 'ready', placement: ['top-toolbar', 'left-panel'] },
   { id: 'Angle', label: 'Angle', type: 'tool', status: 'ready', placement: ['top-toolbar', 'left-panel'] },
   { id: 'Probe', label: 'Probe', type: 'tool', commandOptions: { toolName: 'DragProbe' }, status: 'ready', placement: ['top-toolbar'] },
-  { id: 'Crosshairs', label: 'Crosshairs', type: 'tool', commandOptions: { toolName: 'Crosshairs', toolGroupId: 'mpr' }, status: 'ready', placement: ['top-toolbar', 'left-panel'] },
+  { id: 'Crosshairs', label: 'Crosshairs', type: 'toggle', commandName: 'toggleMiniPacsCrosshairs', context: 'DEFAULT', status: 'ready', placement: ['top-toolbar', 'left-panel'] },
   { id: 'Reset', label: 'Reset', type: 'action', commandName: 'resetViewport', status: 'ready', placement: ['top-toolbar'] },
 
   // --- Measurement Tools ---
@@ -81,7 +81,7 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'Cine', label: 'Cine', type: 'toggle', commandName: 'toggleCine', status: 'ready', placement: ['left-panel'] },
 
   // --- MPR & Sync Tools ---
-  { id: 'MPR', label: 'MPR', type: 'action', commandName: 'toggleHangingProtocol', commandOptions: { protocolId: 'mpr' }, context: 'DEFAULT', status: 'ohif-service', placement: ['left-panel'] },
+  { id: 'MPR', label: 'MPR', type: 'action', commandName: 'toggleMiniPacsMpr', context: 'DEFAULT', status: 'ohif-service', placement: ['left-panel'] },
   { id: 'ReferenceLines', label: 'Ref Lines', type: 'toggle', commandName: 'setToolActive', commandOptions: { toolName: 'ReferenceLines' }, status: 'ready', placement: ['left-panel'] },
   { id: 'StackImageSync', label: 'Stack Sync', type: 'toggle', commandName: 'toggleStackImageSync', status: 'ohif-service', placement: ['left-panel'] },
   { id: 'FusionMPR', label: 'Fusion on MPR', type: 'action', status: 'advanced', placement: ['left-panel'] },

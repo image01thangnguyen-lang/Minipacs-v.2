@@ -1,5 +1,6 @@
 import { seriesClassificationAdapter, NormalizedSeries } from './seriesClassificationAdapter';
 import { layoutPresetService, LayoutPreset } from './layoutPresetService';
+import { viewerMprWorkflowService } from './viewerMprWorkflowService';
 
 export type HangingProtocolSuggestion = {
   protocolId: string;
@@ -315,6 +316,7 @@ class ViewerHangingProtocolService {
       // If study changed while waiting, abort
       if (this.currentStudyInstanceUid !== studyInstanceUid) return;
       if (this.userHasManualLayoutOverride) return;
+      if (viewerMprWorkflowService.isInMpr()) return;
 
       const displaySets = displaySetService.getActiveDisplaySets().filter((ds: any) => ds.StudyInstanceUID === studyInstanceUid);
       
