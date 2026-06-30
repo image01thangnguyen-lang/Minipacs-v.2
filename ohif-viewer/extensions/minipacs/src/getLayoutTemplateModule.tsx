@@ -14,6 +14,7 @@ import { MiniPacsHistoryPanel } from './Components/MiniPacsHistoryPanel';
 import { MiniPacsSnapshotGallery } from './Components/MiniPacsSnapshotGallery';
 import { MiniPacsKeyImageDialog } from './Components/MiniPacsKeyImageDialog';
 import { MiniPacsReportWorkspaceDialog } from './Components/MiniPacsReportWorkspaceDialog';
+import { MiniPacsDiagnosticsDialog } from './Components/MiniPacsDiagnosticsDialog';
 import { viewerAuditService } from './services/viewerAuditService';
 import { viewerContextService } from './services/viewerContextService';
 import { viewerMeasurementPersistenceService } from './services/viewerMeasurementPersistenceService';
@@ -150,6 +151,7 @@ function MiniPacsViewerLayout({
         <MiniPacsSnapshotGallery servicesManager={servicesManager} />
         <MiniPacsKeyImageDialog servicesManager={servicesManager} onClose={() => {}} />
         <MiniPacsReportWorkspaceDialog servicesManager={servicesManager} onClose={() => {}} />
+        <MiniPacsDiagnosticsDialog servicesManager={servicesManager} onClose={() => {}} />
       </div>
     </div>
   );

@@ -149,10 +149,18 @@ update_code() {
 
   if [ "$(id -u)" -eq 0 ] && [ -n "${SUDO_USER:-}" ]; then
     run_as_repo_user "git fetch origin"
-    # run_as_repo_user "git reset --hard origin/main" # DISABLED to protect OHIF Customizations
+    if [ -n "$(run_as_repo_user "git status --porcelain")" ]; then
+      fail "Local changes detected. Refusing to merge automatically to protect your work.\nPlease commit or stash your changes and pull manually."
+    else
+      run_as_repo_user "git merge --ff-only origin/main"
+    fi
   else
     git fetch origin
-    # git reset --hard origin/main # DISABLED to protect OHIF Customizations
+    if [ -n "$(git status --porcelain)" ]; then
+      fail "Local changes detected. Refusing to merge automatically to protect your work.\nPlease commit or stash your changes and pull manually."
+    else
+      git merge --ff-only origin/main
+    fi
   fi
 
   if [ "$UPDATE_REEXECED" != "1" ]; then

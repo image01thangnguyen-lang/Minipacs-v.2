@@ -118,6 +118,11 @@ export function runMiniPacsTool(
     return { ok: true };
   }
 
+  if (tool.id === 'Diagnostics') {
+    window.dispatchEvent(new CustomEvent('minipacs:open-dialog', { detail: { dialogId: 'diagnostics' } }));
+    return { ok: true };
+  }
+
   if (tool.id === 'StudyHistory') {
     window.dispatchEvent(new CustomEvent('minipacs:open-dialog', { detail: { dialogId: 'history' } }));
     return { ok: true };
