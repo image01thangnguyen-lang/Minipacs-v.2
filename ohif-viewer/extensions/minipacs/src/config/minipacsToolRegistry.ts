@@ -103,6 +103,7 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   // --- History & More Tools ---
   { id: 'StudyHistory', label: 'History', type: 'action', status: 'ready', placement: ['left-panel'] },
   { id: 'Report', label: 'Report', type: 'action', status: 'ready', placement: ['left-panel'] },
+  { id: 'ReportWorkspace', label: 'Report Ws', type: 'action', status: 'ready', placement: ['left-panel'] },
   { id: 'PACSConfig', label: 'PACS Config', type: 'action', status: 'guarded', placement: ['left-panel'] },
   { id: 'UserConfig', label: 'User Config', type: 'action', status: 'guarded', placement: ['left-panel'] },
   { id: 'About', label: 'About', type: 'action', status: 'ready', placement: ['left-panel'] },
@@ -202,6 +203,6 @@ export const minipacsToolSections: MiniPacsToolSection[] = [
     placement: 'left-panel',
     renderType: 'icons',
     defaultOpen: true,
-    toolIds: ['Report', 'TagBrowser', 'PACSConfig', 'UserConfig', 'About'],
+    toolIds: ['Report', 'ReportWorkspace', 'TagBrowser', 'PACSConfig', 'UserConfig', 'About'],
   },
 ];

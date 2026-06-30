@@ -106,6 +106,18 @@ export function runMiniPacsTool(
     return { ok: true };
   }
 
+  if (tool.id === 'ReportWorkspace') {
+    const state = getMiniPacsViewportState(options?.viewportId || viewportGridService.getActiveViewportId(), servicesManager);
+    if (state.StudyInstanceUID) {
+      window.dispatchEvent(new CustomEvent('minipacs:open-dialog', { 
+        detail: { dialogId: 'report-workspace', studyInstanceUid: state.StudyInstanceUID } 
+      }));
+    } else {
+      commandFeedbackService.show('Không thể mở Report Workspace: Chưa tải Study', 'error');
+    }
+    return { ok: true };
+  }
+
   if (tool.id === 'StudyHistory') {
     window.dispatchEvent(new CustomEvent('minipacs:open-dialog', { detail: { dialogId: 'history' } }));
     return { ok: true };
