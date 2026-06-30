@@ -178,7 +178,7 @@ export const minipacsToolSections: MiniPacsToolSection[] = [
     placement: 'left-panel',
     renderType: 'icons',
     defaultOpen: true,
-    toolIds: ['MPR', 'FusionMPR'],
+    toolIds: ['MPR', 'Crosshairs', 'FusionMPR'],
   },
   {
     id: 'annotation',
