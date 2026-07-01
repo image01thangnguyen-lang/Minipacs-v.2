@@ -73,16 +73,16 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'AILabeling', label: 'AI Labeling', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
 
   // --- Image Manipulation Tools ---
-  { id: 'RotateLeft', label: 'Rotate -90', type: 'action', commandName: 'rotateViewportCCW', status: 'ready', placement: ['left-panel'] },
-  { id: 'RotateRight', label: 'Rotate +90', type: 'action', commandName: 'rotateViewportCW', status: 'ready', placement: ['left-panel'] },
-  { id: 'FlipHorizontal', label: 'Flip H', type: 'action', commandName: 'flipViewportHorizontal', status: 'ready', placement: ['left-panel'] },
-  { id: 'FlipVertical', label: 'Flip V', type: 'action', commandName: 'flipViewportVertical', status: 'ready', placement: ['left-panel'] },
-  { id: 'Invert', label: 'Invert', type: 'action', commandName: 'invertViewport', status: 'ready', placement: ['left-panel'] },
-  { id: 'Magnify', label: 'Magnify', type: 'tool', status: 'ready', placement: ['left-panel'] },
-  { id: 'Cine', label: 'Cine', type: 'toggle', commandName: 'toggleCine', status: 'ready', placement: ['left-panel'] },
+  { id: 'RotateLeft', label: 'Rotate -90', type: 'action', commandName: 'rotateViewportCCW', status: 'ready', placement: ['top-toolbar'] },
+  { id: 'RotateRight', label: 'Rotate +90', type: 'action', commandName: 'rotateViewportCW', status: 'ready', placement: ['top-toolbar'] },
+  { id: 'FlipHorizontal', label: 'Flip H', type: 'action', commandName: 'flipViewportHorizontal', status: 'ready', placement: ['top-toolbar'] },
+  { id: 'FlipVertical', label: 'Flip V', type: 'action', commandName: 'flipViewportVertical', status: 'ready', placement: ['top-toolbar'] },
+  { id: 'Invert', label: 'Invert', type: 'action', commandName: 'invertViewport', status: 'ready', placement: ['top-toolbar'] },
+  { id: 'Magnify', label: 'Magnify', type: 'tool', status: 'ready', placement: ['top-toolbar'] },
+  { id: 'Cine', label: 'Cine', type: 'toggle', commandName: 'toggleCine', status: 'ready', placement: ['top-toolbar'] },
 
   // --- MPR & Sync Tools ---
-  { id: 'MPR', label: 'MPR', type: 'action', commandName: 'toggleMiniPacsMpr', context: 'DEFAULT', status: 'deferred-advanced', placement: ['left-panel'] },
+  { id: 'MPR', label: 'MPR', type: 'action', commandName: 'toggleMiniPacsMpr', context: 'DEFAULT', status: 'deferred-advanced', placement: ['top-toolbar'] },
   { id: 'ReferenceLines', label: 'Ref Lines', type: 'toggle', commandName: 'setToolActive', commandOptions: { toolName: 'ReferenceLines' }, status: 'ready', placement: ['left-panel'] },
   { id: 'StackImageSync', label: 'Stack Sync', type: 'toggle', commandName: 'toggleStackImageSync', status: 'ohif-service', placement: ['left-panel'] },
   { id: 'FusionMPR', label: 'Fusion on MPR', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
@@ -134,7 +134,7 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'Coronal', label: 'Coronal', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
   { id: 'Sagittal', label: 'Sagittal', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
   { id: 'MIP', label: 'MIP', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: '3D', label: '3D', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
+  { id: '3D', label: '3D', type: 'action', status: 'deferred-advanced', placement: ['top-toolbar'] },
   { id: 'CompareMPR', label: 'Compare MPR', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
   { id: 'CurvedMPR', label: 'Curved MPR', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
   { id: 'TextMarker', label: 'Text Marker', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
@@ -189,7 +189,7 @@ export const minipacsToolSections: MiniPacsToolSection[] = [
     placement: 'left-panel',
     renderType: 'icons',
     defaultOpen: true,
-    toolIds: ['Length', 'Angle', 'Bidirectional', 'EllipticalROI', 'CircleROI', 'RectangleROI', 'CalibrationLine', 'Caliper', 'AngleVector', 'PolygonROI', 'MirrorROI'],
+    toolIds: ['Bidirectional', 'EllipticalROI', 'CircleROI', 'RectangleROI', 'CalibrationLine', 'Caliper', 'AngleVector', 'PolygonROI', 'MirrorROI'],
   },
   {
     id: 'advanced-tools',
@@ -205,7 +205,7 @@ export const minipacsToolSections: MiniPacsToolSection[] = [
     placement: 'left-panel',
     renderType: 'icons',
     defaultOpen: true,
-    toolIds: ['RotateLeft', 'RotateRight', 'FlipHorizontal', 'FlipVertical', 'Invert', 'Magnify', 'Cine', 'Capture', 'SaveSnapshot', 'FreeRotate'],
+    toolIds: ['Capture', 'SaveSnapshot', 'FreeRotate'],
   },
   {
     id: 'sync-tools',
@@ -221,7 +221,7 @@ export const minipacsToolSections: MiniPacsToolSection[] = [
     placement: 'left-panel',
     renderType: 'icons',
     defaultOpen: true,
-    toolIds: ['MPR', 'Crosshairs', 'FusionMPR', 'Axial', 'Coronal', 'Sagittal', 'MIP', '3D', 'CompareMPR', 'CurvedMPR'],
+    toolIds: ['Crosshairs', 'FusionMPR', 'Axial', 'Coronal', 'Sagittal', 'MIP', 'CompareMPR', 'CurvedMPR'],
   },
   {
     id: 'annotation',
