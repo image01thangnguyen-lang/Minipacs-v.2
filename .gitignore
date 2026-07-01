@@ -13,3 +13,4 @@ pacs_data/
 config/app-config.js
 config/nginx.conf
 config/orthanc.json
+*.tsbuildinfo

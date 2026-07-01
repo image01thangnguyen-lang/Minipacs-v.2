@@ -274,6 +274,22 @@ const Layout3x3Icon = () => (
   </svg>
 );
 
+// Export/Print
+const PrintIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+    <rect x="6" y="14" width="12" height="8"></rect>
+  </svg>
+);
+
+const CDIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <circle cx="12" cy="12" r="3"></circle>
+  </svg>
+);
+
 // ──────────────────── Icon Registry ────────────────────
 
 const iconMap: Record<string, React.FC> = {
@@ -322,6 +338,9 @@ const iconMap: Record<string, React.FC> = {
   '2x1': Layout2x1Icon,
   '2x2': Layout2x2Icon,
   '3x3': Layout3x3Icon,
+  Print: PrintIcon,
+  DirectPrint: PrintIcon,
+  CDBurn: CDIcon,
 };
 
 function getIcon(id: string): React.FC {
@@ -392,12 +411,12 @@ export default function CustomToolsSidebar({ servicesManager }) {
     const Icon = getIcon(item.id);
     const isActive = item.type === 'tool' && activeTool === item.id;
     const isToggled = item.type === 'toggle' && toggledTools[item.id];
-    const isDisabled = ['backend', 'advanced', 'guarded'].includes(item.status);
+    const isDisabled = ['backend', 'deferred-advanced', 'deferred-native', 'guarded'].includes(item.status);
 
     return (
       <button
         key={item.id}
-        title={item.label + (isDisabled ? ' (Coming soon)' : '')}
+        title={item.label + (isDisabled ? (item.status === 'deferred-native' ? ' (Requires native app)' : ' (Coming soon)') : '')}
         disabled={isDisabled}
         className={`
           w-[36px] h-[36px] flex items-center justify-center rounded
@@ -419,12 +438,12 @@ export default function CustomToolsSidebar({ servicesManager }) {
   const renderListItem = (item: MiniPacsTool) => {
     const Icon = getIcon(item.id);
     const isActive = item.type === 'tool' && activeTool === item.id;
-    const isDisabled = ['backend', 'advanced', 'guarded'].includes(item.status);
+    const isDisabled = ['backend', 'deferred-advanced', 'deferred-native', 'guarded'].includes(item.status);
 
     return (
       <button
         key={item.id}
-        title={item.label + (isDisabled ? ' (Coming soon)' : '')}
+        title={item.label + (isDisabled ? (item.status === 'deferred-native' ? ' (Requires native app)' : ' (Coming soon)') : '')}
         disabled={isDisabled}
         className={`
           w-full flex items-center gap-2 px-2 py-1 text-left rounded

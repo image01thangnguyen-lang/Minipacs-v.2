@@ -1,7 +1,9 @@
 "use server";
 
 import { prisma } from "@/app/db";
-import { upsertWorklistStudy } from "@/lib/studyStatus";
+import { upsertWorklistStudy, setStudyStatus, claimStudyLock } from "@/lib/studyStatus";
+import { auth } from "@/auth";
+import { hasPermission } from "@/lib/permissions";
 import { recordStudyEvent } from "@/lib/studyEvents";
 import fs from "fs/promises";
 import path from "path";
@@ -443,4 +445,41 @@ export async function regenerateWorklistFileAction(orderId: string) {
 
   revalidatePath("/worklist");
   return { success: true, order: serializeOrder(order) };
+}
+
+export async function startReadingAction(orderId: string, studyInstanceUid: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+  const hasReportsWrite = hasPermission(session.user.role, "reports.write", session.user.permissions);
+  const hasWorklistManage = hasPermission(session.user.role, "worklist.manage", session.user.permissions);
+
+  if (!hasReportsWrite || !hasWorklistManage) {
+    return { success: false, error: "Bạn không có quyền khóa ca đọc (yêu cầu quyền worklist.manage và reports.write)." };
+  }
+
+  const actor = session.user;
+  const existing = await prisma.worklistOrder.findUnique({
+    where: { id: orderId },
+    include: { imagingStudies: true }
+  });
+
+  if (!existing) return { success: false, error: "Order không tồn tại." };
+
+  const study = existing.imagingStudies.find(s => s.studyInstanceUid === studyInstanceUid);
+  if (!study) return { success: false, error: "Study không tồn tại." };
+
+  const claimRes = await claimStudyLock(studyInstanceUid, actor.id, { orderId });
+  if (!claimRes.success) {
+    return claimRes;
+  }
+
+  revalidatePath("/worklist");
+  return { success: true };
+}
+
+export async function checkCanReadStudiesAction() {
+  const session = await auth();
+  if (!session?.user) return false;
+  return hasPermission(session.user.role, "reports.write", session.user.permissions);
 }

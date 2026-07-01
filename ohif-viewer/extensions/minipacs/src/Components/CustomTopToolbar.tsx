@@ -161,7 +161,7 @@ export default function CustomTopToolbar({ servicesManager }) {
         
         const isActive = item.type === 'tool' && activeTool === item.id;
         const isToggled = item.type === 'toggle' && toggledTools[item.id];
-        const isDisabled = ['backend', 'advanced', 'guarded'].includes(item.status);
+        const isDisabled = ['backend', 'deferred-advanced', 'deferred-native', 'guarded'].includes(item.status);
 
         if (item.id === 'WindowLevel') {
           return (
@@ -220,7 +220,7 @@ export default function CustomTopToolbar({ servicesManager }) {
         return (
           <button
             key={item.id}
-            title={item.label + (isDisabled ? ' (Coming soon)' : '')}
+            title={item.label + (isDisabled ? (item.status === 'deferred-native' ? ' (Requires native app)' : ' (Coming soon)') : '')}
             disabled={isDisabled}
             className={`
               w-[36px] h-[36px] flex items-center justify-center rounded

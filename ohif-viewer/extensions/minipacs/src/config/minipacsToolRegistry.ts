@@ -3,7 +3,8 @@ export type MiniPacsToolStatus =
   | 'ui-state'
   | 'ohif-service'
   | 'backend'
-  | 'advanced'
+  | 'deferred-advanced'
+  | 'deferred-native'
   | 'guarded';
 
 export type MiniPacsToolPlacement =
@@ -61,15 +62,15 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'RectangleROI', label: 'Rectangle', type: 'tool', status: 'ready', placement: ['left-panel'] },
   { id: 'CalibrationLine', label: 'Calibration', type: 'tool', status: 'ready', placement: ['left-panel'] },
   // Advanced Measurements
-  { id: 'DoubleLength', label: 'Double Length', type: 'tool', status: 'advanced', placement: ['left-panel'] },
-  { id: 'NASCET', label: 'NASCET/ESCT', type: 'tool', status: 'advanced', placement: ['left-panel'] },
-  { id: 'Volume', label: 'Volume', type: 'tool', status: 'advanced', placement: ['left-panel'] },
+  { id: 'DoubleLength', label: 'Double Length', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
+  { id: 'NASCET', label: 'NASCET/ESCT', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
+  { id: 'Volume', label: 'Volume', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
 
   // --- Annotation Tools ---
   { id: 'ArrowAnnotate', label: 'Arrow', type: 'tool', status: 'ready', placement: ['left-panel'] },
   { id: 'PlanarFreehandROI', label: 'Freehand', type: 'tool', status: 'ready', placement: ['left-panel'] },
-  { id: 'TextAnnotation', label: 'Text Annotation', type: 'tool', status: 'advanced', placement: ['left-panel'] },
-  { id: 'AILabeling', label: 'AI Labeling', type: 'action', status: 'advanced', placement: ['left-panel'] },
+  { id: 'TextAnnotation', label: 'Text Annotation', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
+  { id: 'AILabeling', label: 'AI Labeling', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
 
   // --- Image Manipulation Tools ---
   { id: 'RotateLeft', label: 'Rotate -90', type: 'action', commandName: 'rotateViewportCCW', status: 'ready', placement: ['left-panel'] },
@@ -81,10 +82,10 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'Cine', label: 'Cine', type: 'toggle', commandName: 'toggleCine', status: 'ready', placement: ['left-panel'] },
 
   // --- MPR & Sync Tools ---
-  { id: 'MPR', label: 'MPR', type: 'action', commandName: 'toggleMiniPacsMpr', context: 'DEFAULT', status: 'ohif-service', placement: ['left-panel'] },
+  { id: 'MPR', label: 'MPR', type: 'action', commandName: 'toggleMiniPacsMpr', context: 'DEFAULT', status: 'deferred-advanced', placement: ['left-panel'] },
   { id: 'ReferenceLines', label: 'Ref Lines', type: 'toggle', commandName: 'setToolActive', commandOptions: { toolName: 'ReferenceLines' }, status: 'ready', placement: ['left-panel'] },
   { id: 'StackImageSync', label: 'Stack Sync', type: 'toggle', commandName: 'toggleStackImageSync', status: 'ohif-service', placement: ['left-panel'] },
-  { id: 'FusionMPR', label: 'Fusion on MPR', type: 'action', status: 'advanced', placement: ['left-panel'] },
+  { id: 'FusionMPR', label: 'Fusion on MPR', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
 
   // --- Capture & Info Tools ---
   { id: 'Gallery', label: 'Gallery', type: 'action', status: 'ready', placement: ['left-panel'] },
@@ -108,6 +109,9 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'PACSConfig', label: 'PACS Config', type: 'action', status: 'guarded', placement: ['left-panel'] },
   { id: 'UserConfig', label: 'User Config', type: 'action', status: 'guarded', placement: ['left-panel'] },
   { id: 'About', label: 'About', type: 'action', status: 'ready', placement: ['left-panel'] },
+  { id: 'Print', label: 'Browser Print', type: 'action', status: 'ready', placement: ['left-panel'] },
+  { id: 'DirectPrint', label: 'DICOM Print', type: 'action', status: 'deferred-native', placement: ['left-panel'] },
+  { id: 'CDBurn', label: 'Burn CD/DVD', type: 'action', status: 'deferred-native', placement: ['left-panel'] },
 
   // --- Viewport Workflow Actions ---
   ...viewportWorkflowActions,
@@ -204,6 +208,6 @@ export const minipacsToolSections: MiniPacsToolSection[] = [
     placement: 'left-panel',
     renderType: 'icons',
     defaultOpen: true,
-    toolIds: ['Report', 'ReportWorkspace', 'Diagnostics', 'TagBrowser', 'PACSConfig', 'UserConfig', 'About'],
+    toolIds: ['Report', 'ReportWorkspace', 'Diagnostics', 'TagBrowser', 'PACSConfig', 'UserConfig', 'About', 'Print', 'DirectPrint', 'CDBurn'],
   },
 ];
