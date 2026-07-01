@@ -14,6 +14,7 @@ import {
   Search,
   UserCheck,
   XCircle,
+  Edit3,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -25,7 +26,9 @@ import {
   checkInWorklistOrderAction,
   createWorklistAction,
   getWorklistOrdersAction,
-  regenerateWorklistFileAction
+  regenerateWorklistFileAction,
+  startReadingAction,
+  checkCanReadStudiesAction
 } from "./actions";
 import { worklistSchema, type WorklistInput } from "./schema";
 
@@ -158,6 +161,7 @@ export default function WorklistPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [canReadStudies, setCanReadStudies] = useState(false);
 
   const defaultValues = useMemo<FormValues>(() => ({
     patientName: "",
@@ -212,6 +216,7 @@ export default function WorklistPage() {
 
   useEffect(() => {
     document.title = "Mini PACS - Tiếp đón / Worklist";
+    checkCanReadStudiesAction().then(setCanReadStudies).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -284,8 +289,43 @@ export default function WorklistPage() {
     window.open(`/viewer/minipacs?StudyInstanceUIDs=${encodeURIComponent(order.studyInstanceUid)}`, "_blank");
   };
 
+  const runViewToDictate = async (order: WorklistOrderView) => {
+    if (!order.studyInstanceUid) return;
+    const targetUrl = `/viewer/minipacs?StudyInstanceUIDs=${encodeURIComponent(order.studyInstanceUid)}`;
+
+    const viewerWindow = window.open("about:blank", "_blank");
+    if (!viewerWindow) {
+      setError("Trình duyệt chặn popup. Vui lòng cho phép popup để mở viewer.");
+      return;
+    }
+
+    setBusyOrderId(order.id);
+    setError("");
+    setMessage("");
+    try {
+      const res = await startReadingAction(order.id, order.studyInstanceUid);
+      if (!res.success) {
+        viewerWindow.close();
+        setError(res.error || "Không thể khóa ca đọc.");
+        return;
+      }
+      viewerWindow.location.href = targetUrl;
+      await loadOrders();
+    } catch (err: any) {
+      console.error(err);
+      viewerWindow.close();
+      setError(err?.message || "Không thể khóa ca đọc.");
+    } finally {
+      setBusyOrderId("");
+    }
+  };
+
   const canOpenViewer = (order: WorklistOrderView) => {
     return Boolean(order.studyInstanceUid && order.studyStatus && !["ORDERED", "READY_FOR_SCAN"].includes(order.studyStatus));
+  };
+
+  const canLockForReading = (order: WorklistOrderView) => {
+    return canReadStudies && Boolean(order.studyInstanceUid && order.studyStatus && ["READY_TO_READ", "READING"].includes(order.studyStatus));
   };
 
   return (
@@ -441,6 +481,11 @@ export default function WorklistPage() {
                           {canOpenViewer(order) && (
                             <IconButton title="Mở viewer" disabled={isBusy} onClick={() => openViewer(order)}>
                               <BadgeCheck className="h-3.5 w-3.5" />
+                            </IconButton>
+                          )}
+                          {canLockForReading(order) && (
+                            <IconButton title="Đọc ca (khóa)" disabled={isBusy} onClick={() => runViewToDictate(order)}>
+                              <Edit3 className="h-3.5 w-3.5" />
                             </IconButton>
                           )}
                           {canMutate && (

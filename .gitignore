@@ -8,3 +8,9 @@ coverage/
 .env*
 !.env.example
 pacs_data/
+
+# Generated configs
+config/app-config.js
+config/nginx.conf
+config/orthanc.json
+*.tsbuildinfo

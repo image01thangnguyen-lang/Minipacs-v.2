@@ -1,5 +1,6 @@
 window.config = {
   routerBasename: '/',
+  useCursors: true,
   // whiteLabeling: {},
   extensions: [],
   modes: [],

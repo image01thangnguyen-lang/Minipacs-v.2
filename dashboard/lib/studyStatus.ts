@@ -209,6 +209,7 @@ export async function setStudyStatus(
     source?: StatusSource;
     reason?: string;
     actorUserId?: string;
+    assignedDoctorId?: string;
     metadata?: unknown;
   } = {}
 ) {
@@ -231,6 +232,7 @@ export async function setStudyStatus(
         data: {
           studyInstanceUid,
           status: nextStatus,
+          assignedDoctorId: options.assignedDoctorId,
           finalizedAt: nextStatus === "FINALIZED" ? new Date() : undefined,
           deliveredAt: nextStatus === "DELIVERED" ? new Date() : undefined,
           archivedAt: nextStatus === "ARCHIVED" ? new Date() : undefined,
@@ -261,6 +263,7 @@ export async function setStudyStatus(
       where: { id: existing.id },
       data: {
         status: nextStatus,
+        ...(options.assignedDoctorId ? { assignedDoctorId: options.assignedDoctorId } : {}),
         finalizedAt: nextStatus === "FINALIZED" && !existing.finalizedAt ? new Date() : existing.finalizedAt,
         deliveredAt: nextStatus === "DELIVERED" && !existing.deliveredAt ? new Date() : existing.deliveredAt,
         archivedAt: nextStatus === "ARCHIVED" && !existing.archivedAt ? new Date() : existing.archivedAt,
@@ -296,8 +299,101 @@ export async function updateStudyStatusForReport(studyInstanceUid: string, repor
 
   return setStudyStatus(studyInstanceUid, nextStatus, {
     source: "REPORT",
-    reason: `Report status changed to ${reportStatus}`,
+    reason: `System synced to ${reportStatus}`,
     metadata: { reportStatus },
+  });
+}
+
+export async function claimStudyLock(studyInstanceUid: string, actorUserId: string, options?: { orderId?: string }) {
+  return prisma.$transaction(async tx => {
+    const existing = await tx.imagingStudy.findUnique({
+      where: { studyInstanceUid },
+    });
+
+    if (!existing) {
+      return { success: false, error: "Study không tồn tại." };
+    }
+
+    const createAudit = async () => {
+      await tx.auditLog.create({
+        data: {
+          actorUserId,
+          action: "STUDY_READING_STARTED",
+          entityType: "ImagingStudy",
+          entityId: existing.id,
+          message: `Started reading study ${studyInstanceUid}`,
+          metadataJson: options?.orderId ? JSON.stringify({ orderId: options.orderId }) : null,
+        },
+      });
+    };
+
+    if (existing.status === "READING") {
+      if (existing.assignedDoctorId && existing.assignedDoctorId !== actorUserId) {
+        return { success: false, error: "Ca này đang được đọc bởi bác sĩ khác." };
+      }
+      
+      if (!existing.assignedDoctorId) {
+        const { count } = await tx.imagingStudy.updateMany({
+          where: { id: existing.id, status: "READING", assignedDoctorId: null },
+          data: { 
+            assignedDoctorId: actorUserId,
+            firstOpenedAt: existing.firstOpenedAt || new Date()
+          },
+        });
+        if (count === 0) return { success: false, error: "Ca này đã bị khóa bởi người khác." };
+
+        await writeStatusHistory({
+          tx,
+          imagingStudyId: existing.id,
+          fromStatus: "READING",
+          toStatus: "READING",
+          source: "WORKLIST",
+          reason: "Claimed ownership of unassigned reading study",
+          actorUserId,
+        });
+        await createAudit();
+      }
+      
+      return { success: true };
+    }
+
+    if (existing.status !== "READY_TO_READ") {
+      return { success: false, error: "Chỉ có thể khóa các ca đang ở trạng thái READY_TO_READ." };
+    }
+
+    const { count } = await tx.imagingStudy.updateMany({
+      where: { 
+        id: existing.id, 
+        status: "READY_TO_READ",
+        OR: [{ assignedDoctorId: null }, { assignedDoctorId: actorUserId }]
+      },
+      data: {
+        status: "READING",
+        assignedDoctorId: actorUserId,
+        firstOpenedAt: existing.firstOpenedAt || new Date(),
+      },
+    });
+
+    if (count === 0) {
+      if (existing.assignedDoctorId && existing.assignedDoctorId !== actorUserId) {
+        return { success: false, error: "Ca này đã được phân công cho bác sĩ khác." };
+      }
+      return { success: false, error: "Ca này đã bị thay đổi trạng thái hoặc khóa bởi người khác." };
+    }
+
+    await writeStatusHistory({
+      tx,
+      imagingStudyId: existing.id,
+      fromStatus: "READY_TO_READ",
+      toStatus: "READING",
+      source: "WORKLIST",
+      reason: "Locked for dictation",
+      actorUserId,
+    });
+    
+    await createAudit();
+    
+    return { success: true };
   });
 }
 

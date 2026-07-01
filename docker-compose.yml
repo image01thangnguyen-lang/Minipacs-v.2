@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: orthanc_db
     volumes:
-      - ./pacs_data/postgres:/var/lib/postgresql/data
+      - pacs_postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U orthanc -d orthanc_db"]
       interval: 10s
@@ -26,8 +26,8 @@ services:
       - POSTGRES_HOST=db
     volumes:
       - ./config/orthanc.json:/etc/orthanc/orthanc.json:ro
-      - ./pacs_data/orthanc:/var/lib/orthanc/db
-      - ./pacs_data/worklists:/worklists
+      - pacs_orthanc_data:/var/lib/orthanc/db
+      - pacs_worklists:/worklists
     depends_on:
       db:
         condition: service_healthy
@@ -68,8 +68,11 @@ services:
       - ORTHANC_PASSWORD=${ORTHANC_ADMIN_PASSWORD}
       - DATABASE_URL=postgresql://orthanc:${POSTGRES_PASSWORD}@db:5432/orthanc_db?schema=dashboard
     volumes:
-      - ./pacs_data/report_images:/app/pacs_data/report_images
-      - ./pacs_data/worklists:/app/pacs_data/worklists
+      - ./dashboard:/app
+      - /app/node_modules
+      - /app/.next
+      - pacs_report_images:/app/pacs_data/report_images
+      - pacs_worklists:/app/pacs_data/worklists
     depends_on:
       db:
         condition: service_healthy
@@ -87,3 +90,9 @@ services:
       - dashboard
       - ohif
       - orthanc
+
+volumes:
+  pacs_postgres_data:
+  pacs_orthanc_data:
+  pacs_worklists:
+  pacs_report_images:

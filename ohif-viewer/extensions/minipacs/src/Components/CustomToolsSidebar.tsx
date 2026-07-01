@@ -129,6 +129,12 @@ const FreehandIcon = () => (
 // Image Manipulation
 const ResetIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+  </svg>
+);
+
+const RotateLeftIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
   </svg>
 );
@@ -209,6 +215,46 @@ const TagBrowserIcon = () => (
   </svg>
 );
 
+const GalleryIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+    <polyline points="21 15 16 10 5 21"></polyline>
+  </svg>
+);
+
+const ReportIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <polyline points="10 9 9 9 8 9"></polyline>
+  </svg>
+);
+
+const HistoryIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
+  </svg>
+);
+
+const ConfigIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3"></circle>
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+  </svg>
+);
+
+const AboutIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <line x1="12" y1="16" x2="12" y2="12"></line>
+    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+  </svg>
+);
+
 // Layout
 const Layout1x1Icon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
@@ -225,6 +271,22 @@ const Layout2x2Icon = () => (
 const Layout3x3Icon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
     <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/>
+  </svg>
+);
+
+// Export/Print
+const PrintIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+    <rect x="6" y="14" width="12" height="8"></rect>
+  </svg>
+);
+
+const CDIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <circle cx="12" cy="12" r="3"></circle>
   </svg>
 );
 
@@ -252,6 +314,7 @@ const iconMap: Record<string, React.FC> = {
   Probe: ProbeIcon,
   PlanarFreehandROI: FreehandIcon,
   Reset: ResetIcon,
+  RotateLeft: RotateLeftIcon,
   RotateRight: RotateRightIcon,
   FlipHorizontal: FlipHIcon,
   FlipVertical: FlipVIcon,
@@ -264,208 +327,37 @@ const iconMap: Record<string, React.FC> = {
   StackImageSync: StackSyncIcon,
   ImageOverlayViewer: OverlayIcon,
   TagBrowser: TagBrowserIcon,
+  Gallery: GalleryIcon,
+  Report: ReportIcon,
+  StudyHistory: HistoryIcon,
+  PACSConfig: ConfigIcon,
+  UserConfig: ConfigIcon,
+  About: AboutIcon,
   '1x1': Layout1x1Icon,
   '1x2': Layout1x2Icon,
   '2x1': Layout2x1Icon,
   '2x2': Layout2x2Icon,
   '3x3': Layout3x3Icon,
+  Print: PrintIcon,
+  DirectPrint: PrintIcon,
+  CDBurn: CDIcon,
 };
 
 function getIcon(id: string): React.FC {
   return iconMap[id] || FallbackIcon;
 }
 
-// ──────────────────── Tool Configuration ────────────────────
-
-type ToolItem = {
-  id: string;
-  label: string;
-  /** 'tool' = setToolActive, 'action' = one-shot command, 'toggle' = toggle on/off */
-  type: 'tool' | 'action' | 'toggle';
-  /** The OHIF commandName to run */
-  commandName?: string;
-  /** Extra commandOptions to pass */
-  commandOptions?: Record<string, unknown>;
-  /** Command context – defaults to CORNERSTONE */
-  context?: string;
-};
-
-type ToolSection = {
-  title: string;
-  id: string;
-  renderType: 'icons' | 'grid' | 'list';
-  items: ToolItem[];
-  defaultOpen?: boolean;
-};
-
-const toolSections: ToolSection[] = [
-  // ── 1. Navigation ──
-  {
-    title: '🧭 Navigation',
-    id: 'navigation',
-    renderType: 'icons',
-    defaultOpen: true,
-    items: [
-      { id: 'Pan', label: 'Pan', type: 'tool' },
-      { id: 'Zoom', label: 'Zoom', type: 'tool' },
-      { id: 'StackScroll', label: 'Stack Scroll', type: 'tool' },
-      { id: 'Magnify', label: 'Magnify', type: 'tool' },
-    ],
-  },
-
-  // ── 2. Window/Level ──
-  {
-    title: '🌓 Window / Level',
-    id: 'windowlevel',
-    renderType: 'list',
-    defaultOpen: true,
-    items: [
-      { id: 'WindowLevel', label: 'W/L Manual', type: 'tool' },
-      {
-        id: 'Soft tissue',
-        label: 'Soft Tissue  (400/40)',
-        type: 'action',
-        commandName: 'setWindowLevel',
-        commandOptions: { window: 400, level: 40 },
-      },
-      {
-        id: 'Lung',
-        label: 'Lung  (1500/−600)',
-        type: 'action',
-        commandName: 'setWindowLevel',
-        commandOptions: { window: 1500, level: -600 },
-      },
-      {
-        id: 'Liver',
-        label: 'Liver  (150/90)',
-        type: 'action',
-        commandName: 'setWindowLevel',
-        commandOptions: { window: 150, level: 90 },
-      },
-      {
-        id: 'Bone',
-        label: 'Bone  (2500/480)',
-        type: 'action',
-        commandName: 'setWindowLevel',
-        commandOptions: { window: 2500, level: 480 },
-      },
-      {
-        id: 'Brain',
-        label: 'Brain  (80/40)',
-        type: 'action',
-        commandName: 'setWindowLevel',
-        commandOptions: { window: 80, level: 40 },
-      },
-    ],
-  },
-
-  // ── 3. Measurement Tools ──
-  {
-    title: '📏 Measurement',
-    id: 'measurement',
-    renderType: 'icons',
-    defaultOpen: true,
-    items: [
-      { id: 'Length', label: 'Length', type: 'tool' },
-      { id: 'Bidirectional', label: 'Bidirectional', type: 'tool' },
-      { id: 'EllipticalROI', label: 'Ellipse', type: 'tool' },
-      { id: 'CircleROI', label: 'Circle', type: 'tool' },
-      { id: 'RectangleROI', label: 'Rectangle', type: 'tool' },
-      { id: 'Angle', label: 'Angle', type: 'tool' },
-      { id: 'CalibrationLine', label: 'Calibration', type: 'tool' },
-    ],
-  },
-
-  // ── 4. Annotation ──
-  {
-    title: '✏️ Annotation',
-    id: 'annotation',
-    renderType: 'icons',
-    defaultOpen: true,
-    items: [
-      { id: 'ArrowAnnotate', label: 'Arrow', type: 'tool' },
-      { id: 'Probe', label: 'Probe', type: 'tool', commandOptions: { toolName: 'DragProbe' } },
-      { id: 'PlanarFreehandROI', label: 'Freehand', type: 'tool' },
-    ],
-  },
-
-  // ── 5. Image Manipulation ──
-  {
-    title: '🖼️ Image Tools',
-    id: 'imagetools',
-    renderType: 'icons',
-    defaultOpen: true,
-    items: [
-      { id: 'Reset', label: 'Reset', type: 'action', commandName: 'resetViewport' },
-      { id: 'RotateRight', label: 'Rotate +90°', type: 'action', commandName: 'rotateViewportCW' },
-      { id: 'FlipHorizontal', label: 'Flip H', type: 'action', commandName: 'flipViewportHorizontal' },
-      { id: 'FlipVertical', label: 'Flip V', type: 'action', commandName: 'flipViewportVertical' },
-      { id: 'Invert', label: 'Invert', type: 'action', commandName: 'invertViewport' },
-      { id: 'Capture', label: 'Capture', type: 'action', commandName: 'showDownloadViewportModal' },
-      { id: 'Cine', label: 'Cine', type: 'toggle', commandName: 'toggleCine' },
-    ],
-  },
-
-  // ── 6. MPR & Sync ──
-  {
-    title: '🔗 MPR & Sync',
-    id: 'mpr-sync',
-    renderType: 'icons',
-    defaultOpen: false,
-    items: [
-      {
-        id: 'MPR',
-        label: 'MPR',
-        type: 'action',
-        commandName: 'toggleHangingProtocol',
-        commandOptions: { protocolId: 'mpr' },
-        context: 'DEFAULT',
-      },
-      {
-        id: 'Crosshairs',
-        label: 'Crosshairs',
-        type: 'tool',
-        commandOptions: { toolName: 'Crosshairs', toolGroupId: 'mpr' },
-      },
-      { id: 'ReferenceLines', label: 'Ref Lines', type: 'toggle', commandName: 'setToolActive', commandOptions: { toolName: 'ReferenceLines' } },
-      { id: 'StackImageSync', label: 'Stack Sync', type: 'toggle', commandName: 'toggleStackImageSync' },
-    ],
-  },
-
-  // ── 7. Overlay & Info ──
-  {
-    title: '📋 Overlay & Info',
-    id: 'overlay-info',
-    renderType: 'icons',
-    defaultOpen: false,
-    items: [
-      { id: 'ImageOverlayViewer', label: 'Overlay', type: 'tool' },
-      { id: 'TagBrowser', label: 'DICOM Tags', type: 'action', commandName: 'openDICOMTagViewer', context: 'DEFAULT' },
-    ],
-  },
-
-  // ── 8. Layout ──
-  {
-    title: '🗂️ Layout',
-    id: 'layout',
-    renderType: 'grid',
-    defaultOpen: false,
-    items: [
-      { id: '1x1', label: '1×1', type: 'action' },
-      { id: '1x2', label: '1×2', type: 'action' },
-      { id: '2x1', label: '2×1', type: 'action' },
-      { id: '2x2', label: '2×2', type: 'action' },
-      { id: '3x3', label: '3×3', type: 'action' },
-    ],
-  },
-];
+import { minipacsToolRegistry, minipacsToolSections, MiniPacsTool, MiniPacsToolSection } from '../config/minipacsToolRegistry';
+import { runMiniPacsTool } from '../services/commandBridge';
 
 // ──────────────────── Sidebar Component ────────────────────
+
+
 
 export default function CustomToolsSidebar({ servicesManager }) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
-    toolSections.forEach((s) => {
+    minipacsToolSections.forEach((s) => {
       initial[s.id] = s.defaultOpen ?? true;
     });
     return initial;
@@ -475,202 +367,161 @@ export default function CustomToolsSidebar({ servicesManager }) {
   const [toggledTools, setToggledTools] = useState<Record<string, boolean>>({});
 
   const { commandsManager } = servicesManager;
+  const { toolbarService } = servicesManager.services || servicesManager;
+
+  React.useEffect(() => {
+    if (!toolbarService) return;
+    const subscription = toolbarService.subscribe(
+      toolbarService.EVENTS.TOOL_BAR_STATE_MODIFIED,
+      (state: any) => {
+        setToggledTools({ ...state.toggles });
+        if (state.primaryToolId) {
+          setActiveTool(state.primaryToolId);
+        }
+      }
+    );
+    // Initial state
+    setToggledTools({ ...toolbarService.state.toggles });
+    if (toolbarService.state.primaryToolId) {
+      setActiveTool(toolbarService.state.primaryToolId);
+    }
+    return () => subscription.unsubscribe();
+  }, [toolbarService]);
 
   const toggleSection = (id: string) => {
     setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleToolClick = (item: ToolItem) => {
-    const context = item.context || 'CORNERSTONE';
+  const handleToolClick = (item: MiniPacsTool) => {
+    const effectiveId = item.commandName === 'toggleSync' ? 'StackImageSync' : item.id;
+    const result = runMiniPacsTool(servicesManager, item, {
+      toggledState: !toggledTools[effectiveId],
+    });
 
-    if (item.type === 'tool') {
-      // Set tool active
-      const toolName = item.commandOptions?.toolName || item.id;
-      const toolGroupId = item.commandOptions?.toolGroupId;
-
-      try {
-        servicesManager.services.toolbarService.recordInteraction({
-          groupId: 'default',
-          interactionType: 'tool',
-          commands: [
-            {
-              commandName: 'setToolActive',
-              commandOptions: { toolName, ...(toolGroupId ? { toolGroupId } : {}) },
-              context,
-            },
-          ],
-        });
-      } catch {
-        // Fallback: run command directly
-        commandsManager.runCommand('setToolActive', { toolName }, context);
-      }
-      setActiveTool(item.id);
-
-    } else if (item.type === 'action') {
-      // One-shot command
-      const cmdName = item.commandName;
-      if (!cmdName) return;
-
-      try {
-        servicesManager.services.toolbarService.recordInteraction({
-          groupId: 'default',
-          interactionType: 'action',
-          commands: [
-            {
-              commandName: cmdName,
-              commandOptions: item.commandOptions || {},
-              context,
-            },
-          ],
-        });
-      } catch {
-        commandsManager.runCommand(cmdName, item.commandOptions || {}, context);
-      }
-
-    } else if (item.type === 'toggle') {
-      const cmdName = item.commandName;
-      if (!cmdName) return;
-      const newState = !toggledTools[item.id];
-
-      try {
-        servicesManager.services.toolbarService.recordInteraction({
-          groupId: 'default',
-          interactionType: 'toggle',
-          commands: [
-            {
-              commandName: cmdName,
-              commandOptions: { ...item.commandOptions, toggledState: newState },
-              context,
-            },
-          ],
-        });
-      } catch {
-        commandsManager.runCommand(cmdName, { ...item.commandOptions, toggledState: newState }, context);
-      }
-      setToggledTools((prev) => ({ ...prev, [item.id]: newState }));
+    if (result.ok) {
+      // State updates are now handled by toolbarService subscription
     }
   };
 
-  // ── Layout handler (special) ──
-  const handleLayoutClick = (layoutId: string) => {
-    const [rows, cols] = layoutId.split('x').map(Number);
-    try {
-      commandsManager.runCommand('setViewportGridLayout', {
-        numRows: rows,
-        numCols: cols,
-      });
-    } catch {
-      console.warn('Layout command not available');
-    }
-  };
+
 
   // ── Rendering helpers ──
 
-  const renderIconButton = (item: ToolItem) => {
+  const renderIconButton = (item: MiniPacsTool) => {
     const Icon = getIcon(item.id);
     const isActive = item.type === 'tool' && activeTool === item.id;
     const isToggled = item.type === 'toggle' && toggledTools[item.id];
+    const isDisabled = ['backend', 'deferred-advanced', 'deferred-native', 'guarded'].includes(item.status);
 
     return (
       <button
         key={item.id}
-        title={item.label}
+        title={item.label + (isDisabled ? (item.status === 'deferred-native' ? ' (Requires native app)' : ' (Coming soon)') : '')}
+        disabled={isDisabled}
         className={`
-          w-[52px] h-[48px] flex flex-col items-center justify-center rounded
-          transition-all duration-150 cursor-pointer
-          ${isActive || isToggled
-            ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8] border border-[#00B5B8]'
-            : 'text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A] border border-transparent'
+          w-[36px] h-[36px] flex items-center justify-center rounded
+          transition-all duration-150
+          ${isDisabled
+            ? 'text-[#4A5B66] cursor-not-allowed opacity-50'
+            : isActive || isToggled
+              ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8] border border-[#00B5B8] cursor-pointer'
+              : 'text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A] border border-transparent cursor-pointer'
           }
         `}
         onClick={() => handleToolClick(item)}
       >
         <Icon />
-        <span className="text-[9px] mt-0.5 truncate max-w-full leading-tight">{item.label}</span>
       </button>
     );
   };
 
-  const renderListItem = (item: ToolItem) => {
+  const renderListItem = (item: MiniPacsTool) => {
     const Icon = getIcon(item.id);
     const isActive = item.type === 'tool' && activeTool === item.id;
+    const isDisabled = ['backend', 'deferred-advanced', 'deferred-native', 'guarded'].includes(item.status);
 
     return (
       <button
         key={item.id}
+        title={item.label + (isDisabled ? (item.status === 'deferred-native' ? ' (Requires native app)' : ' (Coming soon)') : '')}
+        disabled={isDisabled}
         className={`
-          w-full flex items-center gap-2 px-3 py-1.5 text-left rounded
-          transition-all duration-150 cursor-pointer
-          ${isActive
-            ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8]'
-            : 'text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A]'
+          w-full flex items-center gap-2 px-2 py-1 text-left rounded
+          transition-all duration-150
+          ${isDisabled
+            ? 'text-[#4A5B66] cursor-not-allowed opacity-50'
+            : isActive
+              ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8] cursor-pointer'
+              : 'text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A] cursor-pointer'
           }
         `}
         onClick={() => handleToolClick(item)}
       >
         <Icon />
-        <span className="text-xs">{item.label}</span>
+        <span className="text-[11px]">{item.label}</span>
       </button>
     );
   };
 
-  const renderGridButton = (item: ToolItem) => {
+  const renderGridButton = (item: MiniPacsTool) => {
     const Icon = getIcon(item.id);
     return (
       <button
         key={item.id}
         title={item.label}
-        className="h-12 flex flex-col items-center justify-center border border-[#1A323A] rounded text-[#8899A6] hover:border-[#00B5B8] hover:text-[#00B5B8] hover:bg-[#1A323A] transition-all cursor-pointer"
-        onClick={() => handleLayoutClick(item.id)}
+        className="w-[36px] h-[36px] flex items-center justify-center border border-[#1A323A] rounded text-[#8899A6] hover:border-[#00B5B8] hover:text-[#00B5B8] hover:bg-[#1A323A] transition-all cursor-pointer"
+        onClick={() => handleToolClick(item)}
       >
         <Icon />
-        <span className="text-[10px] mt-0.5">{item.label}</span>
       </button>
     );
   };
 
   return (
-    <div className="w-[200px] bg-[#102126] h-full flex flex-col overflow-y-auto"
+    <div className="w-[180px] bg-[#102126] h-full flex flex-col overflow-y-auto"
          style={{ scrollbarWidth: 'thin', scrollbarColor: '#1A323A #102126' }}>
-      {toolSections.map((section) => (
+      {minipacsToolSections.map((section) => {
+        const sectionTools = minipacsToolRegistry.filter((t) => section.toolIds.includes(t.id));
+        return (
         <div key={section.id} className="flex flex-col">
-          {/* ── Section Header ── */}
+          {/* ── Section Header (clickable toggle) ── */}
           <button
-            className="flex justify-between items-center px-3 py-2.5 bg-[#0D1B20] text-white text-xs font-semibold tracking-wide
+            className="flex justify-between items-center px-3 py-1.5 bg-[#0D1B20] text-white text-[11px] font-semibold tracking-wide
                        hover:bg-[#152A30] transition-colors border-b border-[#1A323A] cursor-pointer select-none"
             onClick={() => toggleSection(section.id)}
           >
             <span>{section.title}</span>
             <span
               className="text-[#00B5B8] transition-transform duration-200"
-              style={{ transform: openSections[section.id] ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              style={{ transform: openSections[section.id] ? 'rotate(0deg)' : 'rotate(-90deg)' }}
             >
               <ChevronDown />
             </span>
           </button>
 
-          {/* ── Section Content ── */}
-          {openSections[section.id] && section.items.length > 0 && (
-            <div className="px-2 py-2 bg-[#152A30] border-b border-[#1A323A]">
+          {/* ── Section Content (toggled) ── */}
+          {openSections[section.id] && sectionTools.length > 0 && (
+            <div className="px-1.5 py-1.5 bg-[#152A30] border-b border-[#1A323A]">
               {section.renderType === 'icons' && (
-                <div className="grid grid-cols-3 gap-1">
-                  {section.items.map(renderIconButton)}
+                <div className="flex flex-wrap gap-1">
+                  {sectionTools.map(renderIconButton)}
                 </div>
               )}
               {section.renderType === 'list' && (
-                <div className="flex flex-col gap-0.5">
-                  {section.items.map(renderListItem)}
+                <div className="flex flex-col gap-0">
+                  {sectionTools.map(renderListItem)}
                 </div>
               )}
               {section.renderType === 'grid' && (
-                <div className="grid grid-cols-3 gap-1.5">
-                  {section.items.map(renderGridButton)}
+                <div className="flex flex-wrap gap-1">
+                  {sectionTools.map(renderGridButton)}
                 </div>
               )}
             </div>
           )}
         </div>
-      ))}
+      )})}
     </div>
   );
 }
+

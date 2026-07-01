@@ -2,6 +2,7 @@ import { hotkeys } from '@ohif/core';
 import toolbarButtons from './toolbarButtons';
 import { id } from './id';
 import initToolGroups from './initToolGroups';
+import { minipacsViewportOverlayConfig } from './viewportOverlayConfig';
 
 // Allow this mode by excluding non-imaging modalities such as SR, SEG
 // Also, SM is not a simple imaging modalities, so exclude it.
@@ -87,7 +88,7 @@ function modeFactory({ modeConfiguration }) {
 
       const activateTool = () => {
         toolbarService.recordInteraction({
-          groupId: 'WindowLevel',
+          groupId: 'Cursor',
           interactionType: 'tool',
           commands: [
             {
@@ -120,7 +121,7 @@ function modeFactory({ modeConfiguration }) {
         'WindowLevel',
         'Pan',
         'Capture',
-        'Layout',
+        'LayoutPresets',
         'MPR',
         'Crosshairs',
         'MoreTools',
@@ -130,6 +131,22 @@ function modeFactory({ modeConfiguration }) {
         {
           id: 'segmentation.disableEditing',
           value: true,
+        },
+        {
+          id: 'cornerstoneOverlayTopLeft',
+          items: minipacsViewportOverlayConfig.topLeft,
+        },
+        {
+          id: 'cornerstoneOverlayTopRight',
+          items: minipacsViewportOverlayConfig.topRight,
+        },
+        {
+          id: 'cornerstoneOverlayBottomRight',
+          items: minipacsViewportOverlayConfig.bottomRight,
+        },
+        {
+          id: 'cornerstoneOverlayBottomLeft',
+          items: minipacsViewportOverlayConfig.bottomLeft,
         },
       ]);
 

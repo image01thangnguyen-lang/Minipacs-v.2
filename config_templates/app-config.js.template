@@ -1,5 +1,6 @@
 window.config = {
   routerBasename: '/viewer',
+  useCursors: true,
   showStudyList: true,
   extensions: [],
   modes: [],
