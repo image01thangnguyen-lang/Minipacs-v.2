@@ -64,10 +64,12 @@ const WindowLevelIcon = () => (
   </svg>
 );
 
-// Measurement
 const LengthIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
     <line x1="4" y1="20" x2="20" y2="4"/><line x1="4" y1="20" x2="4" y2="16"/><line x1="4" y1="20" x2="8" y2="20"/><line x1="20" y1="4" x2="20" y2="8"/><line x1="20" y1="4" x2="16" y2="4"/>
+    <line x1="8" y1="16" x2="10" y2="18" stroke="#22d3ee" strokeWidth="2" />
+    <line x1="12" y1="12" x2="14" y2="14" stroke="#22d3ee" strokeWidth="2" />
+    <line x1="16" y1="8" x2="18" y2="10" stroke="#22d3ee" strokeWidth="2" />
   </svg>
 );
 
@@ -98,6 +100,7 @@ const RectangleIcon = () => (
 const AngleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 20L12 4L20 20"/>
+    <path d="M9 15 Q 12 17 15 15" stroke="#f5b301" strokeWidth="2" />
   </svg>
 );
 
@@ -111,6 +114,7 @@ const CalibrationIcon = () => (
 const ArrowAnnotateIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
     <line x1="5" y1="19" x2="19" y2="5"/><polyline points="13 5 19 5 19 11"/>
+    <circle cx="5" cy="19" r="2.5" fill="#ec4899" stroke="none" />
   </svg>
 );
 
@@ -179,6 +183,7 @@ const CineIcon = () => (
 const MPRIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
     <rect x="2" y="2" width="9" height="9" rx="1"/><rect x="13" y="2" width="9" height="9" rx="1"/><rect x="2" y="13" width="9" height="9" rx="1"/>
+    <circle cx="17.5" cy="17.5" r="3.5" fill="#f5b301" stroke="none" />
   </svg>
 );
 
@@ -371,24 +376,30 @@ const CloseIcon = () => (
 const Box3DIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
+    <path d="M12 12 l8.7 -5.05 v10 l-8.7 5.05 z" fill="#22d3ee" opacity="0.3" stroke="none" />
   </svg>
 );
 
 const AxialIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="9" opacity="0.3"/><line x1="2" y1="12" x2="22" y2="12"/>
+    <circle cx="12" cy="12" r="9" opacity="0.3"/>
+    <ellipse cx="12" cy="12" rx="9" ry="3" fill="#f5b301" opacity="0.5" stroke="none" />
+    <line x1="2" y1="12" x2="22" y2="12"/>
   </svg>
 );
 
 const CoronalIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="9" opacity="0.3"/><line x1="12" y1="2" x2="12" y2="22"/>
+    <circle cx="12" cy="12" r="9" opacity="0.3"/>
+    <ellipse cx="12" cy="12" rx="3" ry="9" fill="#22d3ee" opacity="0.5" stroke="none" />
+    <line x1="12" y1="2" x2="12" y2="22"/>
   </svg>
 );
 
 const CurvedIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 12s5-8 9-8 9 8 9 8"/>
+    <circle cx="12" cy="4" r="3.5" fill="#ec4899" stroke="none" />
   </svg>
 );
 
