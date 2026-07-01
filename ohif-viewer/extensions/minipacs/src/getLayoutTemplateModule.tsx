@@ -44,9 +44,15 @@ function MiniPacsViewerLayout({
     styleEl.innerHTML = `
       .minipacs-layout-root .viewport-pane.active, 
       .minipacs-layout-root .border-primary-light.border-2 {
-        border-color: #f59e0b !important; /* amber-500 */
+        border-color: #00B5B8 !important; /* cyan */
         border-width: 2px !important;
-        box-shadow: inset 0 0 0 1px #f59e0b, 0 0 8px rgba(245, 158, 11, 0.4) !important;
+        box-shadow: inset 0 0 0 1px #00B5B8, 0 0 8px rgba(0, 181, 184, 0.4) !important;
+      }
+      .minipacs-layout-root .viewport-pane:not(.active) {
+        border-color: #1A323A !important;
+      }
+      .minipacs-layout-root .border-secondary-light {
+        border-color: #1A323A !important;
       }
       .minipacs-layout-root .group-hover\\:border-transparent.border-transparent {
         border-color: transparent !important;
