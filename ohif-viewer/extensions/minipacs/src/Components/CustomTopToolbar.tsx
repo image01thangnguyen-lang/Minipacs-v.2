@@ -124,6 +124,24 @@ const Box3DIcon = () => (
     <path d="M12 12 l8.7 -5.05 v10 l-8.7 5.05 z" fill="#22d3ee" opacity="0.3" stroke="none" />
   </svg>
 );
+const EraserIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 20H7L3 16C2.5 15.5 2.5 14.5 3 14L13 4C13.5 3.5 14.5 3.5 15 4L20 9C20.5 9.5 20.5 10.5 20 11L11 20"/>
+    <path d="M15 4L20 9L11 18L6 13Z" fill="#ec4899" opacity="0.3" stroke="none" />
+  </svg>
+);
+const CloseIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" fill="#ec4899" opacity="0.2" stroke="none" />
+    <line x1="15" y1="9" x2="9" y2="15" stroke="#ec4899" strokeWidth="2"/><line x1="9" y1="9" x2="15" y2="15" stroke="#ec4899" strokeWidth="2"/>
+  </svg>
+);
+const CaptureIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+    <circle cx="12" cy="13" r="4" fill="#22d3ee" opacity="0.6" stroke="none" />
+  </svg>
+);
 
 import { minipacsToolRegistry, MiniPacsTool } from '../config/minipacsToolRegistry';
 import { runMiniPacsTool } from '../services/commandBridge';
@@ -150,6 +168,9 @@ const iconMap: Record<string, React.FC> = {
   Cine: CineIcon,
   MPR: MPRIcon,
   '3D': Box3DIcon,
+  Eraser: EraserIcon,
+  Close: CloseIcon,
+  Capture: CaptureIcon,
 };
 
 export default function CustomTopToolbar({ servicesManager }) {

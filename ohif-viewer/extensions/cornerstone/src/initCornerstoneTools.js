@@ -71,9 +71,9 @@ export default function initCornerstoneTools(configuration = {}) {
   const annotationStyle = {
     textBoxFontSize: '15px',
     lineWidth: '1.5',
-    colorHighlightedActive: '#f5b301',
-    colorActive: '#f5b301',
-    color: '#f5b301',
+    colorHighlightedActive: '#ffff00',
+    colorActive: '#ffff00',
+    color: '#ffff00',
   };
 
   const defaultStyles = annotation.config.style.getDefaultToolStyles();
