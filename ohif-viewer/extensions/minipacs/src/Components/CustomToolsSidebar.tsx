@@ -955,6 +955,280 @@ const AdvancedThumbnailIcon = () => (
   </svg>
 );
 
+// --- Phase 5A: 3D Sculpt Icons ---
+
+const CropSculptIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 2v6H2" stroke="#ffffff" strokeWidth="1.5" />
+    <path d="M18 22v-6h4" stroke="#ffffff" strokeWidth="1.5" />
+    <rect x="6" y="6" width="12" height="12" rx="1" stroke="#ffffff" strokeWidth="1.5" strokeDasharray="3 2" />
+    <path d="M10 10l4 4" stroke="#f43f5e" strokeWidth="1.5" />
+  </svg>
+);
+
+const SculptInverseIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" stroke="#ffffff" strokeWidth="1.5" />
+    <path d="M12 3a9 9 0 0 1 0 18V3z" fill="#ffffff" fillOpacity="0.3" />
+  </svg>
+);
+
+const SculptRemoveIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 6h18" stroke="#f43f5e" strokeWidth="1.5" />
+    <path d="M8 6V4h8v2" stroke="#f43f5e" strokeWidth="1.2" />
+    <path d="M5 6l1 14h12l1-14" stroke="#f43f5e" strokeWidth="1.5" />
+    <line x1="10" y1="10" x2="10" y2="16" stroke="#f43f5e" strokeWidth="1" />
+    <line x1="14" y1="10" x2="14" y2="16" stroke="#f43f5e" strokeWidth="1" />
+  </svg>
+);
+
+const SculptDoneIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" stroke="#4ade80" strokeWidth="1.5" />
+    <polyline points="8 12 11 15 16 9" stroke="#4ade80" strokeWidth="2" />
+  </svg>
+);
+
+const SculptCancelIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" stroke="#f43f5e" strokeWidth="1.5" />
+    <line x1="9" y1="9" x2="15" y2="15" stroke="#f43f5e" strokeWidth="2" />
+    <line x1="15" y1="9" x2="9" y2="15" stroke="#f43f5e" strokeWidth="2" />
+  </svg>
+);
+
+const FreehandSculptIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 16 C 6 8, 10 4, 16 8 C 20 12, 18 18, 12 20 C 8 20, 4 18, 4 16Z" stroke="#ffffff" strokeWidth="1.5" fill="#ffffff" fillOpacity="0.1" />
+    <path d="M20 4l-4 4" stroke="#ffffff" strokeWidth="1.5" />
+    <circle cx="20" cy="4" r="1.5" fill="#ffffff" />
+  </svg>
+);
+
+const CurvedSculptIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 20 Q 12 4 20 20" stroke="#ffffff" strokeWidth="1.5" fill="#ffffff" fillOpacity="0.1" />
+    <path d="M20 4l-4 4" stroke="#ffffff" strokeWidth="1.5" />
+    <circle cx="20" cy="4" r="1.5" fill="#ffffff" />
+  </svg>
+);
+
+const EllipseSculptIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <ellipse cx="12" cy="12" rx="8" ry="5" stroke="#ffffff" strokeWidth="1.5" strokeDasharray="3 2" fill="#ffffff" fillOpacity="0.1" />
+    <path d="M20 4l-4 4" stroke="#ffffff" strokeWidth="1.5" />
+    <circle cx="20" cy="4" r="1.5" fill="#ffffff" />
+  </svg>
+);
+
+const RectSculptIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="5" y="7" width="14" height="10" rx="1" stroke="#ffffff" strokeWidth="1.5" strokeDasharray="3 2" fill="#ffffff" fillOpacity="0.1" />
+    <path d="M20 4l-4 4" stroke="#ffffff" strokeWidth="1.5" />
+    <circle cx="20" cy="4" r="1.5" fill="#ffffff" />
+  </svg>
+);
+
+const UndoSculptIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 10h10a5 5 0 0 1 0 10H11" stroke="#ffffff" strokeWidth="1.5" />
+    <polyline points="7 6 3 10 7 14" stroke="#ffffff" strokeWidth="1.5" />
+  </svg>
+);
+
+const VOIMoveIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="6" y="6" width="12" height="12" rx="1" stroke="#ffffff" strokeWidth="1.2" strokeDasharray="2 2" />
+    <polyline points="12 2 12 6" stroke="#ffffff" strokeWidth="1.5" />
+    <polyline points="12 18 12 22" stroke="#ffffff" strokeWidth="1.5" />
+    <polyline points="2 12 6 12" stroke="#ffffff" strokeWidth="1.5" />
+    <polyline points="18 12 22 12" stroke="#ffffff" strokeWidth="1.5" />
+    <polygon points="12 2 10 4 14 4" fill="#ffffff" />
+    <polygon points="12 22 10 20 14 20" fill="#ffffff" />
+    <polygon points="2 12 4 10 4 14" fill="#ffffff" />
+    <polygon points="22 12 20 10 20 14" fill="#ffffff" />
+  </svg>
+);
+
+const VOIRotateIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="6" y="6" width="12" height="12" rx="1" stroke="#ffffff" strokeWidth="1.2" strokeDasharray="2 2" />
+    <path d="M20.5 8A9 9 0 0 0 8 3.5" stroke="#ffffff" strokeWidth="1.5" />
+    <polyline points="20 4 20.5 8 16.5 8" stroke="#ffffff" strokeWidth="1.5" />
+  </svg>
+);
+
+const VOIThicknessIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="8" width="16" height="8" rx="1" stroke="#ffffff" strokeWidth="1.2" strokeDasharray="2 2" />
+    <polyline points="12 4 12 8" stroke="#ffffff" strokeWidth="1.5" />
+    <polyline points="12 16 12 20" stroke="#ffffff" strokeWidth="1.5" />
+    <polygon points="12 4 10 6 14 6" fill="#ffffff" />
+    <polygon points="12 20 10 18 14 18" fill="#ffffff" />
+  </svg>
+);
+
+const VOICenterIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="6" y="6" width="12" height="12" rx="1" stroke="#ffffff" strokeWidth="1.2" strokeDasharray="2 2" />
+    <circle cx="12" cy="12" r="2" fill="#ffffff" />
+    <line x1="12" y1="8" x2="12" y2="10" stroke="#ffffff" strokeWidth="1" />
+    <line x1="12" y1="14" x2="12" y2="16" stroke="#ffffff" strokeWidth="1" />
+    <line x1="8" y1="12" x2="10" y2="12" stroke="#ffffff" strokeWidth="1" />
+    <line x1="14" y1="12" x2="16" y2="12" stroke="#ffffff" strokeWidth="1" />
+  </svg>
+);
+
+// --- Phase 5A: Virtual Endoscopy Icons ---
+
+const VEAddPathIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 20 Q 12 4 20 20" stroke="#ffffff" strokeWidth="1.5" />
+    <circle cx="4" cy="20" r="1.5" fill="#ffffff" />
+    <circle cx="20" cy="20" r="1.5" fill="#ffffff" />
+    <circle cx="17" cy="5" r="3" stroke="#4ade80" strokeWidth="1.5" />
+    <line x1="17" y1="3.5" x2="17" y2="6.5" stroke="#4ade80" strokeWidth="1.5" />
+    <line x1="15.5" y1="5" x2="18.5" y2="5" stroke="#4ade80" strokeWidth="1.5" />
+  </svg>
+);
+
+const VERemovePathIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 20 Q 12 4 20 20" stroke="#ffffff" strokeWidth="1.5" opacity="0.4" />
+    <circle cx="17" cy="5" r="3" stroke="#f43f5e" strokeWidth="1.5" />
+    <line x1="15.5" y1="5" x2="18.5" y2="5" stroke="#f43f5e" strokeWidth="1.5" />
+  </svg>
+);
+
+const VECameraOnPathIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 18 Q 12 6 20 18" stroke="#ffffff" strokeWidth="1" opacity="0.4" />
+    <rect x="8" y="8" width="8" height="6" rx="1" stroke="#ffffff" strokeWidth="1.5" />
+    <circle cx="12" cy="11" r="2" stroke="#ffffff" strokeWidth="1" />
+    <polygon points="16 10 20 8 20 14 16 12" stroke="#ffffff" strokeWidth="1" />
+  </svg>
+);
+
+const VECameraFreeIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="6" y="8" width="10" height="7" rx="1" stroke="#ffffff" strokeWidth="1.5" />
+    <circle cx="11" cy="11.5" r="2" stroke="#ffffff" strokeWidth="1" />
+    <polygon points="16 10 20 8 20 14 16 13" stroke="#ffffff" strokeWidth="1" />
+    <path d="M3 5l3 3" stroke="#ffffff" strokeWidth="1.2" />
+    <path d="M21 5l-3 3" stroke="#ffffff" strokeWidth="1.2" />
+    <path d="M3 19l3-3" stroke="#ffffff" strokeWidth="1.2" />
+    <path d="M21 19l-3-3" stroke="#ffffff" strokeWidth="1.2" />
+  </svg>
+);
+
+const VEForwardIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" stroke="#ffffff" strokeWidth="1.2" />
+    <polygon points="10 7 17 12 10 17" fill="#ffffff" fillOpacity="0.8" />
+  </svg>
+);
+
+const VEBackwardIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" stroke="#ffffff" strokeWidth="1.2" />
+    <polygon points="14 7 7 12 14 17" fill="#ffffff" fillOpacity="0.8" />
+  </svg>
+);
+
+// --- Phase 5B: Native/Desktop Icons ---
+
+const SendDicomIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="4" width="16" height="16" rx="2" stroke="#ffffff" strokeWidth="1.2" />
+    <polyline points="12 8 12 16" stroke="#ffffff" strokeWidth="1.5" />
+    <polyline points="8 12 12 8 16 12" stroke="#ffffff" strokeWidth="1.5" />
+  </svg>
+);
+
+const ScanDocIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="2" width="16" height="20" rx="2" stroke="#ffffff" strokeWidth="1.2" />
+    <line x1="4" y1="12" x2="20" y2="12" stroke="#4ade80" strokeWidth="2" />
+    <line x1="8" y1="7" x2="16" y2="7" stroke="#ffffff" strokeWidth="1" opacity="0.4" />
+    <line x1="8" y1="17" x2="16" y2="17" stroke="#ffffff" strokeWidth="1" opacity="0.4" />
+  </svg>
+);
+
+const CaptureMonitorIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="3" width="20" height="14" rx="2" stroke="#ffffff" strokeWidth="1.2" />
+    <line x1="8" y1="21" x2="16" y2="21" stroke="#ffffff" strokeWidth="1.5" />
+    <line x1="12" y1="17" x2="12" y2="21" stroke="#ffffff" strokeWidth="1.5" />
+    <circle cx="12" cy="10" r="3" stroke="#ffffff" strokeWidth="1" />
+    <circle cx="12" cy="10" r="1" fill="#ffffff" />
+  </svg>
+);
+
+const CaptureAllIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="1" y="4" width="14" height="10" rx="1" stroke="#ffffff" strokeWidth="1.2" />
+    <rect x="9" y="8" width="14" height="10" rx="1" stroke="#ffffff" strokeWidth="1.2" />
+    <circle cx="16" cy="13" r="2" stroke="#ffffff" strokeWidth="1" />
+  </svg>
+);
+
+const DictationIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="2" width="6" height="11" rx="3" stroke="#ffffff" strokeWidth="1.5" />
+    <path d="M5 10a7 7 0 0 0 14 0" stroke="#ffffff" strokeWidth="1.5" />
+    <line x1="12" y1="17" x2="12" y2="22" stroke="#ffffff" strokeWidth="1.5" />
+    <line x1="8" y1="22" x2="16" y2="22" stroke="#ffffff" strokeWidth="1.5" />
+  </svg>
+);
+
+const PlayDictationIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="2" width="6" height="11" rx="3" stroke="#ffffff" strokeWidth="1.2" opacity="0.5" />
+    <path d="M5 10a7 7 0 0 0 14 0" stroke="#ffffff" strokeWidth="1.2" opacity="0.5" />
+    <polygon points="8 16 18 21 8 26" fill="#ffffff" fillOpacity="0.8" transform="translate(0,-4)" />
+  </svg>
+);
+
+const ExternalAppIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="3" stroke="#ffffff" strokeWidth="1.2" />
+    <path d="M10 8l5 4-5 4" stroke="#ffffff" strokeWidth="1.5" />
+  </svg>
+);
+
+const ExternalLinkIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="#ffffff" strokeWidth="1.5" />
+    <polyline points="15 3 21 3 21 9" stroke="#ffffff" strokeWidth="1.5" />
+    <line x1="10" y1="14" x2="21" y2="3" stroke="#ffffff" strokeWidth="1.5" />
+  </svg>
+);
+
+const NativeExitIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="#ffffff" strokeWidth="1.5" />
+    <polyline points="16 17 21 12 16 7" stroke="#ffffff" strokeWidth="1.5" />
+    <line x1="21" y1="12" x2="9" y2="12" stroke="#ffffff" strokeWidth="1.5" />
+  </svg>
+);
+
+const NativeMinimizeIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" stroke="#ffffff" strokeWidth="1.2" />
+    <line x1="8" y1="12" x2="16" y2="12" stroke="#ffffff" strokeWidth="2" />
+  </svg>
+);
+
+const NativeResizeIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="15 3 21 3 21 9" stroke="#ffffff" strokeWidth="1.5" />
+    <polyline points="9 21 3 21 3 15" stroke="#ffffff" strokeWidth="1.5" />
+    <line x1="21" y1="3" x2="14" y2="10" stroke="#ffffff" strokeWidth="1.5" />
+    <line x1="3" y1="21" x2="10" y2="14" stroke="#ffffff" strokeWidth="1.5" />
+  </svg>
+);
+
 // ──────────────────── Icon Registry ────────────────────
 
 const iconMap: Record<string, React.FC> = {
@@ -1089,9 +1363,55 @@ const iconMap: Record<string, React.FC> = {
   ReportWorkspace: ReportWorkspaceIcon,
   Diagnostics: DiagnosticsIcon,
   SaveSnapshot: CaptureIcon,
+
+  // Phase 5A — 3D Sculpt Icons
+  CropSculpt: CropSculptIcon,
+  SculptInverse: SculptInverseIcon,
+  SculptRemove: SculptRemoveIcon,
+  SculptDone: SculptDoneIcon,
+  SculptCancel: SculptCancelIcon,
+  FreehandAreaSculpt: FreehandSculptIcon,
+  CurvedAreaSculpt: CurvedSculptIcon,
+  EllipseAreaSculpt: EllipseSculptIcon,
+  RectAreaSculpt: RectSculptIcon,
+  CurvedLineSculpt: CurvedSculptIcon,
+  FreehandLineSculpt: FreehandSculptIcon,
+  UndoSculpt: UndoSculptIcon,
+  VOIMove: VOIMoveIcon,
+  VOIRotation: VOIRotateIcon,
+  VOIThickness: VOIThicknessIcon,
+  VOICenter: VOICenterIcon,
+
+  // Phase 5A — Virtual Endoscopy Icons
+  VEAddPath: VEAddPathIcon,
+  VERemovePath: VERemovePathIcon,
+  VECameraOnPath: VECameraOnPathIcon,
+  VECameraFree: VECameraFreeIcon,
+  VEForward: VEForwardIcon,
+  VEBackward: VEBackwardIcon,
+
+  // Phase 5B — Native/Desktop Icons
+  SendLocalDicom: SendDicomIcon,
+  ScanDoc: ScanDocIcon,
+  CaptureMonitor: CaptureMonitorIcon,
+  CaptureAllScreens: CaptureAllIcon,
+  GlobalCapture: CaptureAllIcon,
+  Dictation: DictationIcon,
+  TapeDictation: DictationIcon,
+  PlayDictation: PlayDictationIcon,
+  Execute3DXelis: ExternalAppIcon,
+  ExternalLink1: ExternalLinkIcon,
+  ExternalLink2: ExternalLinkIcon,
+  ExternalLink3: ExternalLinkIcon,
+  ExternalLink4: ExternalLinkIcon,
+  ExternalLink5: ExternalLinkIcon,
+  ExternalLink6: ExternalLinkIcon,
+  ExternalLinkDgate: ExternalAppIcon,
+  SendToTFS: SendDicomIcon,
+  NativeExit: NativeExitIcon,
+  NativeMinimize: NativeMinimizeIcon,
+  NativeResize: NativeResizeIcon,
 };
-
-
 
 function getIcon(id: string): React.FC {
   return iconMap[id] || FallbackIcon;
@@ -1099,10 +1419,9 @@ function getIcon(id: string): React.FC {
 
 import { minipacsToolRegistry, minipacsToolSections, MiniPacsTool, MiniPacsToolSection } from '../config/minipacsToolRegistry';
 import { runMiniPacsTool } from '../services/commandBridge';
+import { nativeCapabilityService } from '../services/nativeCapabilityService';
 
 // ──────────────────── Sidebar Component ────────────────────
-
-
 
 export default function CustomToolsSidebar({ servicesManager }) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
@@ -1120,6 +1439,7 @@ export default function CustomToolsSidebar({ servicesManager }) {
   const { toolbarService } = servicesManager.services || servicesManager;
 
   React.useEffect(() => {
+    nativeCapabilityService.detect();
     if (!toolbarService) return;
     const subscription = toolbarService.subscribe(
       toolbarService.EVENTS.TOOL_BAR_STATE_MODIFIED,
@@ -1161,7 +1481,7 @@ export default function CustomToolsSidebar({ servicesManager }) {
     const Icon = getIcon(item.id);
     const isActive = item.type === 'tool' && activeTool === item.id;
     const isToggled = item.type === 'toggle' && toggledTools[item.id];
-    const isDisabled = ['backend', 'deferred-advanced', 'deferred-native', 'guarded'].includes(item.status);
+    const isDisabled = ['backend', 'deferred-advanced', 'deferred-native', 'deferred-phase5', 'guarded'].includes(item.status);
 
     return (
       <button
@@ -1188,7 +1508,7 @@ export default function CustomToolsSidebar({ servicesManager }) {
   const renderListItem = (item: MiniPacsTool) => {
     const Icon = getIcon(item.id);
     const isActive = item.type === 'tool' && activeTool === item.id;
-    const isDisabled = ['backend', 'deferred-advanced', 'deferred-native', 'guarded'].includes(item.status);
+    const isDisabled = ['backend', 'deferred-advanced', 'deferred-native', 'deferred-phase5', 'guarded'].includes(item.status);
 
     return (
       <button

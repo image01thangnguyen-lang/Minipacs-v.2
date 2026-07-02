@@ -14,11 +14,12 @@ type ClinicProfileView = {
   phone?: string;
   email?: string;
   website?: string;
-  logoPath?: string;
+  logoPath?: string | null;
   headerText?: string;
   footerText?: string;
   licenseNumber?: string;
   defaultReportLanguage?: string;
+  faviconPath?: string | null;
 };
 
 const emptyProfile: ClinicProfileView = {
@@ -28,11 +29,12 @@ const emptyProfile: ClinicProfileView = {
   phone: "",
   email: "",
   website: "",
-  logoPath: "",
+  logoPath: null,
   headerText: "",
   footerText: "",
   licenseNumber: "",
   defaultReportLanguage: "vi",
+  faviconPath: null,
 };
 
 export default function ClinicProfilePage() {
@@ -70,13 +72,17 @@ export default function ClinicProfilePage() {
     setMessage("");
     setError("");
 
+    const form = event.currentTarget;
+
     try {
-      const formData = new FormData(event.currentTarget);
+      const formData = new FormData(form);
       const saved = await saveClinicProfileAction(formData);
       setProfile(saved || emptyProfile);
       setMessage("Đã lưu thông tin phòng khám.");
-      const fileInput = event.currentTarget.elements.namedItem("logo") as HTMLInputElement | null;
-      if (fileInput) fileInput.value = "";
+      const logoInput = form.elements.namedItem("logo") as HTMLInputElement | null;
+      if (logoInput) logoInput.value = "";
+      const faviconInput = form.elements.namedItem("favicon") as HTMLInputElement | null;
+      if (faviconInput) faviconInput.value = "";
     } catch (err: any) {
       console.error(err);
       setError(err?.message || "Không lưu được thông tin phòng khám.");
@@ -198,7 +204,19 @@ export default function ClinicProfilePage() {
                     accept="image/jpeg,image/png,image/webp,image/gif"
                     className="block w-full text-xs text-vin-muted file:mr-2 file:rounded file:border-0 file:bg-vin-shell file:px-3 file:py-2 file:text-xs file:font-semibold file:text-vin-text2 hover:file:text-white"
                   />
-                  <p className="mt-1 text-[10px] text-vin-faint">JPG, PNG, WEBP hoặc GIF. Nếu không chọn file mới, logo hiện tại được giữ nguyên.</p>
+                  <div className="mt-1 flex items-center justify-between">
+                    <p className="text-[10px] text-vin-faint">JPG, PNG, WEBP hoặc GIF. Nếu không chọn file mới, logo hiện tại được giữ nguyên.</p>
+                    {profile.logoPath && (
+                      <button
+                        type="button"
+                        onClick={() => setProfile({ ...profile, logoPath: null })}
+                        className="text-[10px] font-semibold text-vin-status-danger-text hover:underline"
+                      >
+                        Xóa Logo
+                      </button>
+                    )}
+                  </div>
+                  {profile.logoPath === null && <input type="hidden" name="removeLogo" value="true" />}
                 </div>
               </div>
             </div>
@@ -225,7 +243,20 @@ export default function ClinicProfilePage() {
                     accept="image/jpeg,image/png,image/webp,image/gif,image/x-icon,image/vnd.microsoft.icon"
                     className="block w-full text-xs text-vin-muted file:mr-2 file:rounded file:border-0 file:bg-vin-shell file:px-3 file:py-2 file:text-xs file:font-semibold file:text-vin-text2 hover:file:text-white"
                   />
-                  <p className="mt-1 text-[10px] text-vin-faint">Khuyên dùng ICO hoặc PNG vuông. Sẽ dùng Logo nếu để trống.</p>
+                  <div className="mt-1 flex items-center justify-between">
+                    <p className="text-[10px] text-vin-faint">Khuyên dùng ICO hoặc PNG vuông. Sẽ dùng Logo nếu để trống.</p>
+                    {profile.faviconPath && (
+                      <button
+                        type="button"
+                        onClick={() => setProfile({ ...profile, faviconPath: null })}
+                        className="text-[10px] font-semibold text-vin-status-danger-text hover:underline"
+                      >
+                        Xóa Favicon
+                      </button>
+                    )}
+                  </div>
+                  {/* Hidden input to tell backend to nullify the field if no new file is uploaded */}
+                  {profile.faviconPath === null && <input type="hidden" name="removeFavicon" value="true" />}
                 </div>
               </div>
             </div>

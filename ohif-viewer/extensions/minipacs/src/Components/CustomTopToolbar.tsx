@@ -390,7 +390,7 @@ export default function CustomTopToolbar({ servicesManager }) {
         
         const isActive = item.type === 'tool' && activeTool === item.id;
         const isToggled = item.type === 'toggle' && toggledTools[item.id];
-        const isDisabled = ['backend', 'deferred-advanced', 'deferred-native', 'guarded'].includes(item.status);
+        const isDisabled = ['backend', 'deferred-advanced', 'deferred-native', 'deferred-phase5', 'guarded'].includes(item.status);
 
         if (item.id === 'WindowLevel') {
           return (

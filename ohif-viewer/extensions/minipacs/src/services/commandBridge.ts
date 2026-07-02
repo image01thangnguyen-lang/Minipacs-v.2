@@ -5,6 +5,7 @@ import { getMiniPacsViewportState } from './viewportStateAdapter';
 import { viewerSnapshotService } from './viewerSnapshotService';
 import { viewerAuditService } from './viewerAuditService';
 import { viewerHangingProtocolService } from './viewerHangingProtocolService';
+import { nativeCapabilityService } from './nativeCapabilityService';
 
 type CommandBridgeResult = {
   ok: boolean;
@@ -21,11 +22,19 @@ export function runMiniPacsTool(
   const { viewportGridService } = servicesManager.services;
 
   // Guard against unhandled/unimplemented tool statuses
-  if (['backend', 'deferred-advanced', 'deferred-native', 'guarded'].includes(tool.status)) {
+  if (['backend', 'deferred-advanced', 'deferred-native', 'deferred-phase5', 'guarded'].includes(tool.status)) {
     let msg = 'Tính năng đang chờ API Backend.';
     if (tool.status === 'guarded') msg = 'Hành động này bị khóa để đảm bảo an toàn.';
-    if (tool.status === 'deferred-native') msg = 'Tính năng yêu cầu ứng dụng Native (không hỗ trợ trên Web).';
+    if (tool.status === 'deferred-native') {
+      // Check if capabilities would allow enabling this tool
+      if (tool.requiresCapability && nativeCapabilityService.hasAll(tool.requiresCapability as any)) {
+        msg = 'Tính năng Native sẵn sàng nhưng chưa được kích hoạt trong phiên bản này.';
+      } else {
+        msg = 'Tính năng yêu cầu ứng dụng Native (không hỗ trợ trên Web).';
+      }
+    }
     if (tool.status === 'deferred-advanced') msg = 'Tính năng nâng cao sẽ có trong phiên bản sau.';
+    if (tool.status === 'deferred-phase5') msg = 'Tính năng Phase 5 (3D Sculpt / Native) đang trong quá trình phát triển.';
     if (tool.deferredReason) {
       msg = `${msg} Lộ trình: ${tool.deferredReason}`;
     }

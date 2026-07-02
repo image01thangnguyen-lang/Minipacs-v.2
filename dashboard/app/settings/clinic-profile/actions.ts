@@ -31,8 +31,8 @@ function serializeClinicProfile(profile: any) {
       phone: "",
       email: "",
       website: "",
-      logoPath: "",
-      faviconPath: "",
+      logoPath: null,
+      faviconPath: null,
       headerText: "Hệ thống chẩn đoán hình ảnh",
       footerText: "Phiếu kết quả được phát hành từ hệ thống Mini PACS.",
       licenseNumber: "",
@@ -48,8 +48,8 @@ function serializeClinicProfile(profile: any) {
     phone: profile.phone || "",
     email: profile.email || "",
     website: profile.website || "",
-    logoPath: profile.logoPath || "",
-    faviconPath: profile.faviconPath || "",
+    logoPath: profile.logoPath || null,
+    faviconPath: profile.faviconPath || null,
     headerText: profile.headerText || "",
     footerText: profile.footerText || "",
     licenseNumber: profile.licenseNumber || "",
@@ -102,6 +102,8 @@ export async function saveClinicProfileAction(formData: FormData) {
   const logoPath = await saveClinicLogo(formData.get("logo") as File | null);
 
   const faviconPath = await saveClinicLogo(formData.get("favicon") as File | null);
+  const removeFavicon = formData.get("removeFavicon") === "true";
+  const removeLogo = formData.get("removeLogo") === "true";
 
   const data = {
     name,
@@ -114,8 +116,8 @@ export async function saveClinicProfileAction(formData: FormData) {
     footerText: emptyToNull(readText(formData, "footerText")),
     licenseNumber: emptyToNull(readText(formData, "licenseNumber")),
     defaultReportLanguage: readText(formData, "defaultReportLanguage") || "vi",
-    ...(logoPath ? { logoPath } : {}),
-    ...(faviconPath ? { faviconPath } : {}),
+    ...(logoPath ? { logoPath } : removeLogo ? { logoPath: null } : {}),
+    ...(faviconPath ? { faviconPath } : removeFavicon ? { faviconPath: null } : {}),
   };
 
   const profile = existing

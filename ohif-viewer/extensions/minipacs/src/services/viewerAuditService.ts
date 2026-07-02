@@ -2,11 +2,13 @@ import { viewerApiClient } from './viewerApiClient';
 
 export const viewerAuditService = {
   recordAction(studyInstanceUid: string, action: string, metadata?: Record<string, any>) {
-    if (!studyInstanceUid) return;
+    if (studyInstanceUid === null || studyInstanceUid === undefined) return;
     
-    // Fire and forget
+    // Backend rejects empty string. Use a sentinel value for global actions without a study context.
+    const safeUid = studyInstanceUid.trim() === '' ? 'GLOBAL_ACTION' : studyInstanceUid;
+
     viewerApiClient.post('/api/audit/viewer-action', {
-      studyInstanceUid,
+      studyInstanceUid: safeUid,
       action,
       metadata
     }).catch(err => {

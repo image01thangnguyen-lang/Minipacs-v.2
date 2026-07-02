@@ -5,6 +5,7 @@ export type MiniPacsToolStatus =
   | 'backend'
   | 'deferred-advanced'
   | 'deferred-native'
+  | 'deferred-phase5'
   | 'guarded';
 
 export type MiniPacsToolPlacement =
@@ -27,6 +28,8 @@ export type MiniPacsTool = {
   kind?: string;
   hotkey?: string;
   requires?: string[];
+  /** Capability keys from nativeCapabilityService that must be true for this tool */
+  requiresCapability?: string[];
   destructive?: boolean;
   deferredReason?: string;
 };
@@ -112,8 +115,8 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'UserConfig', label: 'User Config', type: 'action', status: 'guarded', deferredReason: 'Requires User Config APIs (Phase 3)', placement: ['left-panel'] },
   { id: 'About', label: 'About', type: 'action', status: 'ready', placement: ['left-panel'] },
   { id: 'Print', label: 'Browser Print', type: 'action', status: 'ready', placement: ['left-panel'] },
-  { id: 'DirectPrint', label: 'DICOM Print', type: 'action', status: 'deferred-native', deferredReason: 'Requires Native Desktop App (Phase 5)', placement: ['left-panel'] },
-  { id: 'CDBurn', label: 'Burn CD/DVD', type: 'action', status: 'deferred-native', deferredReason: 'Requires Native Desktop App (Phase 5)', placement: ['left-panel'] },
+  { id: 'DirectPrint', label: 'DICOM Print', type: 'action', status: 'deferred-native', deferredReason: 'Requires DICOM Print SCU via gateway or companion (Phase 5B)', requiresCapability: ['dicomPrintAvailable'], placement: ['left-panel'] },
+  { id: 'CDBurn', label: 'Burn CD/DVD', type: 'action', status: 'deferred-native', deferredReason: 'Requires native companion with CD burn capability (Phase 5B)', requiresCapability: ['localCompanionAvailable', 'cdBurnAvailable'], placement: ['left-panel'] },
 
   // --- Missing 100+ Tools for Phase 1 ---
   { id: 'Caliper', label: 'Caliper', type: 'tool', status: 'deferred-advanced', deferredReason: 'Needs custom calibration UI (Phase 3)', placement: ['left-panel'] },
@@ -146,7 +149,7 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'ActionHistory', label: 'Action History', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires action history state (Phase 3)', placement: ['left-panel'] },
   { id: 'EncodePatient', label: 'Encode Patient', type: 'action', status: 'guarded', deferredReason: 'Requires Backend API (Phase 3)', placement: ['left-panel'] },
   { id: 'DownloadManager', label: 'Downloads', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires download manager (Phase 3)', placement: ['left-panel'] },
-  { id: 'OpenFolder', label: 'Open Folder', type: 'action', status: 'deferred-native', deferredReason: 'Requires Native Desktop App (Phase 5)', placement: ['left-panel'] },
+  { id: 'OpenFolder', label: 'Open Folder', type: 'action', status: 'deferred-native', deferredReason: 'Requires native companion or Electron mode (Phase 5B)', requiresCapability: ['localCompanionAvailable'], placement: ['left-panel'] },
   { id: 'VideoConference', label: 'Video Conf', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires WebRTC backend (Phase 3+)', placement: ['left-panel'] },
   { id: 'FiveDReporting', label: '5D Reporting', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires 5D reporting module (Phase 3+)', placement: ['left-panel'] },
   { id: 'Share', label: 'Share', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires Sharing API (Phase 3)', placement: ['left-panel'] },
@@ -192,6 +195,60 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'SpineBalance', label: 'Spine Balance', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
   { id: 'SpinePelvicIncidence', label: 'Pelvic Incidence', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
   { id: 'ParallelLine', label: 'Parallel Line', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Phase 5A — 3D Sculpt Tools
+  // ═══════════════════════════════════════════════════════════════════════
+  { id: 'CropSculpt', label: 'Crop Sculpt', type: 'action', status: 'deferred-phase5', deferredReason: 'Requires VTK.js sculpt pipeline (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'SculptInverse', label: 'Inverse', type: 'action', status: 'deferred-phase5', deferredReason: 'Requires active sculpt session (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'SculptRemove', label: 'Remove', type: 'action', status: 'deferred-phase5', deferredReason: 'Requires active sculpt session (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'], destructive: true },
+  { id: 'SculptDone', label: 'Done', type: 'action', status: 'deferred-phase5', deferredReason: 'Requires active sculpt session (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'SculptCancel', label: 'Cancel', type: 'action', status: 'deferred-phase5', deferredReason: 'Requires active sculpt session (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'FreehandAreaSculpt', label: 'Freehand Area', type: 'tool', status: 'deferred-phase5', deferredReason: 'Requires VTK.js sculpt pipeline (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'CurvedAreaSculpt', label: 'Curved Area', type: 'tool', status: 'deferred-phase5', deferredReason: 'Requires VTK.js sculpt pipeline (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'EllipseAreaSculpt', label: 'Ellipse Area', type: 'tool', status: 'deferred-phase5', deferredReason: 'Requires VTK.js sculpt pipeline (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'RectAreaSculpt', label: 'Rect Area', type: 'tool', status: 'deferred-phase5', deferredReason: 'Requires VTK.js sculpt pipeline (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'CurvedLineSculpt', label: 'Curved Line', type: 'tool', status: 'deferred-phase5', deferredReason: 'Requires VTK.js sculpt pipeline (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'FreehandLineSculpt', label: 'Freehand Line', type: 'tool', status: 'deferred-phase5', deferredReason: 'Requires VTK.js sculpt pipeline (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'UndoSculpt', label: 'Undo Sculpt', type: 'action', status: 'deferred-phase5', deferredReason: 'Requires active sculpt session (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'VOIMove', label: 'VOI Move', type: 'tool', status: 'deferred-phase5', deferredReason: 'Requires VTK.js VOI pipeline (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'VOIRotation', label: 'VOI Rotation', type: 'tool', status: 'deferred-phase5', deferredReason: 'Requires VTK.js VOI pipeline (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'VOIThickness', label: 'VOI Thickness', type: 'tool', status: 'deferred-phase5', deferredReason: 'Requires VTK.js VOI pipeline (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'VOICenter', label: 'VOI Center', type: 'tool', status: 'deferred-phase5', deferredReason: 'Requires VTK.js VOI pipeline (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Phase 5A — Virtual Endoscopy Tools
+  // ═══════════════════════════════════════════════════════════════════════
+  { id: 'VEAddPath', label: 'Add Path', type: 'action', status: 'deferred-phase5', deferredReason: 'Requires validated volume data (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'VERemovePath', label: 'Remove Path', type: 'action', status: 'deferred-phase5', deferredReason: 'Requires active endoscopy session (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'VECameraOnPath', label: 'Camera on Path', type: 'action', status: 'deferred-phase5', deferredReason: 'Requires active endoscopy path (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'VECameraFree', label: 'Camera Free', type: 'action', status: 'deferred-phase5', deferredReason: 'Requires active endoscopy session (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'VEForward', label: 'Forward', type: 'action', status: 'deferred-phase5', deferredReason: 'Requires active endoscopy path (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+  { id: 'VEBackward', label: 'Backward', type: 'action', status: 'deferred-phase5', deferredReason: 'Requires active endoscopy path (Phase 5A)', requiresCapability: ['volumeRenderingAvailable'], placement: ['left-panel'] },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Phase 5B — Native/Desktop Tools
+  // ═══════════════════════════════════════════════════════════════════════
+  { id: 'SendLocalDicom', label: 'Send DICOM', type: 'action', status: 'deferred-native', deferredReason: 'Requires server gateway DIMSE/STOW-RS (Phase 5B)', requiresCapability: ['serverGatewayAvailable'], placement: ['left-panel'] },
+  { id: 'ScanDoc', label: 'Scan Doc', type: 'action', status: 'deferred-native', deferredReason: 'Requires native companion with scanner bridge (Phase 5B)', requiresCapability: ['localCompanionAvailable', 'scannerAvailable'], placement: ['left-panel'] },
+  { id: 'CaptureMonitor', label: 'Capture Monitor', type: 'action', status: 'deferred-native', deferredReason: 'Requires Electron/Tauri mode (Phase 5B)', requiresCapability: ['electronMode'], placement: ['left-panel'] },
+  { id: 'CaptureAllScreens', label: 'Capture All', type: 'action', status: 'deferred-native', deferredReason: 'Requires Electron/Tauri mode (Phase 5B)', requiresCapability: ['electronMode'], placement: ['left-panel'] },
+  { id: 'GlobalCapture', label: 'Global Capture', type: 'action', status: 'deferred-native', deferredReason: 'Requires Electron/Tauri mode (Phase 5B)', requiresCapability: ['electronMode'], placement: ['left-panel'] },
+  { id: 'Dictation', label: 'Dictation', type: 'action', status: 'deferred-native', deferredReason: 'Requires native companion or dictation service (Phase 5B)', requiresCapability: ['localCompanionAvailable'], placement: ['left-panel'] },
+  { id: 'TapeDictation', label: 'Tape Dictation', type: 'action', status: 'deferred-native', deferredReason: 'Requires native companion (Phase 5B)', requiresCapability: ['localCompanionAvailable'], placement: ['left-panel'] },
+  { id: 'PlayDictation', label: 'Play Dictation', type: 'action', status: 'deferred-native', deferredReason: 'Requires native companion (Phase 5B)', requiresCapability: ['localCompanionAvailable'], placement: ['left-panel'] },
+  { id: 'Execute3DXelis', label: 'Xelis 3D', type: 'action', status: 'deferred-native', deferredReason: 'Requires native companion with Xelis installed (Phase 5B)', requiresCapability: ['localCompanionAvailable', 'externalLauncherAvailable'], placement: ['left-panel'] },
+  { id: 'ExternalLink1', label: 'External 1', type: 'action', status: 'deferred-native', deferredReason: 'Requires native companion (Phase 5B)', requiresCapability: ['localCompanionAvailable', 'externalLauncherAvailable'], placement: ['left-panel'] },
+  { id: 'ExternalLink2', label: 'External 2', type: 'action', status: 'deferred-native', deferredReason: 'Requires native companion (Phase 5B)', requiresCapability: ['localCompanionAvailable', 'externalLauncherAvailable'], placement: ['left-panel'] },
+  { id: 'ExternalLink3', label: 'External 3', type: 'action', status: 'deferred-native', deferredReason: 'Requires native companion (Phase 5B)', requiresCapability: ['localCompanionAvailable', 'externalLauncherAvailable'], placement: ['left-panel'] },
+  { id: 'ExternalLink4', label: 'External 4', type: 'action', status: 'deferred-native', deferredReason: 'Requires native companion (Phase 5B)', requiresCapability: ['localCompanionAvailable', 'externalLauncherAvailable'], placement: ['left-panel'] },
+  { id: 'ExternalLink5', label: 'External 5', type: 'action', status: 'deferred-native', deferredReason: 'Requires native companion (Phase 5B)', requiresCapability: ['localCompanionAvailable', 'externalLauncherAvailable'], placement: ['left-panel'] },
+  { id: 'ExternalLink6', label: 'External 6', type: 'action', status: 'deferred-native', deferredReason: 'Requires native companion (Phase 5B)', requiresCapability: ['localCompanionAvailable', 'externalLauncherAvailable'], placement: ['left-panel'] },
+  { id: 'ExternalLinkDgate', label: 'D.gate', type: 'action', status: 'deferred-native', deferredReason: 'Requires server gateway or companion (Phase 5B)', requiresCapability: ['serverGatewayAvailable'], placement: ['left-panel'] },
+  { id: 'SendToTFS', label: 'Send to TFS', type: 'action', status: 'deferred-native', deferredReason: 'Requires server gateway (Phase 5B)', requiresCapability: ['serverGatewayAvailable'], placement: ['left-panel'] },
+  { id: 'NativeExit', label: 'Exit', type: 'action', status: 'deferred-native', deferredReason: 'Requires Electron/Tauri mode (Phase 5B)', requiresCapability: ['electronMode'], placement: ['left-panel'] },
+  { id: 'NativeMinimize', label: 'Minimize', type: 'action', status: 'deferred-native', deferredReason: 'Requires Electron/Tauri mode (Phase 5B)', requiresCapability: ['electronMode'], placement: ['left-panel'] },
+  { id: 'NativeResize', label: 'Resize', type: 'action', status: 'deferred-native', deferredReason: 'Requires Electron/Tauri mode (Phase 5B)', requiresCapability: ['electronMode'], placement: ['left-panel'] },
 
   // --- Viewport Workflow Actions ---
   ...viewportWorkflowActions,
@@ -313,5 +370,37 @@ export const minipacsToolSections: MiniPacsToolSection[] = [
     renderType: 'icons',
     defaultOpen: false,
     toolIds: ['CTRatio', 'CTRatio2', 'LLD', 'CenterLine', 'Profile', 'Table2D', 'SpineLabel', 'CenterLineAngle', 'MultipleCircle', 'MultipleCobb', 'TimeIntensityCurve', 'Curve', 'AcetabularAngle', 'SpineBalance', 'SpinePelvicIncidence', 'ParallelLine'],
+  },
+  {
+    id: 'phase5a-sculpt',
+    title: 'Phase 5A: 3D Sculpt',
+    placement: 'left-panel',
+    renderType: 'icons',
+    defaultOpen: false,
+    toolIds: ['CropSculpt', 'SculptInverse', 'SculptRemove', 'SculptDone', 'SculptCancel', 'FreehandAreaSculpt', 'CurvedAreaSculpt', 'EllipseAreaSculpt', 'RectAreaSculpt', 'CurvedLineSculpt', 'FreehandLineSculpt', 'UndoSculpt', 'VOIMove', 'VOIRotation', 'VOIThickness', 'VOICenter'],
+  },
+  {
+    id: 'phase5a-endoscopy',
+    title: 'Phase 5A: Virtual Endoscopy',
+    placement: 'left-panel',
+    renderType: 'icons',
+    defaultOpen: false,
+    toolIds: ['VEAddPath', 'VERemovePath', 'VECameraOnPath', 'VECameraFree', 'VEForward', 'VEBackward'],
+  },
+  {
+    id: 'phase5b-native',
+    title: 'Phase 5B: Native/Desktop',
+    placement: 'left-panel',
+    renderType: 'icons',
+    defaultOpen: false,
+    toolIds: ['SendLocalDicom', 'ScanDoc', 'CaptureMonitor', 'CaptureAllScreens', 'GlobalCapture', 'Dictation', 'TapeDictation', 'PlayDictation', 'NativeExit', 'NativeMinimize', 'NativeResize'],
+  },
+  {
+    id: 'phase5b-external',
+    title: 'Phase 5B: External Integrations',
+    placement: 'left-panel',
+    renderType: 'icons',
+    defaultOpen: false,
+    toolIds: ['Execute3DXelis', 'ExternalLink1', 'ExternalLink2', 'ExternalLink3', 'ExternalLink4', 'ExternalLink5', 'ExternalLink6', 'ExternalLinkDgate', 'SendToTFS'],
   },
 ];
