@@ -1,6 +1,6 @@
 # Ke hoach chi tiet Phase 0 - Product Baseline And Safety Map
 
-Updated: 2026-07-02
+Updated: 2026-07-03
 
 ## 1. Muc tieu
 
@@ -94,6 +94,19 @@ Phase 0 nen tao/cap nhat cac file sau:
 - `docs/VRPACS_DATA_AUDIT_SAFETY_MAP.md`
 - `docs/VRPACS_ACCEPTANCE_TEST_SCENARIOS.md`
 - `docs/VRPACS_IMPLEMENTATION_BACKLOG.md`
+
+Status 2026-07-03: da tao baseline v0.1 cho tat ca file tren. Cac phase sau phai doc bo file nay truoc khi code de tranh conflict ve thuat ngu, status, permission, audit, va backlog.
+
+Thu tu doc khuyen nghi:
+
+1. `docs/VRPACS_TERMINOLOGY_MAP.md`
+2. `docs/VRPACS_FEATURE_INVENTORY.md`
+3. `docs/VRPACS_MINIPACS_CAPABILITY_MATRIX.md`
+4. `docs/VRPACS_PERMISSION_ACTION_MATRIX.md`
+5. `docs/VRPACS_WORKFLOW_STATUS_POLICY.md`
+6. `docs/VRPACS_DATA_AUDIT_SAFETY_MAP.md`
+7. `docs/VRPACS_ACCEPTANCE_TEST_SCENARIOS.md`
+8. `docs/VRPACS_IMPLEMENTATION_BACKLOG.md`
 
 Neu muon giam so file, co the gom cac noi dung tren vao 2 file:
 
@@ -657,18 +670,18 @@ Neu lam nhanh trong mot PR:
 
 ## 17. Checklist ban giao Phase 0
 
-- [ ] `VRPACS_FEATURE_INVENTORY.md` da tao/cap nhat.
-- [ ] `VRPACS_TERMINOLOGY_MAP.md` da tao/cap nhat.
-- [ ] `VRPACS_MINIPACS_CAPABILITY_MATRIX.md` da tao/cap nhat.
-- [ ] `VRPACS_PERMISSION_ACTION_MATRIX.md` da tao/cap nhat.
-- [ ] `VRPACS_WORKFLOW_STATUS_POLICY.md` da tao/cap nhat.
-- [ ] `VRPACS_DATA_AUDIT_SAFETY_MAP.md` da tao/cap nhat.
-- [ ] `VRPACS_ACCEPTANCE_TEST_SCENARIOS.md` da tao/cap nhat.
-- [ ] `VRPACS_IMPLEMENTATION_BACKLOG.md` da tao/cap nhat.
-- [ ] Phase 1 plan da doi chieu voi backlog.
-- [ ] Cac item ngoai Phase 1 da co target phase.
-- [ ] Cac action nguy hiem da co permission, reason, audit rule.
-- [ ] Test scenarios co du precondition, steps, expected result.
+- [x] `VRPACS_FEATURE_INVENTORY.md` da tao/cap nhat.
+- [x] `VRPACS_TERMINOLOGY_MAP.md` da tao/cap nhat.
+- [x] `VRPACS_MINIPACS_CAPABILITY_MATRIX.md` da tao/cap nhat.
+- [x] `VRPACS_PERMISSION_ACTION_MATRIX.md` da tao/cap nhat.
+- [x] `VRPACS_WORKFLOW_STATUS_POLICY.md` da tao/cap nhat.
+- [x] `VRPACS_DATA_AUDIT_SAFETY_MAP.md` da tao/cap nhat.
+- [x] `VRPACS_ACCEPTANCE_TEST_SCENARIOS.md` da tao/cap nhat.
+- [x] `VRPACS_IMPLEMENTATION_BACKLOG.md` da tao/cap nhat.
+- [x] Phase 1 plan da doi chieu voi backlog o muc baseline.
+- [x] Cac item ngoai Phase 1 da co target phase.
+- [x] Cac action nguy hiem da co permission, reason, audit rule.
+- [x] Test scenarios co du precondition, steps, expected result.
 
 ## 18. Prompt ban giao cho AI khac
 
