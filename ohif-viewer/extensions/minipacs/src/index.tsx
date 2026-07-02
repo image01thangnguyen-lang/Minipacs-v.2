@@ -13,6 +13,11 @@ import maxNumImageFrames from './custom-attribute/maxNumImageFrames';
 import { viewerMeasurementPersistenceService } from './services/viewerMeasurementPersistenceService';
 import commandsModule from './commandsModule';
 
+import * as cornerstoneTools from '@cornerstonejs/tools';
+import { RectangleShutterTool } from './tools/shutters/RectangleShutterTool';
+import { EllipseShutterTool } from './tools/shutters/EllipseShutterTool';
+import { PolylineShutterTool } from './tools/shutters/PolylineShutterTool';
+
 /**
  * The test extension provides additional behaviour for testing various
  * customizations and settings for OHIF.
@@ -36,6 +41,10 @@ const testExtension: Types.Extensions.Extension = {
 
     // Initialize Measurement Persistence
     viewerMeasurementPersistenceService.initialize(servicesManager);
+
+    cornerstoneTools.addTool(RectangleShutterTool);
+    cornerstoneTools.addTool(EllipseShutterTool);
+    cornerstoneTools.addTool(PolylineShutterTool);
 
     hangingProtocolService.addCustomAttribute(
       'numberOfDisplaySets',

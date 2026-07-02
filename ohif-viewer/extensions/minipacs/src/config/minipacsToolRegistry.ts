@@ -58,6 +58,7 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
 
   // --- Measurement Tools ---
   { id: 'Bidirectional', label: 'Bidirectional', type: 'tool', status: 'ready', placement: ['left-panel'] },
+  { id: 'CobbAngle', label: 'Cobb Angle', type: 'tool', status: 'ready', placement: ['left-panel'] },
   { id: 'EllipticalROI', label: 'Ellipse', type: 'tool', status: 'ready', placement: ['left-panel'] },
   { id: 'CircleROI', label: 'Circle', type: 'tool', status: 'ready', placement: ['left-panel'] },
   { id: 'RectangleROI', label: 'Rectangle', type: 'tool', status: 'ready', placement: ['left-panel'] },
@@ -151,6 +152,47 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'Share', label: 'Share', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires Sharing API (Phase 3)', placement: ['left-panel'] },
   { id: 'Close', label: 'Close', type: 'action', commandName: 'navigateHistory', commandOptions: { to: '/' }, context: 'DEFAULT', status: 'ready', placement: ['top-toolbar'] },
 
+  // --- Phase 3 Advanced Display ---
+  { id: 'DisplayImageOnly', label: 'Image Only', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires custom UI overlay logic (Phase 3)', placement: ['top-toolbar', 'left-panel'] },
+  { id: 'Zoom100', label: '100% Zoom', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires parallelScale calculation (Phase 3)', placement: ['top-toolbar'] },
+  { id: 'ActualSize', label: 'Actual Size', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires parallelScale calculation (Phase 3)', placement: ['top-toolbar'] },
+  { id: 'SelectAll', label: 'Select All', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires selection state (Phase 3)', placement: ['left-panel'] },
+  { id: 'SelectAllInverse', label: 'Select Inverse', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires selection state (Phase 3)', placement: ['left-panel'] },
+  { id: 'SelectImageSet', label: 'Select Set', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires selection state (Phase 3)', placement: ['left-panel'] },
+  { id: 'MonitorCine', label: 'Monitor Cine', type: 'toggle', status: 'deferred-advanced', deferredReason: 'Requires global cine sync (Phase 3)', placement: ['top-toolbar'] },
+  { id: 'AutoScroll', label: 'Auto Scroll', type: 'toggle', status: 'deferred-advanced', deferredReason: 'Requires auto-scroll loop (Phase 3)', placement: ['top-toolbar'] },
+  { id: 'RefreshExam', label: 'Refresh Exam', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires reload workflow (Phase 3)', placement: ['left-panel'] },
+  { id: 'AutoRefresh', label: 'Auto Refresh', type: 'toggle', status: 'deferred-advanced', deferredReason: 'Requires polling service (Phase 3)', placement: ['left-panel'] },
+  { id: 'ApplyPreviousHP', label: 'Prev HP', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires HP Manager (Phase 3)', placement: ['left-panel'] },
+  { id: 'ApplyNextHP', label: 'Next HP', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires HP Manager (Phase 3)', placement: ['left-panel'] },
+  { id: 'AdvancedThumbnail', label: 'Adv Thumbnail', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires thumbnail redesign (Phase 3)', placement: ['left-panel'] },
+
+  // --- Phase 3 Shutters & Filters ---
+  { id: 'EllipseShutter', label: 'Ellipse Shutter', type: 'tool', commandOptions: { toolName: 'EllipseShutter' }, status: 'deferred-advanced', deferredReason: 'Requires Shutter persistence and toolGroup validation (Phase 3)', placement: ['left-panel'] },
+  { id: 'RectangleShutter', label: 'Rect Shutter', type: 'tool', commandOptions: { toolName: 'RectangleShutter' }, status: 'deferred-advanced', deferredReason: 'Requires Shutter persistence and toolGroup validation (Phase 3)', placement: ['left-panel'] },
+  { id: 'PolylineShutter', label: 'Poly Shutter', type: 'tool', commandOptions: { toolName: 'PolylineShutter' }, status: 'deferred-advanced', deferredReason: 'Requires Shutter persistence and toolGroup validation (Phase 3)', placement: ['left-panel'] },
+  { id: 'FilterSharpen', label: 'Sharpen', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires WebGL filter hook (Phase 3)', placement: ['left-panel'] },
+  { id: 'FilterAverage', label: 'Average', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires WebGL filter hook (Phase 3)', placement: ['left-panel'] },
+  { id: 'PseudoColor', label: 'Pseudo Color', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires Colormap logic (Phase 3)', placement: ['left-panel'] },
+
+  // --- Phase 3 Specialty Measurements ---
+  { id: 'CTRatio', label: 'CT Ratio', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
+  { id: 'CTRatio2', label: 'CT Ratio 2', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
+  { id: 'LLD', label: 'LLD', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Calibration Check (Phase 3)', placement: ['left-panel'] },
+  { id: 'CenterLine', label: 'Center Line', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
+  { id: 'Profile', label: 'Profile', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Pixel Sampling (Phase 3)', placement: ['left-panel'] },
+  { id: 'Table2D', label: '2D Table', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires Statistics UI (Phase 3)', placement: ['left-panel'] },
+  { id: 'SpineLabel', label: 'Spine Label', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom Marker (Phase 3)', placement: ['left-panel'] },
+  { id: 'CenterLineAngle', label: 'CL Angle', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
+  { id: 'MultipleCircle', label: 'Multi Circle', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
+  { id: 'MultipleCobb', label: 'Multi Cobb', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
+  { id: 'TimeIntensityCurve', label: 'TIC', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires Multiframe Chart (Phase 3)', placement: ['left-panel'] },
+  { id: 'Curve', label: 'Curve', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
+  { id: 'AcetabularAngle', label: 'Acetabular Angle', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
+  { id: 'SpineBalance', label: 'Spine Balance', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
+  { id: 'SpinePelvicIncidence', label: 'Pelvic Incidence', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
+  { id: 'ParallelLine', label: 'Parallel Line', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires Custom BaseTool (Phase 3)', placement: ['left-panel'] },
+
   // --- Viewport Workflow Actions ---
   ...viewportWorkflowActions,
 
@@ -190,7 +232,7 @@ export const minipacsToolSections: MiniPacsToolSection[] = [
     placement: 'left-panel',
     renderType: 'icons',
     defaultOpen: true,
-    toolIds: ['Bidirectional', 'EllipticalROI', 'CircleROI', 'RectangleROI', 'CalibrationLine', 'Caliper', 'AngleVector', 'PolygonROI', 'MirrorROI'],
+    toolIds: ['Bidirectional', 'EllipticalROI', 'CircleROI', 'RectangleROI', 'CalibrationLine', 'Caliper', 'AngleVector', 'PolygonROI', 'MirrorROI', 'CobbAngle'],
   },
   {
     id: 'advanced-tools',
@@ -247,5 +289,29 @@ export const minipacsToolSections: MiniPacsToolSection[] = [
     renderType: 'icons',
     defaultOpen: true,
     toolIds: ['Report', 'ReportWorkspace', 'Diagnostics', 'TagBrowser', 'PACSConfig', 'UserConfig', 'About', 'Print', 'DirectPrint', 'CDBurn', 'ActionHistory', 'EncodePatient', 'DownloadManager', 'OpenFolder', 'VideoConference', 'FiveDReporting', 'Share'],
+  },
+  {
+    id: 'phase3-advanced-display',
+    title: 'Phase 3: Display & Workflow',
+    placement: 'left-panel',
+    renderType: 'icons',
+    defaultOpen: false,
+    toolIds: ['DisplayImageOnly', 'Zoom100', 'ActualSize', 'SelectAll', 'SelectAllInverse', 'SelectImageSet', 'MonitorCine', 'AutoScroll', 'RefreshExam', 'AutoRefresh', 'ApplyPreviousHP', 'ApplyNextHP', 'AdvancedThumbnail'],
+  },
+  {
+    id: 'phase3-shutters-filters',
+    title: 'Phase 3: Shutters & Filters',
+    placement: 'left-panel',
+    renderType: 'icons',
+    defaultOpen: false,
+    toolIds: ['EllipseShutter', 'RectangleShutter', 'PolylineShutter', 'FilterSharpen', 'FilterAverage', 'PseudoColor'],
+  },
+  {
+    id: 'phase3-measurements',
+    title: 'Phase 3: Specialty Measurements',
+    placement: 'left-panel',
+    renderType: 'icons',
+    defaultOpen: false,
+    toolIds: ['CTRatio', 'CTRatio2', 'LLD', 'CenterLine', 'Profile', 'Table2D', 'SpineLabel', 'CenterLineAngle', 'MultipleCircle', 'MultipleCobb', 'TimeIntensityCurve', 'Curve', 'AcetabularAngle', 'SpineBalance', 'SpinePelvicIncidence', 'ParallelLine'],
   },
 ];

@@ -49,6 +49,9 @@ function initDefaultToolGroup(extensionManager, toolGroupService, commandsManage
       { toolName: toolNames.Magnify },
       { toolName: toolNames.SegmentationDisplay },
       { toolName: toolNames.CalibrationLine },
+      { toolName: 'RectangleShutter' },
+      { toolName: 'EllipseShutter' },
+      { toolName: 'PolylineShutter' },
     ],
     // enabled
     enabled: [{ toolName: toolNames.ImageOverlayViewer }],
