@@ -64,11 +64,9 @@ const MagnifyIcon = () => (
 );
 
 const WindowLevelIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="9" fill="#0f172a" stroke="#cbd5e1" strokeWidth="1" />
-    <path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-9 9V3z" fill="#f8fafc" stroke="none" />
-    <circle cx="12" cy="12" r="3" fill="#06b6d4" stroke="none" />
-    <path d="M5 19L19 5" stroke="#0891b2" strokeWidth="1.5" />
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M12 2a10 10 0 0 1 0 20Z"/>
   </svg>
 );
 
@@ -267,27 +265,27 @@ const AboutIcon = () => (
 
 const Layout1x1Icon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" fill="#ffffff" fillOpacity="0.2"/>
+    <rect x="3" y="3" width="18" height="18" rx="2"/>
   </svg>
 );
 const Layout1x2Icon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" fill="#ffffff" fillOpacity="0.2"/><line x1="12" y1="3" x2="12" y2="21" />
+    <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21" />
   </svg>
 );
 const Layout2x1Icon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" fill="#ffffff" fillOpacity="0.2"/><line x1="3" y1="12" x2="21" y2="12" />
+    <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="12" x2="21" y2="12" />
   </svg>
 );
 const Layout2x2Icon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" fill="#ffffff" fillOpacity="0.2"/><line x1="12" y1="3" x2="12" y2="21" /><line x1="3" y1="12" x2="21" y2="12" />
+    <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21" /><line x1="3" y1="12" x2="21" y2="12" />
   </svg>
 );
 const Layout3x3Icon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" fill="#ffffff" fillOpacity="0.2"/><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" />
+    <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" />
   </svg>
 );
 
@@ -551,6 +549,7 @@ const iconMap: Record<string, React.FC> = {
   Volume: VolumeIcon,
   SpineLabel: SpineLabelingIcon,
 };
+
 
 
 function getIcon(id: string): React.FC {
