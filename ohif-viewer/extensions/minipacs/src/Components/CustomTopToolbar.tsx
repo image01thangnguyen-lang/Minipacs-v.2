@@ -3,143 +3,192 @@ import React, { useState } from 'react';
 // ──────────────────── SVG Icon Components ────────────────────
 
 const PanIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M5 9l-3 3 3 3"/><path d="M9 5l3-3 3 3"/><path d="M15 19l-3 3-3-3"/><path d="M19 9l3 3-3 3"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/>
-    <circle cx="12" cy="12" r="2" fill="#22d3ee" stroke="none" />
   </svg>
 );
 
 const ZoomIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
-    <circle cx="11" cy="11" r="3" fill="#22d3ee" opacity="0.4" stroke="none" />
   </svg>
 );
 
 const StackScrollIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="4" y="2" width="16" height="6" rx="1" stroke="#f5b301" />
-    <rect x="4" y="10" width="16" height="4" rx="1" fill="#f5b301" opacity="0.8" />
-    <rect x="4" y="16" width="16" height="6" rx="1" stroke="#f5b301" />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="4" y="2" width="16" height="5" rx="1" />
+    <rect x="4" y="9" width="16" height="5" rx="1" />
+    <rect x="4" y="16" width="16" height="5" rx="1" />
+    <path d="M8 9v5" />
+    <path d="M16 9v5" />
   </svg>
 );
 
 const WindowLevelIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-    <circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20" fill="#22d3ee" stroke="none" opacity="0.6"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 2v20" />
+    <path d="M12 6h4" />
+    <path d="M12 10h6" />
+    <path d="M12 14h6" />
+    <path d="M12 18h4" />
   </svg>
 );
 
 const LengthIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-    <line x1="4" y1="20" x2="20" y2="4"/><line x1="4" y1="20" x2="4" y2="16"/><line x1="4" y1="20" x2="8" y2="20"/><line x1="20" y1="4" x2="20" y2="8"/><line x1="20" y1="4" x2="16" y2="4"/>
-    <line x1="8" y1="16" x2="10" y2="18" stroke="#22d3ee" strokeWidth="2" />
-    <line x1="12" y1="12" x2="14" y2="14" stroke="#22d3ee" strokeWidth="2" />
-    <line x1="16" y1="8" x2="18" y2="10" stroke="#22d3ee" strokeWidth="2" />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="4" y1="20" x2="20" y2="4" />
+    <line x1="4" y1="16" x2="4" y2="20" />
+    <line x1="4" y1="20" x2="8" y2="20" />
+    <line x1="20" y1="4" x2="16" y2="4" />
+    <line x1="20" y1="4" x2="20" y2="8" />
+    <line x1="8" y1="16" x2="10" y2="18" />
+    <line x1="12" y1="12" x2="14" y2="14" />
+    <line x1="16" y1="8" x2="18" y2="10" />
   </svg>
 );
 
 const AngleIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M4 20L12 4L20 20"/>
-    <path d="M9 15 Q 12 17 15 15" stroke="#f5b301" strokeWidth="2" />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 20L12 4L20 20" />
+    <path d="M8 12 Q 12 15 16 12" />
+    <line x1="12" y1="4" x2="12" y2="6" />
   </svg>
 );
 
 const ProbeIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-    <circle cx="12" cy="12" r="2" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="22"/><line x1="2" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="22" y2="12"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="2" fill="#ffffff" />
+    <line x1="12" y1="2" x2="12" y2="8" />
+    <line x1="12" y1="16" x2="12" y2="22" />
+    <line x1="2" y1="12" x2="8" y2="12" />
+    <line x1="16" y1="12" x2="22" y2="12" />
   </svg>
 );
 
 const ResetIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
-    <circle cx="12" cy="12" r="2.5" fill="#f5b301" stroke="none" />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 3 12 9 12" />
+    <path d="M4.5 16.5A9 9 0 1 0 3 12" />
   </svg>
 );
 
 const CrosshairsIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-    <circle cx="12" cy="12" r="8"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="8" />
+    <line x1="12" y1="2" x2="12" y2="8" />
+    <line x1="12" y1="16" x2="12" y2="22" />
+    <line x1="2" y1="12" x2="8" y2="12" />
+    <line x1="16" y1="12" x2="22" y2="12" />
   </svg>
 );
 
 const CursorIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/>
-    <path d="M13 13l6 6" stroke="#22d3ee" strokeWidth="2" />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 4l7.07 16.97 2.51-7.39 7.39-2.51L4 4z" />
   </svg>
 );
 
 const RotateLeftIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="1 4 1 10 7 10" stroke="#ec4899" strokeWidth="2" />
-    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 8 3 2 9 2" />
+    <path d="M3 8A9 9 0 1 1 2 12" />
   </svg>
 );
+
 const RotateRightIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="23 4 23 10 17 10" stroke="#ec4899" strokeWidth="2" />
-    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="21 8 21 2 15 2" />
+    <path d="M21 8A9 9 0 1 0 22 12" />
   </svg>
 );
+
 const FlipHIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-    <line x1="12" y1="2" x2="12" y2="22" stroke="#22d3ee" strokeDasharray="2 2" strokeWidth="2" />
-    <polyline points="5 8 2 12 5 16"/><polyline points="19 8 22 12 19 16"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="2" x2="12" y2="22" strokeDasharray="4 4" />
+    <polyline points="7 8 2 12 7 16" />
+    <polyline points="17 8 22 12 17 16" />
   </svg>
 );
+
 const FlipVIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-    <line x1="2" y1="12" x2="22" y2="12" stroke="#22d3ee" strokeDasharray="2 2" strokeWidth="2" />
-    <polyline points="8 5 12 2 16 5"/><polyline points="8 19 12 22 16 19"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="2" y1="12" x2="22" y2="12" strokeDasharray="4 4" />
+    <polyline points="8 7 12 2 16 7" />
+    <polyline points="8 17 12 22 16 17" />
   </svg>
 );
+
 const InvertIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-    <circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20" fill="#f5b301" stroke="none" opacity="0.6"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 2v20" />
+    <path d="M8 3v18" />
+    <path d="M4.5 8v8" />
   </svg>
 );
+
 const MagnifyIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    <circle cx="11" cy="11" r="3" fill="#ec4899" opacity="0.5" stroke="none" />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="10" cy="10" r="7" />
+    <line x1="21" y1="21" x2="15" y2="15" />
+    <rect x="7" y="7" width="6" height="6" rx="1" />
   </svg>
 );
+
 const CineIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="5 3 19 12 5 21 5 3" fill="#ec4899" opacity="0.8" stroke="none"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="4" width="20" height="16" rx="2" />
+    <line x1="6" y1="4" x2="6" y2="20" />
+    <line x1="18" y1="4" x2="18" y2="20" />
+    <line x1="2" y1="8" x2="6" y2="8" />
+    <line x1="2" y1="12" x2="6" y2="12" />
+    <line x1="2" y1="16" x2="6" y2="16" />
+    <line x1="18" y1="8" x2="22" y2="8" />
+    <line x1="18" y1="12" x2="22" y2="12" />
+    <line x1="18" y1="16" x2="22" y2="16" />
+    <polygon points="10 9 15 12 10 15" />
   </svg>
 );
+
 const MPRIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-    <rect x="2" y="2" width="9" height="9" rx="1"/><rect x="13" y="2" width="9" height="9" rx="1"/><rect x="2" y="13" width="9" height="9" rx="1"/>
-    <circle cx="17.5" cy="17.5" r="3.5" fill="#f5b301" stroke="none" />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="8" height="8" rx="1" />
+    <rect x="13" y="3" width="8" height="8" rx="1" />
+    <rect x="3" y="13" width="8" height="8" rx="1" />
+    <line x1="14" y1="18" x2="20" y2="18" />
+    <line x1="17" y1="15" x2="17" y2="21" />
   </svg>
 );
+
 const Box3DIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>
-    <path d="M12 12 l8.7 -5.05 v10 l-8.7 5.05 z" fill="#22d3ee" opacity="0.3" stroke="none" />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 3 20 7.5 20 16.5 12 21 4 16.5 4 7.5" />
+    <line x1="12" y1="21" x2="12" y2="12" />
+    <line x1="12" y1="12" x2="20" y2="7.5" />
+    <line x1="12" y1="12" x2="4" y2="7.5" />
   </svg>
 );
+
 const EraserIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 20H7L3 16C2.5 15.5 2.5 14.5 3 14L13 4C13.5 3.5 14.5 3.5 15 4L20 9C20.5 9.5 20.5 10.5 20 11L11 20"/>
-    <path d="M15 4L20 9L11 18L6 13Z" fill="#ec4899" opacity="0.3" stroke="none" />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 20H7L3 16C2.5 15.5 2.5 14.5 3 14L13 4C13.5 3.5 14.5 3.5 15 4L20 9C20.5 9.5 20.5 10.5 20 11L11 20" />
+    <line x1="15" y1="4" x2="20" y2="9" />
   </svg>
 );
+
 const CloseIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" fill="#ec4899" opacity="0.2" stroke="none" />
-    <line x1="15" y1="9" x2="9" y2="15" stroke="#ec4899" strokeWidth="2"/><line x1="9" y1="9" x2="15" y2="15" stroke="#ec4899" strokeWidth="2"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="15" y1="9" x2="9" y2="15" />
+    <line x1="9" y1="9" x2="15" y2="15" />
   </svg>
 );
+
 const CaptureIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-    <circle cx="12" cy="13" r="4" fill="#22d3ee" opacity="0.6" stroke="none" />
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+    <circle cx="12" cy="13" r="4" />
   </svg>
 );
 

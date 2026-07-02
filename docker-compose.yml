@@ -44,7 +44,6 @@ services:
       - ./config/ohif-custom.css:/usr/share/nginx/html/ohif-custom.css:ro
       - ./config/ohif-custom.js:/usr/share/nginx/html/ohif-custom.js:ro
       - ./config/ohif-nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./dashboard/public/favicon.svg:/usr/share/nginx/html/favicon.ico:ro
     entrypoint:
       - nginx
       - -g
