@@ -175,6 +175,7 @@ model ClinicProfile {
   email                 String?
   website               String?
   logoPath              String?
+  faviconPath           String?
   headerText            String?  @db.Text
   footerText            String?  @db.Text
   licenseNumber         String?

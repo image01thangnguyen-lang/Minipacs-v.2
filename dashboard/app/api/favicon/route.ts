@@ -9,8 +9,9 @@ export async function GET(request: Request) {
       orderBy: { createdAt: "asc" },
     });
 
-    if (profile?.logoPath) {
-      return NextResponse.redirect(new URL(profile.logoPath, request.url));
+    const iconPath = profile?.faviconPath || profile?.logoPath;
+    if (iconPath && iconPath.startsWith('/api/images/')) {
+      return NextResponse.redirect(new URL(iconPath, request.url));
     }
   } catch (e) {
     console.error("Error fetching favicon:", e);

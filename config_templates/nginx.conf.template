@@ -23,6 +23,17 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    # Intercept only favicon.ico to serve dynamic clinic logo
+    # favicon-16x16.png / favicon-32x32.png stay static (correct type/size)
+    location = /viewer/assets/favicon.ico {
+        proxy_pass http://dashboard:3000/api/favicon;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     # Orthanc APIs (DICOMweb, WADO, Orthanc Explorer)
     location /dicom-web/ {
         proxy_pass http://orthanc:8042;

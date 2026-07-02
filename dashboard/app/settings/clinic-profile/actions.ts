@@ -32,6 +32,7 @@ function serializeClinicProfile(profile: any) {
       email: "",
       website: "",
       logoPath: "",
+      faviconPath: "",
       headerText: "Hệ thống chẩn đoán hình ảnh",
       footerText: "Phiếu kết quả được phát hành từ hệ thống Mini PACS.",
       licenseNumber: "",
@@ -48,6 +49,7 @@ function serializeClinicProfile(profile: any) {
     email: profile.email || "",
     website: profile.website || "",
     logoPath: profile.logoPath || "",
+    faviconPath: profile.faviconPath || "",
     headerText: profile.headerText || "",
     footerText: profile.footerText || "",
     licenseNumber: profile.licenseNumber || "",
@@ -62,15 +64,15 @@ async function requireAdmin() {
 async function saveClinicLogo(file: File | null) {
   if (!file || file.size === 0) return null;
 
-  const validMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+  const validMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/x-icon", "image/vnd.microsoft.icon"];
   if (!validMimeTypes.includes(file.type)) {
-    throw new Error("Logo phải là ảnh JPG, PNG, WEBP hoặc GIF.");
+    throw new Error("Logo/Favicon phải là ảnh JPG, PNG, WEBP, GIF hoặc ICO.");
   }
 
   await mkdir(CLINIC_UPLOAD_DIR, { recursive: true });
 
   const ext = (path.extname(file.name) || (file.type === "image/jpeg" ? ".jpg" : ".png")).toLowerCase();
-  const safeExt = [".jpg", ".jpeg", ".png", ".webp", ".gif"].includes(ext) ? ext : ".png";
+  const safeExt = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".ico"].includes(ext) ? ext : ".png";
   const filename = `clinic-logo-${crypto.randomUUID()}${safeExt}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
@@ -99,6 +101,8 @@ export async function saveClinicProfileAction(formData: FormData) {
   });
   const logoPath = await saveClinicLogo(formData.get("logo") as File | null);
 
+  const faviconPath = await saveClinicLogo(formData.get("favicon") as File | null);
+
   const data = {
     name,
     legalName: emptyToNull(readText(formData, "legalName")),
@@ -111,6 +115,7 @@ export async function saveClinicProfileAction(formData: FormData) {
     licenseNumber: emptyToNull(readText(formData, "licenseNumber")),
     defaultReportLanguage: readText(formData, "defaultReportLanguage") || "vi",
     ...(logoPath ? { logoPath } : {}),
+    ...(faviconPath ? { faviconPath } : {}),
   };
 
   const profile = existing
@@ -122,6 +127,7 @@ export async function saveClinicProfileAction(formData: FormData) {
         data: {
           ...data,
           logoPath: logoPath || null,
+          faviconPath: faviconPath || null,
         },
       });
 
@@ -134,6 +140,7 @@ export async function saveClinicProfileAction(formData: FormData) {
       message: `Updated clinic profile ${profile.name}`,
       metadataJson: JSON.stringify({
         logoUpdated: Boolean(logoPath),
+        faviconUpdated: Boolean(faviconPath),
         defaultReportLanguage: profile.defaultReportLanguage,
       }),
     },

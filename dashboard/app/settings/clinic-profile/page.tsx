@@ -203,6 +203,33 @@ export default function ClinicProfilePage() {
               </div>
             </div>
 
+            <div className="rounded border border-vin-border bg-vin-panel2 p-3">
+              <label className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-vin-muted">
+                <Upload className="h-3.5 w-3.5" />
+                Favicon trình duyệt
+              </label>
+              <div className="flex items-center gap-3">
+                <div className="flex h-16 w-16 items-center justify-center rounded border border-vin-border bg-white p-2">
+                  {profile.faviconPath ? (
+                    <img src={profile.faviconPath} alt="Favicon" className="max-h-full max-w-full object-contain" />
+                  ) : profile.logoPath ? (
+                    <img src={profile.logoPath} alt="Logo phòng khám" className="max-h-full max-w-full object-contain opacity-50" />
+                  ) : (
+                    <ImageIcon className="h-6 w-6 text-slate-400" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <input
+                    name="favicon"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif,image/x-icon,image/vnd.microsoft.icon"
+                    className="block w-full text-xs text-vin-muted file:mr-2 file:rounded file:border-0 file:bg-vin-shell file:px-3 file:py-2 file:text-xs file:font-semibold file:text-vin-text2 hover:file:text-white"
+                  />
+                  <p className="mt-1 text-[10px] text-vin-faint">Khuyên dùng ICO hoặc PNG vuông. Sẽ dùng Logo nếu để trống.</p>
+                </div>
+              </div>
+            </div>
+
             <Field label="Header phụ trên phiếu">
               <textarea
                 name="headerText"
