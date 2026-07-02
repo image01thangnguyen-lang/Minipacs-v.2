@@ -47,9 +47,9 @@ const commandsModule = ({ servicesManager, commandsManager, extensionManager }) 
         options: {},
       },
       toggleMiniPacsCrosshairs: {
-        commandFn: async ({ toggledState }) => {
+        commandFn: ({ toggledState }) => {
           const isTurnOn = toggledState !== false;
-          await viewerMprWorkflowService.setCrosshairsEnabled(isTurnOn);
+          viewerMprWorkflowService.setCrosshairsEnabled(isTurnOn);
         },
         storeContexts: [],
         options: {},

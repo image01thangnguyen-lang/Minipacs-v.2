@@ -146,9 +146,9 @@ class ViewerMprWorkflowService {
     return true;
   }
 
-  public async setCrosshairsEnabled(enabled: boolean = true): Promise<boolean> {
+  public setCrosshairsEnabled(enabled: boolean = true): boolean {
     if (!this.servicesManager || !this.commandsManager) return false;
-    const { uiNotificationService } = this.servicesManager.services;
+    const { uiNotificationService, viewportGridService, toolGroupService } = this.servicesManager.services;
 
     if (!this.isInMpr()) {
       if (uiNotificationService) {
@@ -161,19 +161,26 @@ class ViewerMprWorkflowService {
       throw new Error('Crosshairs can only be enabled in MPR mode.');
     }
 
-    if (enabled) {
-      this.commandsManager.runCommand('setToolActive', {
-        toolName: 'Crosshairs',
-        toolGroupId: 'mpr',
-      });
-      this.audit('crosshairs_enabled', {});
-    } else {
-      this.commandsManager.runCommand('setToolDisabled', {
-        toolName: 'Crosshairs',
-        toolGroupId: 'mpr',
-      });
-      this.audit('crosshairs_disabled', {});
+    if (viewportGridService && toolGroupService) {
+      const activeViewportId = viewportGridService.getActiveViewportId();
+      const activeToolGroup = toolGroupService.getToolGroupForViewport(activeViewportId);
+      if (activeToolGroup !== 'mpr') {
+        const viewports = viewportGridService.getState().viewports;
+        for (const [viewportId] of viewports.entries()) {
+          if (toolGroupService.getToolGroupForViewport(viewportId) === 'mpr') {
+            this.commandsManager.runCommand('setViewportActive', { viewportId });
+            break;
+          }
+        }
+      }
     }
+
+    this.commandsManager.runCommand('setToolActive', {
+      toolName: 'Crosshairs',
+      toolGroupId: 'mpr',
+      ...(enabled ? {} : { toggledState: false }),
+    });
+    this.audit(enabled ? 'crosshairs_enabled' : 'crosshairs_disabled', {});
     
     return true;
   }
