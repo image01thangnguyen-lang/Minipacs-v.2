@@ -1,25 +1,36 @@
-import React, { useState } from 'react';
+import sys
 
-/**
- * CustomToolsSidebar – Full-featured tool sidebar for MiniPACS Viewer.
- *
- * Contains ALL tools available in OHIF v3.7.0 longitudinal mode,
- * organized into logical radiology-workflow groups:
- *
- *  1. Navigation Tools     – Pan, Zoom, Stack Scroll, Magnify
- *  2. Window/Level         – W/L Manual + 5 organ presets
- *  3. Measurement Tools    – Length, Bidirectional, Ellipse, Circle, Rectangle, Angle, Calibration
- *  4. Annotation Tools     – Arrow Annotate, Probe, Freehand ROI
- *  5. Image Manipulation   – Reset, Rotate, Flip H/V, Invert, Capture, Cine
- *  6. MPR & Sync           – MPR, Crosshairs, Reference Lines, Stack Image Sync
- *  7. Overlay & Info       – Image Overlay, DICOM Tag Browser
- *  8. Layout               – 1×1, 1×2, 2×1, 2×2, 3×3
- */
+target_file = 'C:/App/Antigravity/Minipacs-v.2/ohif-viewer/extensions/minipacs/src/Components/CustomToolsSidebar.tsx'
 
-// ──────────────────── SVG Icon Components ────────────────────
-// Inline SVGs so the sidebar works independently of OHIF's Icon registry.
+with open(target_file, 'r', encoding='utf-8') as f:
+    lines = f.readlines()
 
-const ChevronDown = () => (
+# find the start and end of the icon registry
+start_idx = -1
+end_idx = -1
+for i, line in enumerate(lines):
+    if "const ChevronDown = () => (" in line:
+        start_idx = i
+    if "};" in line and "SpineLabel: SpineLabelingIcon," in line:
+        pass # just in case
+    if "Volume: Box3DIcon," in line or "Volume: VolumeIcon," in line:
+        # the end of the iconMap is a few lines below
+        for j in range(i, i+10):
+            if "};" in lines[j]:
+                end_idx = j + 1
+                break
+
+if end_idx == -1:
+    for i, line in enumerate(lines):
+        if "function getIcon(id: string): React.FC {" in line:
+            end_idx = i - 1
+            break
+
+if start_idx == -1 or end_idx == -1:
+    print(f"Could not find boundaries: start={start_idx}, end={end_idx}")
+    sys.exit(1)
+
+new_icons = """const ChevronDown = () => (
   <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M1 1L5 5L9 1" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
@@ -64,11 +75,9 @@ const MagnifyIcon = () => (
 );
 
 const WindowLevelIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="9" fill="#0f172a" stroke="#cbd5e1" strokeWidth="1" />
-    <path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-9 9V3z" fill="#f8fafc" stroke="none" />
-    <circle cx="12" cy="12" r="3" fill="#06b6d4" stroke="none" />
-    <path d="M5 19L19 5" stroke="#0891b2" strokeWidth="1.5" />
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <path d="M12 2a10 10 0 0 1 0 20Z"/>
   </svg>
 );
 
@@ -267,27 +276,27 @@ const AboutIcon = () => (
 
 const Layout1x1Icon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" fill="#ffffff" fillOpacity="0.2"/>
+    <rect x="3" y="3" width="18" height="18" rx="2"/>
   </svg>
 );
 const Layout1x2Icon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" fill="#ffffff" fillOpacity="0.2"/><line x1="12" y1="3" x2="12" y2="21" />
+    <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21" />
   </svg>
 );
 const Layout2x1Icon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" fill="#ffffff" fillOpacity="0.2"/><line x1="3" y1="12" x2="21" y2="12" />
+    <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="12" x2="21" y2="12" />
   </svg>
 );
 const Layout2x2Icon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" fill="#ffffff" fillOpacity="0.2"/><line x1="12" y1="3" x2="12" y2="21" /><line x1="3" y1="12" x2="21" y2="12" />
+    <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21" /><line x1="3" y1="12" x2="21" y2="12" />
   </svg>
 );
 const Layout3x3Icon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" fill="#ffffff" fillOpacity="0.2"/><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" />
+    <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" />
   </svg>
 );
 
@@ -394,6 +403,7 @@ const CurvedIcon = () => (
     <path d="M3 12s5-8 9-8 9 8 9 8"/>
   </svg>
 );
+
 
 // Tier 2 - Detailed & Semi-flat Medical Illustration
 
@@ -551,187 +561,11 @@ const iconMap: Record<string, React.FC> = {
   Volume: VolumeIcon,
   SpineLabel: SpineLabelingIcon,
 };
+"""
 
+new_content = "".join(lines[:start_idx]) + new_icons + "".join(lines[end_idx:])
 
-function getIcon(id: string): React.FC {
-  return iconMap[id] || FallbackIcon;
-}
+with open(target_file, 'w', encoding='utf-8') as f:
+    f.write(new_content)
 
-import { minipacsToolRegistry, minipacsToolSections, MiniPacsTool, MiniPacsToolSection } from '../config/minipacsToolRegistry';
-import { runMiniPacsTool } from '../services/commandBridge';
-
-// ──────────────────── Sidebar Component ────────────────────
-
-
-
-export default function CustomToolsSidebar({ servicesManager }) {
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    minipacsToolSections.forEach((s) => {
-      initial[s.id] = s.defaultOpen ?? true;
-    });
-    return initial;
-  });
-
-  const [activeTool, setActiveTool] = useState<string | null>('WindowLevel');
-  const [toggledTools, setToggledTools] = useState<Record<string, boolean>>({});
-
-  const { commandsManager } = servicesManager;
-  const { toolbarService } = servicesManager.services || servicesManager;
-
-  React.useEffect(() => {
-    if (!toolbarService) return;
-    const subscription = toolbarService.subscribe(
-      toolbarService.EVENTS.TOOL_BAR_STATE_MODIFIED,
-      (state: any) => {
-        setToggledTools({ ...state.toggles });
-        if (state.primaryToolId) {
-          setActiveTool(state.primaryToolId);
-        }
-      }
-    );
-    // Initial state
-    setToggledTools({ ...toolbarService.state.toggles });
-    if (toolbarService.state.primaryToolId) {
-      setActiveTool(toolbarService.state.primaryToolId);
-    }
-    return () => subscription.unsubscribe();
-  }, [toolbarService]);
-
-  const toggleSection = (id: string) => {
-    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const handleToolClick = (item: MiniPacsTool) => {
-    const effectiveId = item.commandName === 'toggleSync' ? 'StackImageSync' : item.id;
-    const result = runMiniPacsTool(servicesManager, item, {
-      toggledState: !toggledTools[effectiveId],
-    });
-
-    if (result.ok) {
-      // State updates are now handled by toolbarService subscription
-    }
-  };
-
-
-
-  // ── Rendering helpers ──
-
-  const renderIconButton = (item: MiniPacsTool) => {
-    const Icon = getIcon(item.id);
-    const isActive = item.type === 'tool' && activeTool === item.id;
-    const isToggled = item.type === 'toggle' && toggledTools[item.id];
-    const isDisabled = ['backend', 'deferred-advanced', 'deferred-native', 'guarded'].includes(item.status);
-
-    return (
-      <button
-        key={item.id}
-        title={item.label + (isDisabled ? (item.status === 'deferred-native' ? ' (Requires native app)' : ' (Coming soon)') : '')}
-        aria-disabled={isDisabled}
-        className={`
-          w-[36px] h-[36px] flex items-center justify-center rounded
-          transition-all duration-150
-          ${isDisabled
-            ? 'text-[#4A5B66] cursor-not-allowed opacity-50'
-            : isActive || isToggled
-              ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8] border border-[#00B5B8] cursor-pointer'
-              : 'text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A] border border-transparent cursor-pointer'
-          }
-        `}
-        onClick={() => handleToolClick(item)}
-      >
-        <Icon />
-      </button>
-    );
-  };
-
-  const renderListItem = (item: MiniPacsTool) => {
-    const Icon = getIcon(item.id);
-    const isActive = item.type === 'tool' && activeTool === item.id;
-    const isDisabled = ['backend', 'deferred-advanced', 'deferred-native', 'guarded'].includes(item.status);
-
-    return (
-      <button
-        key={item.id}
-        title={item.label + (isDisabled ? (item.status === 'deferred-native' ? ' (Requires native app)' : ' (Coming soon)') : '')}
-        aria-disabled={isDisabled}
-        className={`
-          w-full flex items-center gap-2 px-2 py-1 text-left rounded
-          transition-all duration-150
-          ${isDisabled
-            ? 'text-[#4A5B66] cursor-not-allowed opacity-50'
-            : isActive
-              ? 'bg-[#00B5B8] bg-opacity-20 text-[#00B5B8] cursor-pointer'
-              : 'text-[#8899A6] hover:text-[#00B5B8] hover:bg-[#1A323A] cursor-pointer'
-          }
-        `}
-        onClick={() => handleToolClick(item)}
-      >
-        <Icon />
-        <span className="text-[11px]">{item.label}</span>
-      </button>
-    );
-  };
-
-  const renderGridButton = (item: MiniPacsTool) => {
-    const Icon = getIcon(item.id);
-    return (
-      <button
-        key={item.id}
-        title={item.label}
-        className="w-[36px] h-[36px] flex items-center justify-center border border-[#1A323A] rounded text-[#8899A6] hover:border-[#00B5B8] hover:text-[#00B5B8] hover:bg-[#1A323A] transition-all cursor-pointer"
-        onClick={() => handleToolClick(item)}
-      >
-        <Icon />
-      </button>
-    );
-  };
-
-  return (
-    <div className="w-[180px] bg-[#102126] h-full flex flex-col overflow-y-auto"
-         style={{ scrollbarWidth: 'thin', scrollbarColor: '#1A323A #102126' }}>
-      {minipacsToolSections.map((section) => {
-        const sectionTools = minipacsToolRegistry.filter((t) => section.toolIds.includes(t.id));
-        return (
-        <div key={section.id} className="flex flex-col">
-          {/* ── Section Header (clickable toggle) ── */}
-          <button
-            className="flex justify-between items-center px-3 py-1.5 bg-[#0D1B20] text-white text-[11px] font-semibold tracking-wide
-                       hover:bg-[#152A30] transition-colors border-b border-[#1A323A] cursor-pointer select-none"
-            onClick={() => toggleSection(section.id)}
-          >
-            <span>{section.title}</span>
-            <span
-              className="text-[#00B5B8] transition-transform duration-200"
-              style={{ transform: openSections[section.id] ? 'rotate(0deg)' : 'rotate(-90deg)' }}
-            >
-              <ChevronDown />
-            </span>
-          </button>
-
-          {/* ── Section Content (toggled) ── */}
-          {openSections[section.id] && sectionTools.length > 0 && (
-            <div className="px-1.5 py-1.5 bg-[#152A30] border-b border-[#1A323A]">
-              {section.renderType === 'icons' && (
-                <div className="flex flex-wrap gap-1">
-                  {sectionTools.map(renderIconButton)}
-                </div>
-              )}
-              {section.renderType === 'list' && (
-                <div className="flex flex-col gap-0">
-                  {sectionTools.map(renderListItem)}
-                </div>
-              )}
-              {section.renderType === 'grid' && (
-                <div className="flex flex-wrap gap-1">
-                  {sectionTools.map(renderGridButton)}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )})}
-    </div>
-  );
-}
-
+print(f"Successfully replaced lines {start_idx} to {end_idx}")
