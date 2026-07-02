@@ -28,6 +28,7 @@ export type MiniPacsTool = {
   hotkey?: string;
   requires?: string[];
   destructive?: boolean;
+  deferredReason?: string;
 };
 
 export type MiniPacsToolSection = {
@@ -62,15 +63,15 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'RectangleROI', label: 'Rectangle', type: 'tool', status: 'ready', placement: ['left-panel'] },
   { id: 'CalibrationLine', label: 'Calibration', type: 'tool', status: 'ready', placement: ['left-panel'] },
   // Advanced Measurements
-  { id: 'DoubleLength', label: 'Double Length', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'NASCET', label: 'NASCET/ESCT', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'Volume', label: 'Volume', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
+  { id: 'DoubleLength', label: 'Double Length', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires custom 2-line ratio logic (Phase 3)', placement: ['left-panel'] },
+  { id: 'NASCET', label: 'NASCET/ESCT', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires specific calculation logic (Phase 3)', placement: ['left-panel'] },
+  { id: 'Volume', label: 'Volume', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires 3D volume integration (Phase 4)', placement: ['left-panel'] },
 
   // --- Annotation Tools ---
   { id: 'ArrowAnnotate', label: 'Arrow', type: 'tool', status: 'ready', placement: ['left-panel'] },
   { id: 'PlanarFreehandROI', label: 'Freehand', type: 'tool', status: 'ready', placement: ['left-panel'] },
-  { id: 'TextAnnotation', label: 'Text Annotation', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'AILabeling', label: 'AI Labeling', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
+  { id: 'TextAnnotation', label: 'Text Annotation', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires custom text-only tool (Phase 3)', placement: ['left-panel'] },
+  { id: 'AILabeling', label: 'AI Labeling', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires AI backend (Phase 3+)', placement: ['left-panel'] },
 
   // --- Image Manipulation Tools ---
   { id: 'RotateLeft', label: 'Rotate -90', type: 'action', commandName: 'rotateViewportCCW', status: 'ready', placement: ['top-toolbar'] },
@@ -82,10 +83,10 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: 'Cine', label: 'Cine', type: 'toggle', commandName: 'toggleCine', status: 'ready', placement: ['top-toolbar'] },
 
   // --- MPR & Sync Tools ---
-  { id: 'MPR', label: 'MPR', type: 'action', commandName: 'toggleMiniPacsMpr', context: 'DEFAULT', status: 'deferred-advanced', placement: ['top-toolbar'] },
+  { id: 'MPR', label: 'MPR', type: 'action', commandName: 'toggleMiniPacsMpr', context: 'DEFAULT', status: 'deferred-advanced', deferredReason: 'Requires 3D Volume Integration (Phase 4)', placement: ['top-toolbar'] },
   { id: 'ReferenceLines', label: 'Ref Lines', type: 'toggle', commandName: 'setToolActive', commandOptions: { toolName: 'ReferenceLines' }, status: 'ready', placement: ['left-panel'] },
   { id: 'StackImageSync', label: 'Stack Sync', type: 'toggle', commandName: 'toggleStackImageSync', status: 'ohif-service', placement: ['left-panel'] },
-  { id: 'FusionMPR', label: 'Fusion on MPR', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
+  { id: 'FusionMPR', label: 'Fusion on MPR', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires 3D Volume Integration (Phase 4)', placement: ['left-panel'] },
 
   // --- Capture & Info Tools ---
   { id: 'Gallery', label: 'Gallery', type: 'action', status: 'ready', placement: ['left-panel'] },
@@ -99,56 +100,56 @@ export const minipacsToolRegistry: MiniPacsTool[] = [
   { id: '3x3', label: '3x3', type: 'action', status: 'ohif-service', placement: ['left-panel'] },
 
   // --- Series Menu (Overflow) ---
-  { id: 'DeleteSeries', label: 'Delete Series', type: 'action', status: 'guarded', placement: ['series-menu'], destructive: true },
+  { id: 'DeleteSeries', label: 'Delete Series', type: 'action', status: 'guarded', deferredReason: 'Requires Server-side implementation (Phase 3)', placement: ['series-menu'], destructive: true },
 
   // --- History & More Tools ---
   { id: 'StudyHistory', label: 'History', type: 'action', status: 'ready', placement: ['left-panel'] },
   { id: 'Report', label: 'Report', type: 'action', status: 'ready', placement: ['left-panel'] },
   { id: 'ReportWorkspace', label: 'Report Ws', type: 'action', status: 'ready', placement: ['left-panel'] },
   { id: 'Diagnostics', label: 'Diagnostics', type: 'action', status: 'ready', placement: ['left-panel'] },
-  { id: 'PACSConfig', label: 'PACS Config', type: 'action', status: 'guarded', placement: ['left-panel'] },
-  { id: 'UserConfig', label: 'User Config', type: 'action', status: 'guarded', placement: ['left-panel'] },
+  { id: 'PACSConfig', label: 'PACS Config', type: 'action', status: 'guarded', deferredReason: 'Requires Admin APIs (Phase 3)', placement: ['left-panel'] },
+  { id: 'UserConfig', label: 'User Config', type: 'action', status: 'guarded', deferredReason: 'Requires User Config APIs (Phase 3)', placement: ['left-panel'] },
   { id: 'About', label: 'About', type: 'action', status: 'ready', placement: ['left-panel'] },
   { id: 'Print', label: 'Browser Print', type: 'action', status: 'ready', placement: ['left-panel'] },
-  { id: 'DirectPrint', label: 'DICOM Print', type: 'action', status: 'deferred-native', placement: ['left-panel'] },
-  { id: 'CDBurn', label: 'Burn CD/DVD', type: 'action', status: 'deferred-native', placement: ['left-panel'] },
+  { id: 'DirectPrint', label: 'DICOM Print', type: 'action', status: 'deferred-native', deferredReason: 'Requires Native Desktop App (Phase 5)', placement: ['left-panel'] },
+  { id: 'CDBurn', label: 'Burn CD/DVD', type: 'action', status: 'deferred-native', deferredReason: 'Requires Native Desktop App (Phase 5)', placement: ['left-panel'] },
 
   // --- Missing 100+ Tools for Phase 1 ---
-  { id: 'Caliper', label: 'Caliper', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'AngleVector', label: 'Angle Vector', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'PolygonROI', label: 'Polygon', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'MirrorROI', label: 'Mirror ROI', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'BrainMirror', label: 'Brain Mirror', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'VolumePolygon', label: 'Volume Polygon', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'Cardiopulmonary', label: 'Cardiopulmonary', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'Mammography', label: 'Mammography', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'Reconstruction', label: 'Reconstruction', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'ExportVideo', label: 'Export Video', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'FreeRotate', label: 'Free Rotate', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'AutoSync', label: 'Auto Sync', type: 'toggle', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'Crosshair3D', label: 'Crosshair 3D', type: 'toggle', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'ZoomPanSync', label: 'Zoom/Pan Sync', type: 'toggle', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'WWXLSync', label: 'WW/WL Sync', type: 'toggle', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'ManualSync', label: 'Manual Sync', type: 'toggle', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'Axial', label: 'Axial', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'Coronal', label: 'Coronal', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'Sagittal', label: 'Sagittal', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'MIP', label: 'MIP', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: '3D', label: '3D', type: 'action', status: 'deferred-advanced', placement: ['top-toolbar'] },
-  { id: 'CompareMPR', label: 'Compare MPR', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'CurvedMPR', label: 'Curved MPR', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'TextMarker', label: 'Text Marker', type: 'tool', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'Eraser', label: 'Eraser', type: 'tool', status: 'deferred-advanced', placement: ['top-toolbar', 'left-panel'] },
-  { id: 'CropImage', label: 'Crop Image', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'FullviewSnapshot', label: 'Fullview Snap', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'ActionHistory', label: 'Action History', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'EncodePatient', label: 'Encode Patient', type: 'action', status: 'guarded', placement: ['left-panel'] },
-  { id: 'DownloadManager', label: 'Downloads', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'OpenFolder', label: 'Open Folder', type: 'action', status: 'deferred-native', placement: ['left-panel'] },
-  { id: 'VideoConference', label: 'Video Conf', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'FiveDReporting', label: '5D Reporting', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'Share', label: 'Share', type: 'action', status: 'deferred-advanced', placement: ['left-panel'] },
-  { id: 'Close', label: 'Close', type: 'action', status: 'ready', placement: ['top-toolbar'] },
+  { id: 'Caliper', label: 'Caliper', type: 'tool', status: 'deferred-advanced', deferredReason: 'Needs custom calibration UI (Phase 3)', placement: ['left-panel'] },
+  { id: 'AngleVector', label: 'Angle Vector', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires custom angle logic (Phase 3)', placement: ['left-panel'] },
+  { id: 'PolygonROI', label: 'Polygon', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires custom polyline tool (Phase 3)', placement: ['left-panel'] },
+  { id: 'MirrorROI', label: 'Mirror ROI', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires mirror layout mapping (Phase 3)', placement: ['left-panel'] },
+  { id: 'BrainMirror', label: 'Brain Mirror', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires mirror layout mapping (Phase 3)', placement: ['left-panel'] },
+  { id: 'VolumePolygon', label: 'Volume Polygon', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires specialized processing (Phase 4+)', placement: ['left-panel'] },
+  { id: 'Cardiopulmonary', label: 'Cardiopulmonary', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires specialized processing (Phase 4+)', placement: ['left-panel'] },
+  { id: 'Mammography', label: 'Mammography', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires specialized processing (Phase 4+)', placement: ['left-panel'] },
+  { id: 'Reconstruction', label: 'Reconstruction', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires specialized processing (Phase 4+)', placement: ['left-panel'] },
+  { id: 'ExportVideo', label: 'Export Video', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires video encoding (Phase 3+)', placement: ['left-panel'] },
+  { id: 'FreeRotate', label: 'Free Rotate', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires image rotation filter (Phase 3)', placement: ['left-panel'] },
+  { id: 'AutoSync', label: 'Auto Sync', type: 'toggle', status: 'deferred-advanced', deferredReason: 'Requires advanced SyncGroup management (Phase 3)', placement: ['left-panel'] },
+  { id: 'Crosshair3D', label: 'Crosshair 3D', type: 'toggle', status: 'deferred-advanced', deferredReason: 'Requires advanced SyncGroup management (Phase 3)', placement: ['left-panel'] },
+  { id: 'ZoomPanSync', label: 'Zoom/Pan Sync', type: 'toggle', status: 'deferred-advanced', deferredReason: 'Requires advanced SyncGroup management (Phase 3)', placement: ['left-panel'] },
+  { id: 'WWXLSync', label: 'WW/WL Sync', type: 'toggle', status: 'deferred-advanced', deferredReason: 'Requires advanced SyncGroup management (Phase 3)', placement: ['left-panel'] },
+  { id: 'ManualSync', label: 'Manual Sync', type: 'toggle', status: 'deferred-advanced', deferredReason: 'Requires advanced SyncGroup management (Phase 3)', placement: ['left-panel'] },
+  { id: 'Axial', label: 'Axial', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires 3D MPR (Phase 4)', placement: ['left-panel'] },
+  { id: 'Coronal', label: 'Coronal', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires 3D MPR (Phase 4)', placement: ['left-panel'] },
+  { id: 'Sagittal', label: 'Sagittal', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires 3D MPR (Phase 4)', placement: ['left-panel'] },
+  { id: 'MIP', label: 'MIP', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires 3D MPR (Phase 4)', placement: ['left-panel'] },
+  { id: '3D', label: '3D', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires 3D MPR (Phase 4)', placement: ['top-toolbar'] },
+  { id: 'CompareMPR', label: 'Compare MPR', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires 3D MPR (Phase 4)', placement: ['left-panel'] },
+  { id: 'CurvedMPR', label: 'Curved MPR', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires 3D MPR (Phase 4)', placement: ['left-panel'] },
+  { id: 'TextMarker', label: 'Text Marker', type: 'tool', status: 'deferred-advanced', deferredReason: 'Requires custom marker tool (Phase 3)', placement: ['left-panel'] },
+  { id: 'Eraser', label: 'Eraser', type: 'tool', status: 'deferred-advanced', deferredReason: 'Needs custom Eraser logic (Phase 3)', placement: ['top-toolbar', 'left-panel'] },
+  { id: 'CropImage', label: 'Crop Image', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires crop workflow (Phase 3)', placement: ['left-panel'] },
+  { id: 'FullviewSnapshot', label: 'Fullview Snap', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires custom canvas capture (Phase 3)', placement: ['left-panel'] },
+  { id: 'ActionHistory', label: 'Action History', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires action history state (Phase 3)', placement: ['left-panel'] },
+  { id: 'EncodePatient', label: 'Encode Patient', type: 'action', status: 'guarded', deferredReason: 'Requires Backend API (Phase 3)', placement: ['left-panel'] },
+  { id: 'DownloadManager', label: 'Downloads', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires download manager (Phase 3)', placement: ['left-panel'] },
+  { id: 'OpenFolder', label: 'Open Folder', type: 'action', status: 'deferred-native', deferredReason: 'Requires Native Desktop App (Phase 5)', placement: ['left-panel'] },
+  { id: 'VideoConference', label: 'Video Conf', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires WebRTC backend (Phase 3+)', placement: ['left-panel'] },
+  { id: 'FiveDReporting', label: '5D Reporting', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires 5D reporting module (Phase 3+)', placement: ['left-panel'] },
+  { id: 'Share', label: 'Share', type: 'action', status: 'deferred-advanced', deferredReason: 'Requires Sharing API (Phase 3)', placement: ['left-panel'] },
+  { id: 'Close', label: 'Close', type: 'action', commandName: 'navigateHistory', commandOptions: { to: '/' }, context: 'DEFAULT', status: 'ready', placement: ['top-toolbar'] },
 
   // --- Viewport Workflow Actions ---
   ...viewportWorkflowActions,

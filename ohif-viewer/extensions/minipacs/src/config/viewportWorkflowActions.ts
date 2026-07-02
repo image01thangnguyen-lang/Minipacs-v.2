@@ -40,10 +40,11 @@ export const viewportWorkflowActions: MiniPacsTool[] = [
     placement: ['viewport-toolbar'],
   },
   {
-    id: 'ExportVideo',
+    id: 'ExportVideoViewport',
     label: 'Export Video',
     type: 'action',
     status: 'backend',
+    deferredReason: 'Requires video encoding service (Phase 3)',
     placement: ['viewport-toolbar', 'series-menu'],
   },
   {
@@ -51,6 +52,7 @@ export const viewportWorkflowActions: MiniPacsTool[] = [
     label: 'Download Series',
     type: 'action',
     status: 'backend',
+    deferredReason: 'Requires ZIP generation service (Phase 3)',
     placement: ['viewport-toolbar', 'series-menu'],
   },
 ];

@@ -636,7 +636,7 @@ export default function CustomToolsSidebar({ servicesManager }) {
       <button
         key={item.id}
         title={item.label + (isDisabled ? (item.status === 'deferred-native' ? ' (Requires native app)' : ' (Coming soon)') : '')}
-        disabled={isDisabled}
+        aria-disabled={isDisabled}
         className={`
           w-[36px] h-[36px] flex items-center justify-center rounded
           transition-all duration-150
@@ -663,7 +663,7 @@ export default function CustomToolsSidebar({ servicesManager }) {
       <button
         key={item.id}
         title={item.label + (isDisabled ? (item.status === 'deferred-native' ? ' (Requires native app)' : ' (Coming soon)') : '')}
-        disabled={isDisabled}
+        aria-disabled={isDisabled}
         className={`
           w-full flex items-center gap-2 px-2 py-1 text-left rounded
           transition-all duration-150

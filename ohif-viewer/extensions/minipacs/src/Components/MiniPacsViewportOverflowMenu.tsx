@@ -56,7 +56,8 @@ export const MiniPacsViewportOverflowMenu = ({ servicesManager, viewportId }) =>
             return (
               <div
                 key={action.id}
-                onMouseDown={isDisabled ? undefined : (e) => handleAction(e, action)}
+                onMouseDown={(e) => handleAction(e, action)}
+                aria-disabled={isDisabled}
                 className={`px-4 py-2 text-sm transition-colors ${
                   isDisabled 
                     ? 'text-gray-500 cursor-not-allowed bg-transparent' 

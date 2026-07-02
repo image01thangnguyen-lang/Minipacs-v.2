@@ -270,7 +270,7 @@ export default function CustomTopToolbar({ servicesManager }) {
                 {/* Main Tool Button */}
                 <button
                   title={item.label}
-                  disabled={isDisabled}
+                  aria-disabled={isDisabled}
                   className={`w-[36px] h-[36px] flex items-center justify-center rounded-l ${isActive ? 'hover:text-[#00B5B8]' : 'hover:text-[#00B5B8] hover:bg-[#1A323A]'}`}
                   onClick={() => handleToolClick(item)}
                 >
@@ -313,7 +313,7 @@ export default function CustomTopToolbar({ servicesManager }) {
           <button
             key={item.id}
             title={item.label + (isDisabled ? (item.status === 'deferred-native' ? ' (Requires native app)' : ' (Coming soon)') : '')}
-            disabled={isDisabled}
+            aria-disabled={isDisabled}
             className={`
               w-[36px] h-[36px] flex items-center justify-center rounded
               transition-all duration-150

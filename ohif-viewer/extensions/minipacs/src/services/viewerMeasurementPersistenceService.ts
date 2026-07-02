@@ -1,6 +1,7 @@
 import { annotation, Enums } from '@cornerstonejs/tools';
 import { eventTarget } from '@cornerstonejs/core';
 import { ServicesManager } from '@ohif/core';
+import { commandFeedbackService } from './commandFeedbackService';
 
 class ViewerMeasurementPersistenceService {
   private servicesManager: ServicesManager | null = null;
@@ -82,6 +83,10 @@ class ViewerMeasurementPersistenceService {
       // Defer MPR measurement persistence to avoid mapping crashes upon reload
       console.warn('Measurement lacks SOPInstanceUID (likely from MPR). Skipping persistence.');
       return;
+    }
+
+    if (measurement.unit === 'px' || (measurement.displayText && Array.isArray(measurement.displayText) && measurement.displayText.some((t: string) => t.includes('px')))) {
+      commandFeedbackService.show('Cảnh báo: Ảnh chưa được hiệu chuẩn (pixel spacing bị thiếu). Đo đạc có thể không chính xác.', 'warning');
     }
 
     fetch(`/api/viewer/studies/${this.studyInstanceUid}/measurements`, {
