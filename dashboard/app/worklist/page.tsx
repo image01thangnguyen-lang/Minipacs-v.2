@@ -70,6 +70,8 @@ type WorklistOrderView = {
   cancelledAt?: string | null;
   notes?: string;
   orderStatus: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
   studyStatus?: string | null;
   orthancStudyId?: string | null;
   studyInstanceUid?: string;
@@ -505,7 +507,9 @@ export default function WorklistPage() {
                         <div className="mt-1 flex items-center justify-center gap-1 text-[10px] text-vin-muted">
                           {order.orthancStudyId ? studyStatusLabels[order.studyStatus || ""] || order.studyStatus : "Chưa có ảnh"}
                           {!order.orthancStudyId && order.createdAt && new Date().getTime() - new Date(order.createdAt).getTime() > 24 * 60 * 60 * 1000 && (
-                            <AlertTriangle className="h-3 w-3 text-amber-500" title="Quá hạn 24h chưa có ảnh" />
+                            <span title="Quá hạn 24h chưa có ảnh">
+                              <AlertTriangle className="h-3 w-3 text-amber-500" />
+                            </span>
                           )}
                         </div>
                       </td>

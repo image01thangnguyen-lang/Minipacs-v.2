@@ -180,6 +180,7 @@ export default function ClinicProfilePage() {
                     { value: "en", label: "English" },
                   ]}
                   value={profile.defaultReportLanguage || "vi"}
+                  onChange={(value) => setProfile(current => ({ ...current, defaultReportLanguage: value }))}
                 />
               </Field>
             </div>

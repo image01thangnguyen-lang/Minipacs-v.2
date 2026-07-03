@@ -494,7 +494,7 @@ export default function DashboardPage() {
     setRecommendation(current => appendTemplateText(current, template.recommendation));
   };
 
-  const handleSave = async (status: "DRAFTING" | "COMPLETED") => {
+  const handleSave = async (status: "DRAFT" | "FINAL") => {
     const uid = selectedStudy?.MainDicomTags?.StudyInstanceUID;
     if (!uid) return;
 
@@ -510,7 +510,7 @@ export default function DashboardPage() {
       let nextStudyStatus = "READING";
       let nextReportStatus = "DRAFT";
 
-      if (status === "COMPLETED") {
+      if (status === "FINAL") {
         const finalResult = await finalizeReport(uid);
         if (!finalResult.success) {
           alert((finalResult as any).error || "Lỗi ký duyệt báo cáo");
@@ -925,7 +925,7 @@ export default function DashboardPage() {
               </button>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => handleSave("DRAFTING")}
+                  onClick={() => handleSave("DRAFT")}
                   disabled={isSaving}
                   className="flex items-center gap-1.5 rounded-lg border border-vin-border bg-vin-shell px-3 py-1.5 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent disabled:cursor-not-allowed disabled:opacity-40"
                 >
@@ -933,7 +933,7 @@ export default function DashboardPage() {
                   Lưu nháp
                 </button>
                 <button
-                  onClick={() => handleSave("COMPLETED")}
+                  onClick={() => handleSave("FINAL")}
                   disabled={isSaving}
                   className="flex items-center gap-1.5 rounded-lg border-0 bg-vin-accent px-3 py-1.5 text-[11px] font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
                 >
