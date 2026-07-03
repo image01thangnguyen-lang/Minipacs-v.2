@@ -52,9 +52,9 @@ Pham vi:
 | Receive/read | Nhan doc, bat dau doc | status transition to `READING` | Phase 1 |
 | Draft report | Ban nhap/luu nhap | `Report.status = DRAFT` | Chua gui HIS |
 | Final report | Ky/chot ket qua | `Report.status = FINAL` hoac equivalent | Can audit va lock |
-| Approval | Duyet/ky ket qua | Finalize report | Trong MiniPACS nen map vao finalize |
+| Approval | Duyet/ky ket qua | Finalize report | 1-step neu bac si chuyen mon; 2-step neu bac si khong chuyen mon can duyet lai. Ho tro ca 2 mode |
 | Cancel approval | Huy duyet/huy ky | Unfinalize/addendum policy | Can reason, permission, audit |
-| Cancel form | Huy phieu/huy report form | Cancel draft/order tuy context | Phai noi ro target |
+| Cancel form | Huy phieu/huy report form | Cancel draft/order | Ap dung cho CA HAI order va report draft. Phai noi ro target |
 | Addendum | Bo sung sau final | `ReportAddendum` | Khong ghi de im lang |
 | Delivered | Tra ket qua | Archive delivered action | `archive.deliver` |
 | Archive | Luu/truy van ket qua | `/archive` | Khong dong nghia xoa anh |
@@ -69,7 +69,7 @@ Pham vi:
 | Share link | Link chia se | Phase 7 | Public/read-only, expiry/password/QR |
 | Consultation | Hoi chan | Phase 7 | Consult request/room/chat/video |
 | Download job | Yeu cau export/download | `ViewerDownloadJob` de xuat | Phase 4/8 |
-| Anonymize/encode | An danh/ma hoa thong tin BN | export mode | Khong sua data goc |
+| Encode patient | Ma hoa thong tin nguoi benh | display/viewer encode mode | Ma hoa/an thong tin BN tren man hinh, khong sua data goc. Khac voi anonymize export |
 | Delete study | Xoa ca chup | Phase 8 guarded | Destructive, khong nam Phase 1-4 |
 | Delete series | Xoa series | Phase 8 guarded | Phase 4 chi request/dry-run neu can |
 | Retention cleanup | Don dep luu tru | Phase 8 | Theo policy, audit |
@@ -139,10 +139,17 @@ Pham vi:
 | Export/download | Phase 4/8 `ViewerDownloadJob` de xuat | Job-based |
 | Destructive ops | Phase 8 policy | Guarded only |
 
-## 8. Open validation items
+## 8. Resolved validation items (2026-07-03)
 
-- Can xac nhan VRPACS term `duyet` co luon dong nghia voi `finalize report` khong, hay co buoc approve rieng.
-- Can xac nhan `huy phieu` trong HDSD DICOM ap dung cho order, report draft, hay ca hai.
-- Can xac nhan HIS order code va accession number co luon giong nhau khong.
-- Can xac nhan quy tac `delivered` co duoc dat truoc khi gui HIS thanh cong khong.
-- Can xac nhan `encode patient` trong Viewer la anonymize display/export hay ma hoa file rieng.
+- `duyet` = finalize report, nhung co 2 mode: 1-step (bac si chuyen mon tu duyet) va 2-step (bac si khong chuyen mon can nguoi khac duyet lai). Ho tro ca 2.
+- `huy phieu` ap dung cho CA HAI: cancel order va cancel report draft.
+- HIS order code va accession number LA MOT. Canonical term: `accessionNumber`.
+- `encode patient` = ma hoa thong tin nguoi benh tren man hinh (display mask), khong phai anonymize export file.
+- Non-anonymized DICOM export: dua vao PHAN QUYEN (`viewer.export`), khong fix role. Role nao co permission moi duoc export.
+- Retention duration: 10 NAM cho DICOM images va report data.
+- Report PDF filename: dung ma/ID (accession, study UID short), KHONG chua ten benh nhan.
+- `delivered` timing: mark SAU khi gui HIS thanh cong. Ngoai le: neu HIS loi ket noi, cho phep bypass delivered voi reason/audit.
+- Share link default: KHONG an thong tin BN mac dinh. Co option toggle de nguoi dung chon an neu can.
+- Audit retention: 10 NAM (giong DICOM/report retention).
+
+> Tat ca open items da resolve. Phase 1+ co the bat dau code.

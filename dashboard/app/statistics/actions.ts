@@ -210,7 +210,7 @@ function studyDateWhere(start: Date, endExclusive: Date) {
 function reportFinalWhere(start: Date, endExclusive: Date, doctorId?: string) {
   const range = rangeFilter(start, endExclusive);
   return {
-    status: { in: ["FINAL", "COMPLETED"] as any[] },
+    status: { in: ["FINAL"] as any[] },
     ...(doctorId ? { doctorId } : {}),
     OR: [
       { updatedAt: range },
@@ -1915,7 +1915,7 @@ async function getDoctorRows(start: Date, endExclusive: Date, role: string, user
     prisma.report.groupBy({
       by: ["doctorId"],
       where: {
-        status: { in: ["DRAFT", "DRAFTING"] as any[] },
+        status: { in: ["DRAFT", "PENDING_APPROVAL"] as any[] },
         ...(doctorId ? { doctorId } : {}),
       },
       _count: { _all: true },
@@ -2439,7 +2439,7 @@ async function getRadiologistWorkload(start: Date, endExclusive: Date, user: any
     }),
     prisma.report.groupBy({
       by: ["doctorId"],
-      where: { status: { in: ["DRAFT", "DRAFTING"] as any[] } },
+      where: { status: { in: ["DRAFT", "PENDING_APPROVAL"] as any[] } },
       _count: { _all: true },
     }),
     prisma.imagingStudy.findMany({
@@ -3170,7 +3170,7 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     prisma.imagingStudy.count({ where: studyDateWhere(range.start, endExclusive) }),
     prisma.imagingStudy.count({ where: { status: "READY_TO_READ" } }),
     prisma.imagingStudy.count({ where: { status: { in: ["READING", "REPORTED"] } } }),
-    prisma.report.count({ where: { status: { in: ["DRAFT", "DRAFTING"] as any[] } } }),
+    prisma.report.count({ where: { status: { in: ["DRAFT", "PENDING_APPROVAL"] as any[] } } }),
     prisma.imagingStudy.count({ where: { finalizedAt: rangeFilter(range.start, endExclusive) } }),
     prisma.imagingStudy.count({ where: { deliveredAt: rangeFilter(range.start, endExclusive) } }),
     prisma.imagingStudy.count({ where: { status: { in: ["NEEDS_QC", "QC_REJECTED", "ERROR"] } } }),

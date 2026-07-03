@@ -5,6 +5,18 @@ import { syncOrthancStudyToRis, updateStudyStatusForReport } from '@/lib/studySt
 import { auth } from '@/auth';
 import { requirePermission } from '@/lib/authz';
 import { hasPermission } from '@/lib/permissions';
+import {
+  saveReportDraft,
+  finalizeReport,
+  assignStudyDoctor,
+  startReading,
+  updateClinicalInfo,
+  addOrUpdateIndication,
+  cancelReportDraft,
+  unfinalizeReport,
+  markDelivered,
+  approveReport
+} from '@/lib/workflowService';
 
 /**
  * Server Action: Lấy danh sách bệnh nhân/studies từ Orthanc.
@@ -94,6 +106,12 @@ export async function getStudies() {
           ...study,
           WorkflowStatus: workflow?.status || 'READY_TO_READ',
           OrderStatus: workflow?.orderStatus || null,
+          ReportStatus: workflow?.reportStatus || null,
+          clinicalInfo: workflow?.clinicalInfo || null,
+          procedureCode: workflow?.procedureCode || null,
+          procedureDescription: workflow?.procedureDescription || null,
+          technologistId: workflow?.technologistId || null,
+          bodyPart: workflow?.bodyPart || null,
         };
       } catch (error) {
         console.error('Failed to sync study workflow status:', error);
@@ -112,9 +130,28 @@ export async function getStudies() {
   }
 }
 
+export async function getActiveDoctorsAction() {
+  await requirePermission("studies.assign");
+  try {
+    const doctors = await prisma.user.findMany({
+      where: {
+        isActive: true,
+        role: { in: ["DOCTOR", "ADMIN"] },
+      },
+      select: { id: true, fullName: true, username: true }
+    });
+    return doctors.map(d => ({
+      value: d.id,
+      label: `${d.fullName} (${d.username})`
+    }));
+  } catch (error: any) {
+    console.error("Failed to fetch doctors:", error);
+    return [];
+  }
+}
+
 /**
  * Server Action: Lưu kết quả chẩn đoán (RIS Report) vào Database Postgres thông qua Prisma.
- * Thực hiện cơ chế UPSERT thông minh: Tạo mới nếu ca chụp chưa có báo cáo, ngược lại cập nhật đè lên bản cũ.
  */
 export async function saveReportAction(data: {
   studyInstanceUid: string;
@@ -123,112 +160,86 @@ export async function saveReportAction(data: {
   recommendation: string;
   status: 'DRAFT' | 'FINAL';
   doctorId?: string;
+  printTemplateId?: string;
 }) {
-  // 1. Kiểm tra và lọc dữ liệu (Data Validation)
   if (!data.studyInstanceUid || typeof data.studyInstanceUid !== 'string' || data.studyInstanceUid.trim() === '') {
-    return {
-      success: false,
-      error: 'Mã ca chụp (StudyInstanceUID) không hợp lệ hoặc bị trống.'
-    };
-  }
-
-  const validStatuses = ['DRAFT', 'FINAL'];
-  if (!validStatuses.includes(data.status)) {
-    return {
-      success: false,
-      error: 'Trạng thái báo cáo không đúng định dạng. Chỉ chấp nhận DRAFT hoặc FINAL.'
-    };
+    return { success: false, error: 'Mã ca chụp không hợp lệ.' };
   }
 
   try {
-    // 2. Tiến hành UPSERT thông tin báo cáo
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: 'Bạn cần đăng nhập để lưu báo cáo.' };
+    const draftRes = await saveReportDraft(data.studyInstanceUid, {
+      findings: data.findings,
+      conclusion: data.conclusion,
+      recommendation: data.recommendation,
+      printTemplateId: data.printTemplateId,
+    });
+
+    if (!draftRes.success) return draftRes;
+
+    if (data.status === 'FINAL') {
+      const finalRes = await finalizeReport(data.studyInstanceUid);
+      if (!finalRes.success) return finalRes;
     }
-    if (!hasPermission(session.user.role, "reports.write", session.user.permissions)) {
-      return { success: false, error: 'Bạn không có quyền lưu hoặc ký báo cáo.' };
-    }
-    const signingDoctorId = data.doctorId || (
-      session?.user?.id && ["DOCTOR", "ADMIN"].includes(session.user.baseRole || session.user.role)
-        ? session.user.id
-        : undefined
-    );
-    const existingReport = await prisma.report.findUnique({
+
+    const report = await prisma.report.findUnique({
       where: { studyInstanceUid: data.studyInstanceUid },
-      select: {
-        id: true,
-        status: true,
-        findings: true,
-        conclusion: true,
-        recommendation: true,
-        doctorId: true,
-        imagingStudyId: true,
+      include: {
+        doctor: { include: { doctorProfile: true } },
       },
     });
-    const completedStatuses = new Set(["FINAL", "COMPLETED"]);
-    const contentChanged = Boolean(existingReport && (
-      (existingReport.findings || "") !== (data.findings || "") ||
-      (existingReport.conclusion || "") !== (data.conclusion || "") ||
-      (existingReport.recommendation || "") !== (data.recommendation || "")
-    ));
 
-    const report = await prisma.report.upsert({
-      where: {
-        studyInstanceUid: data.studyInstanceUid
-      },
-      update: {
-        findings: data.findings || '',
-        conclusion: data.conclusion || '',
-        recommendation: data.recommendation || '',
-        status: data.status,
-        // Nếu truyền doctorId thì liên kết với tài khoản bác sĩ tương ứng
-        ...(signingDoctorId ? { doctorId: signingDoctorId } : {})
-      },
-      create: {
-        studyInstanceUid: data.studyInstanceUid,
-        findings: data.findings || '',
-        conclusion: data.conclusion || '',
-        recommendation: data.recommendation || '',
-        status: data.status,
-        ...(signingDoctorId ? { doctorId: signingDoctorId } : {})
-      }
-    });
-
-    await updateStudyStatusForReport(data.studyInstanceUid, data.status);
-    if (
-      existingReport &&
-      completedStatuses.has(String(existingReport.status)) &&
-      completedStatuses.has(String(data.status)) &&
-      contentChanged
-    ) {
-      await prisma.reportAddendum.create({
-        data: {
-          reportId: report.id,
-          imagingStudyId: report.imagingStudyId || existingReport.imagingStudyId,
-          doctorId: signingDoctorId || existingReport.doctorId,
-          reasonCode: "REPORT_UPDATED_AFTER_FINAL",
-          content: JSON.stringify({
-            findings: data.findings || "",
-            conclusion: data.conclusion || "",
-            recommendation: data.recommendation || "",
-          }),
-        },
-      });
+    let message = 'Đã lưu nháp thành công.';
+    if (data.status === 'FINAL' && report?.status === 'FINAL') {
+      message = 'Duyệt và ký số kết quả thành công!';
+    } else if (data.status === 'FINAL' && report?.status === 'PENDING_APPROVAL') {
+      message = 'Đã gửi yêu cầu phê duyệt kết quả!';
     }
 
     return {
       success: true,
-      message: data.status === 'FINAL' ? 'Duyệt và ký số kết quả chẩn đoán thành công!' : 'Đã lưu nháp kết quả chẩn đoán thành công.',
-      report
+      message,
+      report,
     };
   } catch (error: any) {
-    console.error('Critical database error in saveReportAction:', error);
-    return {
-      success: false,
-      error: 'Lỗi ghi nhận kết quả chẩn đoán vào cơ sở dữ liệu Postgres. Chi tiết: ' + (error.message || error)
-    };
+    console.error('Error in saveReportAction:', error);
+    return { success: false, error: error.message || String(error) };
   }
 }
 
+export async function assignStudyDoctorAction(studyInstanceUid: string, doctorId: string) {
+  return assignStudyDoctor(studyInstanceUid, doctorId);
+}
 
+export async function startReadingStudyAction(studyInstanceUid: string) {
+  return startReading(studyInstanceUid);
+}
+
+export async function updateClinicalInfoAction(studyInstanceUid: string, input: any) {
+  return updateClinicalInfo(studyInstanceUid, input);
+}
+
+export async function addIndicationAction(studyInstanceUid: string, input: any) {
+  return addOrUpdateIndication(studyInstanceUid, input);
+}
+
+export async function cancelStudyDraftAction(studyInstanceUid: string, reason: string) {
+  return cancelReportDraft(studyInstanceUid, reason);
+}
+
+export async function unfinalizeStudyAction(studyInstanceUid: string, reason: string) {
+  return unfinalizeReport(studyInstanceUid, reason);
+}
+
+export async function markStudyDeliveredAction(studyInstanceUid: string) {
+  return markDelivered(studyInstanceUid);
+}
+
+export async function approveStudyReportAction(studyInstanceUid: string) {
+  return approveReport(studyInstanceUid);
+}
+
+export async function getUserPermissionsAction() {
+  const session = await auth();
+  if (!session?.user) return { role: 'GUEST', permissions: [] };
+  return { role: session.user.role, permissions: session.user.permissions };
+}

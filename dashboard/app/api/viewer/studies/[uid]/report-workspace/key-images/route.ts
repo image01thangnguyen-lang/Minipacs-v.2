@@ -28,7 +28,7 @@ export async function POST(request: Request, { params }: { params: { uid: string
       where: { studyInstanceUid }
     });
 
-    if (report && ['FINAL', 'COMPLETED'].includes(report.status)) {
+    if (report && ['FINAL', 'PENDING_APPROVAL'].includes(report.status)) {
       return NextResponse.json({ 
         success: false, 
         requiresAddendum: true, 

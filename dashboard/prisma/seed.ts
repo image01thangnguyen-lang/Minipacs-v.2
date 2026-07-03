@@ -1,5 +1,5 @@
 import { PrismaClient, Role } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -18,6 +18,12 @@ async function main() {
         'studies.read',
         'reports.read',
         'reports.write',
+        'reports.finalize',
+        'reports.cancelDraft',
+        'reports.unfinalize',
+        'reports.print',
+        'studies.assign',
+        'studies.updateClinical',
         'worklist.manage',
         'archive.read',
         'archive.deliver',
@@ -40,6 +46,10 @@ async function main() {
         'studies.read',
         'reports.read',
         'reports.write',
+        'reports.finalize',
+        'reports.cancelDraft',
+        'reports.print',
+        'studies.updateClinical',
         'archive.read',
         'statistics.read',
         'statistics.doctorStats',
@@ -53,7 +63,7 @@ async function main() {
       name: 'Kỹ thuật viên',
       description: 'Theo dõi danh sách ca, tiếp nhận/worklist và xử lý vận hành kỹ thuật.',
       baseRole: Role.TECHNICIAN,
-      permissions: ['studies.read', 'worklist.manage', 'archive.read', 'statistics.read'],
+      permissions: ['studies.read', 'studies.assign', 'studies.updateClinical', 'worklist.manage', 'archive.read', 'statistics.read'],
       isSystem: true,
       isActive: true
     },
@@ -62,7 +72,7 @@ async function main() {
       name: 'Lễ tân',
       description: 'Tạo order, check-in, tìm/in lại kết quả và xem thống kê vận hành cơ bản.',
       baseRole: Role.RECEPTION,
-      permissions: ['studies.read', 'worklist.manage', 'archive.read', 'archive.deliver', 'statistics.read'],
+      permissions: ['studies.read', 'worklist.manage', 'archive.read', 'archive.deliver', 'statistics.read', 'reports.print'],
       isSystem: true,
       isActive: true
     }

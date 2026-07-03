@@ -18,7 +18,7 @@ type StudyStatusValue =
   | "DELETED_FROM_PACS"
   | "ERROR";
 
-type ReportStatusValue = "DRAFT" | "FINAL" | "UNREAD" | "DRAFTING" | "COMPLETED";
+type ReportStatusValue = "DRAFT" | "PENDING_APPROVAL" | "FINAL";
 
 type StatusSource = "ORTHANC_SYNC" | "REPORT" | "WORKLIST" | "SYSTEM" | "ADMIN";
 
@@ -57,16 +57,16 @@ const MANUAL_REVIEW_STATUSES = new Set<StudyStatusValue>([
   "ERROR",
 ]);
 
-export function mapReportStatusToStudyStatus(status?: string | null): StudyStatusValue | null {
-  switch (status) {
-    case "COMPLETED":
+export function mapReportStatusToStudyStatus(report?: { status?: string | null, cancelledAt?: Date | null } | null): StudyStatusValue | null {
+  if (!report) return null;
+  if (report.cancelledAt) return null;
+
+  switch (report.status) {
     case "FINAL":
       return "FINALIZED";
-    case "DRAFTING":
+    case "PENDING_APPROVAL":
     case "DRAFT":
       return "READING";
-    case "UNREAD":
-      return "READY_TO_READ";
     default:
       return null;
   }
@@ -102,10 +102,10 @@ function cleanText(value?: unknown) {
 
 function resolveSyncedStatus(
   currentStatus: StudyStatusValue | null | undefined,
-  reportStatus: string | null | undefined,
+  report: { status?: string | null, cancelledAt?: Date | null } | null | undefined,
   study: OrthancStudy
 ): StudyStatusValue {
-  const reportDrivenStatus = mapReportStatusToStudyStatus(reportStatus);
+  const reportDrivenStatus = mapReportStatusToStudyStatus(report);
   if (reportDrivenStatus) return reportDrivenStatus;
 
   if (currentStatus && (FINAL_OR_ARCHIVE_STATUSES.has(currentStatus) || MANUAL_REVIEW_STATUSES.has(currentStatus))) {
@@ -293,14 +293,14 @@ export async function setStudyStatus(
   });
 }
 
-export async function updateStudyStatusForReport(studyInstanceUid: string, reportStatus: ReportStatusValue) {
-  const nextStatus = mapReportStatusToStudyStatus(reportStatus);
+export async function updateStudyStatusForReport(studyInstanceUid: string, report: { status: ReportStatusValue, cancelledAt: Date | null }) {
+  const nextStatus = mapReportStatusToStudyStatus(report);
   if (!nextStatus) return null;
 
   return setStudyStatus(studyInstanceUid, nextStatus, {
     source: "REPORT",
-    reason: `System synced to ${reportStatus}`,
-    metadata: { reportStatus },
+    reason: `System synced to ${report.status}`,
+    metadata: { reportStatus: report.status },
   });
 }
 
@@ -415,7 +415,7 @@ export async function syncOrthancStudyToRis(study: OrthancStudy) {
       : Promise.resolve(null),
   ]);
 
-  const nextStatus = resolveSyncedStatus(existing?.status as StudyStatusValue | undefined, report?.status, study);
+  const nextStatus = resolveSyncedStatus(existing?.status as StudyStatusValue | undefined, report, study);
 
   const saved = await prisma.$transaction(async tx => {
     if (!existing) {
@@ -512,8 +512,13 @@ export async function syncOrthancStudyToRis(study: OrthancStudy) {
   return {
     id: saved.id,
     status: saved.status,
-    reportStatus: report?.status || "UNREAD",
+    reportStatus: report?.cancelledAt ? "CANCELLED" : (report?.status || null),
     orderStatus: order?.orderStatus || null,
+    clinicalInfo: saved.clinicalInfo,
+    procedureCode: saved.procedureCode,
+    procedureDescription: saved.procedureDescription,
+    technologistId: saved.technologistId,
+    bodyPart: saved.bodyPart,
   };
 }
 

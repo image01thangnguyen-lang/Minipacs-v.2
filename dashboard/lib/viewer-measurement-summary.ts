@@ -1,4 +1,16 @@
-import { ViewerMeasurement } from '@prisma/client';
+// interface for ViewerMeasurement
+export interface ViewerMeasurement {
+  measurementUID: string;
+  toolName: string;
+  label?: string | null;
+  seriesInstanceUid?: string | null;
+  sopInstanceUid?: string | null;
+  frameNumber?: number | null;
+  dataJson?: any;
+  value?: number | null;
+  unit?: string | null;
+  displayText?: string | null;
+}
 
 export function escapeHtml(str: string): string {
   if (!str) return '';

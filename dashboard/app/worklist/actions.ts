@@ -148,9 +148,11 @@ function serializeOrder(order: any) {
     referringDepartment: order.referringDepartment || "",
     sourceFacility: order.sourceFacility || "",
     modality: order.modality,
-    bodyPart: order.bodyPart || "",
-    procedureCode: order.procedureCode || "",
-    procedureDescription: order.procedureDescription || "",
+    bodyPart: study?.bodyPart || order.bodyPart || "",
+    procedureCode: study?.procedureCode || order.procedureCode || "",
+    procedureDescription: study?.procedureDescription || order.procedureDescription || "",
+    clinicalInfo: study?.clinicalInfo || "",
+    technologistId: study?.technologistId || "",
     price: order.price ? Number(order.price) : null,
     paymentStatus: order.paymentStatus || "",
     priority: order.priority || "ROUTINE",
@@ -207,6 +209,11 @@ export async function getWorklistOrdersAction(filters: {
           status: true,
           orthancStudyId: true,
           studyInstanceUid: true,
+          clinicalInfo: true,
+          technologistId: true,
+          procedureCode: true,
+          procedureDescription: true,
+          bodyPart: true,
         },
         orderBy: { updatedAt: "desc" },
         take: 1,
@@ -478,8 +485,29 @@ export async function startReadingAction(orderId: string, studyInstanceUid: stri
   return { success: true };
 }
 
+export async function getTechnologistsAction() {
+  await requirePermission("studies.updateClinical");
+  const doctors = await prisma.user.findMany({
+    where: {
+      isActive: true,
+      role: "TECHNICIAN",
+    },
+    select: { id: true, fullName: true, username: true }
+  });
+  return doctors.map(d => ({
+    id: d.id,
+    name: `${d.fullName} (${d.username})`
+  }));
+}
+
 export async function checkCanReadStudiesAction() {
   const session = await auth();
   if (!session?.user) return false;
   return hasPermission(session.user.role, "reports.write", session.user.permissions);
+}
+
+export async function checkCanUpdateClinicalAction() {
+  const session = await auth();
+  if (!session?.user) return false;
+  return hasPermission(session.user.role, "studies.updateClinical", session.user.permissions);
 }

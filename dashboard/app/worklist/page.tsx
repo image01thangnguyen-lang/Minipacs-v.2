@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   AlertCircle,
+  AlertTriangle,
   BadgeCheck,
   CalendarDays,
   CheckCircle2,
@@ -15,10 +16,14 @@ import {
   UserCheck,
   XCircle,
   Edit3,
+  FilePlus,
+  FileText,
+  PlusCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { AppSidebar } from "@/app/components/AppSidebar";
+import { ClinicalInfoModal } from "@/app/components/ClinicalInfoModal";
 import { CustomSelect, type SelectOption } from "@/app/components/CustomSelect";
 import { CustomDatePicker } from "@/app/components/CustomDatePicker";
 import {
@@ -28,8 +33,11 @@ import {
   getWorklistOrdersAction,
   regenerateWorklistFileAction,
   startReadingAction,
-  checkCanReadStudiesAction
+  checkCanReadStudiesAction,
+  checkCanUpdateClinicalAction,
+  getTechnologistsAction
 } from "./actions";
+import { updateClinicalInfoAction, addIndicationAction } from "@/app/actions";
 import { worklistSchema, type WorklistInput } from "./schema";
 
 type FormValues = WorklistInput;
@@ -48,6 +56,8 @@ type WorklistOrderView = {
   bodyPart?: string;
   procedureCode?: string;
   procedureDescription?: string;
+  clinicalInfo?: string;
+  technologistId?: string;
   price?: number | null;
   paymentStatus?: string;
   priority: string;
@@ -162,6 +172,11 @@ export default function WorklistPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [canReadStudies, setCanReadStudies] = useState(false);
+  const [canUpdateClinical, setCanUpdateClinical] = useState(false);
+  const [clinicalModalOpen, setClinicalModalOpen] = useState(false);
+  const [clinicalModalMode, setClinicalModalMode] = useState<"CLINICAL_INFO" | "INDICATION">("CLINICAL_INFO");
+  const [activeOrder, setActiveOrder] = useState<WorklistOrderView | null>(null);
+  const [technologists, setTechnologists] = useState<{ id: string; name: string }[]>([]);
 
   const defaultValues = useMemo<FormValues>(() => ({
     patientName: "",
@@ -217,6 +232,12 @@ export default function WorklistPage() {
   useEffect(() => {
     document.title = "Mini PACS - Tiếp đón / Worklist";
     checkCanReadStudiesAction().then(setCanReadStudies).catch(console.error);
+    checkCanUpdateClinicalAction().then(canUpdate => {
+      setCanUpdateClinical(canUpdate);
+      if (canUpdate) {
+        getTechnologistsAction().then(setTechnologists).catch(console.error);
+      }
+    }).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -282,6 +303,29 @@ export default function WorklistPage() {
     } finally {
       setBusyOrderId("");
     }
+  };
+
+  const handleClinicalSave = async (data: any) => {
+    if (!activeOrder?.studyInstanceUid) return { success: false, error: "Không tìm thấy DICOM cho order này" };
+    try {
+      const res =
+        clinicalModalMode === "CLINICAL_INFO"
+          ? await updateClinicalInfoAction(activeOrder.studyInstanceUid, data)
+          : await addIndicationAction(activeOrder.studyInstanceUid, data);
+      if (res.success) {
+        setClinicalModalOpen(false);
+        await loadOrders();
+      }
+      return res;
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const openClinicalModal = (order: WorklistOrderView, mode: "CLINICAL_INFO" | "INDICATION") => {
+    setActiveOrder(order);
+    setClinicalModalMode(mode);
+    setClinicalModalOpen(true);
   };
 
   const openViewer = (order: WorklistOrderView) => {
@@ -458,8 +502,11 @@ export default function WorklistPage() {
                         <span className={`inline-flex max-w-[110px] items-center justify-center truncate rounded-full border px-2.5 py-1 text-[9px] font-bold leading-none ${statusClass(order.orderStatus)}`}>
                           {orderStatusLabels[order.orderStatus] || order.orderStatus}
                         </span>
-                        <div className="mt-1 text-[10px] text-vin-muted">
-                          {order.studyStatus ? studyStatusLabels[order.studyStatus] || order.studyStatus : "Chưa có ảnh"}
+                        <div className="mt-1 flex items-center justify-center gap-1 text-[10px] text-vin-muted">
+                          {order.orthancStudyId ? studyStatusLabels[order.studyStatus || ""] || order.studyStatus : "Chưa có ảnh"}
+                          {!order.orthancStudyId && order.createdAt && new Date().getTime() - new Date(order.createdAt).getTime() > 24 * 60 * 60 * 1000 && (
+                            <AlertTriangle className="h-3 w-3 text-amber-500" title="Quá hạn 24h chưa có ảnh" />
+                          )}
                         </div>
                       </td>
                       <td className="px-2 py-2">
@@ -487,6 +534,26 @@ export default function WorklistPage() {
                             <IconButton title="Đọc ca (khóa)" disabled={isBusy} onClick={() => runViewToDictate(order)}>
                               <Edit3 className="h-3.5 w-3.5" />
                             </IconButton>
+                          )}
+                          {canUpdateClinical && (
+                            <button
+                              onClick={() => openClinicalModal(order, "CLINICAL_INFO")}
+                              disabled={!order.orthancStudyId}
+                              className="rounded border border-vin-border bg-vin-panel p-1.5 text-vin-muted transition hover:border-vin-accent hover:text-cyan-400 disabled:cursor-not-allowed disabled:opacity-30"
+                              title={order.orthancStudyId ? "Cập nhật lâm sàng" : "Order chưa có DICOM study"}
+                            >
+                              <FileText className="h-4 w-4" />
+                            </button>
+                          )}
+                          {canUpdateClinical && (
+                            <button
+                              onClick={() => openClinicalModal(order, "INDICATION")}
+                              disabled={!order.orthancStudyId}
+                              className="rounded border border-vin-border bg-vin-panel p-1.5 text-vin-muted transition hover:border-vin-accent hover:text-amber-400 disabled:cursor-not-allowed disabled:opacity-30"
+                              title={order.orthancStudyId ? "Thêm chỉ định" : "Order chưa có DICOM study"}
+                            >
+                              <PlusCircle className="h-4 w-4" />
+                            </button>
                           )}
                           {canMutate && (
                             <IconButton title="Hủy order" danger disabled={isBusy} onClick={() => runOrderAction(order.id, "cancel")}>
@@ -661,6 +728,22 @@ export default function WorklistPage() {
         .scr-dark::-webkit-scrollbar-thumb{background:var(--vin-border-subtle);border-radius:10px}
         .scr-dark::-webkit-scrollbar-thumb:hover{background:var(--vin-border-strong)}
       `}</style>
+
+      <ClinicalInfoModal
+        isOpen={clinicalModalOpen}
+        onClose={() => setClinicalModalOpen(false)}
+        mode={clinicalModalMode}
+        studyInstanceUid={activeOrder?.studyInstanceUid || ""}
+        initialData={{
+          procedureCode: activeOrder?.procedureCode || "",
+          procedureDescription: activeOrder?.procedureDescription || "",
+          clinicalInfo: activeOrder?.clinicalInfo || "",
+          technologistId: activeOrder?.technologistId || "",
+          bodyPart: activeOrder?.bodyPart || "",
+        }}
+        technologists={technologists}
+        onSave={handleClinicalSave}
+      />
     </div>
   );
 }

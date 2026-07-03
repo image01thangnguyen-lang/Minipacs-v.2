@@ -71,98 +71,53 @@ export async function getReport(studyInstanceUid: string) {
   }
 }
 
-export async function upsertReport(studyInstanceUid: string, data: {
-  status: 'UNREAD' | 'DRAFTING' | 'COMPLETED';
-  findings?: string;
-  conclusion?: string;
-  recommendation?: string;
-}) {
+import {
+  saveReportDraft,
+  finalizeReport,
+  approveReport,
+  cancelReportDraft,
+  unfinalizeReport,
+  getTechnologists as workflowGetTechnologists
+} from '@/lib/workflowService';
+
+export {
+  saveReportDraft,
+  finalizeReport,
+  approveReport,
+  cancelReportDraft,
+  unfinalizeReport
+};
+
+
+export async function getViewerArtifactsForReportAction(studyInstanceUid: string) {
+  await requirePermission("reports.read");
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: 'Bạn cần đăng nhập để lưu báo cáo.' };
-    }
-    if (!hasPermission(session.user.role, "reports.write", session.user.permissions)) {
-      return { success: false, error: 'Bạn không có quyền lưu hoặc ký báo cáo.' };
-    }
-    const doctorId = session?.user?.id && ['DOCTOR', 'ADMIN'].includes(session.user.baseRole || session.user.role)
-      ? session.user.id
-      : undefined;
-    const existingReport = await prisma.report.findUnique({
-      where: { studyInstanceUid },
-      select: {
-        id: true,
-        status: true,
-        findings: true,
-        conclusion: true,
-        recommendation: true,
-        doctorId: true,
-        imagingStudyId: true,
-      },
-    });
-    const completedStatuses = new Set(["FINAL", "COMPLETED"]);
-    const contentChanged = Boolean(existingReport && (
-      (existingReport.findings || "") !== (data.findings || "") ||
-      (existingReport.conclusion || "") !== (data.conclusion || "") ||
-      (existingReport.recommendation || "") !== (data.recommendation || "")
-    ));
-
-    const report = await prisma.report.upsert({
-      where: { studyInstanceUid },
-      update: {
-        status: data.status,
-        findings: data.findings,
-        conclusion: data.conclusion,
-        recommendation: data.recommendation,
-        ...(doctorId ? { doctorId } : {}),
-      },
-      create: {
-        studyInstanceUid,
-        status: data.status,
-        findings: data.findings,
-        conclusion: data.conclusion,
-        recommendation: data.recommendation,
-        ...(doctorId ? { doctorId } : {}),
-      },
-      include: {
-        doctor: {
-          include: { doctorProfile: true },
-        },
-      },
-    });
-
-    await updateStudyStatusForReport(studyInstanceUid, data.status);
-    if (
-      existingReport &&
-      completedStatuses.has(String(existingReport.status)) &&
-      completedStatuses.has(String(data.status)) &&
-      contentChanged
-    ) {
-      await prisma.reportAddendum.create({
-        data: {
-          reportId: report.id,
-          imagingStudyId: report.imagingStudyId || existingReport.imagingStudyId,
-          doctorId: doctorId || existingReport.doctorId,
-          reasonCode: "REPORT_UPDATED_AFTER_FINAL",
-          content: JSON.stringify({
-            findings: data.findings || "",
-            conclusion: data.conclusion || "",
-            recommendation: data.recommendation || "",
-          }),
-        },
-      });
-    }
-    return { success: true, report };
-  } catch (error) {
-    console.error('Failed to upsert report:', error);
-    return { success: false, error: 'Database error' };
+    const [measurements, keyImages] = await Promise.all([
+      (prisma as any).viewerMeasurement?.findMany({
+        where: { studyInstanceUid },
+      }) || [],
+      (prisma as any).viewerKeyImage?.findMany({
+        where: { studyInstanceUid },
+      }) || [],
+    ]);
+    return { measurements, keyImages };
+  } catch (err) {
+    console.error('Failed to get viewer artifacts:', err);
+    return { measurements: [], keyImages: [] };
   }
 }
 
-export async function getDefaultTemplate() {
+export async function getDefaultTemplate(printTemplateId?: string) {
   await requirePermission("reports.read");
 
   try {
+    if (printTemplateId) {
+      const template = await (prisma as any).printTemplate?.findUnique({
+        where: { id: printTemplateId },
+      });
+      if (template) return template.htmlContent;
+    }
+
     const template = await (prisma as any).printTemplate?.findFirst({
       where: { isDefault: true },
       orderBy: { createdAt: 'desc' },
@@ -193,5 +148,19 @@ export async function getDefaultTemplate() {
   } catch (err) {
     console.error('Failed to fetch template:', err);
     return null;
+  }
+}
+
+export async function getPrintTemplatesAction() {
+  await requirePermission("reports.read");
+  try {
+    const templates = await prisma.printTemplate.findMany({
+      select: { id: true, name: true, isDefault: true, htmlContent: true },
+      orderBy: { createdAt: 'desc' }
+    });
+    return templates;
+  } catch (err) {
+    console.error('Failed to get print templates:', err);
+    return [];
   }
 }

@@ -28,7 +28,7 @@ export async function POST(request: Request, { params }: { params: { uid: string
       where: { studyInstanceUid }
     });
 
-    if (report && ['FINAL', 'COMPLETED'].includes(report.status)) {
+    if (report && ['FINAL', 'PENDING_APPROVAL'].includes(report.status)) {
       // Logic for addendum or fallback text
       const fallbackText = "Bao cao da hoan thanh, khong the ghi de. Vui long tao phu luc/addendum.";
       

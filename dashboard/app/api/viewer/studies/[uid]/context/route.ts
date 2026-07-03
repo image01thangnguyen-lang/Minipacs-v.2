@@ -34,7 +34,7 @@ export async function GET(request: Request, { params }: { params: { uid: string 
       patientId: study.patientId || study.order?.patientId || 'Unknown',
       accessionNumber: study.accessionNumber || 'Unknown',
       studyStatus: study.status,
-      reportStatus: study.reports.length > 0 ? study.reports[0].status : 'UNREAD',
+      reportStatus: study.reports.length > 0 ? study.reports[0].status : 'DRAFT',
       assignedDoctor: study.assignedDoctorId || 'Unassigned',
       previousStudyCount,
     });

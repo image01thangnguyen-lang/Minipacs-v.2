@@ -5,8 +5,14 @@ export type AppRole = SystemRole;
 
 export const permissionKeys = [
   "studies.read",
+  "studies.assign",
+  "studies.updateClinical",
   "reports.read",
   "reports.write",
+  "reports.finalize",
+  "reports.cancelDraft",
+  "reports.unfinalize",
+  "reports.print",
   "worklist.manage",
   "archive.read",
   "archive.deliver",
@@ -36,8 +42,14 @@ export const roleDescriptions: Record<SystemRole, string> = {
 
 export const permissionLabels: Record<PermissionKey, string> = {
   "studies.read": "Xem danh sách ca chụp",
+  "studies.assign": "Gán bác sĩ đọc cho ca",
+  "studies.updateClinical": "Cập nhật thông tin lâm sàng",
   "reports.read": "Mở phiếu báo cáo",
-  "reports.write": "Lưu nháp/ký báo cáo",
+  "reports.write": "Lưu nháp báo cáo",
+  "reports.finalize": "Duyệt/ký kết quả",
+  "reports.cancelDraft": "Hủy phiếu nháp",
+  "reports.unfinalize": "Hủy duyệt/sửa sau final",
+  "reports.print": "In phiếu/xuất PDF",
   "worklist.manage": "Tạo và cập nhật Worklist",
   "archive.read": "Tra cứu Archive và in lại",
   "archive.deliver": "Ghi nhận đã trả kết quả",
@@ -52,7 +64,7 @@ export const permissionLabels: Record<PermissionKey, string> = {
 export const permissionGroups: Array<{ title: string; permissions: PermissionKey[] }> = [
   {
     title: "Lâm sàng",
-    permissions: ["studies.read", "reports.read", "reports.write"],
+    permissions: ["studies.read", "studies.assign", "studies.updateClinical", "reports.read", "reports.write", "reports.finalize", "reports.cancelDraft", "reports.unfinalize", "reports.print"],
   },
   {
     title: "Tiếp đón & trả kết quả",
@@ -67,8 +79,14 @@ export const permissionGroups: Array<{ title: string; permissions: PermissionKey
 export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
   ADMIN: [
     "studies.read",
+    "studies.assign",
+    "studies.updateClinical",
     "reports.read",
     "reports.write",
+    "reports.finalize",
+    "reports.cancelDraft",
+    "reports.unfinalize",
+    "reports.print",
     "worklist.manage",
     "archive.read",
     "archive.deliver",
@@ -81,8 +99,12 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
   ],
   DOCTOR: [
     "studies.read",
+    "studies.updateClinical",
     "reports.read",
     "reports.write",
+    "reports.finalize",
+    "reports.cancelDraft",
+    "reports.print",
     "archive.read",
     "statistics.read",
     "statistics.doctorStats",
@@ -90,12 +112,15 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
   ],
   TECHNICIAN: [
     "studies.read",
+    "studies.assign",
+    "studies.updateClinical",
     "worklist.manage",
     "archive.read",
     "statistics.read",
   ],
   RECEPTION: [
     "studies.read",
+    "reports.print",
     "worklist.manage",
     "archive.read",
     "archive.deliver",

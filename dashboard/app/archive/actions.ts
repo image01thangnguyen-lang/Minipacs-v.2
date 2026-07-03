@@ -48,7 +48,7 @@ function dateRangeFilter(filters: ArchiveSearchFilters) {
 }
 
 function reportDrivenStudyStatus(status?: string | null) {
-  if (status === "FINAL" || status === "COMPLETED") return "FINALIZED";
+  if (status === "FINAL") return "FINALIZED";
   return "READY_TO_READ";
 }
 
@@ -177,7 +177,7 @@ function serializeArchiveRow(report: any): ArchiveStudyRow {
     bodyPart: cleanText(study?.bodyPart) || "",
     studyDescription: cleanText(study?.studyDescription) || "-",
     studyDate: toIso(studyDate),
-    finalizedAt: toIso(study?.finalizedAt || (report.status === "FINAL" || report.status === "COMPLETED" ? report.updatedAt : null)),
+    finalizedAt: toIso(study?.finalizedAt || (report.status === "FINAL" ? report.updatedAt : null)),
     deliveredAt: toIso(study?.deliveredAt),
     doctorName: report.doctor?.fullName || "-",
     doctorId: report.doctorId || "",

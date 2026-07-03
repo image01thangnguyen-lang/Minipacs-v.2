@@ -12,10 +12,8 @@ datasource db {
 
 enum ReportStatus {
   DRAFT
+  PENDING_APPROVAL
   FINAL
-  UNREAD
-  DRAFTING
-  COMPLETED
 }
 
 enum OrderStatus {
@@ -55,6 +53,18 @@ model Report {
   findings       String? @db.Text
   conclusion     String? @db.Text
   recommendation String? @db.Text
+
+  // Phase 1: additional clinical fields
+  technique      String? @db.Text
+  clinicalInfo   String? @db.Text
+  technologistId String?
+  printTemplateId String?
+
+  // Phase 1: lifecycle timestamps and reasons
+  finalizedAt    DateTime?
+  cancelledAt    DateTime?
+  cancelReason   String? @db.Text
+  reopenReason   String? @db.Text
 
   // Foreign key for Doctor/User (1-N Relationship)
   doctorId String?
@@ -251,6 +261,13 @@ model ImagingStudy {
   orderId          String?
   order            WorklistOrder? @relation(fields: [orderId], references: [id])
   reports          Report[]
+
+  // Phase 1: clinical/procedure fields
+  clinicalInfo         String? @db.Text
+  procedureCode        String?
+  procedureDescription String?
+  technologistId       String?
+
   scheduledAt      DateTime?
   checkedInAt      DateTime?
   scanStartedAt    DateTime?
@@ -439,6 +456,7 @@ model ReportAddendum {
   report         Report?       @relation(fields: [reportId], references: [id], onDelete: SetNull)
   doctorId       String?
   reasonCode     String?
+  reason         String?       @db.Text
   content        String?       @db.Text
   createdAt      DateTime      @default(now())
 

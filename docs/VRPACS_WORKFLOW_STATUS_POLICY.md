@@ -39,7 +39,7 @@ Order terminal states:
 | `RECEIVED` | `READY_TO_READ` | metadata/order matched | system/technician | no | yes | Ready for doctor |
 | `READY_TO_READ` | `READING` | start reading/receive read | `reports.write` | no | yes | Lock/assign doctor if needed |
 | `READING` | `REPORTED` | finalize report | `reports.write`/`reports.finalize` | no | yes | Report final |
-| `REPORTED` | `DELIVERED` | mark delivered | `archive.deliver` | optional | yes | Result handoff |
+| `REPORTED` | `DELIVERED` | mark delivered | `archive.deliver` | optional | yes | SAU khi gui HIS thanh cong. Bypass neu HIS loi ket noi (can reason) |
 | `DELIVERED` | `ARCHIVED` | archive policy | system/admin | no | yes | May be same as delivered in UI |
 | any | `CANCELLED` | cancel study metadata | admin policy | yes | yes | Must not delete DICOM images unless Phase 8 |
 | `REPORTED`/`DELIVERED` | `READING` | unfinalize/cancel approval | `reports.unfinalize` | yes | yes | Must create addendum/history |
@@ -76,6 +76,13 @@ Report edit rules:
 - Final correction must create addendum or new version/history with reason.
 - HIS send failure must not rollback final report.
 - Draft report must not be sent to HIS.
+
+Approval modes:
+
+- 1-step: bac si chuyen mon tu finalize (khong can nguoi khac duyet lai).
+- 2-step: bac si khong chuyen mon finalize -> senior/specialist doctor review va approve.
+- Ho tro ca 2 mode. Mode duoc chon theo role/permission profile, khong phai config rieng.
+- Khi 2-step, report status co the la `PENDING_APPROVAL` truoc khi chuyen `FINAL`.
 
 ## 6. HIS sync lifecycle
 
@@ -183,6 +190,20 @@ Mandatory guardrails:
 
 - Confirm exact existing `StudyStatus` enum values before changing schema.
 - Confirm whether `DELIVERED` should be study status, report status, or separate archive event.
-- Confirm whether VRPACS `approve` has one or two steps.
 - Confirm policy for multiple final reports per study.
+
+## 13. Resolved decisions (2026-07-03)
+
+- Approval: ho tro 1-step (specialist) va 2-step (non-specialist + reviewer). Ca 2 mode.
+- Cancel form (`huy phieu`): ap dung cho CA HAI order va report draft.
+- HIS order code = accession number. Canonical: `accessionNumber`.
+- Encode patient = ma hoa thong tin BN tren man hinh (display mask), khac anonymize export.
+- Non-anonymized DICOM export: permission-based (`viewer.export`), khong fix role.
+- Retention duration: 10 nam.
+- Report PDF filename: dung ma/ID, khong chua ten benh nhan.
+- `delivered` timing: mark SAU khi gui HIS thanh cong. Ngoai le: HIS loi ket noi cho phep bypass voi reason/audit.
+- Share link default: KHONG an thong tin BN mac dinh. Co option toggle an.
+- Audit retention: 10 nam.
+
+> Tat ca open items da resolve. Phase 1+ co the bat dau code.
 

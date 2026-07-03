@@ -117,11 +117,15 @@ Example:
 - Export job files must expire.
 - Cleanup jobs must not remove source clinical data.
 
-## 10. Open validation items
+## 10. Resolved items (2026-07-03)
 
-- Confirm retention duration and legal archive policy.
-- Confirm if report PDF filenames may include patient name in local clinical network.
-- Confirm which roles can export non-anonymized DICOM.
-- Confirm if share links must always hide patient info by default.
-- Confirm audit retention duration.
+- Retention duration: 10 NAM cho DICOM images va report data.
+- Report PDF filename: dung ma/ID (accession, study UID short), KHONG chua ten benh nhan.
+- Non-anonymized DICOM export: dua vao PHAN QUYEN (`viewer.export`), khong fix role.
+- `encode patient` = ma hoa thong tin BN tren man hinh (display mask), khac anonymize export.
+- `delivered` timing: mark SAU khi gui HIS thanh cong. Ngoai le: HIS loi ket noi cho phep bypass voi reason/audit.
+- Share link default: KHONG an thong tin BN mac dinh. Co option toggle an.
+- Audit retention: 10 NAM.
+
+> Tat ca open items da resolve.
 

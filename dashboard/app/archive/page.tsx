@@ -57,11 +57,9 @@ const studyStatusLabels: Record<string, string> = {
 };
 
 const reportStatusLabels: Record<string, string> = {
-  FINAL: "FINAL",
-  COMPLETED: "FINAL",
-  DRAFT: "DRAFT",
-  DRAFTING: "DRAFT",
-  UNREAD: "UNREAD",
+  PENDING_APPROVAL: "Chờ duyệt",
+  DRAFT: "Nháp",
+  FINAL: "Đã duyệt",
 };
 
 function formatDateTime(value?: string | null) {

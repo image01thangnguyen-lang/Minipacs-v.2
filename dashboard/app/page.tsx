@@ -24,12 +24,29 @@ import {
   ReportTemplatePicker,
   TemplateApplyMode,
 } from "./components/ReportTemplatePicker";
-import { getStudies } from "./actions";
+import {
+  getStudies,
+  saveReportAction,
+  updateClinicalInfoAction,
+  markStudyDeliveredAction,
+  assignStudyDoctorAction,
+  startReadingStudyAction,
+  getUserPermissionsAction,
+  getActiveDoctorsAction
+} from "./actions";
+import { logArchivePrintAction } from "./archive/actions";
+import { StudyRowActionMenu } from "./components/StudyRowActionMenu";
+import { ClinicalInfoModal } from "./components/ClinicalInfoModal";
+import AssignDoctorModal from "./components/AssignDoctorModal";
+
 import {
   getDefaultTemplate,
   getReport,
   getStudyDetails,
-  upsertReport,
+  saveReportDraft,
+  finalizeReport,
+  cancelReportDraft,
+  unfinalizeReport
 } from "./report/[studyInstanceUid]/actions";
 import { getClinicProfile } from "./settings/clinic-profile/actions";
 import { getReportTemplateSuggestions } from "./settings/report-templates/actions";
@@ -122,8 +139,21 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(50);
+  const [clinicalModalOpen, setClinicalModalOpen] = useState(false);
+  const [clinicalModalMode, setClinicalModalMode] = useState<"CLINICAL_INFO" | "INDICATION">("CLINICAL_INFO");
+
+  const [assignDoctorModalOpen, setAssignDoctorModalOpen] = useState(false);
+  const [activeDoctors, setActiveDoctors] = useState<{value: string, label: string}[]>([]);
+
+  const [activeStudy, setActiveStudy] = useState<any>(null);
+
+  const [permissions, setPermissions] = useState<string[]>([]);
+  const [userRole, setUserRole] = useState<string>("GUEST");
   const [searchQuery, setSearchQuery] = useState("");
   const [modalityFilter, setModalityFilter] = useState("ALL");
+  const [workflowStatusFilter, setWorkflowStatusFilter] = useState("ALL");
+  const [stationAeFilter, setStationAeFilter] = useState("ALL");
+  const [datePresetFilter, setDatePresetFilter] = useState("ALL");
 
   const [selectedStudy, setSelectedStudy] = useState<any>(null);
   const [patientDetails, setPatientDetails] = useState<any>(null);
@@ -138,15 +168,58 @@ export default function DashboardPage() {
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  const openClinicalModal = (study: any, mode: "CLINICAL_INFO" | "INDICATION") => {
+    setActiveStudy(study);
+    setClinicalModalMode(mode);
+    setClinicalModalOpen(true);
+  };
+
+  const handleMarkDelivered = async (uid: string) => {
+    if (confirm("Ghi nhận đã trả kết quả cho ca này?")) {
+      const res = await markStudyDeliveredAction(uid);
+      if (res.success) {
+         setStudies(cur => cur.map(s => s.MainDicomTags?.StudyInstanceUID === uid ? { ...s, WorkflowStatus: "DELIVERED" } : s));
+         if (uid === selectedStudy?.MainDicomTags?.StudyInstanceUID) setStudyStatus("DELIVERED");
+      } else alert((res as any).error || "Lỗi hệ thống");
+    }
+  };
+
+  const handleClinicalSave = async (data: any) => {
+    const uid = activeStudy?.MainDicomTags?.StudyInstanceUID;
+    if (!uid) return { success: false, error: "No active study" };
+    const result = await updateClinicalInfoAction(uid, data);
+    if (result.success) {
+      setStudies(cur => cur.map(s => s.MainDicomTags?.StudyInstanceUID === uid ? { ...s, ...data } : s));
+    }
+    return result;
+  };
+
+
+
   useEffect(() => {
     async function loadStudies() {
       try {
         setIsLoading(true);
-        const [data, clinic] = await Promise.all([
+        const [data, clinic, perms] = await Promise.all([
           getStudies(),
           getClinicProfile(),
+          getUserPermissionsAction()
         ]);
+        setPermissions(perms.permissions);
+        setUserRole(perms.role);
         setStudies(data || []);
+
+        if (perms.permissions.includes("studies.assign")) {
+          try {
+            const docs = await getActiveDoctorsAction();
+            setActiveDoctors(docs || []);
+          } catch (err) {
+            console.error("Failed to fetch doctors", err);
+            setActiveDoctors([]);
+          }
+        } else {
+          setActiveDoctors([]);
+        }
         setClinicProfile({
           clinicName: clinic?.name || "",
           clinicLegalName: clinic?.legalName || "",
@@ -186,6 +259,33 @@ export default function DashboardPage() {
     ...modalities.map(m => ({ value: m, label: m })),
   ], [modalities]);
 
+  const stationAEs = useMemo(() => {
+    const values = new Set<string>();
+    studies.forEach(study => {
+      const station = study.MainDicomTags?.StationName || study.MainDicomTags?.InstitutionName;
+      if (station) values.add(station);
+    });
+    return Array.from(values).sort();
+  }, [studies]);
+
+  const stationAeSelectOptions = useMemo<SelectOption[]>(() => [
+    { value: "ALL", label: "Tất cả máy chụp" },
+    ...stationAEs.map(ae => ({ value: ae, label: ae })),
+  ], [stationAEs]);
+
+  const workflowStatusSelectOptions = useMemo<SelectOption[]>(() => [
+    { value: "ALL", label: "Tất cả trạng thái" },
+    ...Object.entries(risStatusLabels).map(([key, label]) => ({ value: key, label })),
+  ], []);
+
+  const datePresetSelectOptions: SelectOption[] = useMemo(() => [
+    { value: "ALL", label: "Tất cả thời gian" },
+    { value: "TODAY", label: "Hôm nay" },
+    { value: "YESTERDAY", label: "Hôm qua" },
+    { value: "3DAYS", label: "3 ngày gần đây" },
+    { value: "7DAYS", label: "7 ngày gần đây" },
+  ], []);
+
   const filteredStudies = useMemo(() => {
     let list = studies;
 
@@ -204,8 +304,42 @@ export default function DashboardPage() {
       list = list.filter(study => study.EnrichedModality === modalityFilter);
     }
 
+    if (workflowStatusFilter !== "ALL") {
+      list = list.filter(study => (study.WorkflowStatus || "READY_TO_READ") === workflowStatusFilter);
+    }
+
+    if (stationAeFilter !== "ALL") {
+      list = list.filter(study => {
+        const station = study.MainDicomTags?.StationName || study.MainDicomTags?.InstitutionName;
+        return station === stationAeFilter;
+      });
+    }
+
+    if (datePresetFilter !== "ALL") {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      list = list.filter(study => {
+        const dateStr = study.MainDicomTags?.StudyDate; // "YYYYMMDD"
+        if (!dateStr || dateStr.length !== 8) return false;
+        
+        const year = parseInt(dateStr.substring(0, 4), 10);
+        const month = parseInt(dateStr.substring(4, 6), 10) - 1;
+        const day = parseInt(dateStr.substring(6, 8), 10);
+        const studyDate = new Date(year, month, day);
+
+        const diffTime = now.getTime() - studyDate.getTime();
+        const diffDays = diffTime / (1000 * 3600 * 24);
+
+        if (datePresetFilter === "TODAY") return diffDays <= 0 && diffDays > -1;
+        if (datePresetFilter === "YESTERDAY") return diffDays > 0 && diffDays <= 1;
+        if (datePresetFilter === "3DAYS") return diffDays >= 0 && diffDays <= 3;
+        if (datePresetFilter === "7DAYS") return diffDays >= 0 && diffDays <= 7;
+        return true;
+      });
+    }
+
     return list;
-  }, [modalityFilter, searchQuery, studies]);
+  }, [modalityFilter, workflowStatusFilter, stationAeFilter, datePresetFilter, searchQuery, studies]);
 
   const totalPages = Math.ceil(filteredStudies.length / rowsPerPage) || 1;
   const pageStudies = filteredStudies.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
@@ -269,6 +403,79 @@ export default function DashboardPage() {
     window.open(`/viewer/minipacs?StudyInstanceUIDs=${encodeURIComponent(uid)}`, "_blank");
   };
 
+
+
+  const handleStartReading = async (uid: string) => {
+    const res = await startReadingStudyAction(uid);
+    if (res.success) {
+      setStudies(cur => cur.map(s => s.MainDicomTags?.StudyInstanceUID === uid ? { ...s, WorkflowStatus: "READING" } : s));
+      if (uid === selectedStudy?.MainDicomTags?.StudyInstanceUID) setStudyStatus("READING");
+    } else {
+      alert((res as any).error || "Lỗi khi nhận đọc");
+    }
+  };
+
+  const handleAssignDoctor = async (doctorId: string) => {
+    const uid = activeStudy?.MainDicomTags?.StudyInstanceUID;
+    if (!uid) return false;
+    const res = await assignStudyDoctorAction(uid, doctorId);
+    if (res.success) {
+      // maybe show toast
+      return true;
+    } else {
+      alert((res as any).error || "Lỗi khi gán");
+      return false;
+    }
+  };
+
+  const openAssignModal = (study: any) => {
+    setActiveStudy(study);
+    setAssignDoctorModalOpen(true);
+  };
+
+  const handleCancelDraft = async (uid: string) => {
+    if (confirm("Bạn có chắc chắn muốn hủy phiên bản nháp này?")) {
+      const reason = prompt("Lý do hủy (tùy chọn):") || "Hủy nháp";
+      const res = await cancelReportDraft(uid, reason);
+      if (res.success) {
+        setStudies(current =>
+          current.map(study => (
+            study.MainDicomTags?.StudyInstanceUID === uid
+              ? { ...study, ReportStatus: "CANCELLED", WorkflowStatus: "READY_TO_READ" }
+              : study
+          ))
+        );
+        if (selectedStudy?.MainDicomTags?.StudyInstanceUID === uid) {
+          setStudyStatus("READY_TO_READ");
+          setSelectedStudy((cur: any) => ({ ...cur, WorkflowStatus: "READY_TO_READ", ReportStatus: "CANCELLED" }));
+        }
+      } else {
+        alert((res as any).error || "Lỗi hủy nháp");
+      }
+    }
+  };
+
+  const handleUnfinalize = async (uid: string) => {
+    const reason = prompt("Lý do hủy duyệt (bắt buộc):");
+    if (!reason) return;
+    const res = await unfinalizeReport(uid, reason);
+    if (res.success) {
+      setStudies(current =>
+        current.map(study => (
+          study.MainDicomTags?.StudyInstanceUID === uid
+            ? { ...study, ReportStatus: "DRAFT", WorkflowStatus: "READING" }
+            : study
+        ))
+      );
+      if (selectedStudy?.MainDicomTags?.StudyInstanceUID === uid) {
+        setStudyStatus("READING");
+        setSelectedStudy((cur: any) => ({ ...cur, WorkflowStatus: "READING", ReportStatus: "DRAFT" }));
+      }
+    } else {
+      alert((res as any).error || "Lỗi hủy duyệt");
+    }
+  };
+
   const applyReportTemplate = (template: ReportTemplateOption, mode: TemplateApplyMode) => {
     if (mode === "replace") {
       setFindings(normalizeTemplateHtml(template.findings));
@@ -293,25 +500,36 @@ export default function DashboardPage() {
 
     setIsSaving(true);
     try {
-      const result = await upsertReport(uid, {
-        status,
-        findings,
-        conclusion,
-        recommendation,
-      });
-
-      if (result.success) {
-        const nextStudyStatus = status === "COMPLETED" ? "FINALIZED" : "READING";
-        setStudyStatus(nextStudyStatus);
-        if (result.report) setDoctorPrintInfo(getDoctorPrintInfo(result.report));
-        setStudies(current =>
-          current.map(study => (
-            study.MainDicomTags?.StudyInstanceUID === uid
-              ? { ...study, WorkflowStatus: nextStudyStatus }
-              : study
-          ))
-        );
+      const draftResult = await saveReportDraft(uid, { findings, conclusion, recommendation });
+      if (!draftResult.success) {
+        alert((draftResult as any).error || "Lỗi lưu nháp báo cáo");
+        setIsSaving(false);
+        return;
       }
+
+      let nextStudyStatus = "READING";
+      let nextReportStatus = "DRAFT";
+
+      if (status === "COMPLETED") {
+        const finalResult = await finalizeReport(uid);
+        if (!finalResult.success) {
+          alert((finalResult as any).error || "Lỗi ký duyệt báo cáo");
+          setIsSaving(false);
+          return;
+        }
+        nextStudyStatus = finalResult.workflowStatus || "FINALIZED";
+        nextReportStatus = finalResult.reportStatus || "FINAL";
+      }
+
+      setStudyStatus(nextStudyStatus);
+      
+      setStudies(current =>
+        current.map(study => (
+          study.MainDicomTags?.StudyInstanceUID === uid
+            ? { ...study, WorkflowStatus: nextStudyStatus, ReportStatus: nextReportStatus }
+            : study
+        ))
+      );
     } catch (error) {
       console.error(error);
     } finally {
@@ -322,7 +540,13 @@ export default function DashboardPage() {
   const printRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: `CDHA_${selectedStudy?.MainDicomTags?.StudyInstanceUID || ""}`,
+    documentTitle: selectedStudy ? `Ket_Qua_CDHA_${selectedStudy.MainDicomTags?.AccessionNumber || "NA"}_${(selectedStudy.MainDicomTags?.StudyInstanceUID || "").split('.').pop()?.slice(-6) || "ID"}` : "Ket_Qua_CDHA",
+    onAfterPrint: () => {
+      const uid = selectedStudy?.MainDicomTags?.StudyInstanceUID;
+      if (uid) {
+        logArchivePrintAction(uid, "PRINT").catch(console.error);
+      }
+    }
   });
 
   const selectedUid = selectedStudy?.MainDicomTags?.StudyInstanceUID;
@@ -367,41 +591,80 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-[1fr_7rem] items-center gap-2">
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-vin-faint" />
-              <input
-                value={searchQuery}
-                onChange={event => {
-                  setSearchQuery(event.target.value);
-                  setCurrentPage(1);
-                }}
-                className="h-[2.25rem] w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-7 text-[11px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent focus:bg-vin-root/20"
-                placeholder="Tìm tên, mã bệnh nhân, accession..."
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => {
-                    setSearchQuery("");
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-vin-faint" />
+                <input
+                  value={searchQuery}
+                  onChange={event => {
+                    setSearchQuery(event.target.value);
                     setCurrentPage(1);
                   }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-vin-faint transition hover:text-vin-text"
-                  title="Xóa tìm kiếm"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
+                  className="h-[2.25rem] w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-7 text-[11px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent focus:bg-vin-root/20"
+                  placeholder="Tìm tên, mã bệnh nhân, accession..."
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery("");
+                      setCurrentPage(1);
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-vin-faint transition hover:text-vin-text"
+                    title="Xóa tìm kiếm"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+              <div className="w-[7rem]">
+                <CustomSelect
+                  options={modalitySelectOptions}
+                  value={modalityFilter}
+                  onChange={val => {
+                    setModalityFilter(val);
+                    setCurrentPage(1);
+                  }}
+                  compact
+                  mono
+                />
+              </div>
+              <div className="w-[10rem]">
+                <CustomSelect
+                  options={datePresetSelectOptions}
+                  value={datePresetFilter}
+                  onChange={val => {
+                    setDatePresetFilter(val);
+                    setCurrentPage(1);
+                  }}
+                  compact
+                />
+              </div>
             </div>
-            <CustomSelect
-              options={modalitySelectOptions}
-              value={modalityFilter}
-              onChange={val => {
-                setModalityFilter(val);
-                setCurrentPage(1);
-              }}
-              compact
-              mono
-            />
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <CustomSelect
+                  options={workflowStatusSelectOptions}
+                  value={workflowStatusFilter}
+                  onChange={val => {
+                    setWorkflowStatusFilter(val);
+                    setCurrentPage(1);
+                  }}
+                  compact
+                />
+              </div>
+              <div className="flex-1">
+                <CustomSelect
+                  options={stationAeSelectOptions}
+                  value={stationAeFilter}
+                  onChange={val => {
+                    setStationAeFilter(val);
+                    setCurrentPage(1);
+                  }}
+                  compact
+                />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -416,19 +679,20 @@ export default function DashboardPage() {
                 <th className="px-2 py-2 text-center">Trạng thái</th>
                 <th className="px-2 py-2">Ngày chụp</th>
                 <th className="px-2 py-2 text-center">Ảnh</th>
+                <th className="w-10 px-2 py-2 text-center">Thao tác</th>
               </tr>
             </thead>
             <tbody className="text-[11px]">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-vin-muted">
+                  <td colSpan={8} className="py-12 text-center text-vin-muted">
                     <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
                     Đang tải danh sách ca chụp...
                   </td>
                 </tr>
               ) : pageStudies.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-vin-muted">
+                  <td colSpan={8} className="py-12 text-center text-vin-muted">
                     Không có ca chụp nào.
                   </td>
                 </tr>
@@ -477,6 +741,28 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-2 py-2 text-center font-mono text-vin-muted">
                         {study.EnrichedInstancesCount ?? study.Instances?.length ?? "-"}
+                      </td>
+                      <td className="px-2 py-2 text-center" onClick={e => e.stopPropagation()}>
+                        <StudyRowActionMenu
+                          studyInstanceUid={uid}
+                          studyStatus={study.WorkflowStatus}
+                          reportStatus={study.ReportStatus}
+                          patientName={fmtName(patient.PatientName)}
+                          canReadReport={permissions.includes("reports.read")}
+                          canWriteReport={permissions.includes("reports.write")}
+                          canAssign={permissions.includes("studies.assign")}
+                          canUpdateClinical={permissions.includes("studies.updateClinical")}
+                          canCancelDraft={permissions.includes("reports.cancelDraft")}
+                          canUnfinalize={permissions.includes("reports.unfinalize")}
+                          canDeliver={permissions.includes("archive.deliver") && study.WorkflowStatus === "FINALIZED"}
+                          onMarkDelivered={() => handleMarkDelivered(uid)}
+                          onUpdateClinical={() => openClinicalModal(study, "CLINICAL_INFO")}
+                          onAddIndication={() => openClinicalModal(study, "INDICATION")}
+                          onStartReading={() => handleStartReading(uid)}
+                          onAssignDoctor={() => openAssignModal(study)}
+                          onCancelDraft={() => handleCancelDraft(uid)}
+                          onUnfinalize={() => handleUnfinalize(uid)}
+                        />
                       </td>
                     </tr>
                   );
@@ -683,6 +969,20 @@ export default function DashboardPage() {
         .scr-dark::-webkit-scrollbar-thumb{background:var(--vin-border-subtle);border-radius:10px}
         .scr-dark::-webkit-scrollbar-thumb:hover{background:var(--vin-border-strong)}
       `}</style>
+      <ClinicalInfoModal
+        isOpen={clinicalModalOpen}
+        onClose={() => setClinicalModalOpen(false)}
+        mode={clinicalModalMode}
+        studyInstanceUid={activeStudy?.MainDicomTags?.StudyInstanceUID || ""}
+        initialData={activeStudy || {}}
+        onSave={handleClinicalSave}
+      />
+      <AssignDoctorModal
+        isOpen={assignDoctorModalOpen}
+        onClose={() => setAssignDoctorModalOpen(false)}
+        doctors={activeDoctors}
+        onAssign={handleAssignDoctor}
+      />
     </div>
   );
 }

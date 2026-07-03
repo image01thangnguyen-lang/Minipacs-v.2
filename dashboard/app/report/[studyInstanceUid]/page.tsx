@@ -6,7 +6,9 @@ import { CheckCircle, ChevronLeft, Loader2, Printer, Save } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import TiptapEditor from "./components/TiptapEditor";
 import { PrintTemplateViewer } from "./components/PrintTemplateViewer";
-import { getDefaultTemplate, getReport, getStudyDetails, upsertReport } from "./actions";
+import { getDefaultTemplate, getReport, getStudyDetails, getPrintTemplatesAction } from "./actions";
+import { saveReportAction } from "../../actions";
+import { logArchivePrintAction } from "@/app/archive/actions";
 import {
   appendTemplateHtml,
   appendTemplateText,
@@ -91,6 +93,8 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
   const [templateHtml, setTemplateHtml] = useState<string>("");
   const [clinicProfile, setClinicProfile] = useState<Record<string, string>>({});
   const [reportTemplates, setReportTemplates] = useState<ReportTemplateOption[]>([]);
+  const [printTemplates, setPrintTemplates] = useState<{ id: string; name: string; isDefault: boolean; htmlContent: string }[]>([]);
+  const [selectedPrintTemplateId, setSelectedPrintTemplateId] = useState<string>("");
   const [viewerLink, setViewerLink] = useState("");
 
   useEffect(() => {
@@ -102,11 +106,12 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
       try {
         setIsLoading(true);
         setReportTemplates([]);
-        const [report, studyInfo, template, clinic] = await Promise.all([
+        const [report, studyInfo, template, clinic, printTpls] = await Promise.all([
           getReport(studyInstanceUid),
           getStudyDetails(studyInstanceUid),
           getDefaultTemplate(),
           getClinicProfile(),
+          getPrintTemplatesAction(),
         ]);
 
         setClinicProfile({
@@ -128,13 +133,40 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
           setRecommendation(report.recommendation || "");
           if (report.imagingStudy?.status) setStudyStatus(report.imagingStudy.status);
           setDoctorPrintInfo(getDoctorPrintInfo(report));
+          if (report.printTemplateId) {
+            setSelectedPrintTemplateId(report.printTemplateId);
+          }
         }
 
         if (studyInfo) {
           setPatientDetails(studyInfo);
           if (studyInfo.WorkflowStatus) setStudyStatus(studyInfo.WorkflowStatus);
         }
-        if (template) setTemplateHtml(template);
+        if (printTpls) {
+          setPrintTemplates(printTpls);
+          let targetTplId = report?.printTemplateId;
+          
+          if (!targetTplId) {
+            const defaultTpl = printTpls.find(t => t.isDefault) || printTpls[0];
+            if (defaultTpl) {
+              targetTplId = defaultTpl.id;
+              setSelectedPrintTemplateId(targetTplId);
+            }
+          }
+          
+          if (targetTplId) {
+            const matchedTpl = printTpls.find(t => t.id === targetTplId);
+            if (matchedTpl?.htmlContent) {
+              setTemplateHtml(matchedTpl.htmlContent);
+            } else if (template) {
+              setTemplateHtml(template);
+            }
+          } else if (template) {
+            setTemplateHtml(template);
+          }
+        } else if (template) {
+          setTemplateHtml(template);
+        }
 
         const cannedTemplates = await getReportTemplateSuggestions({
           modality: studyInfo?.EnrichedModality || studyInfo?.MainDicomTags?.Modality,
@@ -151,25 +183,35 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
     loadData();
   }, [studyInstanceUid]);
 
+  const printTitle = patientDetails 
+    ? `Ket_Qua_CDHA_${patientDetails.MainDicomTags?.AccessionNumber || "NA"}_${(studyInstanceUid || "").split('.').pop()?.slice(-6) || "ID"}`
+    : `Ket_Qua_CDHA_${(studyInstanceUid || "").split('.').pop()?.slice(-6) || "ID"}`;
+
   const printRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
     contentRef: printRef,
-    documentTitle: `Ket_Qua_CDHA_${studyInstanceUid}`,
+    documentTitle: printTitle,
+    onAfterPrint: () => {
+      logArchivePrintAction(studyInstanceUid, "PRINT").catch(console.error);
+    }
   });
 
-  const handleSave = async (status: "DRAFTING" | "COMPLETED") => {
+  const handleSave = async (status: "DRAFT" | "FINAL") => {
     setIsSaving(true);
     try {
-      const result = await upsertReport(studyInstanceUid, {
+      const result = await saveReportAction({
+        studyInstanceUid,
         status,
         findings,
         conclusion,
         recommendation,
+        printTemplateId: selectedPrintTemplateId || undefined,
       });
 
       if (result.success) {
-        setStudyStatus(status === "COMPLETED" ? "FINALIZED" : "READING");
-        if (result.report) setDoctorPrintInfo(getDoctorPrintInfo(result.report));
+        const returnedReportStatus = (result as any).report?.status;
+        setStudyStatus(returnedReportStatus === "FINAL" ? "FINALIZED" : "READING");
+        if ((result as any).report) setDoctorPrintInfo(getDoctorPrintInfo((result as any).report));
       }
     } catch (error) {
       console.error("Failed to save report", error);
@@ -300,6 +342,24 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
           <aside className="h-fit rounded-xl border border-vin-border bg-vin-panel p-4">
             <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-vin-text2">Tác vụ</h3>
             <div className="space-y-2">
+              <div className="mb-4">
+                <label className="mb-1 block text-xs font-semibold text-vin-text2">Mẫu in</label>
+                <select
+                  value={selectedPrintTemplateId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setSelectedPrintTemplateId(id);
+                    const tpl = printTemplates.find(t => t.id === id);
+                    if (tpl?.htmlContent) setTemplateHtml(tpl.htmlContent);
+                  }}
+                  className="w-full rounded-md border border-vin-border bg-vin-shell px-2 py-1.5 text-xs text-vin-text outline-none transition focus:border-vin-accent"
+                >
+                  {printTemplates.map(t => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
+                  {printTemplates.length === 0 && <option value="">Mặc định (System)</option>}
+                </select>
+              </div>
               <button
                 onClick={() => handlePrint()}
                 className="flex w-full items-center justify-center gap-2 rounded-lg border border-vin-border bg-vin-shell px-4 py-2 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white"
@@ -308,7 +368,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
                 In phiếu
               </button>
               <button
-                onClick={() => handleSave("DRAFTING")}
+                onClick={() => handleSave("DRAFT")}
                 disabled={isSaving}
                 className="flex w-full items-center justify-center gap-2 rounded-lg border border-vin-border bg-vin-shell px-4 py-2 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -316,7 +376,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
                 Lưu nháp
               </button>
               <button
-                onClick={() => handleSave("COMPLETED")}
+                onClick={() => handleSave("FINAL")}
                 disabled={isSaving}
                 className="flex w-full items-center justify-center gap-2 rounded-lg border-0 bg-vin-accent px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
               >

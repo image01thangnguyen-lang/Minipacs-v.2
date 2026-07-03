@@ -51,7 +51,7 @@ export type ArchiveReportDetail = ArchiveStudyRow & {
   }>;
 };
 
-export const finalReportStatuses = ["FINAL", "COMPLETED"] as const;
+export const finalReportStatuses = ["FINAL"] as const;
 
 export const archiveStudyStatuses = [
   "FINALIZED",

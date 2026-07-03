@@ -80,7 +80,7 @@ Tai lieu nay gom inventory tinh nang VRPACS va tinh trang MiniPACS hien tai. Day
 | VIEW-008 | Viewer history | Prior studies/history | partial | history endpoint/panel | Compare current/prior layout | 4 | P2 | medium |
 | VIEW-009 | Viewer tags | DICOM tag browser | implemented | `TagBrowser` ready | Overlay tag toggle | 4 | P2 | low |
 | VIEW-010 | Viewer export | Download manager/export | missing/partial | OHIF viewport download only | Job-based manager | 4,8 | P1 | high |
-| VIEW-011 | Viewer anonymize | Encode/anonymize patient | missing | registry guarded | Export/display anonymize mode | 4,8 | P1 | high |
+| VIEW-011 | Viewer encode | Ma hoa thong tin nguoi benh (display mask) | missing | registry guarded | Display mask mode in viewer, khac anonymize export | 4,8 | P1 | high |
 | VIEW-ADV-001 | Viewer advanced | MPR/MIP/VR/3D | partial/deferred | MPR/MIP services exist but advanced parity not stable | Phase 5 eligibility/controls | 5 | P1 | high |
 | VIEW-ADV-002 | Viewer specialty | NASCET, mammo, cardio, brain mirror | missing/deferred | registry deferred | Custom tools, modality guard | 5 | P2 | high |
 | NONDICOM-001 | Non-DICOM | Non-DICOM queue | missing | No module | Route/queue/status | 6 | P1 | high |
@@ -117,12 +117,14 @@ Tai lieu nay gom inventory tinh nang VRPACS va tinh trang MiniPACS hien tai. Day
 | Viewer artifacts | `ViewerMeasurement`, `ViewerKeyImage`, `ViewerSnapshot`, viewer APIs |
 | Statistics | `dashboard/app/statistics/**`, `PacsHealthSnapshot`, `OperationalAlert` |
 
-## 6. Items can validation
+## 6. Resolved items (2026-07-03)
 
-- Exact VRPACS `approve` vs MiniPACS `finalize` semantics.
-- Whether `cancel form` means order cancel, report draft cancel, or final report cancel.
-- HIS payload fields and order code/accession mapping.
+- VRPACS `approve` = `finalize report`. 1-step (specialist) hoac 2-step (non-specialist + reviewer).
+- `cancel form` = cancel order VA cancel report draft (ca hai).
+- HIS order code = accession number. Canonical: `accessionNumber`.
+- `encode patient` = ma hoa thong tin BN tren man hinh (display mask), khac anonymize export.
+
+## 7. Remaining validation items
+
 - Non-DICOM media storage policy and retention.
-- Actual expected behavior of `encode patient` in VRPACS Viewer.
 - Which native workstation features are truly required in deployment.
-
