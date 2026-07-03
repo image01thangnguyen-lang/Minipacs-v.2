@@ -74,6 +74,12 @@ model Report {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+    // Phase 2 HIS Integration
+  hisResultStatus    String?
+  hisResultSentAt    DateTime?
+  hisResultMessageId String?
+  hisResultError     String?
+
   @@map("reports")
 }
 
@@ -97,7 +103,9 @@ model User {
   // Relation back to reports
   reports             Report[]             @relation("DoctorReports")
   doctorProfile       DoctorProfile?
+  auditLogs           AuditLog[]
   reportTemplateTexts ReportTemplateText[] @relation("ReportTemplateOwner")
+  machinePermissions  DoctorMachinePermission[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -145,9 +153,31 @@ model PrintTemplate {
   htmlContent String  @db.Text
   isDefault   Boolean @default(false)
 
+  // Phase 3 additions
+  code               String?  @unique
+  description        String?
+  modality           String?
+  bodyPart           String?
+  facilityId         String?
+  facility           FacilityUnit?     @relation(fields: [facilityId], references: [id])
+  procedureCatalogId String?
+  procedure          ProcedureCatalog? @relation(fields: [procedureCatalogId], references: [id])
+  dicomNodeId        String?
+  dicomNode          DicomNode?        @relation(fields: [dicomNodeId], references: [id])
+  paperSize          String?
+  orientation        String?
+  isActive           Boolean  @default(true)
+  sortOrder          Int      @default(0)
+  metadataJson       String?  @db.Text
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  defaultForNodes DicomNode[] @relation("NodeDefaultPrintTemplate")
+
+  @@index([dicomNodeId])
+  @@index([procedureCatalogId])
+  @@index([facilityId])
   @@map("print_templates")
 }
 
@@ -167,6 +197,9 @@ model ReportTemplateText {
   owner          User?    @relation("ReportTemplateOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  procedureMappings ProcedureReportTemplateMapping[]
+  defaultForNodes   DicomNode[] @relation("NodeDefaultReportTemplate")
 
   @@index([modality])
   @@index([bodyPart])
@@ -241,6 +274,16 @@ model WorklistOrder {
   @@index([sourceFacility])
   @@index([procedureCode])
   @@index([paymentStatus])
+    // Phase 2 HIS Integration
+  hisOrderId        String?
+  hisPatientId      String?
+  hisVisitId        String?
+  hisDepartmentCode String?
+  hisSyncStatus     String?
+  hisLastSyncedAt   DateTime?
+  hisLastError      String?
+  hisPayloadJson    String?   @db.Text
+
   @@map("worklist_orders")
 }
 
@@ -305,6 +348,14 @@ model ImagingStudy {
   @@index([firstOpenedAt])
   @@index([finalizedAt])
   @@index([deliveredAt])
+    // Phase 2 HIS Integration
+  hisOrderId          String?
+  hisSyncStatus       String?
+  hisResultStatus     String?
+  hisLastSyncedAt     DateTime?
+  hisLastResultSentAt DateTime?
+  hisLastError        String?
+
   @@map("imaging_studies")
 }
 
@@ -498,8 +549,31 @@ model ProcedureCatalog {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Phase 3 additions
+  serviceTypeId          String?
+  serviceType            ServiceTypeCatalog? @relation(fields: [serviceTypeId], references: [id])
+  description            String?
+  defaultDurationMinutes Int?
+  defaultPriority        String?
+  defaultRoom            String?
+  hisCode                String?
+  insuranceCode          String?
+  requiresContrast       Boolean @default(false)
+  isNonDicomEligible     Boolean @default(false)
+  sortOrder              Int     @default(0)
+
+  icdMappings            ProcedureIcdMapping[]
+  reportTemplateMappings ProcedureReportTemplateMapping[]
+  machineMappings        MachineProcedureMapping[]
+  defaultForNodes        DicomNode[] @relation("NodeDefaultProcedure")
+  printTemplates         PrintTemplate[]
+  
+  @@index([serviceTypeId])
   @@index([modality])
   @@index([isActive])
+  @@index([hisCode])
+  @@index([insuranceCode])
+  @@index([modality, bodyPart])
   @@map("procedure_catalog")
 }
 
@@ -530,6 +604,8 @@ model AuditLog {
   ipAddress    String?
   createdAt    DateTime @default(now())
 
+  actor        User?    @relation(fields: [actorUserId], references: [id])
+
   @@index([actorUserId])
   @@index([entityType, entityId])
   @@index([createdAt])
@@ -553,6 +629,36 @@ model DicomNode {
   createdAt       DateTime             @default(now())
   updatedAt       DateTime             @updatedAt
 
+  // Phase 3 additions
+  facilityId                  String?
+  facility                    FacilityUnit?       @relation(fields: [facilityId], references: [id])
+  defaultFolderId             String?
+  defaultFolder               StorageFolderConfig? @relation("NodeDefaultFolder", fields: [defaultFolderId], references: [id], onDelete: SetNull)
+  defaultShareFolderId        String?
+  defaultShareFolder          StorageFolderConfig? @relation("NodeDefaultShareFolder", fields: [defaultShareFolderId], references: [id], onDelete: SetNull)
+  defaultUploadFolderId       String?
+  defaultUploadFolder         StorageFolderConfig? @relation("NodeDefaultUploadFolder", fields: [defaultUploadFolderId], references: [id], onDelete: SetNull)
+  defaultProcedureCatalogId   String?
+  defaultProcedure            ProcedureCatalog?   @relation("NodeDefaultProcedure", fields: [defaultProcedureCatalogId], references: [id])
+  defaultPrintTemplateId      String?
+  defaultPrintTemplate        PrintTemplate?      @relation("NodeDefaultPrintTemplate", fields: [defaultPrintTemplateId], references: [id])
+  defaultReportTemplateTextId String?
+  defaultReportTemplate       ReportTemplateText? @relation("NodeDefaultReportTemplate", fields: [defaultReportTemplateTextId], references: [id])
+  serviceTypeId               String?
+  serviceType                 ServiceTypeCatalog? @relation(fields: [serviceTypeId], references: [id])
+  isNonDicom                  Boolean @default(false)
+  metadataJson                String? @db.Text
+
+  machineMappings             MachineProcedureMapping[]
+  doctorPermissions           DoctorMachinePermission[]
+  reportTemplateMappings      ProcedureReportTemplateMapping[]
+  printTemplates              PrintTemplate[]
+
+  @@index([facilityId])
+  @@index([defaultFolderId])
+  @@index([defaultShareFolderId])
+  @@index([defaultUploadFolderId])
+  @@index([serviceTypeId])
   @@index([aeTitle])
   @@map("dicom_nodes")
 }
@@ -655,5 +761,216 @@ model ViewerMeasurement {
   @@index([toolName])
   @@index([createdAt])
   @@map("viewer_measurements")
+}
+
+
+model ServiceTypeCatalog {
+  id              String   @id @default(uuid())
+  code            String   @unique
+  name            String
+  description     String?
+  defaultModality String?
+  sortOrder       Int      @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  procedures ProcedureCatalog[]
+  dicomNodes DicomNode[]
+
+  @@map("service_type_catalog")
+}
+
+model IcdCatalog {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  chapter     String?
+  groupCode   String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  procedureMappings      ProcedureIcdMapping[]
+  reportTemplateMappings ProcedureReportTemplateMapping[]
+
+  @@map("icd_catalog")
+}
+
+model ProcedureIcdMapping {
+  id                 String   @id @default(uuid())
+  procedureCatalogId String
+  icdCatalogId       String
+  isDefault          Boolean  @default(false)
+  sortOrder          Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  procedure ProcedureCatalog @relation(fields: [procedureCatalogId], references: [id], onDelete: Cascade)
+  icd       IcdCatalog       @relation(fields: [icdCatalogId], references: [id], onDelete: Cascade)
+
+  @@unique([procedureCatalogId, icdCatalogId])
+  @@index([procedureCatalogId])
+  @@index([icdCatalogId])
+  @@map("procedure_icd_mapping")
+}
+
+model ProcedureReportTemplateMapping {
+  id                   String   @id @default(uuid())
+  procedureCatalogId   String?
+  reportTemplateTextId String
+  icdCatalogId         String?
+  dicomNodeId          String?
+  facilityId           String?
+  scope                String   @default("GLOBAL")
+  priority             Int      @default(0)
+  isDefault            Boolean  @default(false)
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  procedure      ProcedureCatalog?  @relation(fields: [procedureCatalogId], references: [id], onDelete: Cascade)
+  reportTemplate ReportTemplateText @relation(fields: [reportTemplateTextId], references: [id], onDelete: Cascade)
+  icd            IcdCatalog?        @relation(fields: [icdCatalogId], references: [id], onDelete: Cascade)
+  dicomNode      DicomNode?         @relation(fields: [dicomNodeId], references: [id], onDelete: Cascade)
+  facility       FacilityUnit?      @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@index([procedureCatalogId])
+  @@index([reportTemplateTextId])
+  @@index([icdCatalogId])
+  @@index([dicomNodeId])
+  @@index([facilityId])
+  @@map("procedure_report_template_mapping")
+}
+
+model FacilityUnit {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  name      String
+  type      String
+  parentId  String?
+  address   String?
+  phone     String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent FacilityUnit?  @relation("FacilityHierarchy", fields: [parentId], references: [id])
+  children FacilityUnit[] @relation("FacilityHierarchy")
+
+  printTemplates         PrintTemplate[]
+  dicomNodes             DicomNode[]
+  storageConfigs         StorageFolderConfig[]
+  reportTemplateMappings ProcedureReportTemplateMapping[]
+
+  @@index([parentId])
+  @@map("facility_units")
+}
+
+model StorageFolderConfig {
+  id               String   @id @default(uuid())
+  code             String   @unique
+  name             String
+  type             String
+  path             String
+  facilityId       String?
+  isActive         Boolean  @default(true)
+  lastCheckStatus  String?
+  lastCheckMessage String?
+  lastCheckAt      DateTime?
+  metadataJson     String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  facility FacilityUnit? @relation(fields: [facilityId], references: [id])
+  defaultForNodes         DicomNode[] @relation("NodeDefaultFolder")
+  defaultShareForNodes    DicomNode[] @relation("NodeDefaultShareFolder")
+  defaultUploadForNodes   DicomNode[] @relation("NodeDefaultUploadFolder")
+
+  @@index([facilityId])
+  @@map("storage_folder_configs")
+}
+
+model MachineProcedureMapping {
+  id                 String   @id @default(uuid())
+  dicomNodeId        String
+  procedureCatalogId String
+  isDefault          Boolean  @default(false)
+  isActive           Boolean  @default(true)
+  sortOrder          Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  dicomNode DicomNode        @relation(fields: [dicomNodeId], references: [id], onDelete: Cascade)
+  procedure ProcedureCatalog @relation(fields: [procedureCatalogId], references: [id], onDelete: Cascade)
+
+  @@unique([dicomNodeId, procedureCatalogId])
+  @@index([dicomNodeId])
+  @@index([procedureCatalogId])
+  @@map("machine_procedure_mapping")
+}
+
+model DoctorMachinePermission {
+  id              String   @id @default(uuid())
+  doctorId        String
+  dicomNodeId     String
+  actionKey       String
+  allow           Boolean
+  reason          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  updatedByUserId String?
+
+  doctor    User      @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  dicomNode DicomNode @relation(fields: [dicomNodeId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, dicomNodeId, actionKey])
+  @@index([doctorId])
+  @@index([dicomNodeId])
+  @@map("doctor_machine_permissions")
+}
+
+model SupplyCatalog {
+  id           String   @id @default(uuid())
+  code         String   @unique
+  name         String
+  unit         String?
+  description  String?
+  defaultPrice Decimal? @db.Decimal(12, 2)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("supply_catalog")
+}
+
+
+model HisSyncLog {
+  id                  String   @id @default(uuid())
+  direction           String
+  action              String
+  status              String
+  entityType          String
+  entityId            String?
+  studyInstanceUid    String?
+  accessionNumber     String?
+  hisOrderId          String?
+  hisMessageId        String?
+  requestSummaryJson  String?  @db.Text
+  responseSummaryJson String?  @db.Text
+  errorCode           String?
+  errorMessage        String?  @db.Text
+  actorUserId         String?
+  createdAt           DateTime @default(now())
+
+  @@index([status])
+  @@index([action])
+  @@index([studyInstanceUid])
+  @@index([accessionNumber])
+  @@index([hisOrderId])
+  @@index([createdAt])
+  @@map("his_sync_logs")
 }
 

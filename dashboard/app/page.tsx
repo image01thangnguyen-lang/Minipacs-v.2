@@ -509,6 +509,7 @@ export default function DashboardPage() {
 
       let nextStudyStatus = "READING";
       let nextReportStatus = "DRAFT";
+      let nextHisResultStatus: string | undefined = undefined;
 
       if (status === "FINAL") {
         const finalResult = await finalizeReport(uid);
@@ -519,6 +520,7 @@ export default function DashboardPage() {
         }
         nextStudyStatus = finalResult.workflowStatus || "FINALIZED";
         nextReportStatus = finalResult.reportStatus || "FINAL";
+        nextHisResultStatus = finalResult.hisResultStatus;
       }
 
       setStudyStatus(nextStudyStatus);
@@ -526,7 +528,7 @@ export default function DashboardPage() {
       setStudies(current =>
         current.map(study => (
           study.MainDicomTags?.StudyInstanceUID === uid
-            ? { ...study, WorkflowStatus: nextStudyStatus, ReportStatus: nextReportStatus }
+            ? { ...study, WorkflowStatus: nextStudyStatus, ReportStatus: nextReportStatus, hisResultStatus: nextHisResultStatus || study.hisResultStatus }
             : study
         ))
       );
@@ -735,6 +737,20 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-2 py-2 text-center">
                         <RisStatusBadge status={study.WorkflowStatus} />
+                        {(study.hisSyncStatus || study.hisResultStatus) && (
+                          <div className="mt-1 flex flex-col gap-0.5 text-[9px] font-semibold">
+                            {study.hisSyncStatus && (
+                              <span className={study.hisSyncStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}>
+                                HIS Sync: {study.hisSyncStatus}
+                              </span>
+                            )}
+                            {study.hisResultStatus && (
+                              <span className={study.hisResultStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}>
+                                HIS Result: {study.hisResultStatus}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="whitespace-nowrap px-2 py-2 font-mono text-vin-text2">
                         {fmtDateTime(main.StudyDate, main.StudyTime)}

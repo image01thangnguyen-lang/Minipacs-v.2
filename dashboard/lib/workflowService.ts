@@ -5,10 +5,12 @@ import { setStudyStatus, claimStudyLock } from "@/lib/studyStatus";
 import { auth } from "@/auth";
 import { hasPermission, type PermissionKey } from "@/lib/permissions";
 import { revalidatePath } from "next/cache";
+import { sendReportToHis } from "@/lib/his/hisSyncService";
+import { canPerformMachineAction, resolveDicomNodeIdByAETitle, type MachineActionKey } from "@/lib/authz/machine-permissions";
 
 // ─── Types ──────────────────────────────────────────────────────
 
-type WorkflowResult = { success: true } | { success: false; error: string };
+type WorkflowResult = { success: true; hisResultStatus?: string } | { success: false; error: string };
 
 type SaveDraftInput = {
   findings?: string;
@@ -49,6 +51,24 @@ async function requirePerm(permission: PermissionKey) {
   return user;
 }
 
+async function requireMachinePerm(permission: PermissionKey, actionKey: MachineActionKey, studyInstanceUid: string) {
+  const user = await requirePerm(permission);
+  
+  const study = await prisma.imagingStudy.findUnique({
+    where: { studyInstanceUid },
+    select: { stationAeTitle: true }
+  });
+  
+  if (study) {
+    const dicomNodeId = await resolveDicomNodeIdByAETitle(study.stationAeTitle);
+    const allowed = await canPerformMachineAction(user as any, dicomNodeId, actionKey);
+    if (!allowed) {
+      throw new Error(`Bạn không có quyền thực hiện hành động này trên thiết bị phát sinh ca chụp.`);
+    }
+  }
+  return user;
+}
+
 async function createAuditLog(params: {
   actorUserId: string;
   action: string;
@@ -80,7 +100,7 @@ export async function assignStudyDoctor(
   doctorId: string
 ): Promise<WorkflowResult> {
   try {
-    const actor = await requirePerm("studies.assign");
+    const actor = await requireMachinePerm("studies.assign", "ASSIGN_CASE", studyInstanceUid);
 
     const study = await prisma.imagingStudy.findUnique({
       where: { studyInstanceUid },
@@ -125,7 +145,7 @@ export async function startReading(
   studyInstanceUid: string
 ): Promise<WorkflowResult> {
   try {
-    const actor = await requirePerm("reports.write");
+    const actor = await requireMachinePerm("reports.write", "DRAFT_REPORT", studyInstanceUid);
     const result = await claimStudyLock(studyInstanceUid, actor.id);
 
     if (!result.success) {
@@ -149,7 +169,7 @@ export async function updateClinicalInfo(
   input: ClinicalInfoInput
 ): Promise<WorkflowResult> {
   try {
-    const actor = await requirePerm("studies.updateClinical");
+    const actor = await requireMachinePerm("studies.updateClinical", "EDIT_CLINICAL", studyInstanceUid);
 
     const study = await prisma.imagingStudy.findUnique({
       where: { studyInstanceUid },
@@ -212,7 +232,7 @@ export async function addOrUpdateIndication(
   input: IndicationInput
 ): Promise<WorkflowResult> {
   try {
-    const actor = await requirePerm("studies.updateClinical");
+    const actor = await requireMachinePerm("studies.updateClinical", "EDIT_CLINICAL", studyInstanceUid);
 
     const study = await prisma.imagingStudy.findUnique({
       where: { studyInstanceUid },
@@ -266,7 +286,7 @@ export async function saveReportDraft(
   input: SaveDraftInput
 ): Promise<WorkflowResult & { reportId?: string }> {
   try {
-    const actor = await requirePerm("reports.write");
+    const actor = await requireMachinePerm("reports.write", "DRAFT_REPORT", studyInstanceUid);
 
     const existing = await prisma.report.findUnique({
       where: { studyInstanceUid },
@@ -358,7 +378,7 @@ export async function finalizeReport(
   studyInstanceUid: string
 ): Promise<WorkflowResult & { reportStatus?: string, workflowStatus?: string }> {
   try {
-    const actor = await requirePerm("reports.finalize");
+    const actor = await requireMachinePerm("reports.finalize", "SIGN_REPORT", studyInstanceUid);
 
     const report = await prisma.report.findUnique({
       where: { studyInstanceUid },
@@ -406,7 +426,18 @@ export async function finalizeReport(
       
       revalidatePath(`/report/${studyInstanceUid}`);
       revalidatePath("/");
-      return { success: true, reportStatus: "FINAL", workflowStatus: "FINALIZED" };
+
+      // HIS sync (awaited, errors caught — not fire-and-forget)
+      let hisResultStatus = "PENDING";
+      try {
+        const hisRes = await sendReportToHis(studyInstanceUid, actor.id);
+        hisResultStatus = hisRes.status;
+      } catch (hisErr) {
+        console.error("HIS send after finalize failed:", hisErr);
+        hisResultStatus = "FAILED";
+      }
+
+      return { success: true, reportStatus: "FINAL", workflowStatus: "FINALIZED", hisResultStatus };
     } else {
       // 2-step: DRAFT → PENDING_APPROVAL
       await prisma.report.update({
@@ -443,7 +474,7 @@ export async function approveReport(
   studyInstanceUid: string
 ): Promise<WorkflowResult> {
   try {
-    const actor = await requirePerm("reports.finalize");
+    const actor = await requireMachinePerm("reports.finalize", "APPROVE_REPORT", studyInstanceUid);
 
     // Must be a signing doctor
     const doctorProfile = await prisma.doctorProfile.findUnique({
@@ -490,7 +521,18 @@ export async function approveReport(
 
     revalidatePath(`/report/${studyInstanceUid}`);
     revalidatePath("/");
-    return { success: true };
+
+    // HIS sync (awaited, errors caught — not fire-and-forget)
+    let hisResultStatus = "PENDING";
+    try {
+      const hisRes = await sendReportToHis(studyInstanceUid, actor.id);
+      hisResultStatus = hisRes.status;
+    } catch (hisErr) {
+      console.error("HIS send after approve failed:", hisErr);
+      hisResultStatus = "FAILED";
+    }
+
+    return { success: true, hisResultStatus };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
@@ -510,7 +552,7 @@ export async function cancelReportDraft(
       return { success: false, error: "Cần nhập lý do hủy phiếu." };
     }
 
-    const actor = await requirePerm("reports.cancelDraft");
+    const actor = await requireMachinePerm("reports.cancelDraft", "CANCEL_DRAFT", studyInstanceUid);
 
     const report = await prisma.report.findUnique({
       where: { studyInstanceUid },
@@ -570,7 +612,7 @@ export async function unfinalizeReport(
       return { success: false, error: "Cần nhập lý do hủy duyệt." };
     }
 
-    const actor = await requirePerm("reports.unfinalize");
+    const actor = await requireMachinePerm("reports.unfinalize", "UNFINALIZE_REPORT", studyInstanceUid);
 
     const report = await prisma.report.findUnique({
       where: { studyInstanceUid },
@@ -606,8 +648,21 @@ export async function unfinalizeReport(
         status: "DRAFT",
         reopenReason: reason.trim(),
         finalizedAt: null,
+        hisResultStatus: null,
+        hisResultError: null,
       },
     });
+
+    if (report.imagingStudyId) {
+      await prisma.imagingStudy.update({
+        where: { id: report.imagingStudyId },
+        data: {
+          hisResultStatus: null,
+          hisLastError: null,
+          hisLastResultSentAt: null,
+        },
+      });
+    }
 
     // Transition study back to READING
     await setStudyStatus(studyInstanceUid, "READING", {
@@ -645,7 +700,7 @@ export async function markDelivered(
   studyInstanceUid: string
 ): Promise<WorkflowResult> {
   try {
-    const actor = await requirePerm("archive.deliver");
+    const actor = await requireMachinePerm("archive.deliver", "DELIVER_RESULT", studyInstanceUid);
 
     const study = await prisma.imagingStudy.findUnique({
       where: { studyInstanceUid },

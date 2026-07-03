@@ -23,6 +23,7 @@ import {
   createUserAction,
   getRoleProfilesForAdmin,
   getUsersForAdmin,
+  importUsersDryRunAction,
   updateRoleProfileAction,
   updateUserAction,
 } from "./actions";
@@ -63,7 +64,7 @@ type UserRow = {
 };
 
 type ActiveTab = "users" | "roles";
-type Mode = "view" | "createUser" | "createRole";
+type Mode = "view" | "createUser" | "createRole" | "importUsers";
 
 function StatusBadge({ active }: { active: boolean }) {
   return (
@@ -228,6 +229,7 @@ export default function UserManagementPage() {
   const [createRoleFormKey, setCreateRoleFormKey] = useState(0);
   const [createRoleProfileId, setCreateRoleProfileId] = useState("");
   const [editRoleProfileId, setEditRoleProfileId] = useState("");
+  const [importResults, setImportResults] = useState<{successCount: number; errorCount: number; results: any[]} | null>(null);
 
   const loadData = async () => {
     try {
@@ -365,8 +367,26 @@ export default function UserManagementPage() {
     }
   };
 
+  const handleImportSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSaving(true);
+    setErrorMessage("");
+    setImportResults(null);
+    try {
+      const formData = new FormData(event.currentTarget);
+      const res = await importUsersDryRunAction(formData);
+      setImportResults(res);
+    } catch (error: any) {
+      console.error(error);
+      setErrorMessage(error.message || "Lỗi kiểm tra file import.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const showUserCreate = mode === "createUser";
   const showRoleCreate = mode === "createRole";
+  const showImportUsers = mode === "importUsers";
   const createUserIsDoctor = selectedCreateRoleProfile?.baseRole === "DOCTOR";
   const editUserIsDoctor = selectedEditRoleProfile?.baseRole === "DOCTOR";
 
@@ -417,25 +437,38 @@ export default function UserManagementPage() {
                 </button>
               </div>
             </div>
-            <button
-              onClick={() => {
-                setErrorMessage("");
-                if (activeTab === "users") {
-                  setMode("createUser");
-                  setSelectedUserId(null);
-                  setCreateFormKey(key => key + 1);
-                  setCreateRoleProfileId(defaultRoleProfileId);
-                } else {
-                  setMode("createRole");
-                  setSelectedRoleId(null);
-                  setCreateRoleFormKey(key => key + 1);
-                }
-              }}
-              className="flex items-center gap-1.5 rounded border-0 bg-vin-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-vin-accentHover"
-            >
-              {activeTab === "users" ? <UserPlus className="h-3.5 w-3.5" /> : <ShieldCheck className="h-3.5 w-3.5" />}
-              {activeTab === "users" ? "Tạo tài khoản" : "Tạo vai trò"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setErrorMessage("");
+                  setImportResults(null);
+                  setMode("importUsers");
+                }}
+                className="flex items-center gap-1.5 rounded border border-vin-border bg-vin-panel px-2.5 py-1 text-[11px] font-semibold text-vin-muted transition hover:text-white hover:bg-vin-panel2"
+              >
+                <Upload className="h-3.5 w-3.5" />
+                Import (Dry-run)
+              </button>
+              <button
+                onClick={() => {
+                  setErrorMessage("");
+                  if (activeTab === "users") {
+                    setMode("createUser");
+                    setSelectedUserId(null);
+                    setCreateFormKey(key => key + 1);
+                    setCreateRoleProfileId(defaultRoleProfileId);
+                  } else {
+                    setMode("createRole");
+                    setSelectedRoleId(null);
+                    setCreateRoleFormKey(key => key + 1);
+                  }
+                }}
+                className="flex items-center gap-1.5 rounded border-0 bg-vin-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-vin-accentHover"
+              >
+                {activeTab === "users" ? <UserPlus className="h-3.5 w-3.5" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+                {activeTab === "users" ? "Tạo tài khoản" : "Tạo vai trò"}
+              </button>
+            </div>
           </div>
 
           <div className="relative">
@@ -725,6 +758,66 @@ export default function UserManagementPage() {
                 Tạo vai trò
               </button>
             </form>
+          </React.Fragment>
+        ) : showImportUsers ? (
+          <React.Fragment>
+            <div className="flex-none border-b border-vin-border bg-vin-panel2 px-4 py-3">
+              <div className="flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-sm font-bold text-white">
+                  <Upload className="h-4 w-4 text-vin-accent" />
+                  Kiểm tra import tài khoản
+                </h2>
+                <button onClick={() => setMode("view")} className="rounded p-1 text-vin-muted transition hover:bg-vin-panel hover:text-white" title="Đóng">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <div className="min-h-0 flex-1 overflow-auto p-4 flex flex-col gap-4 scr-dark">
+              <form onSubmit={handleImportSubmit} className="space-y-4">
+                <div>
+                  <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">File CSV</label>
+                  <input name="file" type="file" accept=".csv" required className="block w-full text-xs text-vin-muted file:mr-2 file:rounded file:border-0 file:bg-vin-shell file:px-3 file:py-2 file:text-xs file:font-semibold file:text-vin-text2 hover:file:text-white" />
+                  <p className="mt-1 text-[10px] text-vin-muted">Cấu trúc: username, fullname, role (Mã role hoặc Tên role). Cần có dòng tiêu đề.</p>
+                </div>
+                <button type="submit" disabled={isSaving} className="flex items-center justify-center gap-2 rounded-lg border-0 bg-vin-accent px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40">
+                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                  Kiểm tra file (Dry run)
+                </button>
+              </form>
+              
+              {importResults && (
+                <div className="mt-4 border-t border-vin-border/50 pt-4">
+                  <div className="mb-3 flex items-center gap-4 text-sm font-bold">
+                    <span className="text-emerald-400">Hợp lệ: {importResults.successCount}</span>
+                    <span className="text-red-400">Lỗi: {importResults.errorCount}</span>
+                  </div>
+                  <table className="w-full text-left text-[11px]">
+                    <thead className="bg-vin-panel2 text-vin-muted border-b border-vin-border">
+                      <tr>
+                        <th className="py-1 px-2">Dòng</th>
+                        <th className="py-1 px-2">Username</th>
+                        <th className="py-1 px-2">Họ tên</th>
+                        <th className="py-1 px-2">Role</th>
+                        <th className="py-1 px-2">Trạng thái</th>
+                        <th className="py-1 px-2">Ghi chú</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-vin-border/40 text-vin-text2">
+                      {importResults.results.map((r, i) => (
+                        <tr key={i} className={r.status === "Lỗi" ? "bg-red-950/20" : ""}>
+                          <td className="py-1 px-2">{r.row}</td>
+                          <td className="py-1 px-2">{r.username}</td>
+                          <td className="py-1 px-2">{r.fullName}</td>
+                          <td className="py-1 px-2">{r.role}</td>
+                          <td className={`py-1 px-2 font-bold ${r.status === "Lỗi" ? "text-red-400" : "text-emerald-400"}`}>{r.status}</td>
+                          <td className="py-1 px-2">{r.message}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </React.Fragment>
         ) : activeTab === "users" && selectedUser ? (
           <>

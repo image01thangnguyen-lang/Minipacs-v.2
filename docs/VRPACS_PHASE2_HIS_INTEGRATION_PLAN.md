@@ -711,19 +711,19 @@ PR 2G:
 
 ## 18. Checklist ban giao Phase 2
 
-- [ ] `HisAdapter` interface da co.
-- [ ] `MockHisAdapter` da co.
-- [ ] Config `disabled/mock` da hoat dong.
-- [ ] Schema sync fields/log da co migration hoac note db push.
-- [ ] Update order from HIS action da co.
-- [ ] Send final report to HIS action da co.
-- [ ] Retry failed sync da co.
-- [ ] HIS status hien tren UI toi thieu.
-- [ ] Permission server-side da enforce.
-- [ ] Audit/log scrub da co.
-- [ ] Manual scenarios pass.
-- [ ] Docs cau hinh HIS da cap nhat.
-- [ ] Khong regression Phase 1 workflow.
+- [x] `HisAdapter` interface da co.
+- [x] `MockHisAdapter` da co.
+- [x] Config `disabled/mock` da hoat dong.
+- [x] Schema sync fields/log da co migration hoac note db push.
+- [x] Update order from HIS action da co.
+- [x] Send final report to HIS action da co.
+- [x] Retry failed sync da co.
+- [x] HIS status hien tren UI toi thieu.
+- [x] Permission server-side da enforce.
+- [x] Audit/log scrub da co.
+- [x] Manual scenarios pass.
+- [x] Docs cau hinh HIS da cap nhat.
+- [x] Khong regression Phase 1 workflow.
 
 ## 19. Prompt ban giao cho AI khac
 

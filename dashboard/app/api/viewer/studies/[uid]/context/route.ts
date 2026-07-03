@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/db';
 import { requireApiPermission } from '@/lib/api-auth';
+import { canPerformMachineAction, resolveDicomNodeIdByAETitle } from '@/lib/authz/machine-permissions';
 
 export async function GET(request: Request, { params }: { params: { uid: string } }) {
   const authz = await requireApiPermission('studies.read');
@@ -20,6 +21,12 @@ export async function GET(request: Request, { params }: { params: { uid: string 
 
     if (!study) {
       return NextResponse.json({ success: false, error: 'Study not found' }, { status: 404 });
+    }
+
+    const dicomNodeId = await resolveDicomNodeIdByAETitle(study.stationAeTitle);
+    const isAllowed = await canPerformMachineAction(authz.user as any, dicomNodeId, "READ_STUDY");
+    if (!isAllowed) {
+      return NextResponse.json({ success: false, error: 'Access Denied by Machine Permission Matrix' }, { status: 403 });
     }
 
     const previousStudyCount = await prisma.imagingStudy.count({

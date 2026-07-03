@@ -21,7 +21,8 @@ import {
   getNodesAction, 
   upsertNodeAction, 
   deleteNodeAction, 
-  pingNodeAction
+  pingNodeAction,
+  getNodeReferencesAction
 } from "./actions";
 import { dicomNodeSchema, type DicomNodeInput } from "./schema";
 
@@ -38,6 +39,16 @@ type DicomNodeView = {
   lastEchoStatus: string | null;
   lastEchoMessage: string | null;
   lastEchoAt: Date | null;
+  isNonDicom: boolean;
+  facility?: { id: string; name: string } | null;
+  facilityId?: string | null;
+  defaultFolderId?: string | null;
+  defaultShareFolderId?: string | null;
+  defaultUploadFolderId?: string | null;
+  defaultProcedureCatalogId?: string | null;
+  defaultPrintTemplateId?: string | null;
+  defaultReportTemplateTextId?: string | null;
+  serviceTypeId?: string | null;
 };
 
 export default function DicomNodesPage() {
@@ -48,6 +59,9 @@ export default function DicomNodesPage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [editingNode, setEditingNode] = useState<DicomNodeView | null>(null);
+  const [references, setReferences] = useState<any>({
+    facilities: [], procedures: [], storageFolders: [], shareFolders: [], uploadFolders: [], printTemplates: [], reportTemplates: [], serviceTypes: []
+  });
 
   const {
     register,
@@ -74,10 +88,14 @@ export default function DicomNodesPage() {
     setIsLoading(true);
     setError("");
     try {
-      const data = await getNodesAction();
+      const [data, refData] = await Promise.all([
+        getNodesAction(),
+        getNodeReferencesAction()
+      ]);
       setNodes(data);
+      setReferences(refData);
     } catch (err: any) {
-      setError("Không tải được danh sách máy chụp: " + err.message);
+      setError(err.message || "Lỗi tải danh sách máy chụp");
     } finally {
       setIsLoading(false);
     }
@@ -100,6 +118,15 @@ export default function DicomNodesPage() {
       room: node.room || "",
       isActive: node.isActive,
       orthancAlias: node.orthancAlias,
+      isNonDicom: node.isNonDicom,
+      facilityId: node.facilityId || undefined,
+      defaultFolderId: node.defaultFolderId || undefined,
+      defaultShareFolderId: node.defaultShareFolderId || undefined,
+      defaultUploadFolderId: node.defaultUploadFolderId || undefined,
+      defaultProcedureCatalogId: node.defaultProcedureCatalogId || undefined,
+      defaultPrintTemplateId: node.defaultPrintTemplateId || undefined,
+      defaultReportTemplateTextId: node.defaultReportTemplateTextId || undefined,
+      serviceTypeId: node.serviceTypeId || undefined,
     });
     setError("");
     setMessage("");
@@ -116,6 +143,15 @@ export default function DicomNodesPage() {
       room: "",
       isActive: true,
       orthancAlias: "",
+      isNonDicom: false,
+      facilityId: undefined,
+      defaultFolderId: undefined,
+      defaultShareFolderId: undefined,
+      defaultUploadFolderId: undefined,
+      defaultProcedureCatalogId: undefined,
+      defaultPrintTemplateId: undefined,
+      defaultReportTemplateTextId: undefined,
+      serviceTypeId: undefined,
     });
     setError("");
     setMessage("");
@@ -255,21 +291,39 @@ export default function DicomNodesPage() {
                         <div className="font-semibold text-white">{node.name}</div>
                         <div className="mt-1 flex items-center gap-1.5 font-mono text-[10px] text-vin-muted">
                           <span className="rounded bg-vin-panel px-1.5 py-0.5 border border-vin-border">{node.modality}</span>
-                          <span>{node.orthancAlias}</span>
+                          {!node.isNonDicom && <span>{node.orthancAlias}</span>}
                           {!node.isActive && (
                             <span className="rounded bg-red-500/20 px-1 text-red-300">Tắt</span>
                           )}
+                          {node.isNonDicom && (
+                            <span className="rounded bg-orange-500/20 px-1 text-orange-300">Non-DICOM</span>
+                          )}
                         </div>
+                        {node.facility && (
+                          <div className="mt-1 text-[10px] text-vin-muted flex items-center gap-1">
+                            <span className="font-semibold">{node.facility.name}</span>
+                          </div>
+                        )}
                       </td>
                       <td className="px-3 py-3 font-mono text-vin-text2">
-                        {node.ipAddress}:{node.port}
+                        {node.isNonDicom ? (
+                          <span className="italic text-vin-faint">Không áp dụng</span>
+                        ) : (
+                          <>{node.ipAddress}:{node.port}</>
+                        )}
                         <div className="mt-0.5 font-sans text-[10px] text-vin-muted">{node.room || "-"}</div>
                       </td>
                       <td className="px-3 py-3 text-center">
-                        <span className="font-mono font-bold text-vin-accent">{node.aeTitle}</span>
+                        {node.isNonDicom ? (
+                          <span className="text-[10px] italic text-vin-faint">-</span>
+                        ) : (
+                          <span className="font-mono font-bold text-vin-accent">{node.aeTitle}</span>
+                        )}
                       </td>
                       <td className="px-3 py-3 text-center">
-                        {node.lastEchoStatus === "OK" ? (
+                        {node.isNonDicom ? (
+                          <span className="text-[10px] italic text-vin-faint">-</span>
+                        ) : node.lastEchoStatus === "OK" ? (
                           <div className="flex flex-col items-center justify-center">
                             <span className="flex items-center gap-1 rounded bg-vin-status-approved-bg/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
                               <Wifi className="h-3 w-3" /> OK
@@ -290,14 +344,16 @@ export default function DicomNodesPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1.5">
-                          <button
-                            title="Kiểm tra kết nối (C-Echo)"
-                            disabled={isBusy}
-                            onClick={() => runPing(node.id)}
-                            className="flex h-7 w-7 items-center justify-center rounded border border-vin-border bg-vin-panel text-vin-accent transition hover:border-vin-accent hover:bg-vin-accent/10 disabled:opacity-40"
-                          >
-                            {isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Network className="h-3.5 w-3.5" />}
-                          </button>
+                          {!node.isNonDicom && (
+                            <button
+                              title="Kiểm tra kết nối (C-Echo)"
+                              disabled={isBusy}
+                              onClick={() => runPing(node.id)}
+                              className="flex h-7 w-7 items-center justify-center rounded border border-vin-border bg-vin-panel text-vin-accent transition hover:border-vin-accent hover:bg-vin-accent/10 disabled:opacity-40"
+                            >
+                              {isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Network className="h-3.5 w-3.5" />}
+                            </button>
+                          )}
                           <button
                             title="Sửa cấu hình"
                             disabled={isBusy}
@@ -420,6 +476,143 @@ export default function DicomNodesPage() {
                 )}
               />
             </Field>
+          </div>
+
+          <div className="mt-6 border-t border-vin-border pt-4">
+            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-vin-text2">Cấu hình Mở rộng (Phase 3)</h3>
+            
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <Field label="Loại thiết bị">
+                <Controller
+                  control={control}
+                  name="isNonDicom"
+                  render={({ field }) => (
+                    <CustomSelect
+                      options={[
+                        { value: "false", label: "DICOM (Chuẩn)" },
+                        { value: "true", label: "Non-DICOM (Nội soi, Siêu âm màu...)" },
+                      ]}
+                      value={field.value ? "true" : "false"}
+                      onChange={(val) => field.onChange(val === "true")}
+                    />
+                  )}
+                />
+              </Field>
+              <Field label="Cơ sở / Chi nhánh">
+                <Controller
+                  control={control}
+                  name="facilityId"
+                  render={({ field }) => (
+                    <CustomSelect
+                      options={[{ value: "", label: "-- Không gán --" }, ...references.facilities.map((f: any) => ({ value: f.id, label: f.name }))]}
+                      value={field.value || ""}
+                      onChange={(val) => field.onChange(val || undefined)}
+                      placeholder="Chọn cơ sở"
+                    />
+                  )}
+                />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              <Field label="Thư mục lưu ảnh">
+                <Controller
+                  control={control}
+                  name="defaultFolderId"
+                  render={({ field }) => (
+                    <CustomSelect
+                      options={[{ value: "", label: "-- Mặc định --" }, ...references.storageFolders.map((f: any) => ({ value: f.id, label: f.name }))]}
+                      value={field.value || ""}
+                      onChange={(val) => field.onChange(val || undefined)}
+                    />
+                  )}
+                />
+              </Field>
+              <Field label="Thư mục chia sẻ">
+                <Controller
+                  control={control}
+                  name="defaultShareFolderId"
+                  render={({ field }) => (
+                    <CustomSelect
+                      options={[{ value: "", label: "-- Mặc định --" }, ...references.shareFolders.map((f: any) => ({ value: f.id, label: f.name }))]}
+                      value={field.value || ""}
+                      onChange={(val) => field.onChange(val || undefined)}
+                    />
+                  )}
+                />
+              </Field>
+              <Field label="Thư mục tải lên">
+                <Controller
+                  control={control}
+                  name="defaultUploadFolderId"
+                  render={({ field }) => (
+                    <CustomSelect
+                      options={[{ value: "", label: "-- Mặc định --" }, ...references.uploadFolders.map((f: any) => ({ value: f.id, label: f.name }))]}
+                      value={field.value || ""}
+                      onChange={(val) => field.onChange(val || undefined)}
+                    />
+                  )}
+                />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <Field label="Dịch vụ Kỹ thuật">
+                <Controller
+                  control={control}
+                  name="serviceTypeId"
+                  render={({ field }) => (
+                    <CustomSelect
+                      options={[{ value: "", label: "-- Không gán --" }, ...references.serviceTypes.map((t: any) => ({ value: t.id, label: t.name }))]}
+                      value={field.value || ""}
+                      onChange={(val) => field.onChange(val || undefined)}
+                    />
+                  )}
+                />
+              </Field>
+              <Field label="Dịch vụ/Thủ thuật (Procedure)">
+                <Controller
+                  control={control}
+                  name="defaultProcedureCatalogId"
+                  render={({ field }) => (
+                    <CustomSelect
+                      options={[{ value: "", label: "-- Không gán --" }, ...references.procedures.map((t: any) => ({ value: t.id, label: t.name }))]}
+                      value={field.value || ""}
+                      onChange={(val) => field.onChange(val || undefined)}
+                    />
+                  )}
+                />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <Field label="Mẫu In mặc định">
+                <Controller
+                  control={control}
+                  name="defaultPrintTemplateId"
+                  render={({ field }) => (
+                    <CustomSelect
+                      options={[{ value: "", label: "-- Không gán --" }, ...references.printTemplates.map((t: any) => ({ value: t.id, label: t.name }))]}
+                      value={field.value || ""}
+                      onChange={(val) => field.onChange(val || undefined)}
+                    />
+                  )}
+                />
+              </Field>
+              <Field label="Mẫu Báo cáo mặc định">
+                <Controller
+                  control={control}
+                  name="defaultReportTemplateTextId"
+                  render={({ field }) => (
+                    <CustomSelect
+                      options={[{ value: "", label: "-- Không gán --" }, ...references.reportTemplates.map((t: any) => ({ value: t.id, label: t.name }))]}
+                      value={field.value || ""}
+                      onChange={(val) => field.onChange(val || undefined)}
+                    />
+                  )}
+                />
+              </Field>
+            </div>
           </div>
 
           <div className="flex justify-end pt-4">

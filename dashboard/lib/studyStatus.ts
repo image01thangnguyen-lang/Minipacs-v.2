@@ -514,6 +514,8 @@ export async function syncOrthancStudyToRis(study: OrthancStudy) {
     status: saved.status,
     reportStatus: report?.cancelledAt ? "CANCELLED" : (report?.status || null),
     orderStatus: order?.orderStatus || null,
+    hisSyncStatus: saved.hisSyncStatus || order?.hisSyncStatus || null,
+    hisResultStatus: saved.hisResultStatus || report?.hisResultStatus || null,
     clinicalInfo: saved.clinicalInfo,
     procedureCode: saved.procedureCode,
     procedureDescription: saved.procedureDescription,

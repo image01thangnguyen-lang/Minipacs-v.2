@@ -22,6 +22,14 @@ export const permissionKeys = [
   "templates.manage",
   "clinic.manage",
   "pacs.manage",
+  "his.read",
+  "his.sync",
+  "his.retry",
+  "his.manage",
+  "admin.catalogs",
+  "admin.facilities",
+  "admin.permissions",
+  "admin.storage",
 ] as const;
 
 export type PermissionKey = (typeof permissionKeys)[number];
@@ -59,6 +67,14 @@ export const permissionLabels: Record<PermissionKey, string> = {
   "templates.manage": "Quản lý mẫu báo cáo",
   "clinic.manage": "Cấu hình thông tin phòng khám",
   "pacs.manage": "Quản trị PACS/DICOM nodes",
+  "his.read": "Xem trạng thái đồng bộ HIS",
+  "his.sync": "Đồng bộ HIS",
+  "his.retry": "Thử lại đồng bộ HIS",
+  "his.manage": "Cấu hình HIS",
+  "admin.catalogs": "Quản lý danh mục",
+  "admin.facilities": "Quản lý phòng ban/cơ sở",
+  "admin.permissions": "Quản lý phân quyền chi tiết",
+  "admin.storage": "Quản lý lưu trữ/backup",
 };
 
 export const permissionGroups: Array<{ title: string; permissions: PermissionKey[] }> = [
@@ -72,7 +88,11 @@ export const permissionGroups: Array<{ title: string; permissions: PermissionKey
   },
   {
     title: "Quản trị & thống kê",
-    permissions: ["statistics.read", "statistics.doctorStats", "users.manage", "templates.manage", "clinic.manage", "pacs.manage"],
+    permissions: ["statistics.read", "statistics.doctorStats", "users.manage", "templates.manage", "clinic.manage", "pacs.manage", "admin.catalogs", "admin.facilities", "admin.permissions", "admin.storage"],
+  },
+  {
+    title: "Tích hợp HIS",
+    permissions: ["his.read", "his.sync", "his.retry", "his.manage"],
   },
 ];
 
@@ -96,6 +116,14 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "templates.manage",
     "clinic.manage",
     "pacs.manage",
+    "his.read",
+    "his.sync",
+    "his.retry",
+    "his.manage",
+    "admin.catalogs",
+    "admin.facilities",
+    "admin.permissions",
+    "admin.storage",
   ],
   DOCTOR: [
     "studies.read",
@@ -109,6 +137,9 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "statistics.read",
     "statistics.doctorStats",
     "templates.manage",
+    "his.read",
+    "his.sync",
+    "his.retry",
   ],
   TECHNICIAN: [
     "studies.read",
@@ -117,6 +148,9 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "worklist.manage",
     "archive.read",
     "statistics.read",
+    "his.read",
+    "his.sync",
+    "his.retry",
   ],
   RECEPTION: [
     "studies.read",
@@ -125,12 +159,19 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "archive.read",
     "archive.deliver",
     "statistics.read",
+    "his.read",
+    "his.sync",
+    "his.retry",
   ],
 };
 
 const permissionSet = new Set<string>(permissionKeys);
 
 const routePermissions: Array<{ prefix: string; permission: PermissionKey }> = [
+  { prefix: "/admin/catalogs", permission: "admin.catalogs" },
+  { prefix: "/admin/templates", permission: "admin.catalogs" },
+  { prefix: "/admin/permissions", permission: "admin.permissions" },
+  { prefix: "/admin/storage", permission: "admin.storage" },
   { prefix: "/admin/users", permission: "users.manage" },
   { prefix: "/admin/pacs", permission: "pacs.manage" },
   { prefix: "/settings/clinic-profile", permission: "clinic.manage" },

@@ -43,6 +43,8 @@ export async function getStudyDetails(studyInstanceUID: string) {
         ...studies[0],
         WorkflowStatus: workflow?.status || 'READY_TO_READ',
         OrderStatus: workflow?.orderStatus || null,
+        hisSyncStatus: workflow?.hisSyncStatus || null,
+        hisResultStatus: workflow?.hisResultStatus || null,
       };
     }
     return null;
@@ -88,7 +90,6 @@ export {
   unfinalizeReport
 };
 
-
 export async function getViewerArtifactsForReportAction(studyInstanceUid: string) {
   await requirePermission("reports.read");
   try {
@@ -119,12 +120,13 @@ export async function getDefaultTemplate(printTemplateId?: string) {
     }
 
     const template = await (prisma as any).printTemplate?.findFirst({
-      where: { isDefault: true },
+      where: { isDefault: true, isActive: true },
       orderBy: { createdAt: 'desc' },
     });
     if (template) return template.htmlContent;
 
     const anyTemplate = await (prisma as any).printTemplate?.findFirst({
+      where: { isActive: true },
       orderBy: { createdAt: 'desc' },
     });
     if (anyTemplate) return anyTemplate.htmlContent;
@@ -155,6 +157,7 @@ export async function getPrintTemplatesAction() {
   await requirePermission("reports.read");
   try {
     const templates = await prisma.printTemplate.findMany({
+      where: { isActive: true },
       select: { id: true, name: true, isDefault: true, htmlContent: true },
       orderBy: { createdAt: 'desc' }
     });

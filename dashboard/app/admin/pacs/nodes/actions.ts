@@ -13,8 +13,33 @@ async function requireAdminAccess() {
 export async function getNodesAction() {
   await requireAdminAccess();
   return prisma.dicomNode.findMany({
+    include: { facility: true },
     orderBy: { createdAt: "desc" },
   });
+}
+
+export async function getNodeReferencesAction() {
+  await requireAdminAccess();
+  const [
+    facilities,
+    procedures,
+    storageFolders,
+    shareFolders,
+    uploadFolders,
+    printTemplates,
+    reportTemplates,
+    serviceTypes
+  ] = await Promise.all([
+    prisma.facilityUnit.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } }),
+    prisma.procedureCatalog.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } }),
+    prisma.storageFolderConfig.findMany({ where: { isActive: true, type: "NORMAL" }, orderBy: { name: 'asc' } }),
+    prisma.storageFolderConfig.findMany({ where: { isActive: true, type: "SHARE" }, orderBy: { name: 'asc' } }),
+    prisma.storageFolderConfig.findMany({ where: { isActive: true, type: "UPLOAD" }, orderBy: { name: 'asc' } }),
+    prisma.printTemplate.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } }),
+    prisma.reportTemplateText.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } }),
+    prisma.serviceTypeCatalog.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } }),
+  ]);
+  return { facilities, procedures, storageFolders, shareFolders, uploadFolders, printTemplates, reportTemplates, serviceTypes };
 }
 
 export async function upsertNodeAction(data: DicomNodeInput) {
@@ -33,53 +58,65 @@ export async function upsertNodeAction(data: DicomNodeInput) {
       }
     }
 
-    // Call Orthanc API to set Modality
-    const config: DicomModalityConfig = {
-      AET: validData.aeTitle,
-      Host: validData.ipAddress,
-      Port: validData.port,
-      Manufacturer: "Generic",
-      AllowEcho: true,
-      AllowFind: true,
-      AllowMove: true,
-      AllowStore: true
-    };
+    const nodeAeTitle = validData.isNonDicom ? (validData.aeTitle || `NON_DICOM_${Date.now()}`) : validData.aeTitle!;
+    const nodeIpAddress = validData.isNonDicom ? (validData.ipAddress || "127.0.0.1") : validData.ipAddress!;
+    const nodePort = validData.isNonDicom ? (validData.port || 0) : validData.port!;
 
-    try {
-      await orthancClient.putModality(validData.orthancAlias, config);
-    } catch (orthancError: any) {
-      console.error("Orthanc putModality error:", orthancError);
-      return { 
-        success: false, 
-        error: `Không thể lưu cấu hình lên Orthanc: ${orthancError.message}. Hãy chắc chắn DicomModalitiesInDatabase được bật.` 
+    // Call Orthanc API to set Modality only if DICOM
+    if (!validData.isNonDicom) {
+      const config: DicomModalityConfig = {
+        AET: nodeAeTitle,
+        Host: nodeIpAddress,
+        Port: nodePort,
+        Manufacturer: "Generic",
+        AllowEcho: true,
+        AllowFind: true,
+        AllowMove: true,
+        AllowStore: true
       };
+
+      try {
+        await orthancClient.putModality(validData.orthancAlias, config);
+      } catch (orthancError: any) {
+        console.error("Orthanc putModality error:", orthancError);
+        return { 
+          success: false, 
+          error: `Không thể lưu cấu hình lên Orthanc: ${orthancError.message}. Hãy chắc chắn DicomModalitiesInDatabase được bật.` 
+        };
+      }
     }
+
+    const updateData = {
+      name: validData.name,
+      aeTitle: nodeAeTitle,
+      ipAddress: nodeIpAddress,
+      port: nodePort,
+      modality: validData.modality,
+      room: validData.room || null,
+      isActive: validData.isActive,
+      // Phase 3 additions
+      isNonDicom: validData.isNonDicom,
+      facilityId: validData.facilityId || null,
+      defaultFolderId: validData.defaultFolderId || null,
+      defaultShareFolderId: validData.defaultShareFolderId || null,
+      defaultUploadFolderId: validData.defaultUploadFolderId || null,
+      defaultProcedureCatalogId: validData.defaultProcedureCatalogId || null,
+      defaultPrintTemplateId: validData.defaultPrintTemplateId || null,
+      defaultReportTemplateTextId: validData.defaultReportTemplateTextId || null,
+      serviceTypeId: validData.serviceTypeId || null,
+    };
 
     // Save to DB
     let node;
     if (validData.id) {
       node = await prisma.dicomNode.update({
         where: { id: validData.id },
-        data: {
-          name: validData.name,
-          aeTitle: validData.aeTitle,
-          ipAddress: validData.ipAddress,
-          port: validData.port,
-          modality: validData.modality,
-          room: validData.room || null,
-          isActive: validData.isActive,
-        }
+        data: updateData
       });
     } else {
       node = await prisma.dicomNode.create({
         data: {
-          name: validData.name,
-          aeTitle: validData.aeTitle,
-          ipAddress: validData.ipAddress,
-          port: validData.port,
-          modality: validData.modality,
-          room: validData.room || null,
-          isActive: validData.isActive,
+          ...updateData,
           orthancAlias: validData.orthancAlias,
         }
       });
@@ -110,15 +147,20 @@ export async function deleteNodeAction(id: string) {
     const node = await prisma.dicomNode.findUnique({ where: { id } });
     if (!node) return { success: false, error: "Node không tồn tại." };
 
-    try {
-      await orthancClient.deleteModality(node.orthancAlias);
-    } catch (orthancError: any) {
-      console.error("Orthanc deleteModality error:", orthancError);
-      // We continue deleting from DB even if Orthanc fails, or maybe we shouldn't.
-      // Usually better to warn user but still allow cleanup.
+    // Only delete from Orthanc if it's a DICOM node
+    if (!node.isNonDicom) {
+      try {
+        await orthancClient.deleteModality(node.orthancAlias);
+      } catch (orthancError: any) {
+        console.error("Orthanc deleteModality error:", orthancError);
+      }
     }
 
-    await prisma.dicomNode.delete({ where: { id } });
+    // Soft delete instead of hard delete to preserve config relations
+    await prisma.dicomNode.update({ 
+      where: { id },
+      data: { isActive: false }
+    });
 
     await prisma.auditLog.create({
       data: {
@@ -126,7 +168,7 @@ export async function deleteNodeAction(id: string) {
         action: "DICOM_NODE_DELETED",
         entityType: "DicomNode",
         entityId: node.id,
-        message: `Đã xóa Dicom Node ${node.name} (${node.aeTitle})`,
+        message: `Đã vô hiệu hóa (soft-delete) Dicom Node ${node.name} (${node.aeTitle})`,
       }
     });
 

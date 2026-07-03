@@ -37,6 +37,7 @@ import {
   checkCanUpdateClinicalAction,
   getTechnologistsAction
 } from "./actions";
+import { updateOrderFromHisAction } from "../his/actions";
 import { updateClinicalInfoAction, addIndicationAction } from "@/app/actions";
 import { worklistSchema, type WorklistInput } from "./schema";
 
@@ -75,6 +76,8 @@ type WorklistOrderView = {
   studyStatus?: string | null;
   orthancStudyId?: string | null;
   studyInstanceUid?: string;
+  hisSyncStatus?: string | null;
+  hisOrderId?: string | null;
 };
 
 const orderStatusLabels: Record<string, string> = {
@@ -179,6 +182,7 @@ export default function WorklistPage() {
   const [clinicalModalMode, setClinicalModalMode] = useState<"CLINICAL_INFO" | "INDICATION">("CLINICAL_INFO");
   const [activeOrder, setActiveOrder] = useState<WorklistOrderView | null>(null);
   const [technologists, setTechnologists] = useState<{ id: string; name: string }[]>([]);
+  const [canSyncHis, setCanSyncHis] = useState(false);
 
   const defaultValues = useMemo<FormValues>(() => ({
     patientName: "",
@@ -240,6 +244,9 @@ export default function WorklistPage() {
         getTechnologistsAction().then(setTechnologists).catch(console.error);
       }
     }).catch(console.error);
+    import("../actions").then(m => m.getUserPermissionsAction()).then(res => {
+      setCanSyncHis(res.permissions.includes("his.sync"));
+    }).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -271,6 +278,25 @@ export default function WorklistPage() {
       setError(err?.message || "Lỗi kết nối khi tạo order.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const runHisSync = async (accessionNumber: string) => {
+    setBusyOrderId(accessionNumber); // using accession as id for busy state briefly
+    setError("");
+    setMessage("");
+    try {
+      const res = await updateOrderFromHisAction(accessionNumber);
+      if (res.success) {
+        setMessage(`Đã đồng bộ thông tin HIS cho ${accessionNumber}`);
+        await loadOrders();
+      } else {
+        setError(res.error || "Lỗi đồng bộ HIS");
+      }
+    } catch (err: any) {
+      setError(err?.message || "Lỗi kết nối HIS");
+    } finally {
+      setBusyOrderId("");
     }
   };
 
@@ -512,6 +538,11 @@ export default function WorklistPage() {
                             </span>
                           )}
                         </div>
+                        {order.hisSyncStatus && (
+                          <div className={`mt-1 text-[9px] font-semibold ${order.hisSyncStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}`}>
+                            HIS: {order.hisSyncStatus}
+                          </div>
+                        )}
                       </td>
                       <td className="px-2 py-2">
                         <div className="flex justify-end gap-1">
@@ -522,6 +553,15 @@ export default function WorklistPage() {
                               onClick={() => runOrderAction(order.id, "checkin")}
                             >
                               <UserCheck className="h-3.5 w-3.5" />
+                            </IconButton>
+                          )}
+                          {canSyncHis && (
+                            <IconButton
+                              title="Cập nhật từ HIS"
+                              disabled={isBusy}
+                              onClick={() => runHisSync(order.accessionNumber)}
+                            >
+                              <RefreshCcw className={`h-3.5 w-3.5 ${isBusy && busyOrderId === order.accessionNumber ? "animate-spin" : ""}`} />
                             </IconButton>
                           )}
                           {canMutate && (

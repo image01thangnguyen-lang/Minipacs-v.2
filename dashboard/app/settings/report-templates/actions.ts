@@ -5,6 +5,7 @@ import { prisma } from "@/app/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { hasPermission } from "@/lib/permissions";
+import { requirePermission } from "@/lib/authz";
 
 const allowedScopes = new Set(["GLOBAL", "PRIVATE"]);
 
@@ -261,3 +262,57 @@ export async function deleteReportTemplateTextAction(templateId: string) {
   revalidatePath("/settings/report-templates");
   return { success: true };
 }
+
+export async function resolveReportTemplate(studyInstanceUid: string) {
+  await requirePermission("reports.read");
+
+  try {
+    const study = await prisma.imagingStudy.findUnique({
+      where: { studyInstanceUid },
+      include: {
+        order: true,
+      }
+    });
+
+    if (!study) return null;
+
+    let procedureCode = study.order?.procedureCode || study.procedureCode;
+    let procedureId: string | undefined = undefined;
+
+    if (procedureCode) {
+      const proc = await prisma.procedureCatalog.findUnique({
+        where: { code: procedureCode }
+      });
+      if (proc) {
+        procedureId = proc.id;
+      }
+    }
+
+    // Resolve by Mapping
+    if (procedureId) {
+      const mapping = await prisma.procedureReportTemplateMapping.findFirst({
+        where: {
+          procedureCatalogId: procedureId,
+          isActive: true
+        },
+        orderBy: { priority: 'desc' },
+        include: { reportTemplate: true }
+      });
+      if (mapping?.reportTemplate?.isActive) return mapping.reportTemplate;
+    }
+
+    // Resolve by Modality Fallback
+    if (study.modality) {
+      const fallback = await prisma.reportTemplateText.findFirst({
+        where: { modality: study.modality, isNormal: true, isActive: true }
+      });
+      if (fallback) return fallback;
+    }
+
+    return null;
+  } catch (err) {
+    console.error("Failed to resolve report template:", err);
+    return null;
+  }
+}
+

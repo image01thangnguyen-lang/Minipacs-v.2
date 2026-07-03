@@ -385,6 +385,20 @@ export default function ArchivePage() {
                         <td className="px-3 py-3 text-center">
                           <span className={`inline-flex rounded px-2 py-0.5 text-[9px] font-bold ${statusClass(row.studyStatus)}`}>{studyStatusLabels[row.studyStatus] || row.studyStatus}</span>
                           {!row.canOpenViewer && <div className="mt-1 text-[10px] text-amber-200">Không mở ảnh</div>}
+                          {(row.hisSyncStatus || row.hisResultStatus) && (
+                            <div className="mt-1 flex flex-col gap-0.5 text-[9px] font-semibold">
+                              {row.hisSyncStatus && (
+                                <span className={row.hisSyncStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}>
+                                  HIS Sync: {row.hisSyncStatus}
+                                </span>
+                              )}
+                              {row.hisResultStatus && (
+                                <span className={row.hisResultStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}>
+                                  HIS Result: {row.hisResultStatus}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-right text-vin-text2">{formatDate(row.studyDate)}</td>
                       </tr>

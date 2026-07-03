@@ -183,6 +183,8 @@ function serializeArchiveRow(report: any): ArchiveStudyRow {
     doctorId: report.doctorId || "",
     canOpenViewer: Boolean(study?.orthancStudyId && studyStatus !== "DELETED_FROM_PACS"),
     imageWarning,
+    hisSyncStatus: study?.hisSyncStatus || study?.order?.hisSyncStatus || null,
+    hisResultStatus: study?.hisResultStatus || report.hisResultStatus || null,
   };
 }
 
@@ -319,7 +321,11 @@ export async function searchArchiveStudiesAction(filters: ArchiveSearchFilters =
   const reports = await prisma.report.findMany({
     where: buildArchiveWhere(filters),
     include: {
-      imagingStudy: true,
+      imagingStudy: {
+        include: {
+          order: true,
+        },
+      },
       doctor: true,
     },
     orderBy: [{ updatedAt: "desc" }],
@@ -337,6 +343,7 @@ export async function getArchiveReportAction(studyInstanceUid: string) {
     include: {
       imagingStudy: {
         include: {
+          order: true,
           statusHistory: {
             orderBy: { createdAt: "desc" },
             take: 20,

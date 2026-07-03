@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle, ChevronLeft, Loader2, Printer, Save } from "lucide-react";
+import { CheckCircle, ChevronLeft, Loader2, Printer, Save, RefreshCcw } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import TiptapEditor from "./components/TiptapEditor";
 import { PrintTemplateViewer } from "./components/PrintTemplateViewer";
 import { getDefaultTemplate, getReport, getStudyDetails, getPrintTemplatesAction } from "./actions";
+import { resolveReportTemplate } from "@/app/settings/report-templates/actions";
 import { saveReportAction } from "../../actions";
 import { logArchivePrintAction } from "@/app/archive/actions";
 import {
@@ -19,6 +20,8 @@ import {
 } from "@/app/components/ReportTemplatePicker";
 import { getClinicProfile } from "@/app/settings/clinic-profile/actions";
 import { getReportTemplateSuggestions } from "@/app/settings/report-templates/actions";
+import { sendReportToHisAction } from "../../his/actions";
+import { getUserPermissionsAction } from "../../actions";
 
 const formatPatientName = (name?: string) => (name ? name.replace(/\^/g, " ") : "Unknown Patient");
 
@@ -96,9 +99,12 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
   const [printTemplates, setPrintTemplates] = useState<{ id: string; name: string; isDefault: boolean; htmlContent: string }[]>([]);
   const [selectedPrintTemplateId, setSelectedPrintTemplateId] = useState<string>("");
   const [viewerLink, setViewerLink] = useState("");
+  const [canSyncHis, setCanSyncHis] = useState(false);
+  const [isHisSyncing, setIsHisSyncing] = useState(false);
 
   useEffect(() => {
     setViewerLink(`/viewer/minipacs?StudyInstanceUIDs=${encodeURIComponent(studyInstanceUid)}`);
+    getUserPermissionsAction().then(res => setCanSyncHis(res.permissions.includes("his.sync"))).catch(console.error);
   }, [studyInstanceUid]);
 
   useEffect(() => {
@@ -135,6 +141,18 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
           setDoctorPrintInfo(getDoctorPrintInfo(report));
           if (report.printTemplateId) {
             setSelectedPrintTemplateId(report.printTemplateId);
+          }
+        } else {
+          // If no existing report, try to resolve default template
+          try {
+            const resolvedTemplate = await resolveReportTemplate(studyInstanceUid);
+            if (resolvedTemplate) {
+              setFindings(resolvedTemplate.findings || "");
+              setConclusion(resolvedTemplate.conclusion || "");
+              setRecommendation(resolvedTemplate.recommendation || "");
+            }
+          } catch (e) {
+            console.error("Error resolving report template", e);
           }
         }
 
@@ -209,14 +227,37 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
       });
 
       if (result.success) {
-        const returnedReportStatus = (result as any).report?.status;
+        const returnedReport = (result as any).report;
+        const returnedReportStatus = returnedReport?.status;
         setStudyStatus(returnedReportStatus === "FINAL" ? "FINALIZED" : "READING");
-        if ((result as any).report) setDoctorPrintInfo(getDoctorPrintInfo((result as any).report));
+        if (returnedReport) {
+          setDoctorPrintInfo(getDoctorPrintInfo(returnedReport));
+          setPatientDetails((prev: any) => ({ ...prev, hisResultStatus: returnedReport.hisResultStatus }));
+        }
       }
     } catch (error) {
       console.error("Failed to save report", error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const runHisRetry = async () => {
+    setIsHisSyncing(true);
+    try {
+      const res = await sendReportToHisAction(studyInstanceUid);
+      if (res.success) {
+        alert("Đã gửi lại kết quả sang HIS thành công!");
+      } else {
+        alert(res.error || "Lỗi gửi kết quả sang HIS");
+      }
+      if ('status' in res && res.status && patientDetails) {
+        setPatientDetails((prev: any) => ({ ...prev, hisResultStatus: res.status }));
+      }
+    } catch (err: any) {
+      alert(err?.message || "Lỗi kết nối HIS");
+    } finally {
+      setIsHisSyncing(false);
     }
   };
 
@@ -263,6 +304,17 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
           </div>
 
           <div className="flex items-center gap-2">
+            {canSyncHis && (studyStatus === 'FINALIZED' || studyStatus === 'DELIVERED') && patientDetails?.hisResultStatus === 'FAILED' && (
+              <button
+                type="button"
+                onClick={runHisRetry}
+                disabled={isHisSyncing}
+                className="flex items-center gap-1.5 rounded-lg border border-red-500/50 bg-red-500/10 px-3 py-1.5 text-sm font-semibold text-red-400 transition hover:bg-red-500/20 disabled:opacity-40"
+              >
+                {isHisSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
+                Retry HIS
+              </button>
+            )}
             {viewerLink && (
               <a
                 href={viewerLink}

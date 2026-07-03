@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getSession, signOut } from "next-auth/react";
-import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X, User } from "lucide-react";
+import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X, User, Printer } from "lucide-react";
 import { hasPermission, type PermissionKey } from "@/lib/permissions";
 
-type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "clinic" | "pacs" | "storage";
+type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "printTemplates" | "clinic" | "pacs" | "storage" | "catalogs";
 
 const mainMenuItems = [
   { key: "studies", label: "Ca chụp", href: "/", icon: LayoutDashboard, permission: "studies.read" },
@@ -15,8 +15,10 @@ const mainMenuItems = [
   { key: "statistics", label: "Thống kê", href: "/statistics", icon: BarChart3, permission: "statistics.read" },
   { key: "users", label: "Người dùng", href: "/admin/users", icon: UserCog, permission: "users.manage" },
   { key: "templates", label: "Mẫu báo cáo", href: "/settings/report-templates", icon: FileText, permission: "templates.manage" },
+  { key: "printTemplates", label: "Mẫu in ấn", href: "/admin/templates", icon: Printer, permission: "admin.catalogs" },
   { key: "clinic", label: "Phòng khám", href: "/settings/clinic-profile", icon: Building2, permission: "clinic.manage" },
   { key: "pacs", label: "PACS / IT", href: "/admin/pacs/nodes", icon: Settings, permission: "pacs.manage" },
+  { key: "catalogs", label: "Danh mục", href: "/admin/catalogs", icon: FileText, permission: "admin.catalogs" },
 ] as const;
 
 const upcomingMenuItems = [

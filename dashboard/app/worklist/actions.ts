@@ -171,6 +171,8 @@ function serializeOrder(order: any) {
     studyStatus: study?.status || null,
     orthancStudyId: study?.orthancStudyId || null,
     studyInstanceUid: study?.studyInstanceUid || order.requestedStudyInstanceUid || "",
+    hisSyncStatus: order.hisSyncStatus || null,
+    hisOrderId: order.hisOrderId || null,
   };
 }
 

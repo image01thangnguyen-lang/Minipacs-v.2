@@ -55,7 +55,7 @@ services:
     build:
       context: ./dashboard
     restart: always
-    command: sh -c "./node_modules/.bin/prisma db push --skip-generate && node prisma/seed.js && npm start"
+    command: sh -c "./node_modules/.bin/prisma db push && node prisma/seed.js && npm start"
     environment:
       - NEXT_PUBLIC_OHIF_URL=http://${SERVER_IP}:3000
       - AUTH_SECRET=${AUTH_SECRET}

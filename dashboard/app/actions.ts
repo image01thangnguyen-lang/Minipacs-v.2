@@ -112,6 +112,8 @@ export async function getStudies() {
           procedureDescription: workflow?.procedureDescription || null,
           technologistId: workflow?.technologistId || null,
           bodyPart: workflow?.bodyPart || null,
+          hisSyncStatus: workflow?.hisSyncStatus || null,
+          hisResultStatus: workflow?.hisResultStatus || null,
         };
       } catch (error) {
         console.error('Failed to sync study workflow status:', error);
@@ -240,6 +242,6 @@ export async function approveStudyReportAction(studyInstanceUid: string) {
 
 export async function getUserPermissionsAction() {
   const session = await auth();
-  if (!session?.user) return { role: 'GUEST', permissions: [] };
-  return { role: session.user.role, permissions: session.user.permissions };
+  if (!session?.user) return { role: 'GUEST', permissions: [], userId: '' };
+  return { role: session.user.role, permissions: session.user.permissions, userId: session.user.id };
 }

@@ -456,3 +456,74 @@ export async function getPermissionDictionaryForAdmin() {
     permissionLabels,
   };
 }
+
+export async function importUsersDryRunAction(formData: FormData) {
+  await requireAdmin();
+  await ensureDefaultRoleProfiles();
+
+  const file = formData.get("file") as File;
+  if (!file || file.size === 0) {
+    throw new Error("Vui lòng chọn file CSV.");
+  }
+
+  const text = await file.text();
+  const rows = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+  if (rows.length < 2) {
+    throw new Error("File CSV trống hoặc không đúng định dạng (cần có dòng tiêu đề).");
+  }
+
+  const headers = rows[0].split(",").map(h => h.trim().toLowerCase());
+  const usernameIdx = headers.indexOf("username");
+  const fullNameIdx = headers.indexOf("fullname");
+  const roleIdx = headers.indexOf("role");
+
+  if (usernameIdx === -1 || fullNameIdx === -1 || roleIdx === -1) {
+    throw new Error("File CSV thiếu một trong các cột bắt buộc: username, fullname, role.");
+  }
+
+  const roleProfiles = await prisma.appRoleProfile.findMany({ where: { isActive: true } });
+  const existingUsers = await prisma.user.findMany({ select: { username: true } });
+  const existingUsernames = new Set(existingUsers.map(u => u.username.toLowerCase()));
+
+  const results = [];
+  let successCount = 0;
+  let errorCount = 0;
+
+  for (let i = 1; i < rows.length; i++) {
+    const cols = rows[i].split(",").map(c => c.trim());
+    if (cols.length < headers.length) continue;
+
+    const username = cols[usernameIdx];
+    const fullName = cols[fullNameIdx];
+    const roleCode = cols[roleIdx];
+
+    const errors = [];
+    if (!username) errors.push("Thiếu username");
+    else if (existingUsernames.has(username.toLowerCase())) errors.push("Username đã tồn tại");
+    else if (username.length < 3) errors.push("Username quá ngắn");
+
+    if (!fullName) errors.push("Thiếu fullname");
+
+    let roleName = roleCode;
+    if (!roleCode) {
+      errors.push("Thiếu role");
+    } else {
+      const rp = roleProfiles.find(r => r.code === roleCode || r.name === roleCode);
+      if (!rp) {
+        errors.push("Role không tồn tại");
+      } else {
+        roleName = rp.name;
+      }
+    }
+
+    if (errors.length > 0) {
+      errorCount++;
+      results.push({ row: i + 1, username, fullName, role: roleName, status: "Lỗi", message: errors.join(", ") });
+    } else {
+      successCount++;
+      results.push({ row: i + 1, username, fullName, role: roleName, status: "Hợp lệ", message: "OK" });
+    }
+  }
+
+  return { successCount, errorCount, results };
+}

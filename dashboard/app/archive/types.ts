@@ -32,6 +32,8 @@ export type ArchiveStudyRow = {
   doctorId: string;
   canOpenViewer: boolean;
   imageWarning: string;
+  hisSyncStatus?: string | null;
+  hisResultStatus?: string | null;
 };
 
 export type ArchiveReportDetail = ArchiveStudyRow & {

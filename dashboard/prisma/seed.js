@@ -74,7 +74,15 @@ function main() {
                                 'users.manage',
                                 'templates.manage',
                                 'clinic.manage',
-                                'pacs.manage'
+                                'pacs.manage',
+                                'his.read',
+                                'his.sync',
+                                'his.retry',
+                                'his.manage',
+                                'admin.catalogs',
+                                'admin.facilities',
+                                'admin.permissions',
+                                'admin.storage'
                             ],
                             isSystem: true,
                             isActive: true
@@ -95,7 +103,10 @@ function main() {
                                 'archive.read',
                                 'statistics.read',
                                 'statistics.doctorStats',
-                                'templates.manage'
+                                'templates.manage',
+                                'his.read',
+                                'his.sync',
+                                'his.retry'
                             ],
                             isSystem: true,
                             isActive: true
@@ -105,7 +116,7 @@ function main() {
                             name: 'Kỹ thuật viên',
                             description: 'Theo dõi danh sách ca, tiếp nhận/worklist và xử lý vận hành kỹ thuật.',
                             baseRole: client_1.Role.TECHNICIAN,
-                            permissions: ['studies.read', 'studies.assign', 'studies.updateClinical', 'worklist.manage', 'archive.read', 'statistics.read'],
+                            permissions: ['studies.read', 'studies.assign', 'studies.updateClinical', 'worklist.manage', 'archive.read', 'statistics.read', 'his.read', 'his.sync', 'his.retry'],
                             isSystem: true,
                             isActive: true
                         },
@@ -114,7 +125,7 @@ function main() {
                             name: 'Lễ tân',
                             description: 'Tạo order, check-in, tìm/in lại kết quả và xem thống kê vận hành cơ bản.',
                             baseRole: client_1.Role.RECEPTION,
-                            permissions: ['studies.read', 'worklist.manage', 'archive.read', 'archive.deliver', 'statistics.read', 'reports.print'],
+                            permissions: ['studies.read', 'worklist.manage', 'archive.read', 'archive.deliver', 'statistics.read', 'reports.print', 'his.read', 'his.sync', 'his.retry'],
                             isSystem: true,
                             isActive: true
                         }
