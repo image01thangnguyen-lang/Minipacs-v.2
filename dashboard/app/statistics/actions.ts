@@ -1962,6 +1962,8 @@ async function getOperationsDashboard(start: Date, endExclusive: Date): Promise<
     reading,
     finalized,
     delivered,
+    hisPending,
+    hisFailed,
     liveQueueStudies,
     activeStudies,
     noStudyOrders,
@@ -1983,6 +1985,22 @@ async function getOperationsDashboard(start: Date, endExclusive: Date): Promise<
     prisma.imagingStudy.count({ where: { status: { in: ["READING", "REPORTED"] as any[] } } }),
     prisma.imagingStudy.count({ where: { finalizedAt: rangeFilter(start, endExclusive) } }),
     prisma.imagingStudy.count({ where: { deliveredAt: rangeFilter(start, endExclusive) } }),
+    prisma.imagingStudy.count({
+      where: {
+        OR: [
+          { hisSyncStatus: "PENDING" },
+          { hisResultStatus: "PENDING" },
+        ],
+      },
+    }),
+    prisma.imagingStudy.count({
+      where: {
+        OR: [
+          { hisSyncStatus: "FAILED" },
+          { hisResultStatus: "FAILED" },
+        ],
+      },
+    }),
     prisma.imagingStudy.findMany({
       where: { status: { in: ["READY_TO_READ", "READING"] as any[] } },
       include: { order: true },
@@ -2057,6 +2075,8 @@ async function getOperationsDashboard(start: Date, endExclusive: Date): Promise<
       delivered,
       slaBreaches: slaBreaches.length,
       stuckWorkflow: stuckWorkflow.length,
+      hisPending,
+      hisFailed,
     },
     slaBreaches,
     stuckWorkflow,

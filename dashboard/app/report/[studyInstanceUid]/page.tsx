@@ -46,6 +46,36 @@ const formatDicomDateTime = (date?: string, time?: string) => {
   return timeValue ? `${dateValue} ${timeValue}` : dateValue;
 };
 
+const formatIsoDateTime = (value?: string | null) => {
+  if (!value) return "-";
+  return new Date(value).toLocaleString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+const hisStatusLabel = (status?: string | null) => {
+  if (!status) return "-";
+  if (status === "SYNCED" || status === "SENT") return "Da dong bo";
+  if (status === "FAILED") return "Loi";
+  if (status === "PENDING") return "Dang cho";
+  if (status === "DISABLED") return "Tat HIS";
+  if (status === "SKIPPED") return "Bo qua";
+  return status;
+};
+
+function MiniInfo({ label, mono, value }: { label: string; mono?: boolean; value?: string | number | null }) {
+  return (
+    <div className="min-w-0">
+      <div className="text-[10px] font-bold uppercase tracking-wide text-vin-muted">{label}</div>
+      <div className={`mt-0.5 truncate text-xs text-vin-text2 ${mono ? "font-mono" : ""}`}>{value || "-"}</div>
+    </div>
+  );
+}
+
 const risStatusLabels: Record<string, string> = {
   ORDERED: "Chờ chụp",
   READY_FOR_SCAN: "Sẵn sàng chụp",
@@ -232,7 +262,12 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
         setStudyStatus(returnedReportStatus === "FINAL" ? "FINALIZED" : "READING");
         if (returnedReport) {
           setDoctorPrintInfo(getDoctorPrintInfo(returnedReport));
-          setPatientDetails((prev: any) => ({ ...prev, hisResultStatus: returnedReport.hisResultStatus }));
+          setPatientDetails((prev: any) => ({
+            ...prev,
+            ReportStatus: returnedReport.status || prev?.ReportStatus,
+            ReportDoctorName: returnedReport.doctor?.fullName || prev?.ReportDoctorName,
+            hisResultStatus: returnedReport.hisResultStatus,
+          }));
         }
       }
     } catch (error) {
@@ -285,6 +320,13 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
   const patientId = patientTags.PatientID || "-";
   const studyDate = formatDicomDateTime(studyTags.StudyDate, studyTags.StudyTime);
   const studyDesc = studyTags.StudyDescription || "-";
+  const assignedDoctorName = patientDetails?.AssignedDoctorName || "";
+  const reportDoctorName = patientDetails?.ReportDoctorName || doctorPrintInfo.doctorName || "";
+  const technologistName = patientDetails?.TechnologistName || "";
+  const procedureDisplay = patientDetails?.procedureName || patientDetails?.procedureDescription || studyDesc;
+  const serviceDisplay = patientDetails?.serviceTypeName || "";
+  const machineDisplay = patientDetails?.machineName || patientDetails?.stationAeTitle || "";
+  const clinicalDisplay = patientDetails?.clinicalInfo || "";
 
   return (
     <div className="min-h-screen bg-vin-root text-vin-text">
@@ -350,9 +392,29 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
                   <span className="text-vin-muted">Ngày chụp:</span> {studyDate}
                 </div>
                 <div>
-                  <span className="text-vin-muted">Mô tả:</span> {studyDesc}
+                  <span className="text-vin-muted">Mô tả:</span> {procedureDisplay}
                 </div>
               </div>
+              <div className="mt-4 grid grid-cols-2 gap-3 border-t border-vin-border/70 pt-3 sm:grid-cols-3">
+                <MiniInfo label="Bac si duoc gan" value={assignedDoctorName || "Chua gan"} />
+                <MiniInfo label="Bac si report/ky" value={reportDoctorName || "Chua co"} />
+                <MiniInfo label="KTV" value={technologistName || "Chua chon"} />
+                <MiniInfo label="Procedure" value={procedureDisplay} />
+                <MiniInfo label="Service" value={serviceDisplay || "Fallback DICOM"} />
+                <MiniInfo label="May/Phong" value={machineDisplay || "-"} />
+                <MiniInfo label="Co so" value={patientDetails?.facilityName || "-"} />
+                <MiniInfo label="Report status" value={patientDetails?.ReportStatus || "Chua co"} mono />
+                <MiniInfo label="HIS order" value={hisStatusLabel(patientDetails?.hisSyncStatus)} />
+                <MiniInfo label="HIS result" value={hisStatusLabel(patientDetails?.hisResultStatus)} />
+                <MiniInfo label="HIS last sent" value={formatIsoDateTime(patientDetails?.hisLastResultSentAt)} />
+                <MiniInfo label="Tra ket qua" value={formatIsoDateTime(patientDetails?.deliveredAt)} />
+              </div>
+              {clinicalDisplay && (
+                <div className="mt-3 rounded border border-vin-border bg-vin-shell px-3 py-2 text-xs leading-relaxed text-vin-text2">
+                  <span className="font-bold uppercase tracking-wide text-vin-muted">Lam sang: </span>
+                  {clinicalDisplay}
+                </div>
+              )}
             </div>
 
             <div>
@@ -447,7 +509,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
           patientName,
           patientId,
           studyDate,
-          studyDesc,
+          studyDesc: procedureDisplay,
           reportContent: findings,
           conclusion,
           recommendation,

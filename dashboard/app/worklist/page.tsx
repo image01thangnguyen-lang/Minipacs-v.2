@@ -56,9 +56,17 @@ type WorklistOrderView = {
   modality: string;
   bodyPart?: string;
   procedureCode?: string;
+  procedureName?: string;
   procedureDescription?: string;
+  serviceTypeName?: string;
   clinicalInfo?: string;
   technologistId?: string;
+  technologistName?: string;
+  assignedDoctorId?: string;
+  assignedDoctorName?: string;
+  reportDoctorId?: string;
+  reportDoctorName?: string;
+  reportStatus?: string;
   price?: number | null;
   paymentStatus?: string;
   priority: string;
@@ -76,7 +84,19 @@ type WorklistOrderView = {
   studyStatus?: string | null;
   orthancStudyId?: string | null;
   studyInstanceUid?: string;
+  isDicomMatched?: boolean;
+  noDicomOverdue?: boolean;
+  waitingMinutes?: number | null;
+  waitingSince?: string | null;
+  stationAeTitle?: string;
+  machineName?: string;
+  facilityName?: string;
+  room?: string;
   hisSyncStatus?: string | null;
+  hisResultStatus?: string | null;
+  hisLastError?: string | null;
+  hisLastSyncedAt?: string | null;
+  hisLastResultSentAt?: string | null;
   hisOrderId?: string | null;
 };
 
@@ -151,6 +171,14 @@ function formatDateTime(value?: string | null) {
     month: "2-digit",
     year: "numeric",
   });
+}
+
+function formatDuration(minutes?: number | null) {
+  if (minutes === null || minutes === undefined) return "-";
+  if (minutes < 60) return `${minutes}p`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest ? `${hours}h ${rest}p` : `${hours}h`;
 }
 
 function statusClass(status: string) {
@@ -504,11 +532,14 @@ export default function WorklistPage() {
                       </td>
                       <td className="px-2 py-2">
                         <div className="max-w-[240px] truncate font-medium text-vin-text2" title={order.procedureDescription || ""}>
-                          {order.procedureDescription || "-"}
+                          {order.procedureName || order.procedureDescription || "-"}
                         </div>
                         <div className="mt-0.5 flex items-center gap-1.5">
                           <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold leading-none ${priorityClass(order.priority)}`}>{order.priority}</span>
-                          <span className="truncate font-mono text-[10px] text-vin-muted">{order.accessionNumber}</span>
+                          <span className="truncate font-mono text-[10px] text-vin-muted">{order.procedureCode || order.accessionNumber}</span>
+                        </div>
+                        <div className="mt-0.5 max-w-[240px] truncate text-[10px] text-vin-muted">
+                          {order.serviceTypeName || "Fallback DICOM"}{order.clinicalInfo ? " · Co lam sang" : ""}
                         </div>
                       </td>
                       <td className="px-2 py-2 text-center">
@@ -523,7 +554,10 @@ export default function WorklistPage() {
                           {formatDateTime(order.scheduledDate)}
                         </div>
                         <div className="mt-0.5 font-mono text-[10px] text-vin-muted">
-                          AE: {order.scheduledStationAeTitle || "AETITLE"}
+                          AE: {order.stationAeTitle || order.scheduledStationAeTitle || "AETITLE"}
+                        </div>
+                        <div className="mt-0.5 max-w-[150px] truncate text-[10px] text-vin-muted">
+                          {order.machineName || order.scheduledStationName || "-"}{order.facilityName ? ` · ${order.facilityName}` : ""}
                         </div>
                       </td>
                       <td className="px-2 py-2 text-center">
@@ -532,17 +566,29 @@ export default function WorklistPage() {
                         </span>
                         <div className="mt-1 flex items-center justify-center gap-1 text-[10px] text-vin-muted">
                           {order.orthancStudyId ? studyStatusLabels[order.studyStatus || ""] || order.studyStatus : "Chưa có ảnh"}
-                          {!order.orthancStudyId && order.createdAt && new Date().getTime() - new Date(order.createdAt).getTime() > 24 * 60 * 60 * 1000 && (
+                          {order.noDicomOverdue && (
                             <span title="Quá hạn 24h chưa có ảnh">
                               <AlertTriangle className="h-3 w-3 text-amber-500" />
                             </span>
                           )}
                         </div>
+                        <div className="mt-1 text-[9px] text-vin-muted">
+                          {order.isDicomMatched ? "Da match DICOM" : `Cho ${formatDuration(order.waitingMinutes)}`}
+                        </div>
                         {order.hisSyncStatus && (
                           <div className={`mt-1 text-[9px] font-semibold ${order.hisSyncStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}`}>
-                            HIS: {order.hisSyncStatus}
+                            HIS order: {order.hisSyncStatus}
                           </div>
                         )}
+                        {order.hisResultStatus && (
+                          <div className={`mt-1 text-[9px] font-semibold ${order.hisResultStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}`}>
+                            HIS result: {order.hisResultStatus}
+                          </div>
+                        )}
+                        <div className="mt-1 max-w-[140px] truncate text-[9px] text-vin-muted">
+                          {order.assignedDoctorName ? `BS: ${order.assignedDoctorName}` : "Chua gan BS"}
+                          {order.technologistName ? ` · KTV: ${order.technologistName}` : ""}
+                        </div>
                       </td>
                       <td className="px-2 py-2">
                         <div className="flex justify-end gap-1">

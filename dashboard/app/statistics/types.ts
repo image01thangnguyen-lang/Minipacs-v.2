@@ -60,6 +60,8 @@ export type StatisticsOperationKpis = {
   delivered: number;
   slaBreaches: number;
   stuckWorkflow: number;
+  hisPending: number;
+  hisFailed: number;
 };
 
 export type StatisticsOperationRow = {

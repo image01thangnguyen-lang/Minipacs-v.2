@@ -18,6 +18,35 @@ import {
   approveReport
 } from '@/lib/workflowService';
 
+function cleanText(value?: string | null) {
+  return (value || "").trim();
+}
+
+function toIso(value?: Date | null) {
+  return value ? value.toISOString() : null;
+}
+
+function uniqueValues(values: Array<string | null | undefined>) {
+  return Array.from(new Set(values.map(cleanText).filter(Boolean)));
+}
+
+function minutesSince(value?: Date | null) {
+  if (!value) return null;
+  const minutes = Math.round((Date.now() - value.getTime()) / 60000);
+  return Number.isFinite(minutes) && minutes >= 0 ? minutes : null;
+}
+
+function slaThresholdMinutes(priority?: string | null) {
+  if (priority === "STAT") return 30;
+  if (priority === "URGENT") return 120;
+  return 1440;
+}
+
+function resolveSlaStatus(waitingMinutes: number | null, priority?: string | null) {
+  if (waitingMinutes === null) return "UNKNOWN";
+  return waitingMinutes >= slaThresholdMinutes(priority) ? "BREACH" : "OK";
+}
+
 /**
  * Server Action: Lấy danh sách bệnh nhân/studies từ Orthanc.
  * BẢO MẬT: Fetch từ backend, không làm lộ mật khẩu Orthanc ra frontend.
@@ -125,7 +154,129 @@ export async function getStudies() {
       }
     }));
 
-    return studiesWithWorkflow;
+    const studyUids = uniqueValues(studiesWithWorkflow.map((study: any) => study.MainDicomTags?.StudyInstanceUID));
+    const dbStudies = studyUids.length
+      ? await prisma.imagingStudy.findMany({
+          where: { studyInstanceUid: { in: studyUids } },
+          include: {
+            order: true,
+            reports: {
+              orderBy: { updatedAt: "desc" },
+              take: 1,
+              include: {
+                doctor: {
+                  select: {
+                    id: true,
+                    fullName: true,
+                    username: true,
+                  },
+                },
+              },
+            },
+          },
+        })
+      : [];
+
+    const dbStudyByUid = new Map(dbStudies.map(study => [study.studyInstanceUid, study]));
+    const userIds = uniqueValues(
+      dbStudies.flatMap(study => [
+        study.assignedDoctorId,
+        study.technologistId,
+        study.reports?.[0]?.doctorId,
+      ])
+    );
+    const users = userIds.length
+      ? await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, fullName: true, username: true, role: true },
+        })
+      : [];
+    const userById = new Map(users.map(user => [user.id, user]));
+
+    const stationAes = uniqueValues(
+      dbStudies.map(study => study.stationAeTitle || study.order?.scheduledStationAeTitle)
+    );
+    const nodes = stationAes.length
+      ? await prisma.dicomNode.findMany({
+          where: { aeTitle: { in: stationAes }, isActive: true },
+          include: {
+            facility: true,
+            serviceType: true,
+            defaultProcedure: { include: { serviceType: true } },
+          },
+        })
+      : [];
+    const nodeByAeTitle = new Map<string, typeof nodes[number]>();
+    nodes.forEach(node => {
+      if (!nodeByAeTitle.has(node.aeTitle)) nodeByAeTitle.set(node.aeTitle, node);
+    });
+
+    const procedureCodes = uniqueValues(
+      dbStudies.flatMap(study => [
+        study.procedureCode,
+        study.order?.procedureCode,
+        nodeByAeTitle.get(cleanText(study.stationAeTitle || study.order?.scheduledStationAeTitle))?.defaultProcedure?.code,
+      ])
+    );
+    const procedures = procedureCodes.length
+      ? await prisma.procedureCatalog.findMany({
+          where: { code: { in: procedureCodes } },
+          include: { serviceType: true },
+        })
+      : [];
+    const procedureByCode = new Map(procedures.map(procedure => [procedure.code, procedure]));
+
+    return studiesWithWorkflow.map((study: any) => {
+      const uid = study.MainDicomTags?.StudyInstanceUID;
+      const dbStudy = uid ? dbStudyByUid.get(uid) : null;
+      const report = dbStudy?.reports?.[0] || null;
+      const assignedDoctor = dbStudy?.assignedDoctorId ? userById.get(dbStudy.assignedDoctorId) : null;
+      const technologist = dbStudy?.technologistId ? userById.get(dbStudy.technologistId) : null;
+      const stationAeTitle = cleanText(dbStudy?.stationAeTitle || dbStudy?.order?.scheduledStationAeTitle || study.MainDicomTags?.StationAETitle || study.MainDicomTags?.StationName);
+      const node = stationAeTitle ? nodeByAeTitle.get(stationAeTitle) : null;
+      const procedureCode = cleanText(dbStudy?.procedureCode || dbStudy?.order?.procedureCode || study.procedureCode || node?.defaultProcedure?.code);
+      const procedure = procedureCode ? procedureByCode.get(procedureCode) || node?.defaultProcedure : node?.defaultProcedure;
+      const waitingSince =
+        dbStudy?.status === "FINALIZED"
+          ? dbStudy.finalizedAt || dbStudy.updatedAt || dbStudy.createdAt
+          : dbStudy?.receivedAt || dbStudy?.stableAt || dbStudy?.scheduledAt || dbStudy?.createdAt || null;
+      const waitingMinutes = minutesSince(waitingSince);
+      const priority = dbStudy?.priority || dbStudy?.order?.priority || "ROUTINE";
+
+      return {
+        ...study,
+        WorkflowStatus: dbStudy?.status || study.WorkflowStatus,
+        OrderStatus: dbStudy?.order?.orderStatus || study.OrderStatus || null,
+        ReportStatus: report?.cancelledAt ? "CANCELLED" : (report?.status || study.ReportStatus || null),
+        AssignedDoctorId: dbStudy?.assignedDoctorId || null,
+        AssignedDoctorName: assignedDoctor?.fullName || assignedDoctor?.username || null,
+        ReportDoctorId: report?.doctorId || null,
+        ReportDoctorName: report?.doctor?.fullName || report?.doctor?.username || null,
+        TechnologistId: dbStudy?.technologistId || study.technologistId || null,
+        TechnologistName: technologist?.fullName || technologist?.username || null,
+        clinicalInfo: dbStudy?.clinicalInfo || study.clinicalInfo || null,
+        procedureCode: procedureCode || null,
+        procedureName: procedure?.name || null,
+        procedureDescription: cleanText(dbStudy?.procedureDescription || dbStudy?.order?.procedureDescription || study.procedureDescription || procedure?.description) || null,
+        serviceTypeName: procedure?.serviceType?.name || node?.serviceType?.name || null,
+        bodyPart: dbStudy?.bodyPart || study.bodyPart || procedure?.bodyPart || null,
+        stationAeTitle: stationAeTitle || null,
+        machineName: node?.name || dbStudy?.order?.scheduledStationName || study.MainDicomTags?.StationName || null,
+        facilityName: node?.facility?.name || dbStudy?.order?.sourceFacility || null,
+        room: node?.room || null,
+        priority,
+        hisSyncStatus: dbStudy?.hisSyncStatus || dbStudy?.order?.hisSyncStatus || study.hisSyncStatus || null,
+        hisResultStatus: dbStudy?.hisResultStatus || report?.hisResultStatus || study.hisResultStatus || null,
+        hisLastError: dbStudy?.hisLastError || dbStudy?.order?.hisLastError || report?.hisResultError || null,
+        hisLastSyncedAt: toIso(dbStudy?.hisLastSyncedAt || dbStudy?.order?.hisLastSyncedAt),
+        hisLastResultSentAt: toIso(dbStudy?.hisLastResultSentAt || report?.hisResultSentAt),
+        finalizedAt: toIso(dbStudy?.finalizedAt || report?.finalizedAt),
+        deliveredAt: toIso(dbStudy?.deliveredAt),
+        waitingSince: toIso(waitingSince),
+        waitingMinutes,
+        slaStatus: resolveSlaStatus(waitingMinutes, priority),
+      };
+    });
   } catch (error) {
     console.error('Failed to fetch from Orthanc:', error);
     return [];

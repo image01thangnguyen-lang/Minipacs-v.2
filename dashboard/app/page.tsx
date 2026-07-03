@@ -79,6 +79,44 @@ const fmtDateTime = (date?: string, time?: string) => {
   return timeValue ? `${dateValue} ${timeValue}` : dateValue;
 };
 
+const fmtDateTimeIso = (value?: string | null) => {
+  if (!value) return "-";
+  return new Date(value).toLocaleString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+const fmtDuration = (minutes?: number | null) => {
+  if (minutes === null || minutes === undefined) return "-";
+  if (minutes < 60) return `${minutes}p`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest ? `${hours}h ${rest}p` : `${hours}h`;
+};
+
+const hisStatusLabel = (status?: string | null) => {
+  if (!status) return "-";
+  if (status === "SYNCED" || status === "SENT") return "Da dong bo";
+  if (status === "FAILED") return "Loi";
+  if (status === "PENDING") return "Dang cho";
+  if (status === "DISABLED") return "Tat HIS";
+  if (status === "SKIPPED") return "Bo qua";
+  return status;
+};
+
+function MiniInfo({ label, mono, value }: { label: string; mono?: boolean; value?: string | number | null }) {
+  return (
+    <div className="min-w-0">
+      <div className="text-[9px] font-bold uppercase tracking-wide text-vin-muted">{label}</div>
+      <div className={`mt-0.5 truncate text-[11px] text-vin-text2 ${mono ? "font-mono" : ""}`}>{value || "-"}</div>
+    </div>
+  );
+}
+
 const modalityClasses: Record<string, string> = {
   CT: "border-vin-accent/40 bg-vin-accentSoft/15 text-cyan-100",
   MR: "border-cyan-400/30 bg-cyan-500/10 text-cyan-100",
@@ -153,6 +191,8 @@ export default function DashboardPage() {
   const [modalityFilter, setModalityFilter] = useState("ALL");
   const [workflowStatusFilter, setWorkflowStatusFilter] = useState("ALL");
   const [stationAeFilter, setStationAeFilter] = useState("ALL");
+  const [assignedDoctorFilter, setAssignedDoctorFilter] = useState("ALL");
+  const [hisStatusFilter, setHisStatusFilter] = useState("ALL");
   const [datePresetFilter, setDatePresetFilter] = useState("ALL");
 
   const [selectedStudy, setSelectedStudy] = useState<any>(null);
@@ -190,6 +230,10 @@ export default function DashboardPage() {
     const result = await updateClinicalInfoAction(uid, data);
     if (result.success) {
       setStudies(cur => cur.map(s => s.MainDicomTags?.StudyInstanceUID === uid ? { ...s, ...data } : s));
+      if (selectedStudy?.MainDicomTags?.StudyInstanceUID === uid) {
+        setSelectedStudy((cur: any) => ({ ...cur, ...data }));
+      }
+      setPatientDetails((cur: any) => (cur ? { ...cur, ...data } : cur));
     }
     return result;
   };
@@ -262,7 +306,7 @@ export default function DashboardPage() {
   const stationAEs = useMemo(() => {
     const values = new Set<string>();
     studies.forEach(study => {
-      const station = study.MainDicomTags?.StationName || study.MainDicomTags?.InstitutionName;
+      const station = study.stationAeTitle || study.machineName || study.MainDicomTags?.StationName || study.MainDicomTags?.InstitutionName;
       if (station) values.add(station);
     });
     return Array.from(values).sort();
@@ -272,6 +316,34 @@ export default function DashboardPage() {
     { value: "ALL", label: "Tất cả máy chụp" },
     ...stationAEs.map(ae => ({ value: ae, label: ae })),
   ], [stationAEs]);
+
+  const assignedDoctorSelectOptions = useMemo<SelectOption[]>(() => {
+    const doctorMap = new Map<string, string>();
+    studies.forEach(study => {
+      if (study.AssignedDoctorId) {
+        doctorMap.set(study.AssignedDoctorId, study.AssignedDoctorName || study.AssignedDoctorId);
+      }
+    });
+    activeDoctors.forEach(doctor => {
+      if (!doctorMap.has(doctor.value)) doctorMap.set(doctor.value, doctor.label);
+    });
+    return [
+      { value: "ALL", label: "Tat ca bac si" },
+      { value: "UNASSIGNED", label: "Chua gan bac si" },
+      ...Array.from(doctorMap.entries())
+        .sort((a, b) => a[1].localeCompare(b[1], "vi"))
+        .map(([value, label]) => ({ value, label })),
+    ];
+  }, [activeDoctors, studies]);
+
+  const hisStatusSelectOptions = useMemo<SelectOption[]>(() => [
+    { value: "ALL", label: "Tat ca HIS" },
+    { value: "FAILED", label: "HIS loi" },
+    { value: "PENDING", label: "HIS dang cho" },
+    { value: "SYNCED", label: "HIS da dong bo" },
+    { value: "SENT", label: "HIS da gui" },
+    { value: "EMPTY", label: "Chua co HIS" },
+  ], []);
 
   const workflowStatusSelectOptions = useMemo<SelectOption[]>(() => [
     { value: "ALL", label: "Tất cả trạng thái" },
@@ -294,7 +366,7 @@ export default function DashboardPage() {
       list = list.filter(study => {
         const patient = study.PatientMainDicomTags || {};
         const main = study.MainDicomTags || {};
-        return `${patient.PatientName || ""} ${patient.PatientID || ""} ${main.AccessionNumber || ""} ${main.StudyDescription || ""}`
+        return `${patient.PatientName || ""} ${patient.PatientID || ""} ${main.AccessionNumber || ""} ${main.StudyDescription || ""} ${study.AssignedDoctorName || ""} ${study.ReportDoctorName || ""} ${study.procedureName || ""} ${study.procedureCode || ""} ${study.machineName || ""}`
           .toLowerCase()
           .includes(query);
       });
@@ -310,9 +382,21 @@ export default function DashboardPage() {
 
     if (stationAeFilter !== "ALL") {
       list = list.filter(study => {
-        const station = study.MainDicomTags?.StationName || study.MainDicomTags?.InstitutionName;
+        const station = study.stationAeTitle || study.machineName || study.MainDicomTags?.StationName || study.MainDicomTags?.InstitutionName;
         return station === stationAeFilter;
       });
+    }
+
+    if (assignedDoctorFilter === "UNASSIGNED") {
+      list = list.filter(study => !study.AssignedDoctorId);
+    } else if (assignedDoctorFilter !== "ALL") {
+      list = list.filter(study => study.AssignedDoctorId === assignedDoctorFilter);
+    }
+
+    if (hisStatusFilter === "EMPTY") {
+      list = list.filter(study => !study.hisSyncStatus && !study.hisResultStatus);
+    } else if (hisStatusFilter !== "ALL") {
+      list = list.filter(study => study.hisSyncStatus === hisStatusFilter || study.hisResultStatus === hisStatusFilter);
     }
 
     if (datePresetFilter !== "ALL") {
@@ -339,7 +423,7 @@ export default function DashboardPage() {
     }
 
     return list;
-  }, [modalityFilter, workflowStatusFilter, stationAeFilter, datePresetFilter, searchQuery, studies]);
+  }, [assignedDoctorFilter, datePresetFilter, hisStatusFilter, modalityFilter, searchQuery, stationAeFilter, studies, workflowStatusFilter]);
 
   const totalPages = Math.ceil(filteredStudies.length / rowsPerPage) || 1;
   const pageStudies = filteredStudies.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
@@ -420,7 +504,27 @@ export default function DashboardPage() {
     if (!uid) return false;
     const res = await assignStudyDoctorAction(uid, doctorId);
     if (res.success) {
-      // maybe show toast
+      const selectedDoctor = activeDoctors.find(doctor => doctor.value === doctorId);
+      const assignedDoctorName = selectedDoctor?.label?.replace(/\s*\([^)]*\)\s*$/, "") || selectedDoctor?.label || doctorId;
+      setStudies(current =>
+        current.map(study =>
+          study.MainDicomTags?.StudyInstanceUID === uid
+            ? { ...study, AssignedDoctorId: doctorId, AssignedDoctorName: assignedDoctorName }
+            : study
+        )
+      );
+      if (selectedStudy?.MainDicomTags?.StudyInstanceUID === uid) {
+        setSelectedStudy((current: any) => ({
+          ...current,
+          AssignedDoctorId: doctorId,
+          AssignedDoctorName: assignedDoctorName,
+        }));
+      }
+      setActiveStudy((current: any) =>
+        current?.MainDicomTags?.StudyInstanceUID === uid
+          ? { ...current, AssignedDoctorId: doctorId, AssignedDoctorName: assignedDoctorName }
+          : current
+      );
       return true;
     } else {
       alert((res as any).error || "Lỗi khi gán");
@@ -532,6 +636,16 @@ export default function DashboardPage() {
             : study
         ))
       );
+      setSelectedStudy((current: any) =>
+        current?.MainDicomTags?.StudyInstanceUID === uid
+          ? { ...current, WorkflowStatus: nextStudyStatus, ReportStatus: nextReportStatus, hisResultStatus: nextHisResultStatus || current.hisResultStatus }
+          : current
+      );
+      setPatientDetails((current: any) =>
+        current
+          ? { ...current, WorkflowStatus: nextStudyStatus, ReportStatus: nextReportStatus, hisResultStatus: nextHisResultStatus || current.hisResultStatus }
+          : current
+      );
     } catch (error) {
       console.error(error);
     } finally {
@@ -560,6 +674,16 @@ export default function DashboardPage() {
   const patientAge = fmtAge(selectedPatient.PatientAge);
   const studyDate = fmtDateTime(selectedMain.StudyDate, selectedMain.StudyTime);
   const studyDesc = fmtText(selectedMain.StudyDescription);
+  const assignedDoctorName = selectedStudy?.AssignedDoctorName || patientDetails?.AssignedDoctorName || "";
+  const reportDoctorName = selectedStudy?.ReportDoctorName || patientDetails?.ReportDoctorName || doctorPrintInfo.doctorName || "";
+  const technologistName = selectedStudy?.TechnologistName || patientDetails?.TechnologistName || "";
+  const procedureDisplay = selectedStudy?.procedureName || selectedStudy?.procedureDescription || patientDetails?.procedureName || patientDetails?.procedureDescription || studyDesc;
+  const serviceDisplay = selectedStudy?.serviceTypeName || patientDetails?.serviceTypeName || "";
+  const machineDisplay = selectedStudy?.machineName || patientDetails?.machineName || selectedStudy?.stationAeTitle || patientDetails?.stationAeTitle || "";
+  const facilityDisplay = selectedStudy?.facilityName || patientDetails?.facilityName || "";
+  const clinicalDisplay = selectedStudy?.clinicalInfo || patientDetails?.clinicalInfo || "";
+  const hisOrderDisplay = selectedStudy?.hisSyncStatus || patientDetails?.hisSyncStatus || "";
+  const hisResultDisplay = selectedStudy?.hisResultStatus || patientDetails?.hisResultStatus || "";
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
@@ -666,6 +790,28 @@ export default function DashboardPage() {
                   compact
                 />
               </div>
+              <div className="flex-1">
+                <CustomSelect
+                  options={assignedDoctorSelectOptions}
+                  value={assignedDoctorFilter}
+                  onChange={val => {
+                    setAssignedDoctorFilter(val);
+                    setCurrentPage(1);
+                  }}
+                  compact
+                />
+              </div>
+              <div className="w-[9rem]">
+                <CustomSelect
+                  options={hisStatusSelectOptions}
+                  value={hisStatusFilter}
+                  onChange={val => {
+                    setHisStatusFilter(val);
+                    setCurrentPage(1);
+                  }}
+                  compact
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -679,6 +825,7 @@ export default function DashboardPage() {
                 <th className="px-2 py-2">Mô tả</th>
                 <th className="px-2 py-2 text-center">Mod</th>
                 <th className="px-2 py-2 text-center">Trạng thái</th>
+                <th className="px-2 py-2">Phu trach</th>
                 <th className="px-2 py-2">Ngày chụp</th>
                 <th className="px-2 py-2 text-center">Ảnh</th>
                 <th className="w-10 px-2 py-2 text-center">Thao tác</th>
@@ -687,14 +834,14 @@ export default function DashboardPage() {
             <tbody className="text-[11px]">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-vin-muted">
+                  <td colSpan={9} className="py-12 text-center text-vin-muted">
                     <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
                     Đang tải danh sách ca chụp...
                   </td>
                 </tr>
               ) : pageStudies.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-vin-muted">
+                  <td colSpan={9} className="py-12 text-center text-vin-muted">
                     Không có ca chụp nào.
                   </td>
                 </tr>
@@ -725,11 +872,11 @@ export default function DashboardPage() {
                         </div>
                       </td>
                       <td className="px-2 py-2">
-                        <div className="max-w-[260px] truncate font-medium text-vin-text2" title={main.StudyDescription || ""}>
-                          {fmtText(main.StudyDescription)}
+                        <div className="max-w-[260px] truncate font-medium text-vin-text2" title={study.procedureDescription || main.StudyDescription || ""}>
+                          {fmtText(study.procedureName || study.procedureDescription || main.StudyDescription)}
                         </div>
                         <div className="mt-0.5 max-w-[260px] truncate font-mono text-[10px] text-vin-muted">
-                          {fmtText(main.AccessionNumber)}
+                          {fmtText(study.procedureCode || main.AccessionNumber)}{study.serviceTypeName ? ` · ${study.serviceTypeName}` : ""}
                         </div>
                       </td>
                       <td className="px-2 py-2 text-center">
@@ -752,8 +899,19 @@ export default function DashboardPage() {
                           </div>
                         )}
                       </td>
+                      <td className="px-2 py-2">
+                        <div className={`max-w-[150px] truncate font-semibold ${study.AssignedDoctorName ? "text-vin-text2" : "text-amber-200"}`}>
+                          {study.AssignedDoctorName || "Chua gan bac si"}
+                        </div>
+                        <div className="mt-0.5 max-w-[150px] truncate text-[10px] text-vin-muted">
+                          {study.ReportDoctorName ? `Report: ${study.ReportDoctorName}` : `SLA: ${fmtDuration(study.waitingMinutes)}`}
+                        </div>
+                      </td>
                       <td className="whitespace-nowrap px-2 py-2 font-mono text-vin-text2">
                         {fmtDateTime(main.StudyDate, main.StudyTime)}
+                        <div className="mt-0.5 max-w-[140px] truncate font-sans text-[10px] text-vin-muted">
+                          {study.machineName || study.stationAeTitle || "-"}{study.facilityName ? ` · ${study.facilityName}` : ""}
+                        </div>
                       </td>
                       <td className="px-2 py-2 text-center font-mono text-vin-muted">
                         {study.EnrichedInstancesCount ?? study.Instances?.length ?? "-"}
@@ -886,9 +1044,29 @@ export default function DashboardPage() {
                   <span className="text-vin-muted">Mod:</span> <span className="font-semibold text-vin-text2">{selectedStudy.EnrichedModality || "-"}</span>
                 </div>
                 <div className="truncate">
-                  <span className="text-vin-muted">Chỉ định:</span> <span className="font-semibold text-vin-text2">{studyDesc}</span>
+                  <span className="text-vin-muted">Chỉ định:</span> <span className="font-semibold text-vin-text2">{procedureDisplay}</span>
                 </div>
               </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 rounded border border-vin-border/70 bg-vin-shell/60 p-3 lg:grid-cols-4">
+                <MiniInfo label="Bac si duoc gan" value={assignedDoctorName || "Chua gan"} />
+                <MiniInfo label="Bac si report/ky" value={reportDoctorName || "Chua co"} />
+                <MiniInfo label="KTV" value={technologistName || "Chua chon"} />
+                <MiniInfo label="Procedure" value={procedureDisplay} />
+                <MiniInfo label="Service" value={serviceDisplay || "Fallback DICOM"} />
+                <MiniInfo label="May/Phong" value={machineDisplay || "-"} />
+                <MiniInfo label="Co so" value={facilityDisplay || "-"} />
+                <MiniInfo label="SLA cho" value={`${fmtDuration(selectedStudy?.waitingMinutes)} · ${selectedStudy?.slaStatus || "UNKNOWN"}`} />
+                <MiniInfo label="Report status" value={selectedStudy?.ReportStatus || "Chua co"} mono />
+                <MiniInfo label="HIS order" value={hisStatusLabel(hisOrderDisplay)} />
+                <MiniInfo label="HIS result" value={hisStatusLabel(hisResultDisplay)} />
+                <MiniInfo label="Tra ket qua" value={fmtDateTimeIso(selectedStudy?.deliveredAt || patientDetails?.deliveredAt)} />
+              </div>
+              {clinicalDisplay && (
+                <div className="mt-2 rounded border border-vin-border/70 bg-vin-shell/60 px-3 py-2 text-[11px] leading-relaxed text-vin-text2">
+                  <span className="font-bold uppercase tracking-wide text-vin-muted">Lam sang: </span>
+                  {clinicalDisplay}
+                </div>
+              )}
             </div>
 
             <div className="min-h-0 flex-1 space-y-4 overflow-auto p-4 scr-dark">
@@ -966,7 +1144,7 @@ export default function DashboardPage() {
                 patientName,
                 patientId,
                 studyDate,
-                studyDesc,
+                studyDesc: procedureDisplay,
                 reportContent: findings,
                 conclusion,
                 recommendation,

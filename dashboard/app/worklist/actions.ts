@@ -35,6 +35,20 @@ function cleanText(value?: string | null) {
   return (value || "").trim();
 }
 
+function toIso(value?: Date | null) {
+  return value ? value.toISOString() : null;
+}
+
+function uniqueValues(values: Array<string | null | undefined>) {
+  return Array.from(new Set(values.map(cleanText).filter(Boolean)));
+}
+
+function minutesSince(value?: Date | null) {
+  if (!value) return null;
+  const minutes = Math.round((Date.now() - value.getTime()) / 60000);
+  return Number.isFinite(minutes) && minutes >= 0 ? minutes : null;
+}
+
 function toDicomDate(date?: Date | null) {
   if (!date) return "";
   const year = date.getFullYear();
@@ -135,8 +149,24 @@ async function removeWorklistFile(filename?: string | null) {
   await fs.unlink(resolvedPath).catch(() => undefined);
 }
 
-function serializeOrder(order: any) {
+function serializeOrder(order: any, context?: {
+  usersById?: Map<string, { fullName: string | null; username: string }>;
+  procedureByCode?: Map<string, any>;
+  nodeByAeTitle?: Map<string, any>;
+}) {
   const study = order.imagingStudies?.[0] || null;
+  const report = study?.reports?.[0] || null;
+  const usersById = context?.usersById || new Map();
+  const assignedDoctor = study?.assignedDoctorId ? usersById.get(study.assignedDoctorId) : null;
+  const reportDoctor = report?.doctorId ? usersById.get(report.doctorId) : null;
+  const technologist = study?.technologistId ? usersById.get(study.technologistId) : null;
+  const stationAeTitle = cleanText(study?.stationAeTitle || order.scheduledStationAeTitle);
+  const node = stationAeTitle ? context?.nodeByAeTitle?.get(stationAeTitle) : null;
+  const procedureCode = cleanText(study?.procedureCode || order.procedureCode || node?.defaultProcedure?.code);
+  const procedure = procedureCode ? context?.procedureByCode?.get(procedureCode) || node?.defaultProcedure : node?.defaultProcedure;
+  const waitingSince = study?.receivedAt || study?.stableAt || order.arrivedAt || order.scheduledDate || order.createdAt || null;
+  const noDicomOverdue = !study?.orthancStudyId && order.createdAt && Date.now() - order.createdAt.getTime() > 24 * 60 * 60 * 1000;
+
   return {
     id: order.id,
     patientName: order.patientName,
@@ -148,11 +178,19 @@ function serializeOrder(order: any) {
     referringDepartment: order.referringDepartment || "",
     sourceFacility: order.sourceFacility || "",
     modality: order.modality,
-    bodyPart: study?.bodyPart || order.bodyPart || "",
-    procedureCode: study?.procedureCode || order.procedureCode || "",
-    procedureDescription: study?.procedureDescription || order.procedureDescription || "",
+    bodyPart: study?.bodyPart || order.bodyPart || procedure?.bodyPart || "",
+    procedureCode: procedureCode || "",
+    procedureName: procedure?.name || "",
+    procedureDescription: study?.procedureDescription || order.procedureDescription || procedure?.description || "",
+    serviceTypeName: procedure?.serviceType?.name || node?.serviceType?.name || "",
     clinicalInfo: study?.clinicalInfo || "",
     technologistId: study?.technologistId || "",
+    technologistName: technologist?.fullName || technologist?.username || "",
+    assignedDoctorId: study?.assignedDoctorId || "",
+    assignedDoctorName: assignedDoctor?.fullName || assignedDoctor?.username || "",
+    reportDoctorId: report?.doctorId || "",
+    reportDoctorName: reportDoctor?.fullName || reportDoctor?.username || "",
+    reportStatus: report?.cancelledAt ? "CANCELLED" : (report?.status || ""),
     price: order.price ? Number(order.price) : null,
     paymentStatus: order.paymentStatus || "",
     priority: order.priority || "ROUTINE",
@@ -171,7 +209,19 @@ function serializeOrder(order: any) {
     studyStatus: study?.status || null,
     orthancStudyId: study?.orthancStudyId || null,
     studyInstanceUid: study?.studyInstanceUid || order.requestedStudyInstanceUid || "",
+    isDicomMatched: Boolean(study?.orthancStudyId),
+    noDicomOverdue,
+    waitingMinutes: minutesSince(waitingSince),
+    waitingSince: toIso(waitingSince),
+    stationAeTitle,
+    machineName: node?.name || order.scheduledStationName || "",
+    facilityName: node?.facility?.name || order.sourceFacility || "",
+    room: node?.room || "",
     hisSyncStatus: order.hisSyncStatus || null,
+    hisResultStatus: study?.hisResultStatus || report?.hisResultStatus || null,
+    hisLastError: study?.hisLastError || order.hisLastError || report?.hisResultError || null,
+    hisLastSyncedAt: toIso(order.hisLastSyncedAt || study?.hisLastSyncedAt),
+    hisLastResultSentAt: toIso(study?.hisLastResultSentAt || report?.hisResultSentAt),
     hisOrderId: order.hisOrderId || null,
   };
 }
@@ -211,11 +261,32 @@ export async function getWorklistOrdersAction(filters: {
           status: true,
           orthancStudyId: true,
           studyInstanceUid: true,
+          assignedDoctorId: true,
+          stationAeTitle: true,
           clinicalInfo: true,
           technologistId: true,
           procedureCode: true,
           procedureDescription: true,
           bodyPart: true,
+          receivedAt: true,
+          stableAt: true,
+          hisSyncStatus: true,
+          hisResultStatus: true,
+          hisLastError: true,
+          hisLastSyncedAt: true,
+          hisLastResultSentAt: true,
+          reports: {
+            select: {
+              doctorId: true,
+              status: true,
+              cancelledAt: true,
+              hisResultStatus: true,
+              hisResultError: true,
+              hisResultSentAt: true,
+            },
+            orderBy: { updatedAt: "desc" },
+            take: 1,
+          },
         },
         orderBy: { updatedAt: "desc" },
         take: 1,
@@ -224,7 +295,55 @@ export async function getWorklistOrdersAction(filters: {
     orderBy: [{ priority: "desc" }, { scheduledDate: "asc" }, { createdAt: "asc" }],
   });
 
-  return orders.map(serializeOrder);
+  const userIds = uniqueValues(
+    orders.flatMap(order => {
+      const study = order.imagingStudies?.[0];
+      const report = study?.reports?.[0];
+      return [study?.assignedDoctorId, study?.technologistId, report?.doctorId];
+    })
+  );
+  const users = userIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, fullName: true, username: true },
+      })
+    : [];
+  const usersById = new Map(users.map(user => [user.id, user]));
+
+  const stationAes = uniqueValues(
+    orders.flatMap(order => [order.imagingStudies?.[0]?.stationAeTitle, order.scheduledStationAeTitle])
+  );
+  const nodes = stationAes.length
+    ? await prisma.dicomNode.findMany({
+        where: { aeTitle: { in: stationAes }, isActive: true },
+        include: {
+          facility: true,
+          serviceType: true,
+          defaultProcedure: { include: { serviceType: true } },
+        },
+      })
+    : [];
+  const nodeByAeTitle = new Map<string, typeof nodes[number]>();
+  nodes.forEach(node => {
+    if (!nodeByAeTitle.has(node.aeTitle)) nodeByAeTitle.set(node.aeTitle, node);
+  });
+
+  const procedureCodes = uniqueValues(
+    orders.flatMap(order => {
+      const study = order.imagingStudies?.[0];
+      const node = nodeByAeTitle.get(cleanText(study?.stationAeTitle || order.scheduledStationAeTitle));
+      return [study?.procedureCode, order.procedureCode, node?.defaultProcedure?.code];
+    })
+  );
+  const procedures = procedureCodes.length
+    ? await prisma.procedureCatalog.findMany({
+        where: { code: { in: procedureCodes } },
+        include: { serviceType: true },
+      })
+    : [];
+  const procedureByCode = new Map(procedures.map(procedure => [procedure.code, procedure]));
+
+  return orders.map(order => serializeOrder(order, { usersById, procedureByCode, nodeByAeTitle }));
 }
 
 export async function createWorklistAction(data: WorklistInput) {

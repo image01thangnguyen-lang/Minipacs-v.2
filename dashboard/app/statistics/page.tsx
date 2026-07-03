@@ -309,6 +309,8 @@ export default function StatisticsPage() {
         { label: "Đang đọc", value: data.operations.kpis.reading, icon: Stethoscope, tone: "text-purple-300" },
         { label: "Quá SLA", value: data.operations.kpis.slaBreaches, icon: AlertTriangle, tone: "text-red-300" },
         { label: "Kẹt luồng", value: data.operations.kpis.stuckWorkflow, icon: Timer, tone: "text-orange-300" },
+        { label: "HIS pending", value: data.operations.kpis.hisPending, icon: RefreshCcw, tone: "text-amber-300" },
+        { label: "HIS failed", value: data.operations.kpis.hisFailed, icon: AlertTriangle, tone: "text-red-300" },
       ]
     : [];
 

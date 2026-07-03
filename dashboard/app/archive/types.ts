@@ -30,6 +30,17 @@ export type ArchiveStudyRow = {
   deliveredAt: string | null;
   doctorName: string;
   doctorId: string;
+  assignedDoctorName: string;
+  assignedDoctorId: string;
+  technologistName: string;
+  procedureCode: string;
+  procedureName: string;
+  procedureDescription: string;
+  serviceTypeName: string;
+  machineName: string;
+  facilityName: string;
+  room: string;
+  clinicalInfo: string;
   canOpenViewer: boolean;
   imageWarning: string;
   hisSyncStatus?: string | null;

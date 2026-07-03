@@ -22,6 +22,10 @@ function cleanText(value?: string | null) {
   return (value || "").trim();
 }
 
+function uniqueValues(values: Array<string | null | undefined>) {
+  return Array.from(new Set(values.map(cleanText).filter(Boolean)));
+}
+
 function normalizePatientName(value?: string | null) {
   return cleanText(value).replace(/\^/g, " ") || "Unknown Patient";
 }
@@ -154,10 +158,21 @@ async function checkOrthancStudy(orthancStudyId?: string | null, studyStatus?: s
   }
 }
 
-function serializeArchiveRow(report: any): ArchiveStudyRow {
+function serializeArchiveRow(report: any, context?: {
+  usersById?: Map<string, { fullName: string | null; username: string }>;
+  procedureByCode?: Map<string, any>;
+  nodeByAeTitle?: Map<string, any>;
+}): ArchiveStudyRow {
   const study = report.imagingStudy;
   const studyStatus = study?.status || reportDrivenStudyStatus(report.status);
   const studyDate = study?.receivedAt || study?.stableAt || study?.scheduledAt || study?.createdAt || report.updatedAt;
+  const usersById = context?.usersById || new Map();
+  const assignedDoctor = study?.assignedDoctorId ? usersById.get(study.assignedDoctorId) : null;
+  const technologist = study?.technologistId ? usersById.get(study.technologistId) : null;
+  const stationAeTitle = cleanText(study?.stationAeTitle || study?.order?.scheduledStationAeTitle);
+  const node = stationAeTitle ? context?.nodeByAeTitle?.get(stationAeTitle) : null;
+  const procedureCode = cleanText(study?.procedureCode || study?.order?.procedureCode || node?.defaultProcedure?.code);
+  const procedure = procedureCode ? context?.procedureByCode?.get(procedureCode) || node?.defaultProcedure : node?.defaultProcedure;
   const imageWarning =
     studyStatus === "DELETED_FROM_PACS"
       ? "Anh da duoc xoa khoi PACS. Chi con metadata RIS va bao cao."
@@ -181,6 +196,17 @@ function serializeArchiveRow(report: any): ArchiveStudyRow {
     deliveredAt: toIso(study?.deliveredAt),
     doctorName: report.doctor?.fullName || "-",
     doctorId: report.doctorId || "",
+    assignedDoctorName: assignedDoctor?.fullName || assignedDoctor?.username || "",
+    assignedDoctorId: study?.assignedDoctorId || "",
+    technologistName: technologist?.fullName || technologist?.username || "",
+    procedureCode: procedureCode || "",
+    procedureName: procedure?.name || "",
+    procedureDescription: cleanText(study?.procedureDescription || study?.order?.procedureDescription || procedure?.description) || "",
+    serviceTypeName: procedure?.serviceType?.name || node?.serviceType?.name || "",
+    machineName: node?.name || study?.order?.scheduledStationName || "",
+    facilityName: node?.facility?.name || study?.order?.sourceFacility || "",
+    room: node?.room || "",
+    clinicalInfo: study?.clinicalInfo || report.clinicalInfo || "",
     canOpenViewer: Boolean(study?.orthancStudyId && studyStatus !== "DELETED_FROM_PACS"),
     imageWarning,
     hisSyncStatus: study?.hisSyncStatus || study?.order?.hisSyncStatus || null,
@@ -315,6 +341,61 @@ export async function getArchiveDoctorsAction(): Promise<ArchiveDoctorOption[]> 
   }));
 }
 
+async function buildArchiveContext(reports: any[]) {
+  const userIds = uniqueValues(
+    reports.flatMap(report => [
+      report.imagingStudy?.assignedDoctorId,
+      report.imagingStudy?.technologistId,
+      report.doctorId,
+    ])
+  );
+  const users = userIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, fullName: true, username: true },
+      })
+    : [];
+  const usersById = new Map(users.map(user => [user.id, user]));
+
+  const stationAes = uniqueValues(
+    reports.flatMap(report => [
+      report.imagingStudy?.stationAeTitle,
+      report.imagingStudy?.order?.scheduledStationAeTitle,
+    ])
+  );
+  const nodes = stationAes.length
+    ? await prisma.dicomNode.findMany({
+        where: { aeTitle: { in: stationAes }, isActive: true },
+        include: {
+          facility: true,
+          serviceType: true,
+          defaultProcedure: { include: { serviceType: true } },
+        },
+      })
+    : [];
+  const nodeByAeTitle = new Map<string, typeof nodes[number]>();
+  nodes.forEach(node => {
+    if (!nodeByAeTitle.has(node.aeTitle)) nodeByAeTitle.set(node.aeTitle, node);
+  });
+
+  const procedureCodes = uniqueValues(
+    reports.flatMap(report => {
+      const study = report.imagingStudy;
+      const node = nodeByAeTitle.get(cleanText(study?.stationAeTitle || study?.order?.scheduledStationAeTitle));
+      return [study?.procedureCode, study?.order?.procedureCode, node?.defaultProcedure?.code];
+    })
+  );
+  const procedures = procedureCodes.length
+    ? await prisma.procedureCatalog.findMany({
+        where: { code: { in: procedureCodes } },
+        include: { serviceType: true },
+      })
+    : [];
+  const procedureByCode = new Map(procedures.map(procedure => [procedure.code, procedure]));
+
+  return { usersById, procedureByCode, nodeByAeTitle };
+}
+
 export async function searchArchiveStudiesAction(filters: ArchiveSearchFilters = {}): Promise<ArchiveStudyRow[]> {
   await requireArchiveAccess();
 
@@ -332,7 +413,8 @@ export async function searchArchiveStudiesAction(filters: ArchiveSearchFilters =
     take: 150,
   });
 
-  return reports.map(serializeArchiveRow);
+  const context = await buildArchiveContext(reports);
+  return reports.map(report => serializeArchiveRow(report, context));
 }
 
 export async function getArchiveReportAction(studyInstanceUid: string) {
@@ -364,13 +446,14 @@ export async function getArchiveReportAction(studyInstanceUid: string) {
     return { success: false, error: "Bao cao chua final nen chua nam trong Archive." };
   }
 
-  const [templateHtml, clinicProfile, imageState] = await Promise.all([
+  const [templateHtml, clinicProfile, imageState, context] = await Promise.all([
     getDefaultPrintTemplate(),
     prisma.clinicProfile.findFirst({ orderBy: { createdAt: "asc" } }),
     checkOrthancStudy(report.imagingStudy?.orthancStudyId, report.imagingStudy?.status),
+    buildArchiveContext([report]),
   ]);
 
-  const row = serializeArchiveRow(report);
+  const row = serializeArchiveRow(report, context);
   const detail: ArchiveReportDetail = {
     ...row,
     ...imageState,

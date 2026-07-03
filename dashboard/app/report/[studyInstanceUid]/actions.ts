@@ -6,6 +6,92 @@ import { syncOrthancStudyToRis, updateStudyStatusForReport } from '@/lib/studySt
 import { requirePermission } from '@/lib/authz';
 import { hasPermission } from '@/lib/permissions';
 
+function cleanText(value?: string | null) {
+  return (value || "").trim();
+}
+
+function toIso(value?: Date | null) {
+  return value ? value.toISOString() : null;
+}
+
+async function getStudyOperationalInfo(studyInstanceUid: string) {
+  const study = await prisma.imagingStudy.findUnique({
+    where: { studyInstanceUid },
+    include: {
+      order: true,
+      reports: {
+        orderBy: { updatedAt: "desc" },
+        take: 1,
+        include: {
+          doctor: {
+            select: { id: true, fullName: true, username: true },
+          },
+        },
+      },
+    },
+  });
+  if (!study) return {};
+
+  const report = study.reports?.[0] || null;
+  const userIds = [study.assignedDoctorId, study.technologistId, report?.doctorId].filter(Boolean) as string[];
+  const users = userIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: Array.from(new Set(userIds)) } },
+        select: { id: true, fullName: true, username: true },
+      })
+    : [];
+  const userById = new Map(users.map(user => [user.id, user]));
+
+  const stationAeTitle = cleanText(study.stationAeTitle || study.order?.scheduledStationAeTitle);
+  const node = stationAeTitle
+    ? await prisma.dicomNode.findFirst({
+        where: { aeTitle: stationAeTitle, isActive: true },
+        include: {
+          facility: true,
+          serviceType: true,
+          defaultProcedure: { include: { serviceType: true } },
+        },
+      })
+    : null;
+  const procedureCode = cleanText(study.procedureCode || study.order?.procedureCode || node?.defaultProcedure?.code);
+  const procedure = procedureCode
+    ? await prisma.procedureCatalog.findUnique({
+        where: { code: procedureCode },
+        include: { serviceType: true },
+      }).catch(() => null)
+    : node?.defaultProcedure || null;
+  const assignedDoctor = study.assignedDoctorId ? userById.get(study.assignedDoctorId) : null;
+  const technologist = study.technologistId ? userById.get(study.technologistId) : null;
+
+  return {
+    AssignedDoctorId: study.assignedDoctorId || null,
+    AssignedDoctorName: assignedDoctor?.fullName || assignedDoctor?.username || null,
+    ReportDoctorId: report?.doctorId || null,
+    ReportDoctorName: report?.doctor?.fullName || report?.doctor?.username || null,
+    TechnologistId: study.technologistId || null,
+    TechnologistName: technologist?.fullName || technologist?.username || null,
+    clinicalInfo: study.clinicalInfo || report?.clinicalInfo || null,
+    procedureCode: procedureCode || null,
+    procedureName: procedure?.name || null,
+    procedureDescription: cleanText(study.procedureDescription || study.order?.procedureDescription || procedure?.description) || null,
+    serviceTypeName: procedure?.serviceType?.name || node?.serviceType?.name || null,
+    bodyPart: study.bodyPart || procedure?.bodyPart || null,
+    stationAeTitle: stationAeTitle || null,
+    machineName: node?.name || study.order?.scheduledStationName || null,
+    facilityName: node?.facility?.name || study.order?.sourceFacility || null,
+    room: node?.room || null,
+    priority: study.priority || study.order?.priority || "ROUTINE",
+    ReportStatus: report?.cancelledAt ? "CANCELLED" : (report?.status || null),
+    finalizedAt: toIso(study.finalizedAt || report?.finalizedAt),
+    deliveredAt: toIso(study.deliveredAt),
+    hisSyncStatus: study.hisSyncStatus || study.order?.hisSyncStatus || null,
+    hisResultStatus: study.hisResultStatus || report?.hisResultStatus || null,
+    hisLastError: study.hisLastError || study.order?.hisLastError || report?.hisResultError || null,
+    hisLastSyncedAt: toIso(study.hisLastSyncedAt || study.order?.hisLastSyncedAt),
+    hisLastResultSentAt: toIso(study.hisLastResultSentAt || report?.hisResultSentAt),
+  };
+}
+
 export async function getStudyDetails(studyInstanceUID: string) {
   await requirePermission("reports.read");
 
@@ -39,12 +125,14 @@ export async function getStudyDetails(studyInstanceUID: string) {
     const studies = await response.json();
     if (studies && studies.length > 0) {
       const workflow = await syncOrthancStudyToRis(studies[0]);
+      const operationalInfo = await getStudyOperationalInfo(studyInstanceUID);
       return {
         ...studies[0],
         WorkflowStatus: workflow?.status || 'READY_TO_READ',
         OrderStatus: workflow?.orderStatus || null,
         hisSyncStatus: workflow?.hisSyncStatus || null,
         hisResultStatus: workflow?.hisResultStatus || null,
+        ...operationalInfo,
       };
     }
     return null;

@@ -371,15 +371,21 @@ export default function ArchivePage() {
                           <div className="mt-1 truncate font-mono text-[10px] text-vin-muted">PID: {row.patientId}</div>
                         </td>
                         <td className="px-3 py-3">
-                          <div className="max-w-[260px] truncate text-vin-text2" title={row.studyDescription}>{row.studyDescription}</div>
-                          <div className="mt-1 truncate font-mono text-[10px] text-vin-muted">{row.accessionNumber}</div>
+                          <div className="max-w-[260px] truncate text-vin-text2" title={row.procedureDescription || row.studyDescription}>
+                            {row.procedureName || row.procedureDescription || row.studyDescription}
+                          </div>
+                          <div className="mt-1 truncate font-mono text-[10px] text-vin-muted">{row.procedureCode || row.accessionNumber}</div>
+                          <div className="mt-1 max-w-[260px] truncate text-[10px] text-vin-muted">
+                            {row.serviceTypeName || row.machineName || "Fallback DICOM"}
+                          </div>
                         </td>
                         <td className="px-3 py-3 text-center">
                           <span className="inline-flex min-w-9 justify-center rounded border border-vin-accent/40 bg-vin-accentSoft/20 px-1.5 py-px font-mono text-[10px] font-bold text-vin-accent">{row.modality}</span>
                           <div className="mt-1 text-[10px] text-vin-muted">{row.bodyPart || "-"}</div>
                         </td>
                         <td className="px-3 py-3">
-                          <div className="max-w-[150px] truncate text-vin-text2">{row.doctorName}</div>
+                          <div className="max-w-[150px] truncate text-vin-text2">{row.assignedDoctorName || "Chua gan"}</div>
+                          <div className="mt-1 max-w-[150px] truncate text-[10px] text-vin-muted">Report: {row.doctorName}</div>
                           <div className="mt-1 font-mono text-[10px] text-vin-muted">{reportStatusLabels[row.reportStatus] || row.reportStatus}</div>
                         </td>
                         <td className="px-3 py-3 text-center">
@@ -434,9 +440,25 @@ export default function ArchivePage() {
                     <Info label="Ngày chụp" value={formatDateTime(detail.studyDate)} />
                     <Info label="Accession" value={detail.accessionNumber} mono />
                     <Info label="Modality" value={detail.modality} mono />
-                    <Info label="Bác sĩ" value={detail.doctorName} />
+                    <Info label="Bac si duoc gan" value={detail.assignedDoctorName || "Chua gan"} />
+                    <Info label="Bac si report/ky" value={detail.doctorName} />
+                    <Info label="KTV" value={detail.technologistName || "Chua chon"} />
+                    <Info label="Procedure" value={detail.procedureName || detail.procedureDescription || detail.studyDescription} />
+                    <Info label="Service" value={detail.serviceTypeName || "Fallback DICOM"} />
+                    <Info label="May/Phong" value={detail.machineName || "-"} />
+                    <Info label="Co so" value={detail.facilityName || "-"} />
+                    <Info label="Delivered" value={formatDateTime(detail.deliveredAt)} />
+                    <Info label="HIS order" value={detail.hisSyncStatus || "-"} />
+                    <Info label="HIS result" value={detail.hisResultStatus || "-"} />
                   </div>
                 </div>
+
+                {detail.clinicalInfo && (
+                  <section>
+                    <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-vin-muted">Lam sang</div>
+                    <div className="rounded border border-vin-border bg-vin-shell p-3 text-[12px] leading-relaxed text-vin-text2">{detail.clinicalInfo}</div>
+                  </section>
+                )}
 
                 {detail.imageWarning && (
                   <div className="flex gap-2 rounded border border-vin-status-warning-bg/60 bg-vin-status-warning-bg/15 px-3 py-2 text-[11px] font-semibold text-amber-100">
