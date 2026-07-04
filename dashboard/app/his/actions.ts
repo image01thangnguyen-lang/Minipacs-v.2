@@ -7,7 +7,7 @@ import { prisma } from "@/app/db";
 import { canPerformMachineAction, resolveDicomNodeIdByAETitle } from "@/lib/authz/machine-permissions";
 import { auth } from "@/auth";
 
-async function checkHisMatrixPerm(studyInstanceUid: string): Promise<boolean> {
+export async function checkHisMatrixPerm(studyInstanceUid: string): Promise<boolean> {
   const session = await auth();
   if (!session?.user) return false;
 

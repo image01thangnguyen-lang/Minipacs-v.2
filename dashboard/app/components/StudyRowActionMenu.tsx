@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { MoreHorizontal, Eye, FileText, UserPlus, FileEdit, FilePlus, XCircle, Unlock, CheckCircle2, Play } from "lucide-react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
+import { Link as LinkIcon, Users } from "lucide-react";
 
 type ActionMenuProps = {
   studyInstanceUid: string;
@@ -25,6 +26,10 @@ type ActionMenuProps = {
   onCancelDraft?: () => void;
   onUnfinalize?: () => void;
   onMarkDelivered?: () => void;
+  canShare?: boolean;
+  canConsult?: boolean;
+  onShare?: () => void;
+  onConsult?: () => void;
 };
 
 export function StudyRowActionMenu({
@@ -46,6 +51,10 @@ export function StudyRowActionMenu({
   onCancelDraft,
   onUnfinalize,
   onMarkDelivered,
+  canShare,
+  canConsult,
+  onShare,
+  onConsult,
 }: ActionMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -112,6 +121,26 @@ export function StudyRowActionMenu({
           <FileText className="size-4 text-emerald-400" />
           Mở báo cáo
         </Link>
+      )}
+
+      {canShare && (
+        <button
+          onClick={() => handleAction(onShare)}
+          className="flex w-full items-center gap-2 px-3 py-1.5 text-sm text-vin-text transition hover:bg-white/5"
+        >
+          <LinkIcon className="size-4 text-cyan-400" />
+          Chia sẻ
+        </button>
+      )}
+
+      {canConsult && (
+        <button
+          onClick={() => handleAction(onConsult)}
+          className="flex w-full items-center gap-2 px-3 py-1.5 text-sm text-vin-text transition hover:bg-white/5"
+        >
+          <Users className="size-4 text-pink-400" />
+          Hội chẩn
+        </button>
       )}
 
       {canWriteReport && studyStatus === "READY_TO_READ" && (

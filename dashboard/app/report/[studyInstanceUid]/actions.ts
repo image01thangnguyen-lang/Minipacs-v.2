@@ -5,6 +5,7 @@ import { prisma } from '../../db';
 import { syncOrthancStudyToRis, updateStudyStatusForReport } from '@/lib/studyStatus';
 import { requirePermission } from '@/lib/authz';
 import { hasPermission } from '@/lib/permissions';
+import { checkHisMatrixPerm } from '../../his/actions';
 
 function cleanText(value?: string | null) {
   return (value || "").trim();
@@ -89,6 +90,7 @@ async function getStudyOperationalInfo(studyInstanceUid: string) {
     hisLastError: study.hisLastError || study.order?.hisLastError || report?.hisResultError || null,
     hisLastSyncedAt: toIso(study.hisLastSyncedAt || study.order?.hisLastSyncedAt),
     hisLastResultSentAt: toIso(study.hisLastResultSentAt || report?.hisResultSentAt),
+    canSyncHisMatrix: await checkHisMatrixPerm(studyInstanceUid),
   };
 }
 

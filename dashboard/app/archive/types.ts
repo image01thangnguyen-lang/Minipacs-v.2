@@ -62,6 +62,7 @@ export type ArchiveReportDetail = ArchiveStudyRow & {
     source: string;
     createdAt: string;
   }>;
+  canSyncHisMatrix: boolean;
 };
 
 export const finalReportStatuses = ["FINAL"] as const;

@@ -13,6 +13,7 @@ import {
   type ArchiveSearchFilters,
   type ArchiveStudyRow,
 } from "./types";
+import { checkHisMatrixPerm } from "../his/actions";
 
 async function requireArchiveAccess() {
   return requirePermission("archive.read");
@@ -471,6 +472,7 @@ export async function getArchiveReportAction(studyInstanceUid: string) {
       source: history.source,
       createdAt: history.createdAt.toISOString(),
     })),
+    canSyncHisMatrix: await checkHisMatrixPerm(studyInstanceUid),
   };
 
   return { success: true, detail };

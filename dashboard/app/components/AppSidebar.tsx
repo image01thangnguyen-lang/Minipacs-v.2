@@ -6,7 +6,7 @@ import { getSession, signOut } from "next-auth/react";
 import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X, User, Printer, Camera } from "lucide-react";
 import { hasPermission, type PermissionKey } from "@/lib/permissions";
 
-type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "printTemplates" | "clinic" | "pacs" | "storage" | "catalogs" | "non-dicom";
+type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "printTemplates" | "clinic" | "pacs" | "storage" | "catalogs" | "non-dicom" | "consultations";
 
 const mainMenuItems = [
   { key: "studies", label: "Ca chụp", href: "/", icon: LayoutDashboard, permission: "studies.read" },

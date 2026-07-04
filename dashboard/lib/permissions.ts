@@ -43,6 +43,19 @@ export const permissionKeys = [
   "nonDicom.copyMedia",
   "nonDicom.print",
   "nonDicom.video",
+  "share.manage",
+  "share.read",
+  "share.create",
+  "share.revoke",
+  "consult.manage",
+  "consult.read",
+  "consult.create",
+  "consult.invite",
+  "consult.start",
+  "consult.message",
+  "consult.finish",
+  "consult.cancel",
+  "consult.admin",
 ] as const;
 
 export type PermissionKey = (typeof permissionKeys)[number];
@@ -101,6 +114,19 @@ export const permissionLabels: Record<PermissionKey, string> = {
   "nonDicom.copyMedia": "Sao chép media giữa các ca",
   "nonDicom.print": "In/Xuất media Non-DICOM",
   "nonDicom.video": "Ghi/Quản lý video",
+  "share.manage": "Quản lý toàn bộ link chia sẻ",
+  "share.read": "Xem danh sách link chia sẻ",
+  "share.create": "Tạo link chia sẻ",
+  "share.revoke": "Thu hồi link chia sẻ",
+  "consult.manage": "Quản lý hội chẩn chung",
+  "consult.read": "Xem danh sách hội chẩn",
+  "consult.create": "Tạo yêu cầu hội chẩn",
+  "consult.invite": "Mời người tham gia hội chẩn",
+  "consult.start": "Bắt đầu hội chẩn",
+  "consult.message": "Gửi tin nhắn hội chẩn",
+  "consult.finish": "Kết thúc hội chẩn",
+  "consult.cancel": "Hủy hội chẩn",
+  "consult.admin": "Quản trị hội chẩn (toàn quyền)",
 };
 
 export const permissionGroups: Array<{ title: string; permissions: PermissionKey[] }> = [
@@ -135,6 +161,14 @@ export const permissionGroups: Array<{ title: string; permissions: PermissionKey
       "nonDicom.copyMedia",
       "nonDicom.print",
       "nonDicom.video"
+    ],
+  },
+  {
+    title: "Chia sẻ & Hội chẩn",
+    permissions: [
+      "share.manage", "share.read", "share.create", "share.revoke",
+      "consult.manage", "consult.read", "consult.create", "consult.invite",
+      "consult.start", "consult.message", "consult.finish", "consult.cancel", "consult.admin"
     ],
   },
 ];
@@ -180,6 +214,19 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "nonDicom.copyMedia",
     "nonDicom.print",
     "nonDicom.video",
+    "share.manage",
+    "share.read",
+    "share.create",
+    "share.revoke",
+    "consult.manage",
+    "consult.read",
+    "consult.create",
+    "consult.invite",
+    "consult.start",
+    "consult.message",
+    "consult.finish",
+    "consult.cancel",
+    "consult.admin",
   ],
   DOCTOR: [
     "studies.read",
@@ -205,6 +252,16 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "nonDicom.copyMedia",
     "nonDicom.print",
     "nonDicom.video",
+    "share.read",
+    "share.create",
+    "share.revoke",
+    "consult.read",
+    "consult.create",
+    "consult.invite",
+    "consult.start",
+    "consult.message",
+    "consult.finish",
+    "consult.cancel",
   ],
   TECHNICIAN: [
     "studies.read",
@@ -228,6 +285,16 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "nonDicom.copyMedia",
     "nonDicom.print",
     "nonDicom.video",
+    "share.read",
+    "share.create",
+    "share.revoke",
+    "consult.read",
+    "consult.create",
+    "consult.invite",
+    "consult.start",
+    "consult.message",
+    "consult.finish",
+    "consult.cancel",
   ],
   RECEPTION: [
     "studies.read",
@@ -241,6 +308,12 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "his.retry",
     "nonDicom.read",
     "nonDicom.create",
+    "share.read",
+    "share.create",
+    "share.revoke",
+    "consult.read",
+    "consult.create",
+    "consult.message",
   ],
 };
 
@@ -260,6 +333,7 @@ const routePermissions: Array<{ prefix: string; permission: PermissionKey }> = [
   { prefix: "/statistics", permission: "statistics.read" },
   { prefix: "/report", permission: "reports.read" },
   { prefix: "/non-dicom", permission: "nonDicom.read" },
+  { prefix: "/consultations", permission: "consult.read" },
   { prefix: "/", permission: "studies.read" },
 ];
 

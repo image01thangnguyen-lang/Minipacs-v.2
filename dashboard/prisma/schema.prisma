@@ -80,6 +80,10 @@ model Report {
   hisResultMessageId String?
   hisResultError     String?
 
+  // Phase 7
+  shareLinks    ShareLink[]
+  consultations Consultation[]
+
   @@map("reports")
 }
 
@@ -111,6 +115,16 @@ model User {
   viewerActionRequestsRequested ViewerSeriesActionRequest[] @relation("ViewerActionRequestsRequested")
   viewerActionRequestsApproved  ViewerSeriesActionRequest[] @relation("ViewerActionRequestsApproved")
   viewerAuditLogs               ViewerAuditLog[]            @relation("ViewerAuditLogActor")
+
+  // Phase 7
+  shareLinksCreated        ShareLink[]               @relation("ShareLinksCreated")
+  shareLinksRevoked        ShareLink[]               @relation("ShareLinksRevoked")
+  consultationsCreated     Consultation[]            @relation("ConsultationsCreated")
+  consultationsHosted      Consultation[]            @relation("ConsultationsHosted")
+  consultationsAssigned    Consultation[]            @relation("ConsultationsAssigned")
+  consultationParticipants ConsultationParticipant[] @relation("ConsultationParticipants")
+  consultationInvitations  ConsultationParticipant[] @relation("ConsultationInvitations")
+  consultationMessages     ConsultationMessage[]     @relation("ConsultationMessages")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -328,19 +342,19 @@ model ImagingStudy {
   archivedAt    DateTime?
 
   // Phase 6 Non-DICOM extensions
-  sourceType         String?      @default("DICOM") // DICOM | NON_DICOM
-  isNonDicom         Boolean      @default(false)
-  mediaCount         Int          @default(0)
-  videoCount         Int          @default(0)
-  attachmentCount    Int          @default(0)
+  sourceType         String?       @default("DICOM") // DICOM | NON_DICOM
+  isNonDicom         Boolean       @default(false)
+  mediaCount         Int           @default(0)
+  videoCount         Int           @default(0)
+  attachmentCount    Int           @default(0)
   primaryMediaId     String?
   captureStartedAt   DateTime?
   captureCompletedAt DateTime?
-  captureStatus      String?      // PENDING | CAPTURING | COMPLETED | CANCELLED
+  captureStatus      String? // PENDING | CAPTURING | COMPLETED | CANCELLED
   nonDicomExam       NonDicomExam?
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   statusHistory             StudyStatusHistory[]
   events                    ImagingStudyEvent[]
@@ -360,6 +374,10 @@ model ImagingStudy {
   ViewerAuditLog            ViewerAuditLog[]
   ViewerDownloadJob         ViewerDownloadJob[]
   ViewerSeriesActionRequest ViewerSeriesActionRequest[]
+
+  // Phase 7
+  shareLinks    ShareLink[]
+  consultations Consultation[]
 
   @@index([status])
   @@index([patientId])
@@ -1091,37 +1109,39 @@ model ViewerSeriesActionRequest {
 // -----------------------------------------------------------------------------
 
 model NonDicomExam {
-  id                  String   @id @default(uuid())
-  caseCode            String   @unique
-  imagingStudyId      String?  @unique
-  imagingStudy        ImagingStudy? @relation(fields: [imagingStudyId], references: [id])
-  studyInstanceUid    String?
-  worklistOrderId     String?  @unique
-  patientId           String?
-  patientName         String?
-  patientBirthDate    DateTime?
-  patientSex          String?
-  accessionNumber     String?
-  status              String   @default("REQUESTED") // REQUESTED | ARRIVED | CAPTURING | READY_TO_READ | READING | REPORTED | DELIVERED | CANCELLED
-  facilityId          String?
-  machineId           String?
-  procedureCatalogId  String?
-  serviceTypeId       String?
-  assignedDoctorId    String?
-  technologistId      String?
-  clinicalInfo        String?  @db.Text
-  indication          String?  @db.Text
-  captureStartedAt    DateTime?
-  captureCompletedAt  DateTime?
-  createdByUserId     String?
-  updatedByUserId     String?
-  cancelledAt         DateTime?
-  cancelReason        String?  @db.Text
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                 String        @id @default(uuid())
+  caseCode           String        @unique
+  imagingStudyId     String?       @unique
+  imagingStudy       ImagingStudy? @relation(fields: [imagingStudyId], references: [id])
+  studyInstanceUid   String?
+  worklistOrderId    String?       @unique
+  patientId          String?
+  patientName        String?
+  patientBirthDate   DateTime?
+  patientSex         String?
+  accessionNumber    String?
+  status             String        @default("REQUESTED") // REQUESTED | ARRIVED | CAPTURING | READY_TO_READ | READING | REPORTED | DELIVERED | CANCELLED
+  facilityId         String?
+  machineId          String?
+  procedureCatalogId String?
+  serviceTypeId      String?
+  assignedDoctorId   String?
+  technologistId     String?
+  clinicalInfo       String?       @db.Text
+  indication         String?       @db.Text
+  captureStartedAt   DateTime?
+  captureCompletedAt DateTime?
+  createdByUserId    String?
+  updatedByUserId    String?
+  cancelledAt        DateTime?
+  cancelReason       String?       @db.Text
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
-  media               NonDicomMedia[]
-  captureSessions     NonDicomCaptureSession[]
+  media           NonDicomMedia[]
+  captureSessions NonDicomCaptureSession[]
+  shareLinks      ShareLink[]
+  consultations   Consultation[]
 
   @@index([status])
   @@index([machineId])
@@ -1135,13 +1155,13 @@ model NonDicomExam {
 }
 
 model NonDicomMedia {
-  id                String   @id @default(uuid())
+  id                String       @id @default(uuid())
   examId            String
   exam              NonDicomExam @relation(fields: [examId], references: [id], onDelete: Cascade)
   studyInstanceUid  String?
-  mediaType         String   // IMAGE | VIDEO | PDF | PATHOLOGY | DOCUMENT | OTHER
-  source            String   // CAMERA | UPLOAD | COPY | IMPORT
-  status            String   @default("ACTIVE") // ACTIVE | VOIDED
+  mediaType         String // IMAGE | VIDEO | PDF | PATHOLOGY | DOCUMENT | OTHER
+  source            String // CAMERA | UPLOAD | COPY | IMPORT
+  status            String       @default("ACTIVE") // ACTIVE | VOIDED
   filePath          String
   thumbnailPath     String?
   mimeType          String?
@@ -1150,18 +1170,18 @@ model NonDicomMedia {
   width             Int?
   height            Int?
   captureDeviceId   String?
-  isPrimary         Boolean  @default(false)
-  sortOrder         Int      @default(0)
-  note              String?  @db.Text
-  cropRectJson      String?  @db.Text
-  metadataJson      String?  @db.Text
+  isPrimary         Boolean      @default(false)
+  sortOrder         Int          @default(0)
+  note              String?      @db.Text
+  cropRectJson      String?      @db.Text
+  metadataJson      String?      @db.Text
   copiedFromMediaId String?
   createdByUserId   String?
   voidedByUserId    String?
   voidedAt          DateTime?
-  voidReason        String?  @db.Text
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  voidReason        String?      @db.Text
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
   @@index([examId])
   @@index([mediaType])
@@ -1171,20 +1191,186 @@ model NonDicomMedia {
 }
 
 model NonDicomCaptureSession {
-  id                String   @id @default(uuid())
-  examId            String
-  exam              NonDicomExam @relation(fields: [examId], references: [id], onDelete: Cascade)
-  startedByUserId   String?
-  deviceLabel       String?
-  deviceIdHash      String?
-  status            String   @default("STARTED") // STARTED | STOPPED | FAILED
-  failureReason     String?  @db.Text
-  startedAt         DateTime @default(now())
-  stoppedAt         DateTime?
-  createdAt         DateTime @default(now())
+  id              String       @id @default(uuid())
+  examId          String
+  exam            NonDicomExam @relation(fields: [examId], references: [id], onDelete: Cascade)
+  startedByUserId String?
+  deviceLabel     String?
+  deviceIdHash    String?
+  status          String       @default("STARTED") // STARTED | STOPPED | FAILED
+  failureReason   String?      @db.Text
+  startedAt       DateTime     @default(now())
+  stoppedAt       DateTime?
+  createdAt       DateTime     @default(now())
 
   @@index([examId])
   @@index([status])
   @@map("non_dicom_capture_sessions")
 }
 
+// -----------------------------------------------------------------------------
+// Phase 7: Sharing And Consultation
+// -----------------------------------------------------------------------------
+
+model ShareLink {
+  id                     String        @id @default(uuid())
+  tokenHash              String        @unique
+  shortCode              String?       @unique
+  scope                  String // STUDY | REPORT | NON_DICOM_EXAM | MEDIA_SET | VIEWER_ARTIFACTS
+  studyInstanceUid       String?
+  imagingStudyId         String?
+  imagingStudy           ImagingStudy? @relation(fields: [imagingStudyId], references: [id])
+  reportId               String?
+  report                 Report?       @relation(fields: [reportId], references: [id])
+  nonDicomExamId         String?
+  nonDicomExam           NonDicomExam? @relation(fields: [nonDicomExamId], references: [id])
+  createdByUserId        String?
+  createdByUser          User?         @relation("ShareLinksCreated", fields: [createdByUserId], references: [id])
+  status                 String        @default("ACTIVE") // ACTIVE | REVOKED | EXPIRED | LOCKED
+  expiresAt              DateTime
+  revokedAt              DateTime?
+  revokedByUserId        String?
+  revokedByUser          User?         @relation("ShareLinksRevoked", fields: [revokedByUserId], references: [id])
+  revokeReason           String?       @db.Text
+  passwordHash           String?
+  passwordRequired       Boolean       @default(false)
+  failedPasswordAttempts Int           @default(0)
+  lockedAt               DateTime?
+  hidePatientInfo        Boolean       @default(true)
+  allowDownload          Boolean       @default(false)
+  allowImages            Boolean       @default(true)
+  allowReport            Boolean       @default(true)
+  allowMeasurements      Boolean       @default(true)
+  maxAccessCount         Int?
+  accessCount            Int           @default(0)
+  lastAccessedAt         DateTime?
+  metadataJson           String?       @db.Text
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  accessLogs      ShareAccessLog[]
+  mediaSelections ShareMediaSelection[]
+
+  @@index([tokenHash])
+  @@index([shortCode])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([studyInstanceUid])
+  @@index([createdByUserId])
+  @@map("share_links")
+}
+
+model ShareAccessLog {
+  id              String    @id @default(uuid())
+  shareLinkId     String
+  shareLink       ShareLink @relation(fields: [shareLinkId], references: [id], onDelete: Cascade)
+  eventType       String // OPENED | PASSWORD_FAILED | PASSWORD_PASSED | VIEWED_REPORT | VIEWED_IMAGE | DOWNLOAD_DENIED | EXPIRED_DENIED | REVOKED_DENIED
+  ipHash          String?
+  userAgentHash   String?
+  viewerSessionId String?
+  metadataJson    String?   @db.Text
+  createdAt       DateTime  @default(now())
+
+  @@index([shareLinkId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("share_access_logs")
+}
+
+model ShareMediaSelection {
+  id          String    @id @default(uuid())
+  shareLinkId String
+  shareLink   ShareLink @relation(fields: [shareLinkId], references: [id], onDelete: Cascade)
+  mediaType   String // VIEWER_KEY_IMAGE | VIEWER_SNAPSHOT | NON_DICOM_MEDIA
+  mediaId     String
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  @@index([shareLinkId])
+  @@index([mediaType, mediaId])
+  @@map("share_media_selections")
+}
+
+model Consultation {
+  id                   String        @id @default(uuid())
+  consultCode          String        @unique
+  title                String
+  reason               String?       @db.Text
+  status               String        @default("REQUESTED") // REQUESTED | STARTED | IN_PROGRESS | FINISHED | CANCELLED
+  priority             String        @default("ROUTINE") // ROUTINE | URGENT | STAT
+  sourceType           String // DICOM | NON_DICOM | REPORT | ARCHIVE
+  studyInstanceUid     String?
+  imagingStudyId       String?
+  imagingStudy         ImagingStudy? @relation(fields: [imagingStudyId], references: [id])
+  reportId             String?
+  report               Report?       @relation(fields: [reportId], references: [id])
+  nonDicomExamId       String?
+  nonDicomExam         NonDicomExam? @relation(fields: [nonDicomExamId], references: [id])
+  createdByUserId      String?
+  createdByUser        User?         @relation("ConsultationsCreated", fields: [createdByUserId], references: [id])
+  hostUserId           String?
+  hostUser             User?         @relation("ConsultationsHosted", fields: [hostUserId], references: [id])
+  assignedDoctorId     String?
+  assignedDoctor       User?         @relation("ConsultationsAssigned", fields: [assignedDoctorId], references: [id])
+  startedAt            DateTime?
+  finishedAt           DateTime?
+  cancelledAt          DateTime?
+  cancelReason         String?       @db.Text
+  videoProvider        String?
+  videoRoomId          String?
+  videoJoinUrlInternal String?       @db.Text
+  providerStatus       String        @default("DISABLED") // DISABLED | READY | FAILED
+  metadataJson         String?       @db.Text
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  participants ConsultationParticipant[]
+  messages     ConsultationMessage[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([studyInstanceUid])
+  @@index([nonDicomExamId])
+  @@index([createdByUserId])
+  @@index([hostUserId])
+  @@index([createdAt])
+  @@map("consultations")
+}
+
+model ConsultationParticipant {
+  id              String       @id @default(uuid())
+  consultationId  String
+  consultation    Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  userId          String?
+  user            User?        @relation("ConsultationParticipants", fields: [userId], references: [id])
+  displayName     String
+  role            String       @default("CONSULTANT") // HOST | CONSULTANT | OBSERVER | EXTERNAL
+  status          String       @default("INVITED") // INVITED | JOINED | LEFT | REMOVED
+  invitedByUserId String?
+  invitedByUser   User?        @relation("ConsultationInvitations", fields: [invitedByUserId], references: [id])
+  joinedAt        DateTime?
+  leftAt          DateTime?
+  createdAt       DateTime     @default(now())
+
+  @@index([consultationId])
+  @@index([userId])
+  @@index([status])
+  @@map("consultation_participants")
+}
+
+model ConsultationMessage {
+  id                String       @id @default(uuid())
+  consultationId    String
+  consultation      Consultation @relation(fields: [consultationId], references: [id], onDelete: Cascade)
+  senderUserId      String?
+  senderUser        User?        @relation("ConsultationMessages", fields: [senderUserId], references: [id])
+  senderDisplayName String?
+  messageType       String       @default("TEXT") // TEXT | SYSTEM
+  body              String       @db.Text
+  metadataJson      String?      @db.Text
+  createdAt         DateTime     @default(now())
+
+  @@index([consultationId])
+  @@index([createdAt])
+  @@map("consultation_messages")
+}

@@ -18,6 +18,10 @@ import { AppSidebar } from "@/app/components/AppSidebar";
 import { CustomSelect, type SelectOption } from "@/app/components/CustomSelect";
 import { CustomDatePicker } from "@/app/components/CustomDatePicker";
 import { PrintTemplateViewer } from "@/app/report/[studyInstanceUid]/components/PrintTemplateViewer";
+import { ShareDialog } from "@/components/share/ShareDialog";
+import { ConsultationDialog } from "@/components/consultation/ConsultationDialog";
+import { Link as LinkIcon, Users } from "lucide-react";
+import { getUserPermissionsAction } from "../actions";
 import {
   getArchiveDoctorsAction,
   getArchiveReportAction,
@@ -25,6 +29,7 @@ import {
   markArchiveDeliveredAction,
   searchArchiveStudiesAction,
 } from "./actions";
+import { sendReportToHisAction } from "../his/actions";
 import type { ArchiveDoctorOption, ArchiveReportDetail, ArchiveSearchFilters, ArchiveStudyRow } from "./types";
 
 const modalitySelectOptions: SelectOption[] = [
@@ -114,6 +119,19 @@ export default function ArchivePage() {
   const [isActionBusy, setIsActionBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [consultDialogOpen, setConsultDialogOpen] = useState(false);
+  const [canShare, setCanShare] = useState(false);
+  const [canConsult, setCanConsult] = useState(false);
+  const [canSyncHis, setCanSyncHis] = useState(false);
+
+  useEffect(() => {
+    getUserPermissionsAction().then(res => {
+      setCanShare(res.permissions.includes("share.create"));
+      setCanConsult(res.permissions.includes("consult.create"));
+      setCanSyncHis(res.permissions.includes("his.sync"));
+    }).catch(console.error);
+  }, []);
 
   const printRef = useRef<HTMLDivElement>(null);
   const handlePrint = useReactToPrint({
@@ -211,6 +229,27 @@ export default function ArchivePage() {
       handlePrint();
     } catch (err: any) {
       setError(err?.message || "Không thực hiện được thao tác in.");
+    } finally {
+      setIsDetailLoading(false);
+    }
+  };
+
+  const runHisRetry = async () => {
+    if (!detail) return;
+    setIsActionBusy(true);
+    try {
+      const res = await sendReportToHisAction(detail.studyInstanceUid);
+      if (res.success) {
+        alert("Đã gửi kết quả sang HIS thành công!");
+      } else {
+        alert(res.error || "Lỗi gửi kết quả sang HIS");
+      }
+      if ('status' in res && res.status) {
+        setDetail(prev => prev ? { ...prev, hisResultStatus: res.status as string } : prev);
+        setRows(prev => prev.map(r => r.studyInstanceUid === detail.studyInstanceUid ? { ...r, hisResultStatus: res.status as string } : r));
+      }
+    } catch (err: any) {
+      alert(err?.message || "Lỗi kết nối HIS");
     } finally {
       setIsActionBusy(false);
     }
@@ -491,6 +530,24 @@ export default function ArchivePage() {
                     <FileDown className="h-3.5 w-3.5" />
                     Xuất PDF
                   </button>
+                  {canShare && (
+                    <button type="button" onClick={() => setShareDialogOpen(true)} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white">
+                      <LinkIcon className="h-3.5 w-3.5 text-cyan-400" />
+                      Chia sẻ
+                    </button>
+                  )}
+                  {canConsult && (
+                    <button type="button" onClick={() => setConsultDialogOpen(true)} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white">
+                      <Users className="h-3.5 w-3.5 text-pink-400" />
+                      Hội chẩn
+                    </button>
+                  )}
+                  {canSyncHis && detail.canSyncHisMatrix && (detail.studyStatus === "FINALIZED" || detail.studyStatus === "DELIVERED") && (
+                    <button type="button" onClick={runHisRetry} disabled={isActionBusy || detail.hisResultStatus === 'SYNCED' || detail.hisResultStatus === 'SENT'} className={`flex w-full items-center justify-center gap-1.5 rounded border px-3 py-2 text-[11px] font-semibold transition disabled:opacity-40 col-span-2 ${detail.hisResultStatus === 'FAILED' ? "border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20" : "border-vin-accent/50 bg-vin-accent/10 text-vin-accent hover:bg-vin-accent/20"}`}>
+                      {isActionBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCcw className="h-3.5 w-3.5" />}
+                      {detail.hisResultStatus === 'FAILED' ? 'Retry Gửi HIS' : 'Gửi HIS'}
+                    </button>
+                  )}
                 </div>
 
                 {detail.studyStatus === "FINALIZED" && (
@@ -504,7 +561,6 @@ export default function ArchivePage() {
                   <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-vin-muted">Kết luận</div>
                   <div className="rounded border border-vin-border bg-vin-shell p-3 text-[12px] leading-relaxed text-vin-text2">{detail.conclusion || "-"}</div>
                 </section>
-
                 <section>
                   <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-vin-muted">Mô tả</div>
                   <div className="max-h-56 overflow-auto rounded border border-vin-border bg-vin-shell p-3 text-[12px] leading-relaxed text-vin-text2 scr-dark" dangerouslySetInnerHTML={{ __html: detail.findings || "<span>-</span>" }} />
@@ -540,6 +596,19 @@ export default function ArchivePage() {
         </main>
 
         <PrintTemplateViewer ref={printRef} templateHtml={detail?.templateHtml || ""} context={printContext} />
+
+        <ShareDialog
+          isOpen={shareDialogOpen}
+          onClose={() => setShareDialogOpen(false)}
+          scope="STUDY"
+          resourceId={detail?.studyInstanceUid || ""}
+        />
+        <ConsultationDialog
+          isOpen={consultDialogOpen}
+          onClose={() => setConsultDialogOpen(false)}
+          sourceType="ARCHIVE"
+          studyInstanceUid={detail?.studyInstanceUid || ""}
+        />
 
         <style>{`
           .field-input { width: 100%; height: 2.25rem; border-radius: 0.25rem; border: 1px solid var(--vin-border-subtle); background: var(--vin-bg-sidebar); padding: 0.45rem 0.65rem; font-size: 0.75rem; color: var(--vin-text-primary); outline: none; }

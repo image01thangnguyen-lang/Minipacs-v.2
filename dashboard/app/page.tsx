@@ -38,6 +38,8 @@ import { logArchivePrintAction } from "./archive/actions";
 import { StudyRowActionMenu } from "./components/StudyRowActionMenu";
 import { ClinicalInfoModal } from "./components/ClinicalInfoModal";
 import AssignDoctorModal from "./components/AssignDoctorModal";
+import { ShareDialog } from "@/components/share/ShareDialog";
+import { ConsultationDialog } from "@/components/consultation/ConsultationDialog";
 
 import {
   getDefaultTemplate,
@@ -195,6 +197,11 @@ export default function DashboardPage() {
   const [activeDoctors, setActiveDoctors] = useState<{value: string, label: string}[]>([]);
 
   const [activeStudy, setActiveStudy] = useState<any>(null);
+
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [consultDialogOpen, setConsultDialogOpen] = useState(false);
+  const [actionResourceId, setActionResourceId] = useState("");
+  const [actionResourceType, setActionResourceType] = useState<'DICOM' | 'NON_DICOM'>('DICOM');
 
   const [permissions, setPermissions] = useState<string[]>([]);
   const [userRole, setUserRole] = useState<string>("GUEST");
@@ -944,6 +951,8 @@ export default function DashboardPage() {
                           canCancelDraft={permissions.includes("reports.cancelDraft")}
                           canUnfinalize={permissions.includes("reports.unfinalize")}
                           canDeliver={permissions.includes("archive.deliver") && study.WorkflowStatus === "FINALIZED"}
+                          canShare={permissions.includes("share.create")}
+                          canConsult={permissions.includes("consult.create")}
                           onMarkDelivered={() => handleMarkDelivered(uid)}
                           onUpdateClinical={() => openClinicalModal(study, "CLINICAL_INFO")}
                           onAddIndication={() => openClinicalModal(study, "INDICATION")}
@@ -951,6 +960,16 @@ export default function DashboardPage() {
                           onAssignDoctor={() => openAssignModal(study)}
                           onCancelDraft={() => handleCancelDraft(uid)}
                           onUnfinalize={() => handleUnfinalize(uid)}
+                          onShare={() => {
+                            setActionResourceId(study.isNonDicom ? study.nonDicomExamId : uid);
+                            setActionResourceType(study.isNonDicom ? 'NON_DICOM' : 'DICOM');
+                            setShareDialogOpen(true);
+                          }}
+                          onConsult={() => {
+                            setActionResourceId(study.isNonDicom ? study.nonDicomExamId : uid);
+                            setActionResourceType(study.isNonDicom ? 'NON_DICOM' : 'DICOM');
+                            setConsultDialogOpen(true);
+                          }}
                         />
                       </td>
                     </tr>
@@ -1191,6 +1210,19 @@ export default function DashboardPage() {
         onClose={() => setAssignDoctorModalOpen(false)}
         doctors={activeDoctors}
         onAssign={handleAssignDoctor}
+      />
+      <ShareDialog
+        isOpen={shareDialogOpen}
+        onClose={() => setShareDialogOpen(false)}
+        scope={actionResourceType === 'NON_DICOM' ? 'NON_DICOM_EXAM' : 'STUDY'}
+        resourceId={actionResourceId}
+      />
+      <ConsultationDialog
+        isOpen={consultDialogOpen}
+        onClose={() => setConsultDialogOpen(false)}
+        sourceType={actionResourceType}
+        studyInstanceUid={actionResourceType === 'DICOM' ? actionResourceId : undefined}
+        nonDicomExamId={actionResourceType === 'NON_DICOM' ? actionResourceId : undefined}
       />
     </div>
   );
