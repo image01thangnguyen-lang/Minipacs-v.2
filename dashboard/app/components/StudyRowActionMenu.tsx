@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MoreHorizontal, Eye, FileText, UserPlus, FileEdit, FilePlus, XCircle, Unlock, CheckCircle2, Play } from "lucide-react";
+import { MoreHorizontal, Eye, FileText, UserPlus, FileEdit, FilePlus, XCircle, Unlock, CheckCircle2, Play, Download, Trash2, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { Link as LinkIcon, Users } from "lucide-react";
@@ -28,8 +28,14 @@ type ActionMenuProps = {
   onMarkDelivered?: () => void;
   canShare?: boolean;
   canConsult?: boolean;
+  canExport?: boolean;
+  canDeleteStudy?: boolean;
+  canExportAnonymized?: boolean;
   onShare?: () => void;
   onConsult?: () => void;
+  onExportDicom?: () => void;
+  onExportAnonymized?: () => void;
+  onRequestDelete?: () => void;
 };
 
 export function StudyRowActionMenu({
@@ -53,8 +59,14 @@ export function StudyRowActionMenu({
   onMarkDelivered,
   canShare,
   canConsult,
+  canExport,
+  canDeleteStudy,
+  canExportAnonymized,
   onShare,
   onConsult,
+  onExportDicom,
+  onExportAnonymized,
+  onRequestDelete,
 }: ActionMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -143,6 +155,26 @@ export function StudyRowActionMenu({
         </button>
       )}
 
+      {canExport && (
+        <button
+          onClick={() => handleAction(onExportDicom)}
+          className="flex w-full items-center gap-2 px-3 py-1.5 text-sm text-vin-text transition hover:bg-white/5"
+        >
+          <Download className="size-4 text-indigo-400" />
+          Tải xuống DICOM
+        </button>
+      )}
+
+      {canExportAnonymized && (
+        <button
+          onClick={() => handleAction(onExportAnonymized)}
+          className="flex w-full items-center gap-2 px-3 py-1.5 text-sm text-vin-text transition hover:bg-white/5"
+        >
+          <ShieldAlert className="size-4 text-blue-400" />
+          Tải xuống (Ẩn thông tin)
+        </button>
+      )}
+
       {canWriteReport && studyStatus === "READY_TO_READ" && (
         <button
           onClick={() => handleAction(onStartReading)}
@@ -209,6 +241,16 @@ export function StudyRowActionMenu({
         >
           <CheckCircle2 className="size-4" />
           Ghi nhận đã trả
+        </button>
+      )}
+
+      {canDeleteStudy && (
+        <button
+          onClick={() => handleAction(onRequestDelete)}
+          className="flex w-full items-center gap-2 px-3 py-1.5 text-sm text-red-400 transition hover:bg-red-500/10 mt-1 border-t border-vin-border pt-1.5"
+        >
+          <Trash2 className="size-4" />
+          Xóa Study
         </button>
       )}
     </div>,

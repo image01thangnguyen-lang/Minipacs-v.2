@@ -6,7 +6,7 @@ import { getSession, signOut } from "next-auth/react";
 import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X, User, Printer, Camera, Network } from "lucide-react";
 import { hasPermission, type PermissionKey } from "@/lib/permissions";
 
-type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "printTemplates" | "clinic" | "pacs" | "his" | "storage" | "catalogs" | "non-dicom" | "consultations";
+type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "printTemplates" | "clinic" | "pacs" | "his" | "storage" | "catalogs" | "non-dicom" | "consultations" | "admin_retention" | "admin_backup" | "admin_destructive";
 
 const mainMenuItems = [
   { key: "studies", label: "Ca chụp", href: "/", icon: LayoutDashboard, permission: "studies.read" },
@@ -21,6 +21,9 @@ const mainMenuItems = [
   { key: "pacs", label: "PACS / IT", href: "/admin/pacs/nodes", icon: Settings, permission: "pacs.manage" },
   { key: "his", label: "Tích hợp HIS", href: "/admin/his", icon: Network, permission: "his.manage" },
   { key: "catalogs", label: "Danh mục", href: "/admin/catalogs", icon: FileText, permission: "admin.catalogs" },
+  { key: "admin_retention", label: "Retention", href: "/admin/retention", icon: HardDrive, permission: "retention.read" },
+  { key: "admin_backup", label: "Backup", href: "/admin/backup", icon: Archive, permission: "backup.read" },
+  { key: "admin_destructive", label: "Destructive", href: "/admin/destructive", icon: Settings, permission: "destructive.audit" },
 ] as const;
 
 const upcomingMenuItems = [

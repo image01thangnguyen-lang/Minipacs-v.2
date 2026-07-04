@@ -60,6 +60,21 @@ export const permissionKeys = [
   "consult.finish",
   "consult.cancel",
   "consult.admin",
+  "export.read",
+  "export.create",
+  "export.anonymize",
+  "export.bulk",
+  "export.manage",
+  "retention.read",
+  "retention.manage",
+  "retention.execute",
+  "backup.read",
+  "backup.manage",
+  "backup.restoreChecklist",
+  "destructive.request",
+  "destructive.approve",
+  "destructive.execute",
+  "destructive.audit",
 ] as const;
 
 export type PermissionKey = (typeof permissionKeys)[number];
@@ -135,6 +150,21 @@ export const permissionLabels: Record<PermissionKey, string> = {
   "consult.finish": "Kết thúc hội chẩn",
   "consult.cancel": "Hủy hội chẩn",
   "consult.admin": "Quản trị hội chẩn (toàn quyền)",
+  "export.read": "Xem danh sách tải xuống",
+  "export.create": "Tạo yêu cầu tải xuống",
+  "export.anonymize": "Tải xuống ẩn danh (bỏ PHI)",
+  "export.bulk": "Tải xuống số lượng lớn (Bulk Archive)",
+  "export.manage": "Quản lý toàn bộ yêu cầu tải xuống",
+  "retention.read": "Xem cấu hình xoá dữ liệu (Retention)",
+  "retention.manage": "Cấu hình chính sách Retention",
+  "retention.execute": "Thực thi xoá dữ liệu (Execute Retention)",
+  "backup.read": "Xem trạng thái sao lưu",
+  "backup.manage": "Cấu hình và chạy sao lưu",
+  "backup.restoreChecklist": "Xem hướng dẫn khôi phục",
+  "destructive.request": "Yêu cầu xóa dữ liệu (Study/Series)",
+  "destructive.approve": "Duyệt yêu cầu xóa dữ liệu",
+  "destructive.execute": "Thực thi xóa dữ liệu",
+  "destructive.audit": "Xem lịch sử thao tác xóa",
 };
 
 export const permissionGroups: Array<{ title: string; permissions: PermissionKey[] }> = [
@@ -177,6 +207,18 @@ export const permissionGroups: Array<{ title: string; permissions: PermissionKey
       "share.manage", "share.read", "share.create", "share.revoke",
       "consult.manage", "consult.read", "consult.create", "consult.invite",
       "consult.start", "consult.message", "consult.finish", "consult.cancel", "consult.admin"
+    ],
+  },
+  {
+    title: "Download & Export",
+    permissions: ["export.read", "export.create", "export.anonymize", "export.bulk", "export.manage"],
+  },
+  {
+    title: "Data Lifecycle & Backup",
+    permissions: [
+      "retention.read", "retention.manage", "retention.execute", 
+      "destructive.request", "destructive.approve", "destructive.execute", "destructive.audit",
+      "backup.read", "backup.manage", "backup.restoreChecklist"
     ],
   },
 ];
@@ -239,6 +281,21 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "consult.finish",
     "consult.cancel",
     "consult.admin",
+    "export.read",
+    "export.create",
+    "export.anonymize",
+    "export.bulk",
+    "export.manage",
+    "retention.read",
+    "retention.manage",
+    "retention.execute",
+    "backup.read",
+    "backup.manage",
+    "backup.restoreChecklist",
+    "destructive.request",
+    "destructive.approve",
+    "destructive.execute",
+    "destructive.audit",
   ],
   DOCTOR: [
     "studies.read",
@@ -274,6 +331,10 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "consult.message",
     "consult.finish",
     "consult.cancel",
+    "export.read",
+    "export.create",
+    "export.anonymize",
+    "destructive.request",
   ],
   TECHNICIAN: [
     "studies.read",
@@ -307,6 +368,10 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "consult.message",
     "consult.finish",
     "consult.cancel",
+    "export.read",
+    "export.create",
+    "backup.read",
+    "destructive.request",
   ],
   RECEPTION: [
     "studies.read",
@@ -326,6 +391,8 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "consult.read",
     "consult.create",
     "consult.message",
+    "export.read",
+    "export.create",
   ],
 };
 
@@ -347,6 +414,10 @@ const routePermissions: Array<{ prefix: string; permission: PermissionKey }> = [
   { prefix: "/report", permission: "reports.read" },
   { prefix: "/non-dicom", permission: "nonDicom.read" },
   { prefix: "/consultations", permission: "consult.read" },
+  { prefix: "/downloads", permission: "export.read" },
+  { prefix: "/admin/retention", permission: "retention.read" },
+  { prefix: "/admin/backup", permission: "backup.read" },
+  { prefix: "/admin/destructive", permission: "destructive.audit" },
   { prefix: "/", permission: "studies.read" },
 ];
 

@@ -1,4 +1,5 @@
 import "./globals.css";
+import { DownloadManager } from "./components/DownloadManager";
 
 export const metadata = {
   title: "Mini PACS Dashboard",
@@ -15,7 +16,10 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/api/favicon" />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <DownloadManager />
+      </body>
     </html>
   );
 }

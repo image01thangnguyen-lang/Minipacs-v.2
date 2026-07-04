@@ -1477,3 +1477,183 @@ model HisConflict {
   @@index([createdAt])
   @@map("his_conflicts")
 }
+
+// Phase 8 - Download, Retention, Backup, And Destructive Operations
+
+model ExportJob {
+  id                 String    @id @default(uuid())
+  jobType            String
+  scope              String    // STUDY | SERIES | INSTANCE_SET | REPORT | NON_DICOM_EXAM | MEDIA_SET | ARCHIVE_BULK
+  status             String    // PENDING | RUNNING | SUCCESS | FAILED | CANCELLED | EXPIRED
+  requestedByUserId  String?
+  studyInstanceUid   String?
+  seriesInstanceUid  String?
+  reportId           String?
+  nonDicomExamId     String?
+  filterJson         String?   @db.Text
+  selectedItemsJson  String?   @db.Text
+  anonymize          Boolean   @default(false)
+  includePatientInfo Boolean   @default(false)
+  format             String    // DICOM | JPEG | PDF | ZIP | CSV | XLSX
+  progress           Int       @default(0)
+  itemCount          Int       @default(0)
+  fileName           String?
+  filePath           String?
+  fileSizeBytes      BigInt?
+  mimeType           String?
+  downloadTokenHash  String?
+  expiresAt          DateTime?
+  errorMessage       String?   @db.Text
+  metadataJson       String?   @db.Text
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  completedAt        DateTime?
+
+  @@index([status])
+  @@index([requestedByUserId])
+  @@index([studyInstanceUid])
+  @@index([reportId])
+  @@index([nonDicomExamId])
+  @@index([createdAt])
+  @@index([expiresAt])
+  @@map("export_jobs")
+}
+
+model ExportAccessLog {
+  id          String   @id @default(uuid())
+  exportJobId String
+  actorUserId String?
+  eventType   String   // DOWNLOAD_STARTED | DOWNLOAD_DENIED | DOWNLOAD_COMPLETED | EXPIRED_DENIED
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([exportJobId])
+  @@index([actorUserId])
+  @@index([createdAt])
+  @@map("export_access_logs")
+}
+
+model RetentionPolicy {
+  id                    String   @id @default(uuid())
+  name                  String
+  scope                 String   // DICOM | NON_DICOM | EXPORTS | VIEWER_ARTIFACTS | ALL
+  isActive              Boolean  @default(true)
+  olderThanDays         Int
+  statusFilterJson      String?  @db.Text
+  facilityId            String?
+  modality              String?
+  preserveMetadata      Boolean  @default(true)
+  preserveReports       Boolean  @default(true)
+  preserveKeyImages     Boolean  @default(true)
+  deletePhysicalFiles   Boolean  @default(false)
+  dryRunRequired        Boolean  @default(true)
+  approvalRequired      Boolean  @default(true)
+  createdByUserId       String?
+  updatedByUserId       String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([isActive])
+  @@map("retention_policies")
+}
+
+model RetentionRun {
+  id               String    @id @default(uuid())
+  policyId         String
+  mode             String    // DRY_RUN | EXECUTE
+  status           String    // PENDING | RUNNING | SUCCESS | FAILED | CANCELLED
+  startedByUserId  String?
+  approvedByUserId String?
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  candidateCount   Int       @default(0)
+  affectedCount    Int       @default(0)
+  freedBytes       BigInt    @default(0)
+  errorMessage     String?   @db.Text
+  summaryJson      String?   @db.Text
+  createdAt        DateTime  @default(now())
+
+  items RetentionRunItem[]
+
+  @@index([policyId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("retention_runs")
+}
+
+model RetentionRunItem {
+  id                String   @id @default(uuid())
+  runId             String
+  entityType        String
+  entityId          String?
+  studyInstanceUid  String?
+  seriesInstanceUid String?
+  filePath          String?
+  fileSizeBytes     BigInt?
+  action            String   // KEEP_METADATA_DELETE_FILES | DELETE_EXPORT | VOID_MEDIA | SKIP
+  status            String
+  reason            String?
+  createdAt         DateTime @default(now())
+
+  run RetentionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@index([studyInstanceUid])
+  @@index([status])
+  @@map("retention_run_items")
+}
+
+model BackupJob {
+  id             String    @id @default(uuid())
+  jobType        String    // STORAGE_TEST | BACKUP_RUN | RESTORE_CHECKLIST | VERIFY_BACKUP
+  status         String    // PENDING | RUNNING | SUCCESS | FAILED | CANCELLED
+  sourceFolderId String?
+  targetFolderId String?
+  startedByUserId String?
+  progress       Int       @default(0)
+  fileCount      Int       @default(0)
+  totalBytes     BigInt    @default(0)
+  copiedBytes    BigInt    @default(0)
+  errorMessage   String?   @db.Text
+  summaryJson    String?   @db.Text
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([jobType])
+  @@index([status])
+  @@index([createdAt])
+  @@map("backup_jobs")
+}
+
+model DestructiveOperationRequest {
+  id                   String    @id @default(uuid())
+  operationType        String    // DELETE_STUDY | DELETE_SERIES | DELETE_NON_DICOM_MEDIA | PURGE_EXPORT_JOB | RETENTION_EXECUTE
+  status               String    // REQUESTED | DRY_RUN_READY | APPROVED | REJECTED | EXECUTING | COMPLETED | FAILED | CANCELLED
+  entityType           String
+  entityId             String?
+  studyInstanceUid     String?
+  seriesInstanceUid    String?
+  nonDicomMediaId      String?
+  reason               String    @db.Text
+  confirmationPhrase   String?
+  requestedByUserId    String?
+  approvedByUserId     String?
+  executedByUserId     String?
+  dryRunJson           String?   @db.Text
+  impactSummaryJson    String?   @db.Text
+  errorMessage         String?   @db.Text
+  createdAt            DateTime  @default(now())
+  approvedAt           DateTime?
+  executedAt           DateTime?
+  updatedAt            DateTime  @updatedAt
+
+  @@index([status])
+  @@index([operationType])
+  @@index([entityType, entityId])
+  @@index([studyInstanceUid])
+  @@index([createdAt])
+  @@map("destructive_operation_requests")
+}

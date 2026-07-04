@@ -34,6 +34,8 @@ import {
   getUserPermissionsAction,
   getActiveDoctorsAction
 } from "./actions";
+import { createExportJobAction } from "./actions/export-actions";
+import { createDestructiveRequestAction } from "./actions/destructive-actions";
 import { logArchivePrintAction } from "./archive/actions";
 import { StudyRowActionMenu } from "./components/StudyRowActionMenu";
 import { ClinicalInfoModal } from "./components/ClinicalInfoModal";
@@ -254,6 +256,51 @@ export default function DashboardPage() {
       setPatientDetails((cur: any) => (cur ? { ...cur, ...data } : cur));
     }
     return result;
+  };
+
+  const handleExportDicom = async (uid: string) => {
+    try {
+      await createExportJobAction({
+        jobType: "EXPORT_STUDY_DICOM",
+        scope: "STUDY",
+        studyInstanceUid: uid,
+        format: "DICOM",
+      });
+      alert("Đã tạo yêu cầu tải xuống DICOM thành công. Vui lòng kiểm tra Quản lý tải xuống.");
+    } catch (err: any) {
+      alert("Lỗi tạo yêu cầu tải xuống: " + err.message);
+    }
+  };
+
+  const handleExportAnonymized = async (uid: string) => {
+    try {
+      await createExportJobAction({
+        jobType: "EXPORT_STUDY_DICOM",
+        scope: "STUDY",
+        studyInstanceUid: uid,
+        format: "DICOM",
+        anonymize: true
+      });
+      alert("Đã tạo yêu cầu tải xuống (Ẩn thông tin) thành công.");
+    } catch (err: any) {
+      alert("Lỗi tạo yêu cầu tải xuống: " + err.message);
+    }
+  };
+
+  const handleRequestDelete = async (uid: string) => {
+    const reason = prompt("Vui lòng nhập lý do xóa ca chụp này:");
+    if (!reason) return;
+    try {
+      await createDestructiveRequestAction({
+        operationType: "DELETE_STUDY",
+        entityType: "STUDY",
+        studyInstanceUid: uid,
+        reason: reason
+      });
+      alert("Đã gửi yêu cầu xóa thành công. Vui lòng chờ người duyệt.");
+    } catch (err: any) {
+      alert("Lỗi gửi yêu cầu xóa: " + err.message);
+    }
   };
 
 
@@ -970,6 +1017,12 @@ export default function DashboardPage() {
                             setActionResourceType(study.isNonDicom ? 'NON_DICOM' : 'DICOM');
                             setConsultDialogOpen(true);
                           }}
+                          canExport={permissions.includes("export.create")}
+                          canExportAnonymized={permissions.includes("export.anonymize")}
+                          canDeleteStudy={permissions.includes("destructive.request")}
+                          onExportDicom={() => handleExportDicom(uid)}
+                          onExportAnonymized={() => handleExportAnonymized(uid)}
+                          onRequestDelete={() => handleRequestDelete(uid)}
                         />
                       </td>
                     </tr>
