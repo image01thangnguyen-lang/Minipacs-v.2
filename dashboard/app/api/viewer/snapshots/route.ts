@@ -67,6 +67,16 @@ export async function POST(request: Request) {
         displaySetInstanceUID: data.displaySetInstanceUID,
         note: trimOptionalString(data.note),
         imageUrl: data.imageUrl,
+        thumbnailUrl: data.thumbnailUrl,
+        storageKey: data.storageKey,
+        category: data.category,
+        sourceType: data.sourceType,
+        cropRectJson: data.cropRectJson ? (typeof data.cropRectJson === 'string' ? data.cropRectJson : JSON.stringify(data.cropRectJson)) : null,
+        cropRatio: parseOptionalNumber(data.cropRatio),
+        isFullViewport: data.isFullViewport || false,
+        includeOverlay: data.includeOverlay ?? true,
+        isAnonymized: data.isAnonymized || false,
+        metadataJson: data.metadataJson ? (typeof data.metadataJson === 'string' ? data.metadataJson : JSON.stringify(data.metadataJson)) : null,
         createdByUserId: userId,
       }
     });

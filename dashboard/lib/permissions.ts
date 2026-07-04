@@ -30,6 +30,11 @@ export const permissionKeys = [
   "admin.facilities",
   "admin.permissions",
   "admin.storage",
+  "viewer.configure",
+  "viewer.export",
+  "viewer.anonymize",
+  "viewer.history",
+  "viewer.deleteSeries",
 ] as const;
 
 export type PermissionKey = (typeof permissionKeys)[number];
@@ -75,6 +80,11 @@ export const permissionLabels: Record<PermissionKey, string> = {
   "admin.facilities": "Quản lý phòng ban/cơ sở",
   "admin.permissions": "Quản lý phân quyền chi tiết",
   "admin.storage": "Quản lý lưu trữ/backup",
+  "viewer.configure": "Cấu hình Viewer",
+  "viewer.export": "Xuất/tải dữ liệu Viewer",
+  "viewer.anonymize": "Ẩn danh dữ liệu",
+  "viewer.history": "Xem lịch sử tác vụ",
+  "viewer.deleteSeries": "Yêu cầu xóa Series",
 };
 
 export const permissionGroups: Array<{ title: string; permissions: PermissionKey[] }> = [
@@ -93,6 +103,10 @@ export const permissionGroups: Array<{ title: string; permissions: PermissionKey
   {
     title: "Tích hợp HIS",
     permissions: ["his.read", "his.sync", "his.retry", "his.manage"],
+  },
+  {
+    title: "Viewer & Hình ảnh",
+    permissions: ["viewer.configure", "viewer.export", "viewer.anonymize", "viewer.history", "viewer.deleteSeries"],
   },
 ];
 
@@ -124,6 +138,11 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "admin.facilities",
     "admin.permissions",
     "admin.storage",
+    "viewer.configure",
+    "viewer.export",
+    "viewer.anonymize",
+    "viewer.history",
+    "viewer.deleteSeries",
   ],
   DOCTOR: [
     "studies.read",
@@ -140,6 +159,10 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "his.read",
     "his.sync",
     "his.retry",
+    "viewer.configure",
+    "viewer.export",
+    "viewer.history",
+    "viewer.anonymize",
   ],
   TECHNICIAN: [
     "studies.read",
@@ -151,6 +174,10 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "his.read",
     "his.sync",
     "his.retry",
+    "viewer.configure",
+    "viewer.export",
+    "viewer.anonymize",
+    "viewer.history",
   ],
   RECEPTION: [
     "studies.read",

@@ -60,6 +60,18 @@ class ViewerApiClient {
       body: body ? JSON.stringify(body) : undefined,
     });
   }
+
+  put<T>(url: string, body?: any, headers?: HeadersInit): Promise<ApiResult<T>> {
+    return this.request<T>(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...headers,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  }
 }
 
 export const viewerApiClient = new ViewerApiClient();

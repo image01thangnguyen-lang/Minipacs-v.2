@@ -40,7 +40,12 @@ async function main() {
         'admin.catalogs',
         'admin.facilities',
         'admin.permissions',
-        'admin.storage'
+        'admin.storage',
+        'viewer.configure',
+        'viewer.export',
+        'viewer.anonymize',
+        'viewer.history',
+        'viewer.deleteSeries'
       ],
       isSystem: true,
       isActive: true
@@ -64,7 +69,11 @@ async function main() {
         'templates.manage',
         'his.read',
         'his.sync',
-        'his.retry'
+        'his.retry',
+        'viewer.configure',
+        'viewer.export',
+        'viewer.anonymize',
+        'viewer.history'
       ],
       isSystem: true,
       isActive: true
@@ -74,7 +83,7 @@ async function main() {
       name: 'Kỹ thuật viên',
       description: 'Theo dõi danh sách ca, tiếp nhận/worklist và xử lý vận hành kỹ thuật.',
       baseRole: Role.TECHNICIAN,
-      permissions: ['studies.read', 'studies.assign', 'studies.updateClinical', 'worklist.manage', 'archive.read', 'statistics.read', 'his.read', 'his.sync', 'his.retry'],
+      permissions: ['studies.read', 'studies.assign', 'studies.updateClinical', 'worklist.manage', 'archive.read', 'statistics.read', 'his.read', 'his.sync', 'his.retry', 'viewer.configure', 'viewer.history', 'viewer.export', 'viewer.anonymize'],
       isSystem: true,
       isActive: true
     },

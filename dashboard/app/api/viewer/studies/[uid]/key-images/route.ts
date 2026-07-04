@@ -55,6 +55,14 @@ export async function POST(request: Request, { params }: { params: { uid: string
         zoom: parseOptionalNumber(data.zoom),
         displaySetInstanceUID: data.displaySetInstanceUID,
         note: trimOptionalString(data.note),
+        thumbnailUrl: data.thumbnailUrl,
+        storageKey: data.storageKey,
+        category: data.category,
+        cropRectJson: data.cropRectJson ? (typeof data.cropRectJson === 'string' ? data.cropRectJson : JSON.stringify(data.cropRectJson)) : null,
+        cropRatio: parseOptionalNumber(data.cropRatio),
+        isSelectedForReport: data.isSelectedForReport || false,
+        isAnonymized: data.isAnonymized || false,
+        metadataJson: data.metadataJson ? (typeof data.metadataJson === 'string' ? data.metadataJson : JSON.stringify(data.metadataJson)) : null,
         createdByUserId: userId,
       }
     });

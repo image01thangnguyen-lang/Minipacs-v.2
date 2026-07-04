@@ -55,16 +55,16 @@ model Report {
   recommendation String? @db.Text
 
   // Phase 1: additional clinical fields
-  technique      String? @db.Text
-  clinicalInfo   String? @db.Text
-  technologistId String?
+  technique       String? @db.Text
+  clinicalInfo    String? @db.Text
+  technologistId  String?
   printTemplateId String?
 
   // Phase 1: lifecycle timestamps and reasons
-  finalizedAt    DateTime?
-  cancelledAt    DateTime?
-  cancelReason   String? @db.Text
-  reopenReason   String? @db.Text
+  finalizedAt  DateTime?
+  cancelledAt  DateTime?
+  cancelReason String?   @db.Text
+  reopenReason String?   @db.Text
 
   // Foreign key for Doctor/User (1-N Relationship)
   doctorId String?
@@ -74,7 +74,7 @@ model Report {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-    // Phase 2 HIS Integration
+  // Phase 2 HIS Integration
   hisResultStatus    String?
   hisResultSentAt    DateTime?
   hisResultMessageId String?
@@ -101,11 +101,16 @@ model User {
   isActive      Boolean         @default(true)
 
   // Relation back to reports
-  reports             Report[]             @relation("DoctorReports")
-  doctorProfile       DoctorProfile?
-  auditLogs           AuditLog[]
-  reportTemplateTexts ReportTemplateText[] @relation("ReportTemplateOwner")
-  machinePermissions  DoctorMachinePermission[]
+  reports                       Report[]                    @relation("DoctorReports")
+  doctorProfile                 DoctorProfile?
+  auditLogs                     AuditLog[]
+  reportTemplateTexts           ReportTemplateText[]        @relation("ReportTemplateOwner")
+  machinePermissions            DoctorMachinePermission[]
+  viewerUserPreference          ViewerUserPreference?
+  viewerDownloadJobs            ViewerDownloadJob[]         @relation("ViewerDownloadJobUser")
+  viewerActionRequestsRequested ViewerSeriesActionRequest[] @relation("ViewerActionRequestsRequested")
+  viewerActionRequestsApproved  ViewerSeriesActionRequest[] @relation("ViewerActionRequestsApproved")
+  viewerAuditLogs               ViewerAuditLog[]            @relation("ViewerAuditLogActor")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -154,7 +159,7 @@ model PrintTemplate {
   isDefault   Boolean @default(false)
 
   // Phase 3 additions
-  code               String?  @unique
+  code               String?           @unique
   description        String?
   modality           String?
   bodyPart           String?
@@ -166,9 +171,9 @@ model PrintTemplate {
   dicomNode          DicomNode?        @relation(fields: [dicomNodeId], references: [id])
   paperSize          String?
   orientation        String?
-  isActive           Boolean  @default(true)
-  sortOrder          Int      @default(0)
-  metadataJson       String?  @db.Text
+  isActive           Boolean           @default(true)
+  sortOrder          Int               @default(0)
+  metadataJson       String?           @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -199,7 +204,7 @@ model ReportTemplateText {
   updatedAt      DateTime @updatedAt
 
   procedureMappings ProcedureReportTemplateMapping[]
-  defaultForNodes   DicomNode[] @relation("NodeDefaultReportTemplate")
+  defaultForNodes   DicomNode[]                      @relation("NodeDefaultReportTemplate")
 
   @@index([modality])
   @@index([bodyPart])
@@ -262,8 +267,17 @@ model WorklistOrder {
 
   imagingStudies ImagingStudy[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  // Phase 2 HIS Integration
+  hisOrderId        String?
+  hisPatientId      String?
+  hisVisitId        String?
+  hisDepartmentCode String?
+  hisSyncStatus     String?
+  hisLastSyncedAt   DateTime?
+  hisLastError      String?
+  hisPayloadJson    String?   @db.Text
 
   @@index([scheduledDate])
   @@index([patientId])
@@ -274,16 +288,6 @@ model WorklistOrder {
   @@index([sourceFacility])
   @@index([procedureCode])
   @@index([paymentStatus])
-    // Phase 2 HIS Integration
-  hisOrderId        String?
-  hisPatientId      String?
-  hisVisitId        String?
-  hisDepartmentCode String?
-  hisSyncStatus     String?
-  hisLastSyncedAt   DateTime?
-  hisLastError      String?
-  hisPayloadJson    String?   @db.Text
-
   @@map("worklist_orders")
 }
 
@@ -311,26 +315,38 @@ model ImagingStudy {
   procedureDescription String?
   technologistId       String?
 
-  scheduledAt      DateTime?
-  checkedInAt      DateTime?
-  scanStartedAt    DateTime?
-  scanEndedAt      DateTime?
-  receivedAt       DateTime?
-  stableAt         DateTime?
-  qcCompletedAt    DateTime?
-  firstOpenedAt    DateTime?
-  finalizedAt      DateTime?
-  deliveredAt      DateTime?
-  archivedAt       DateTime?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  scheduledAt   DateTime?
+  checkedInAt   DateTime?
+  scanStartedAt DateTime?
+  scanEndedAt   DateTime?
+  receivedAt    DateTime?
+  stableAt      DateTime?
+  qcCompletedAt DateTime?
+  firstOpenedAt DateTime?
+  finalizedAt   DateTime?
+  deliveredAt   DateTime?
+  archivedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  statusHistory    StudyStatusHistory[]
-  events           ImagingStudyEvent[]
-  qcEvents         StudyQcEvent[]
-  criticalResults  CriticalResult[]
-  reportAddenda    ReportAddendum[]
-  doseObservations DoseObservation[]
+  statusHistory             StudyStatusHistory[]
+  events                    ImagingStudyEvent[]
+  qcEvents                  StudyQcEvent[]
+  criticalResults           CriticalResult[]
+  reportAddenda             ReportAddendum[]
+  doseObservations          DoseObservation[]
+  // Phase 2 HIS Integration
+  hisOrderId                String?
+  hisSyncStatus             String?
+  hisResultStatus           String?
+  hisLastSyncedAt           DateTime?
+  hisLastResultSentAt       DateTime?
+  hisLastError              String?
+  ViewerSnapshot            ViewerSnapshot[]
+  ViewerKeyImage            ViewerKeyImage[]
+  ViewerAuditLog            ViewerAuditLog[]
+  ViewerDownloadJob         ViewerDownloadJob[]
+  ViewerSeriesActionRequest ViewerSeriesActionRequest[]
 
   @@index([status])
   @@index([patientId])
@@ -348,14 +364,6 @@ model ImagingStudy {
   @@index([firstOpenedAt])
   @@index([finalizedAt])
   @@index([deliveredAt])
-    // Phase 2 HIS Integration
-  hisOrderId          String?
-  hisSyncStatus       String?
-  hisResultStatus     String?
-  hisLastSyncedAt     DateTime?
-  hisLastResultSentAt DateTime?
-  hisLastError        String?
-
   @@map("imaging_studies")
 }
 
@@ -558,16 +566,16 @@ model ProcedureCatalog {
   defaultRoom            String?
   hisCode                String?
   insuranceCode          String?
-  requiresContrast       Boolean @default(false)
-  isNonDicomEligible     Boolean @default(false)
-  sortOrder              Int     @default(0)
+  requiresContrast       Boolean             @default(false)
+  isNonDicomEligible     Boolean             @default(false)
+  sortOrder              Int                 @default(0)
 
   icdMappings            ProcedureIcdMapping[]
   reportTemplateMappings ProcedureReportTemplateMapping[]
   machineMappings        MachineProcedureMapping[]
-  defaultForNodes        DicomNode[] @relation("NodeDefaultProcedure")
+  defaultForNodes        DicomNode[]                      @relation("NodeDefaultProcedure")
   printTemplates         PrintTemplate[]
-  
+
   @@index([serviceTypeId])
   @@index([modality])
   @@index([isActive])
@@ -604,7 +612,7 @@ model AuditLog {
   ipAddress    String?
   createdAt    DateTime @default(now())
 
-  actor        User?    @relation(fields: [actorUserId], references: [id])
+  actor User? @relation(fields: [actorUserId], references: [id])
 
   @@index([actorUserId])
   @@index([entityType, entityId])
@@ -631,7 +639,7 @@ model DicomNode {
 
   // Phase 3 additions
   facilityId                  String?
-  facility                    FacilityUnit?       @relation(fields: [facilityId], references: [id])
+  facility                    FacilityUnit?        @relation(fields: [facilityId], references: [id])
   defaultFolderId             String?
   defaultFolder               StorageFolderConfig? @relation("NodeDefaultFolder", fields: [defaultFolderId], references: [id], onDelete: SetNull)
   defaultShareFolderId        String?
@@ -639,20 +647,20 @@ model DicomNode {
   defaultUploadFolderId       String?
   defaultUploadFolder         StorageFolderConfig? @relation("NodeDefaultUploadFolder", fields: [defaultUploadFolderId], references: [id], onDelete: SetNull)
   defaultProcedureCatalogId   String?
-  defaultProcedure            ProcedureCatalog?   @relation("NodeDefaultProcedure", fields: [defaultProcedureCatalogId], references: [id])
+  defaultProcedure            ProcedureCatalog?    @relation("NodeDefaultProcedure", fields: [defaultProcedureCatalogId], references: [id])
   defaultPrintTemplateId      String?
-  defaultPrintTemplate        PrintTemplate?      @relation("NodeDefaultPrintTemplate", fields: [defaultPrintTemplateId], references: [id])
+  defaultPrintTemplate        PrintTemplate?       @relation("NodeDefaultPrintTemplate", fields: [defaultPrintTemplateId], references: [id])
   defaultReportTemplateTextId String?
-  defaultReportTemplate       ReportTemplateText? @relation("NodeDefaultReportTemplate", fields: [defaultReportTemplateTextId], references: [id])
+  defaultReportTemplate       ReportTemplateText?  @relation("NodeDefaultReportTemplate", fields: [defaultReportTemplateTextId], references: [id])
   serviceTypeId               String?
-  serviceType                 ServiceTypeCatalog? @relation(fields: [serviceTypeId], references: [id])
-  isNonDicom                  Boolean @default(false)
-  metadataJson                String? @db.Text
+  serviceType                 ServiceTypeCatalog?  @relation(fields: [serviceTypeId], references: [id])
+  isNonDicom                  Boolean              @default(false)
+  metadataJson                String?              @db.Text
 
-  machineMappings             MachineProcedureMapping[]
-  doctorPermissions           DoctorMachinePermission[]
-  reportTemplateMappings      ProcedureReportTemplateMapping[]
-  printTemplates              PrintTemplate[]
+  machineMappings        MachineProcedureMapping[]
+  doctorPermissions      DoctorMachinePermission[]
+  reportTemplateMappings ProcedureReportTemplateMapping[]
+  printTemplates         PrintTemplate[]
 
   @@index([facilityId])
   @@index([defaultFolderId])
@@ -664,8 +672,9 @@ model DicomNode {
 }
 
 model ViewerSnapshot {
-  id                    String   @id @default(uuid())
+  id                    String       @id @default(uuid())
   studyInstanceUid      String
+  study                 ImagingStudy @relation(fields: [studyInstanceUid], references: [studyInstanceUid], onDelete: Cascade)
   seriesInstanceUid     String?
   sopInstanceUid        String?
   frameNumber           Int?
@@ -674,15 +683,25 @@ model ViewerSnapshot {
   modality              String?
   bodyPartExamined      String?
   seriesDescription     String?
-  viewportState         String?  @db.Text
+  viewportState         String?      @db.Text
   windowWidth           Float?
   windowCenter          Float?
   zoom                  Float?
   displaySetInstanceUID String?
-  note                  String?  @db.Text
-  imageUrl              String?  @db.Text
+  note                  String?      @db.Text
+  imageUrl              String?      @db.Text
+  thumbnailUrl          String?      @db.Text
+  storageKey            String?
+  category              String?
+  sourceType            String?
+  cropRectJson          String?      @db.Text
+  cropRatio             Float?
+  isFullViewport        Boolean      @default(false)
+  includeOverlay        Boolean      @default(true)
+  isAnonymized          Boolean      @default(false)
+  metadataJson          String?      @db.Text
   createdByUserId       String?
-  createdAt             DateTime @default(now())
+  createdAt             DateTime     @default(now())
 
   @@index([studyInstanceUid])
   @@index([createdAt])
@@ -690,8 +709,9 @@ model ViewerSnapshot {
 }
 
 model ViewerKeyImage {
-  id                    String   @id @default(uuid())
+  id                    String       @id @default(uuid())
   studyInstanceUid      String
+  study                 ImagingStudy @relation(fields: [studyInstanceUid], references: [studyInstanceUid], onDelete: Cascade)
   seriesInstanceUid     String?
   sopInstanceUid        String?
   frameNumber           Int?
@@ -700,14 +720,22 @@ model ViewerKeyImage {
   modality              String?
   bodyPartExamined      String?
   seriesDescription     String?
-  viewportState         String?  @db.Text
+  viewportState         String?      @db.Text
   windowWidth           Float?
   windowCenter          Float?
   zoom                  Float?
   displaySetInstanceUID String?
-  note                  String?  @db.Text
+  note                  String?      @db.Text
+  thumbnailUrl          String?      @db.Text
+  storageKey            String?
+  category              String?
+  cropRectJson          String?      @db.Text
+  cropRatio             Float?
+  isSelectedForReport   Boolean      @default(false)
+  isAnonymized          Boolean      @default(false)
+  metadataJson          String?      @db.Text
   createdByUserId       String?
-  createdAt             DateTime @default(now())
+  createdAt             DateTime     @default(now())
 
   @@index([studyInstanceUid])
   @@index([createdAt])
@@ -715,12 +743,14 @@ model ViewerKeyImage {
 }
 
 model ViewerAuditLog {
-  id               String   @id @default(uuid())
+  id               String       @id @default(uuid())
   studyInstanceUid String
+  study            ImagingStudy @relation(fields: [studyInstanceUid], references: [studyInstanceUid], onDelete: Cascade)
   action           String
-  metadataJson     String?  @db.Text
+  metadataJson     String?      @db.Text
   actorUserId      String?
-  createdAt        DateTime @default(now())
+  actorUser        User?        @relation("ViewerAuditLogActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime     @default(now())
 
   @@index([studyInstanceUid])
   @@index([action])
@@ -729,7 +759,7 @@ model ViewerAuditLog {
 }
 
 model ViewerMeasurement {
-  id                    String   @id @default(uuid())
+  id                    String  @id @default(uuid())
   studyInstanceUid      String
   seriesInstanceUid     String?
   sopInstanceUid        String?
@@ -737,22 +767,22 @@ model ViewerMeasurement {
   displaySetInstanceUID String?
   viewportId            String?
 
-  toolName              String
-  measurementType       String?
-  annotationUID         String?
-  measurementUID        String
-  label                 String?
-  displayText           String?  @db.Text
-  value                 Float?
-  unit                  String?
+  toolName        String
+  measurementType String?
+  annotationUID   String?
+  measurementUID  String
+  label           String?
+  displayText     String? @db.Text
+  value           Float?
+  unit            String?
 
-  dataJson              String   @db.Text
-  isDeleted             Boolean  @default(false)
-  createdByUserId       String?
-  updatedByUserId       String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  deletedAt             DateTime?
+  dataJson        String    @db.Text
+  isDeleted       Boolean   @default(false)
+  createdByUserId String?
+  updatedByUserId String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
 
   @@unique([studyInstanceUid, measurementUID])
   @@index([studyInstanceUid])
@@ -762,7 +792,6 @@ model ViewerMeasurement {
   @@index([createdAt])
   @@map("viewer_measurements")
 }
-
 
 model ServiceTypeCatalog {
   id              String   @id @default(uuid())
@@ -857,7 +886,7 @@ model FacilityUnit {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  parent FacilityUnit?  @relation("FacilityHierarchy", fields: [parentId], references: [id])
+  parent   FacilityUnit?  @relation("FacilityHierarchy", fields: [parentId], references: [id])
   children FacilityUnit[] @relation("FacilityHierarchy")
 
   printTemplates         PrintTemplate[]
@@ -870,24 +899,24 @@ model FacilityUnit {
 }
 
 model StorageFolderConfig {
-  id               String   @id @default(uuid())
-  code             String   @unique
+  id               String    @id @default(uuid())
+  code             String    @unique
   name             String
   type             String
   path             String
   facilityId       String?
-  isActive         Boolean  @default(true)
+  isActive         Boolean   @default(true)
   lastCheckStatus  String?
   lastCheckMessage String?
   lastCheckAt      DateTime?
-  metadataJson     String?  @db.Text
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  metadataJson     String?   @db.Text
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  facility FacilityUnit? @relation(fields: [facilityId], references: [id])
-  defaultForNodes         DicomNode[] @relation("NodeDefaultFolder")
-  defaultShareForNodes    DicomNode[] @relation("NodeDefaultShareFolder")
-  defaultUploadForNodes   DicomNode[] @relation("NodeDefaultUploadFolder")
+  facility              FacilityUnit? @relation(fields: [facilityId], references: [id])
+  defaultForNodes       DicomNode[]   @relation("NodeDefaultFolder")
+  defaultShareForNodes  DicomNode[]   @relation("NodeDefaultShareFolder")
+  defaultUploadForNodes DicomNode[]   @relation("NodeDefaultUploadFolder")
 
   @@index([facilityId])
   @@map("storage_folder_configs")
@@ -946,7 +975,6 @@ model SupplyCatalog {
   @@map("supply_catalog")
 }
 
-
 model HisSyncLog {
   id                  String   @id @default(uuid())
   direction           String
@@ -974,3 +1002,73 @@ model HisSyncLog {
   @@map("his_sync_logs")
 }
 
+model ViewerUserPreference {
+  id                     String   @id @default(uuid())
+  userId                 String   @unique
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  toolbarPosition        String?
+  theme                  String?
+  hotkeysJson            String?  @db.Text
+  windowLevelPresetsJson String?  @db.Text
+  layoutDefaultsJson     String?  @db.Text
+  toolVisibilityJson     String?  @db.Text
+  overlayFieldsJson      String?  @db.Text
+  seriesRailJson         String?  @db.Text
+  anonymizeDefault       Boolean  @default(false)
+  metadataJson           String?  @db.Text
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@map("viewer_user_preferences")
+}
+
+model ViewerDownloadJob {
+  id                 String       @id @default(uuid())
+  jobType            String
+  status             String
+  studyInstanceUid   String
+  study              ImagingStudy @relation(fields: [studyInstanceUid], references: [studyInstanceUid], onDelete: Cascade)
+  seriesInstanceUid  String?
+  requestedByUserId  String?
+  requestedByUser    User?        @relation("ViewerDownloadJobUser", fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  progress           Int          @default(0)
+  itemCount          Int          @default(0)
+  fileName           String?
+  filePath           String?
+  fileSizeBytes      BigInt?
+  mimeType           String?
+  expiresAt          DateTime?
+  errorMessage       String?      @db.Text
+  anonymize          Boolean      @default(false)
+  includePatientInfo Boolean      @default(true)
+  metadataJson       String?      @db.Text
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  completedAt        DateTime?
+
+  @@index([studyInstanceUid])
+  @@index([requestedByUserId])
+  @@index([status])
+  @@map("viewer_download_jobs")
+}
+
+model ViewerSeriesActionRequest {
+  id                String       @id @default(uuid())
+  studyInstanceUid  String
+  study             ImagingStudy @relation(fields: [studyInstanceUid], references: [studyInstanceUid], onDelete: Cascade)
+  seriesInstanceUid String
+  actionType        String
+  status            String
+  reason            String?      @db.Text
+  requestedByUserId String?
+  requestedByUser   User?        @relation("ViewerActionRequestsRequested", fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  approvedByUserId  String?
+  approvedByUser    User?        @relation("ViewerActionRequestsApproved", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+  metadataJson      String?      @db.Text
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([studyInstanceUid, seriesInstanceUid])
+  @@index([status])
+  @@map("viewer_series_action_requests")
+}
