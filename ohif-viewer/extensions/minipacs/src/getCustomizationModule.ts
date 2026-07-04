@@ -4,7 +4,8 @@ import {
   MinipacsSeriesLineOverlayItem, 
   MinipacsSeriesIndexOverlayItem, 
   MinipacsMiniToolbarOverlayItem,
-  MinipacsCineHudOverlayItem
+  MinipacsCineHudOverlayItem,
+  MinipacsAdvancedHudOverlayItem
 } from './Components/MiniPacsOverlayItems';
 
 export default function getCustomizationModule() {
@@ -46,6 +47,13 @@ export default function getCustomizationModule() {
       value: {
         id: 'minipacs.overlayItem.cineHud',
         content: MinipacsCineHudOverlayItem,
+      },
+    },
+    {
+      name: 'minipacs.overlayItem.advancedHud',
+      value: {
+        id: 'minipacs.overlayItem.advancedHud',
+        content: MinipacsAdvancedHudOverlayItem,
       },
     },
   ];

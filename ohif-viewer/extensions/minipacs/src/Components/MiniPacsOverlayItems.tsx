@@ -98,3 +98,19 @@ export function MinipacsCineHudOverlayItem(props: any) {
   );
 }
 
+import { MiniPacsAdvancedViewerHud } from './MiniPacsAdvancedViewerHud';
+
+export function MinipacsAdvancedHudOverlayItem(props: any) {
+  const { servicesManager, viewportId } = props;
+  
+  return (
+    <div className="pointer-events-auto">
+      <MiniPacsAdvancedViewerHud 
+        viewportId={viewportId}
+        servicesManager={servicesManager}
+      />
+    </div>
+  );
+}
+
+

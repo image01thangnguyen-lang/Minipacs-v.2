@@ -59,6 +59,37 @@ const commandsModule = ({ servicesManager, commandsManager, extensionManager }) 
         storeContexts: [],
         options: {},
       },
+      setMiniPacsMprOrientation: {
+        commandFn: ({ orientation, servicesManager }) => {
+          // FIXME: This is currently a stub for MPR orientation logic.
+          // OHIF orientation API is pending integration. Tool is marked as deferred-advanced in registry.
+          const { viewportGridService } = servicesManager.services;
+          const viewportId = viewportGridService.getActiveViewportId();
+          if (!viewportId) return;
+          
+          // Use OHIF's built-in setViewportActive or cornerstone command to set orientation
+          // For now, we will dispatch setViewportActive or use cornerstone API directly.
+          try {
+             servicesManager.services.cornerstoneViewportService.setViewportOrientation(viewportId, orientation);
+          } catch (e) {
+             console.log('Failed to set orientation via cornerstoneViewportService', e);
+          }
+          
+          // Also fetch to audit log
+          try {
+             fetch('/api/audit/viewer-action', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                   action: `mpr_orientation_changed_to_${orientation}`,
+                   metadata: { viewportId, orientation }
+                })
+             }).catch(() => {});
+          } catch(e) {}
+        },
+        storeContexts: [],
+        options: {},
+      },
       openViewerConfig: {
         commandFn: ({ servicesManager }) => {
           const { uiDialogService } = servicesManager.services;
@@ -111,6 +142,24 @@ const commandsModule = ({ servicesManager, commandsManager, extensionManager }) 
             showOverlay: true,
             content: React.createElement(MiniPacsDownloadManager),
             title: 'Download Manager',
+          });
+        },
+      },
+      openCTRatioPanel: {
+        commandFn: ({ servicesManager }) => {
+          const { uiDialogService } = servicesManager.services;
+          // Dynamically import or require the component to avoid circular dependencies if any
+          // For now, we will create MiniPacsCTRatioPanel.tsx
+          import('./Components/MiniPacsCTRatioPanel').then(({ MiniPacsCTRatioPanel }) => {
+            uiDialogService.create({
+              id: 'viewer-ctratio-panel-dialog',
+              centralize: false,
+              isDraggable: true,
+              showOverlay: false,
+              content: React.createElement(MiniPacsCTRatioPanel, { servicesManager }),
+              title: 'CT Ratio Measurement',
+              defaultPosition: { x: window.innerWidth - 320, y: 100 }
+            });
           });
         },
       },

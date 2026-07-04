@@ -158,7 +158,7 @@ class ViewerMprWorkflowService {
           type: 'warning',
         });
       }
-      throw new Error('Crosshairs can only be enabled in MPR mode.');
+      return false;
     }
 
     if (viewportGridService && toolGroupService) {
