@@ -125,7 +125,18 @@ const modalityClasses: Record<string, string> = {
   US: "border-emerald-400/30 bg-emerald-500/10 text-emerald-100",
 };
 
-function ModBadge({ value }: { value?: string }) {
+function ModBadge({ value, isNonDicom }: { value?: string; isNonDicom?: boolean }) {
+  if (isNonDicom) {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <span className="inline-flex min-w-[2.25rem] items-center justify-center rounded-full border border-indigo-400/35 bg-indigo-500/15 px-2 py-0.5 font-mono text-[10px] font-bold leading-none tracking-widest text-indigo-100 shadow-[0_0_8px_rgba(99,102,241,0.15)]">
+          {value || "NON"}
+        </span>
+        <span className="text-[9px] font-semibold text-indigo-300">Non-DICOM</span>
+      </div>
+    );
+  }
+
   const label = value || "?";
   const classes = modalityClasses[label] || "border-white/10 bg-white/5 text-vin-muted";
 
@@ -482,6 +493,10 @@ export default function DashboardPage() {
   };
 
   const openViewer = (study: any) => {
+    if (study.isNonDicom && study.nonDicomExamId) {
+      window.open(`/non-dicom/${study.nonDicomExamId}`, "_blank");
+      return;
+    }
     const uid = study.MainDicomTags?.StudyInstanceUID;
     if (!uid) return;
     window.open(`/viewer/minipacs?StudyInstanceUIDs=${encodeURIComponent(uid)}`, "_blank");
@@ -880,7 +895,7 @@ export default function DashboardPage() {
                         </div>
                       </td>
                       <td className="px-2 py-2 text-center">
-                        <ModBadge value={study.EnrichedModality || main.Modality} />
+                        <ModBadge value={study.EnrichedModality || main.Modality} isNonDicom={study.isNonDicom} />
                       </td>
                       <td className="px-2 py-2 text-center">
                         <RisStatusBadge status={study.WorkflowStatus} />

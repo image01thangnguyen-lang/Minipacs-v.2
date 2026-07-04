@@ -35,6 +35,14 @@ export const permissionKeys = [
   "viewer.anonymize",
   "viewer.history",
   "viewer.deleteSeries",
+  "nonDicom.read",
+  "nonDicom.create",
+  "nonDicom.capture",
+  "nonDicom.edit",
+  "nonDicom.deleteMedia",
+  "nonDicom.copyMedia",
+  "nonDicom.print",
+  "nonDicom.video",
 ] as const;
 
 export type PermissionKey = (typeof permissionKeys)[number];
@@ -85,6 +93,14 @@ export const permissionLabels: Record<PermissionKey, string> = {
   "viewer.anonymize": "Ẩn danh dữ liệu",
   "viewer.history": "Xem lịch sử tác vụ",
   "viewer.deleteSeries": "Yêu cầu xóa Series",
+  "nonDicom.read": "Xem danh sách ca Non-DICOM",
+  "nonDicom.create": "Tạo ca Non-DICOM",
+  "nonDicom.capture": "Chụp/Tải ảnh Non-DICOM",
+  "nonDicom.edit": "Sửa thông tin ca Non-DICOM",
+  "nonDicom.deleteMedia": "Xóa/Hủy media",
+  "nonDicom.copyMedia": "Sao chép media giữa các ca",
+  "nonDicom.print": "In/Xuất media Non-DICOM",
+  "nonDicom.video": "Ghi/Quản lý video",
 };
 
 export const permissionGroups: Array<{ title: string; permissions: PermissionKey[] }> = [
@@ -107,6 +123,19 @@ export const permissionGroups: Array<{ title: string; permissions: PermissionKey
   {
     title: "Viewer & Hình ảnh",
     permissions: ["viewer.configure", "viewer.export", "viewer.anonymize", "viewer.history", "viewer.deleteSeries"],
+  },
+  {
+    title: "Non-DICOM Capture",
+    permissions: [
+      "nonDicom.read",
+      "nonDicom.create",
+      "nonDicom.capture",
+      "nonDicom.edit",
+      "nonDicom.deleteMedia",
+      "nonDicom.copyMedia",
+      "nonDicom.print",
+      "nonDicom.video"
+    ],
   },
 ];
 
@@ -143,6 +172,14 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "viewer.anonymize",
     "viewer.history",
     "viewer.deleteSeries",
+    "nonDicom.read",
+    "nonDicom.create",
+    "nonDicom.capture",
+    "nonDicom.edit",
+    "nonDicom.deleteMedia",
+    "nonDicom.copyMedia",
+    "nonDicom.print",
+    "nonDicom.video",
   ],
   DOCTOR: [
     "studies.read",
@@ -163,6 +200,11 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "viewer.export",
     "viewer.history",
     "viewer.anonymize",
+    "nonDicom.read",
+    "nonDicom.capture",
+    "nonDicom.copyMedia",
+    "nonDicom.print",
+    "nonDicom.video",
   ],
   TECHNICIAN: [
     "studies.read",
@@ -178,6 +220,14 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "viewer.export",
     "viewer.anonymize",
     "viewer.history",
+    "nonDicom.read",
+    "nonDicom.create",
+    "nonDicom.capture",
+    "nonDicom.edit",
+    "nonDicom.deleteMedia",
+    "nonDicom.copyMedia",
+    "nonDicom.print",
+    "nonDicom.video",
   ],
   RECEPTION: [
     "studies.read",
@@ -189,6 +239,8 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "his.read",
     "his.sync",
     "his.retry",
+    "nonDicom.read",
+    "nonDicom.create",
   ],
 };
 
@@ -207,6 +259,7 @@ const routePermissions: Array<{ prefix: string; permission: PermissionKey }> = [
   { prefix: "/archive", permission: "archive.read" },
   { prefix: "/statistics", permission: "statistics.read" },
   { prefix: "/report", permission: "reports.read" },
+  { prefix: "/non-dicom", permission: "nonDicom.read" },
   { prefix: "/", permission: "studies.read" },
 ];
 

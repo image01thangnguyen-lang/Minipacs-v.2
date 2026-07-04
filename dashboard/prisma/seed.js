@@ -87,7 +87,15 @@ function main() {
                                 'viewer.export',
                                 'viewer.anonymize',
                                 'viewer.history',
-                                'viewer.deleteSeries'
+                                'viewer.deleteSeries',
+                                'nonDicom.read',
+                                'nonDicom.create',
+                                'nonDicom.capture',
+                                'nonDicom.edit',
+                                'nonDicom.deleteMedia',
+                                'nonDicom.copyMedia',
+                                'nonDicom.print',
+                                'nonDicom.video'
                             ],
                             isSystem: true,
                             isActive: true
@@ -115,7 +123,12 @@ function main() {
                                 'viewer.configure',
                                 'viewer.export',
                                 'viewer.anonymize',
-                                'viewer.history'
+                                'viewer.history',
+                                'nonDicom.read',
+                                'nonDicom.capture',
+                                'nonDicom.copyMedia',
+                                'nonDicom.print',
+                                'nonDicom.video'
                             ],
                             isSystem: true,
                             isActive: true
@@ -125,7 +138,7 @@ function main() {
                             name: 'Kỹ thuật viên',
                             description: 'Theo dõi danh sách ca, tiếp nhận/worklist và xử lý vận hành kỹ thuật.',
                             baseRole: client_1.Role.TECHNICIAN,
-                            permissions: ['studies.read', 'studies.assign', 'studies.updateClinical', 'worklist.manage', 'archive.read', 'statistics.read', 'his.read', 'his.sync', 'his.retry', 'viewer.configure', 'viewer.history', 'viewer.export', 'viewer.anonymize'],
+                            permissions: ['studies.read', 'studies.assign', 'studies.updateClinical', 'worklist.manage', 'archive.read', 'statistics.read', 'his.read', 'his.sync', 'his.retry', 'viewer.configure', 'viewer.history', 'viewer.export', 'viewer.anonymize', 'nonDicom.read', 'nonDicom.create', 'nonDicom.capture', 'nonDicom.edit', 'nonDicom.deleteMedia', 'nonDicom.copyMedia', 'nonDicom.print', 'nonDicom.video'],
                             isSystem: true,
                             isActive: true
                         },
@@ -134,7 +147,7 @@ function main() {
                             name: 'Lễ tân',
                             description: 'Tạo order, check-in, tìm/in lại kết quả và xem thống kê vận hành cơ bản.',
                             baseRole: client_1.Role.RECEPTION,
-                            permissions: ['studies.read', 'worklist.manage', 'archive.read', 'archive.deliver', 'statistics.read', 'reports.print', 'his.read', 'his.sync', 'his.retry'],
+                            permissions: ['studies.read', 'worklist.manage', 'archive.read', 'archive.deliver', 'statistics.read', 'reports.print', 'his.read', 'his.sync', 'his.retry', 'nonDicom.read', 'nonDicom.create'],
                             isSystem: true,
                             isActive: true
                         }

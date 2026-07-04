@@ -10,6 +10,7 @@ import path from "path";
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/authz";
 import { worklistSchema, type WorklistInput } from "./schema";
+import { createNonDicomExam } from "@/lib/nonDicomWorkflowService";
 
 const orderStatusValues = ["REQUESTED", "SCHEDULED", "ARRIVED", "CANCELLED", "EXPIRED"] as const;
 
@@ -223,6 +224,9 @@ function serializeOrder(order: any, context?: {
     hisLastSyncedAt: toIso(order.hisLastSyncedAt || study?.hisLastSyncedAt),
     hisLastResultSentAt: toIso(study?.hisLastResultSentAt || report?.hisResultSentAt),
     hisOrderId: order.hisOrderId || null,
+    isNonDicomEligible: Boolean(procedure?.isNonDicomEligible || node?.isNonDicom),
+    isNonDicom: study?.isNonDicom || false,
+    nonDicomExamId: (study as any)?.nonDicomExam?.id || null,
   };
 }
 
@@ -275,6 +279,8 @@ export async function getWorklistOrdersAction(filters: {
           hisLastError: true,
           hisLastSyncedAt: true,
           hisLastResultSentAt: true,
+          isNonDicom: true,
+          nonDicomExam: { select: { id: true } },
           reports: {
             select: {
               doctorId: true,
@@ -586,7 +592,7 @@ export async function startReadingAction(orderId: string, studyInstanceUid: stri
     return { success: false, error: "Bạn không có quyền khóa ca đọc (yêu cầu quyền worklist.manage và reports.write)." };
   }
 
-  const actor = session.user;
+  const userId = session.user.id;
   const existing = await prisma.worklistOrder.findUnique({
     where: { id: orderId },
     include: { imagingStudies: true }
@@ -597,7 +603,7 @@ export async function startReadingAction(orderId: string, studyInstanceUid: stri
   const study = existing.imagingStudies.find(s => s.studyInstanceUid === studyInstanceUid);
   if (!study) return { success: false, error: "Study không tồn tại." };
 
-  const claimRes = await claimStudyLock(studyInstanceUid, actor.id, { orderId });
+  const claimRes = await claimStudyLock(studyInstanceUid, userId, { orderId });
   if (!claimRes.success) {
     return claimRes;
   }
@@ -625,6 +631,63 @@ export async function checkCanReadStudiesAction() {
   const session = await auth();
   if (!session?.user) return false;
   return hasPermission(session.user.role, "reports.write", session.user.permissions);
+}
+
+export async function createNonDicomExamFromWorklistAction(orderId: string) {
+  const session = await requirePermission("nonDicom.create");
+  
+  const order = await prisma.worklistOrder.findUnique({
+    where: { id: orderId }
+  });
+
+  if (!order) return { success: false, error: "Không tìm thấy order." };
+
+  const existingExam = await prisma.nonDicomExam.findFirst({
+    where: { worklistOrderId: orderId }
+  });
+  if (existingExam) {
+    return { success: true, examId: existingExam.id };
+  }
+
+  // Validate eligibility
+  let isEligible = false;
+  if (order.procedureCode) {
+    const proc = await prisma.procedureCatalog.findUnique({ where: { code: order.procedureCode } });
+    if (proc?.isNonDicomEligible) isEligible = true;
+  }
+  if (!isEligible && order.scheduledStationAeTitle) {
+    const node = await prisma.dicomNode.findFirst({ where: { aeTitle: order.scheduledStationAeTitle } });
+    if ((node as any)?.isNonDicom) isEligible = true;
+  }
+  
+  if (!isEligible) {
+    return { success: false, error: "Ca chụp này không được cấu hình hỗ trợ thu nhận Non-DICOM." };
+  }
+
+  try {
+    const exam = await createNonDicomExam({
+      worklistOrderId: order.id,
+      patientId: order.patientId,
+      patientName: order.patientName,
+      patientBirthDate: order.dob || undefined,
+      patientSex: order.gender || undefined,
+      accessionNumber: order.accessionNumber,
+      procedureCatalogId: order.procedureCode || undefined,
+      createdByUserId: session.id,
+    });
+    return { success: true, examId: exam.id };
+  } catch (error: any) {
+    if (error.code === 'P2002') {
+      const existingExam = await prisma.nonDicomExam.findUnique({
+        where: { worklistOrderId: orderId }
+      });
+      if (existingExam) {
+        return { success: true, examId: existingExam.id };
+      }
+    }
+    console.error("Lỗi khi tạo ca Non-DICOM:", error);
+    return { success: false, error: "Đã xảy ra lỗi khi tạo ca chụp." };
+  }
 }
 
 export async function checkCanUpdateClinicalAction() {

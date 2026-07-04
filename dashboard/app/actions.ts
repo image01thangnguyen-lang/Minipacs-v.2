@@ -154,28 +154,58 @@ export async function getStudies() {
       }
     }));
 
-    const studyUids = uniqueValues(studiesWithWorkflow.map((study: any) => study.MainDicomTags?.StudyInstanceUID));
-    const dbStudies = studyUids.length
-      ? await prisma.imagingStudy.findMany({
-          where: { studyInstanceUid: { in: studyUids } },
+    const studyUids = uniqueValues(studiesWithWorkflow.map((study: any) => study.MainDicomTags?.StudyInstanceUID).filter(Boolean));
+    const dbStudies = await prisma.imagingStudy.findMany({
+      where: {
+        OR: [
+          ...(studyUids.length > 0 ? [{ studyInstanceUid: { in: studyUids } }] : []),
+          { isNonDicom: true }
+        ]
+      },
+      include: {
+        order: true,
+        nonDicomExam: { select: { id: true } },
+        reports: {
+          orderBy: { updatedAt: "desc" },
+          take: 1,
           include: {
-            order: true,
-            reports: {
-              orderBy: { updatedAt: "desc" },
-              take: 1,
-              include: {
-                doctor: {
-                  select: {
-                    id: true,
-                    fullName: true,
-                    username: true,
-                  },
-                },
+            doctor: {
+              select: {
+                id: true,
+                fullName: true,
+                username: true,
               },
             },
           },
-        })
-      : [];
+        },
+      },
+    });
+
+    const nonDicomOnlyStudies = dbStudies.filter(
+      (study) => study.isNonDicom && !studyUids.includes(study.studyInstanceUid)
+    );
+
+    for (const dbStudy of nonDicomOnlyStudies) {
+      const dicomDate = dbStudy.scanStartedAt 
+        ? dbStudy.scanStartedAt.toISOString().split('T')[0].replace(/-/g, '') 
+        : (dbStudy.createdAt ? dbStudy.createdAt.toISOString().split('T')[0].replace(/-/g, '') : "");
+        
+      studiesWithWorkflow.push({
+        ID: dbStudy.id,
+        MainDicomTags: {
+          StudyInstanceUID: dbStudy.studyInstanceUid,
+          PatientName: dbStudy.patientName || "",
+          PatientID: dbStudy.patientId || "",
+          StudyDate: dicomDate,
+          StudyTime: "",
+          AccessionNumber: dbStudy.accessionNumber || "",
+          StudyDescription: dbStudy.studyDescription || dbStudy.procedureDescription || "Non-DICOM Exam",
+        },
+        PatientMainDicomTags: {},
+        WorkflowStatus: dbStudy.status,
+        isNonDicom: true,
+      });
+    }
 
     const dbStudyByUid = new Map(dbStudies.map(study => [study.studyInstanceUid, study]));
     const userIds = uniqueValues(
@@ -275,6 +305,8 @@ export async function getStudies() {
         waitingSince: toIso(waitingSince),
         waitingMinutes,
         slaStatus: resolveSlaStatus(waitingMinutes, priority),
+        isNonDicom: dbStudy?.isNonDicom || (study as any).isNonDicom || false,
+        nonDicomExamId: (dbStudy as any)?.nonDicomExam?.id || (study as any).nonDicomExamId || null,
       };
     });
   } catch (error) {

@@ -326,6 +326,19 @@ model ImagingStudy {
   finalizedAt   DateTime?
   deliveredAt   DateTime?
   archivedAt    DateTime?
+
+  // Phase 6 Non-DICOM extensions
+  sourceType         String?      @default("DICOM") // DICOM | NON_DICOM
+  isNonDicom         Boolean      @default(false)
+  mediaCount         Int          @default(0)
+  videoCount         Int          @default(0)
+  attachmentCount    Int          @default(0)
+  primaryMediaId     String?
+  captureStartedAt   DateTime?
+  captureCompletedAt DateTime?
+  captureStatus      String?      // PENDING | CAPTURING | COMPLETED | CANCELLED
+  nonDicomExam       NonDicomExam?
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -1072,3 +1085,106 @@ model ViewerSeriesActionRequest {
   @@index([status])
   @@map("viewer_series_action_requests")
 }
+
+// -----------------------------------------------------------------------------
+// Phase 6: Non-DICOM Capture Module
+// -----------------------------------------------------------------------------
+
+model NonDicomExam {
+  id                  String   @id @default(uuid())
+  caseCode            String   @unique
+  imagingStudyId      String?  @unique
+  imagingStudy        ImagingStudy? @relation(fields: [imagingStudyId], references: [id])
+  studyInstanceUid    String?
+  worklistOrderId     String?  @unique
+  patientId           String?
+  patientName         String?
+  patientBirthDate    DateTime?
+  patientSex          String?
+  accessionNumber     String?
+  status              String   @default("REQUESTED") // REQUESTED | ARRIVED | CAPTURING | READY_TO_READ | READING | REPORTED | DELIVERED | CANCELLED
+  facilityId          String?
+  machineId           String?
+  procedureCatalogId  String?
+  serviceTypeId       String?
+  assignedDoctorId    String?
+  technologistId      String?
+  clinicalInfo        String?  @db.Text
+  indication          String?  @db.Text
+  captureStartedAt    DateTime?
+  captureCompletedAt  DateTime?
+  createdByUserId     String?
+  updatedByUserId     String?
+  cancelledAt         DateTime?
+  cancelReason        String?  @db.Text
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  media               NonDicomMedia[]
+  captureSessions     NonDicomCaptureSession[]
+
+  @@index([status])
+  @@index([machineId])
+  @@index([assignedDoctorId])
+  @@index([technologistId])
+  @@index([procedureCatalogId])
+  @@index([createdAt])
+  @@index([accessionNumber])
+  @@index([caseCode])
+  @@map("non_dicom_exams")
+}
+
+model NonDicomMedia {
+  id                String   @id @default(uuid())
+  examId            String
+  exam              NonDicomExam @relation(fields: [examId], references: [id], onDelete: Cascade)
+  studyInstanceUid  String?
+  mediaType         String   // IMAGE | VIDEO | PDF | PATHOLOGY | DOCUMENT | OTHER
+  source            String   // CAMERA | UPLOAD | COPY | IMPORT
+  status            String   @default("ACTIVE") // ACTIVE | VOIDED
+  filePath          String
+  thumbnailPath     String?
+  mimeType          String?
+  fileSizeBytes     BigInt?
+  durationMs        Int?
+  width             Int?
+  height            Int?
+  captureDeviceId   String?
+  isPrimary         Boolean  @default(false)
+  sortOrder         Int      @default(0)
+  note              String?  @db.Text
+  cropRectJson      String?  @db.Text
+  metadataJson      String?  @db.Text
+  copiedFromMediaId String?
+  createdByUserId   String?
+  voidedByUserId    String?
+  voidedAt          DateTime?
+  voidReason        String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([examId])
+  @@index([mediaType])
+  @@index([status])
+  @@index([createdAt])
+  @@map("non_dicom_media")
+}
+
+model NonDicomCaptureSession {
+  id                String   @id @default(uuid())
+  examId            String
+  exam              NonDicomExam @relation(fields: [examId], references: [id], onDelete: Cascade)
+  startedByUserId   String?
+  deviceLabel       String?
+  deviceIdHash      String?
+  status            String   @default("STARTED") // STARTED | STOPPED | FAILED
+  failureReason     String?  @db.Text
+  startedAt         DateTime @default(now())
+  stoppedAt         DateTime?
+  createdAt         DateTime @default(now())
+
+  @@index([examId])
+  @@index([status])
+  @@map("non_dicom_capture_sessions")
+}
+

@@ -3,14 +3,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getSession, signOut } from "next-auth/react";
-import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X, User, Printer } from "lucide-react";
+import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X, User, Printer, Camera } from "lucide-react";
 import { hasPermission, type PermissionKey } from "@/lib/permissions";
 
-type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "printTemplates" | "clinic" | "pacs" | "storage" | "catalogs";
+type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "printTemplates" | "clinic" | "pacs" | "storage" | "catalogs" | "non-dicom";
 
 const mainMenuItems = [
   { key: "studies", label: "Ca chụp", href: "/", icon: LayoutDashboard, permission: "studies.read" },
   { key: "worklist", label: "Tiếp đón", href: "/worklist", icon: FileText, permission: "worklist.manage" },
+  { key: "non-dicom", label: "Non-DICOM", href: "/non-dicom", icon: Camera, permission: "nonDicom.read" },
   { key: "archive", label: "Lưu trữ", href: "/archive", icon: Archive, permission: "archive.read" },
   { key: "statistics", label: "Thống kê", href: "/statistics", icon: BarChart3, permission: "statistics.read" },
   { key: "users", label: "Người dùng", href: "/admin/users", icon: UserCog, permission: "users.manage" },

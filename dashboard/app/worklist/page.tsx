@@ -19,6 +19,7 @@ import {
   FilePlus,
   FileText,
   PlusCircle,
+  Camera,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -35,7 +36,8 @@ import {
   startReadingAction,
   checkCanReadStudiesAction,
   checkCanUpdateClinicalAction,
-  getTechnologistsAction
+  getTechnologistsAction,
+  createNonDicomExamFromWorklistAction
 } from "./actions";
 import { updateOrderFromHisAction } from "../his/actions";
 import { updateClinicalInfoAction, addIndicationAction } from "@/app/actions";
@@ -98,6 +100,9 @@ type WorklistOrderView = {
   hisLastSyncedAt?: string | null;
   hisLastResultSentAt?: string | null;
   hisOrderId?: string | null;
+  isNonDicomEligible?: boolean;
+  isNonDicom?: boolean;
+  nonDicomExamId?: string | null;
 };
 
 const orderStatusLabels: Record<string, string> = {
@@ -428,6 +433,27 @@ export default function WorklistPage() {
     return canReadStudies && Boolean(order.studyInstanceUid && order.studyStatus && ["READY_TO_READ", "READING"].includes(order.studyStatus));
   };
 
+  const openNonDicomCapture = async (order: WorklistOrderView) => {
+    if (order.nonDicomExamId) {
+      window.open(`/non-dicom/${order.nonDicomExamId}`, "_blank");
+    } else {
+      setBusyOrderId(order.id);
+      try {
+        const res = await createNonDicomExamFromWorklistAction(order.id);
+        if (res.success && res.examId) {
+          window.open(`/non-dicom/${res.examId}`, "_blank");
+          loadOrders();
+        } else {
+          setError(res.error || "Không thể tạo ca Non-DICOM.");
+        }
+      } catch (err: any) {
+        setError(err?.message || "Lỗi tạo ca Non-DICOM.");
+      } finally {
+        setBusyOrderId("");
+      }
+    }
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
       <AppSidebar active="worklist" />
@@ -615,9 +641,14 @@ export default function WorklistPage() {
                               <MonitorUp className="h-3.5 w-3.5" />
                             </IconButton>
                           )}
-                          {canOpenViewer(order) && (
+                          {canOpenViewer(order) && !order.isNonDicom && (
                             <IconButton title="Mở viewer" disabled={isBusy} onClick={() => openViewer(order)}>
                               <BadgeCheck className="h-3.5 w-3.5" />
+                            </IconButton>
+                          )}
+                          {order.isNonDicomEligible && (
+                            <IconButton title={order.nonDicomExamId ? "Mở chụp/tải Non-DICOM" : "Tạo ca Non-DICOM"} disabled={isBusy} onClick={() => openNonDicomCapture(order)}>
+                              <Camera className="h-3.5 w-3.5 text-indigo-400" />
                             </IconButton>
                           )}
                           {canLockForReading(order) && (
