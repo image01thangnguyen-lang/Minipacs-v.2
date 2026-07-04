@@ -1374,3 +1374,106 @@ model ConsultationMessage {
   @@index([createdAt])
   @@map("consultation_messages")
 }
+
+// -----------------------------------------------------------------------------
+// Phase 7.5: HIS Production API Gateway
+// -----------------------------------------------------------------------------
+
+model HisConnectionConfig {
+  id                     String    @id @default(uuid())
+  name                   String
+  mode                   String
+  baseUrl                String?
+  authMode               String
+  apiKeyEncrypted        String?   @db.Text
+  bearerTokenEncrypted   String?   @db.Text
+  basicUsername          String?
+  basicPasswordEncrypted String?   @db.Text
+  hmacSecretEncrypted    String?   @db.Text
+  timeoutMs              Int       @default(10000)
+  retryMax               Int       @default(0)
+  isActive               Boolean   @default(true)
+  lastHealthStatus       String?
+  lastHealthMessage      String?   @db.Text
+  lastHealthCheckedAt    DateTime?
+  createdByUserId        String?
+  updatedByUserId        String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@map("his_connection_configs")
+}
+
+model HisApiCallLog {
+  id                  String   @id @default(uuid())
+  direction           String   // INBOUND / OUTBOUND
+  method              String
+  path                String
+  endpointKey         String?
+  statusCode          Int?
+  success             Boolean
+  durationMs          Int?
+  requestId           String?
+  correlationId       String?
+  remoteIp            String?
+  actorType           String?  // HIS_SYSTEM, USER, SYSTEM
+  actorUserId         String?
+  accessionNumber     String?
+  studyInstanceUid    String?
+  reportId            String?
+  hisOrderId          String?
+  hisMessageId        String?
+  requestSummaryJson  String?  @db.Text
+  responseSummaryJson String?  @db.Text
+  errorCode           String?
+  errorMessage        String?  @db.Text
+  createdAt           DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([direction])
+  @@index([statusCode])
+  @@index([success])
+  @@index([endpointKey])
+  @@index([accessionNumber])
+  @@index([studyInstanceUid])
+  @@index([requestId])
+  @@map("his_api_call_logs")
+}
+
+model HisFieldMapping {
+  id            String   @id @default(uuid())
+  name          String
+  direction     String   // INBOUND / OUTBOUND
+  sourceField   String
+  targetField   String
+  transformRule String?  @db.Text
+  isRequired    Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("his_field_mappings")
+}
+
+model HisConflict {
+  id               String    @id @default(uuid())
+  entityType       String
+  entityId         String?
+  accessionNumber  String?
+  studyInstanceUid String?
+  fieldName        String
+  currentValue     String?   @db.Text
+  incomingValue    String?   @db.Text
+  status           String    // OPEN, ACCEPTED, IGNORED, MERGED
+  resolvedByUserId String?
+  resolvedAt       DateTime?
+  resolutionNote   String?   @db.Text
+  createdAt        DateTime  @default(now())
+
+  @@index([status])
+  @@index([entityType, entityId])
+  @@index([accessionNumber])
+  @@index([studyInstanceUid])
+  @@index([createdAt])
+  @@map("his_conflicts")
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import {
   AlertCircle,
   AlertTriangle,
@@ -602,9 +603,9 @@ export default function WorklistPage() {
                           {order.isDicomMatched ? "Da match DICOM" : `Cho ${formatDuration(order.waitingMinutes)}`}
                         </div>
                         {order.hisSyncStatus && (
-                          <div className={`mt-1 text-[9px] font-semibold ${order.hisSyncStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}`}>
+                          <Link href={`/admin/his`} className={`mt-1 block w-fit rounded px-1.5 py-0.5 text-[9px] font-semibold transition hover:opacity-80 ${order.hisSyncStatus === 'FAILED' ? 'bg-red-900/40 text-red-300' : 'bg-emerald-900/40 text-emerald-300'}`} title="Click to view HIS Logs">
                             HIS order: {order.hisSyncStatus}
-                          </div>
+                          </Link>
                         )}
                         {order.hisResultStatus && (
                           <div className={`mt-1 text-[9px] font-semibold ${order.hisResultStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}`}>

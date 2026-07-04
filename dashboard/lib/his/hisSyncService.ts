@@ -5,7 +5,7 @@ import { mapHisOrderToPrismaData } from "./hisPayloadMapper";
 import { HisReportPayload } from "./types";
 
 export async function syncOrderFromHis(accessionNumber: string, userId?: string) {
-  const adapter = getHisAdapter();
+  const adapter = await getHisAdapter();
   if (!adapter) {
     return { success: false, error: "HIS Integration is disabled", status: "DISABLED" };
   }
@@ -118,7 +118,7 @@ export async function syncOrderFromHis(accessionNumber: string, userId?: string)
 }
 
 export async function sendReportToHis(studyInstanceUid: string, userId?: string) {
-  const adapter = getHisAdapter();
+  const adapter = await getHisAdapter();
   if (!adapter) {
     return { success: false, error: "HIS Integration is disabled", status: "DISABLED" };
   }
