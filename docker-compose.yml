@@ -63,15 +63,9 @@ services:
       - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin@123}
       - ORTHANC_API_URL=http://orthanc:8042
-    environment:
-      - NEXT_PUBLIC_OHIF_URL=http://${SERVER_IP}:3000
-      - AUTH_SECRET=${AUTH_SECRET}
-      - AUTH_TRUST_HOST=true
-      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin@123}
-      - ORTHANC_API_URL=http://orthanc:8042
       - ORTHANC_USERNAME=${ORTHANC_ADMIN_USER}
       - ORTHANC_PASSWORD=${ORTHANC_ADMIN_PASSWORD}
+      - WORKER_SECRET=${WORKER_SECRET:-}
       - DATABASE_URL=postgresql://orthanc:${POSTGRES_PASSWORD}@db:5432/orthanc_db?schema=dashboard
     volumes:
       - ./dashboard:/app

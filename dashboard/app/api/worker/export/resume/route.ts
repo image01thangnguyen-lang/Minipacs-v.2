@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const workerSecret = process.env.WORKER_SECRET;
+    const workerSecret = process.env.WORKER_SECRET || process.env.AUTH_SECRET;
     if (!workerSecret) {
       return NextResponse.json({ error: 'Worker secret is not configured' }, { status: 503 });
     }
