@@ -1,5 +1,7 @@
 import { PrismaClient, Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -84,7 +86,27 @@ async function main() {
         'system.audit.export',
         'account.selfManage',
         'native.manage',
-        'native.use'
+        'native.use',
+        'release.read',
+        'release.manage',
+        'release.signoff',
+        'uat.read',
+        'uat.manage',
+        'uat.execute',
+        'golive.manage',
+        'training.read',
+        'training.manage',
+        'training.attest',
+        'incident.read',
+        'incident.manage',
+        'incident.report',
+        'change.read',
+        'change.manage',
+        'change.request',
+        'change.approve',
+        'runbook.read',
+        'runbook.manage',
+        'runbook.execute'
       ],
       isSystem: true,
       isActive: true
@@ -122,6 +144,15 @@ async function main() {
         'export.create',
         'export.anonymize',
         'destructive.request',
+        'release.read',
+        'uat.read',
+        'uat.execute',
+        'training.read',
+        'training.attest',
+        'incident.read',
+        'incident.report',
+        'change.read',
+        'change.request',
         'account.selfManage'
       ],
       isSystem: true,
@@ -132,7 +163,7 @@ async function main() {
       name: 'Kỹ thuật viên',
       description: 'Theo dõi danh sách ca, tiếp nhận/worklist và xử lý vận hành kỹ thuật.',
       baseRole: Role.TECHNICIAN,
-      permissions: ['studies.read', 'studies.assign', 'studies.updateClinical', 'worklist.manage', 'archive.read', 'statistics.read', 'his.read', 'his.sync', 'his.retry', 'viewer.configure', 'viewer.history', 'viewer.export', 'viewer.anonymize', 'nonDicom.read', 'nonDicom.create', 'nonDicom.capture', 'nonDicom.edit', 'nonDicom.deleteMedia', 'nonDicom.copyMedia', 'nonDicom.print', 'nonDicom.video', 'export.read', 'export.create', 'backup.read', 'destructive.request', 'account.selfManage', 'ops.health', 'ops.dicomConformance'],
+      permissions: ['studies.read', 'studies.assign', 'studies.updateClinical', 'worklist.manage', 'archive.read', 'statistics.read', 'his.read', 'his.sync', 'his.retry', 'viewer.configure', 'viewer.history', 'viewer.export', 'viewer.anonymize', 'nonDicom.read', 'nonDicom.create', 'nonDicom.capture', 'nonDicom.edit', 'nonDicom.deleteMedia', 'nonDicom.copyMedia', 'nonDicom.print', 'nonDicom.video', 'export.read', 'export.create', 'backup.read', 'destructive.request', 'release.read', 'uat.read', 'uat.execute', 'training.read', 'training.attest', 'incident.read', 'incident.report', 'change.read', 'change.request', 'account.selfManage', 'ops.health', 'ops.dicomConformance'],
       isSystem: true,
       isActive: true
     },
@@ -141,7 +172,7 @@ async function main() {
       name: 'Lễ tân',
       description: 'Tạo order, check-in, tìm/in lại kết quả và xem thống kê vận hành cơ bản.',
       baseRole: Role.RECEPTION,
-      permissions: ['studies.read', 'worklist.manage', 'archive.read', 'archive.deliver', 'statistics.read', 'reports.print', 'his.read', 'his.sync', 'his.retry', 'nonDicom.read', 'nonDicom.create', 'export.read', 'export.create', 'account.selfManage'],
+      permissions: ['studies.read', 'worklist.manage', 'archive.read', 'archive.deliver', 'statistics.read', 'reports.print', 'his.read', 'his.sync', 'his.retry', 'nonDicom.read', 'nonDicom.create', 'export.read', 'export.create', 'release.read', 'uat.read', 'uat.execute', 'training.read', 'training.attest', 'incident.read', 'incident.report', 'change.read', 'change.request', 'account.selfManage'],
       isSystem: true,
       isActive: true
     }
@@ -254,6 +285,45 @@ async function main() {
       }
     });
     console.log('Clinic profile seeded: Mini PACS');
+  }
+  // Seed UAT Baseline Scenarios if json file exists
+  const uatJsonPath = path.join(__dirname, 'uat-baseline.json');
+  if (fs.existsSync(uatJsonPath)) {
+    const cases = JSON.parse(fs.readFileSync(uatJsonPath, 'utf8'));
+    const suite = await prisma.uatSuite.upsert({
+      where: { id: 'baseline-parity-suite' },
+      update: {
+        name: 'VRPACS Baseline Parity',
+        description: 'Acceptance scenarios for VRPACS core workflows',
+        version: '1.0'
+      },
+      create: {
+        id: 'baseline-parity-suite',
+        name: 'VRPACS Baseline Parity',
+        description: 'Acceptance scenarios for VRPACS core workflows',
+        version: '1.0'
+      }
+    });
+
+    for (const c of cases) {
+      const existing = await prisma.uatCase.findFirst({
+        where: { suiteId: suite.id, title: c.title }
+      });
+      if (!existing) {
+        await prisma.uatCase.create({
+          data: {
+            suiteId: suite.id,
+            title: c.title,
+            category: c.category,
+            description: c.description || 'No preconditions',
+            steps: c.steps || 'No steps',
+            expected: c.expected || 'No expected result',
+            isCritical: c.isCritical || false
+          }
+        });
+      }
+    }
+    console.log(`Seeded ${cases.length} UAT cases from uat-baseline.json`);
   }
 }
 

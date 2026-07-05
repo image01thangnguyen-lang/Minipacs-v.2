@@ -133,6 +133,21 @@ model User {
   dicomConformanceRuns          DicomConformanceRun[]
   nativeConnectorEvents         NativeConnectorEvent[]
 
+  // Phase 10
+  releaseCandidatesCreated     ReleaseCandidate[]   @relation("ReleaseCreatedBy")
+  releaseSignOffs              ReleaseSignOff[]
+  uatRunsTested                UatRun[]
+  uatEvidencesUploaded         UatEvidence[]
+  goliveChecklistItemsAssigned ChecklistItem[]
+  trainingAssignments          TrainingAssignment[] @relation("TrainingAssignedTo")
+  trainingAttestations         TrainingAssignment[] @relation("TrainingAttestedBy")
+  incidentsReported            IncidentTicket[]     @relation("IncidentReportedBy")
+  incidentsAssigned            IncidentTicket[]     @relation("IncidentAssignee")
+  incidentComments             IncidentComment[]
+  changeRequestsRequested      ChangeRequest[]
+  changeApprovals              ChangeApproval[]
+  runbookExecutions            RunbookExecution[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1840,4 +1855,349 @@ model NativeConnectorEvent {
   @@index([targetType, targetId])
   @@index([createdAt])
   @@map("native_connector_events")
+}
+
+// ==========================================
+// PHASE 10: Release, UAT, Operations Handoff
+// ==========================================
+
+model ReleaseCandidate {
+  id              String    @id @default(uuid())
+  version         String    @unique
+  status          String // DRAFT | TESTING | BLOCKED | READY_FOR_SIGNOFF | APPROVED | RELEASED | ROLLED_BACK
+  notes           String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  releasedAt      DateTime?
+  createdByUserId String?
+  createdByUser   User?     @relation("ReleaseCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  signOffs       ReleaseSignOff[]
+  knownIssues    ReleaseKnownIssue[]
+  changeRequests ChangeRequest[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("release_candidates")
+}
+
+model ReleaseSignOff {
+  id             String           @id @default(uuid())
+  releaseId      String
+  release        ReleaseCandidate @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  role           String
+  status         String // PENDING | APPROVED | REJECTED
+  notes          String?          @db.Text
+  signedByUserId String?
+  signedByUser   User?            @relation(fields: [signedByUserId], references: [id], onDelete: SetNull)
+  signedAt       DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([releaseId, role])
+  @@index([releaseId])
+  @@map("release_signoffs")
+}
+
+model ReleaseKnownIssue {
+  id          String           @id @default(uuid())
+  releaseId   String
+  release     ReleaseCandidate @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  ticketId    String?
+  description String           @db.Text
+  riskLevel   String // LOW | MEDIUM | HIGH
+  workaround  String?          @db.Text
+  createdAt   DateTime         @default(now())
+
+  @@index([releaseId])
+  @@map("release_known_issues")
+}
+
+model UatSuite {
+  id          String   @id @default(uuid())
+  name        String
+  description String?  @db.Text
+  version     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cases          UatCase[]
+  runs           UatRun[]
+  changeRequests ChangeRequest[]
+
+  @@map("uat_suites")
+}
+
+model UatCase {
+  id          String   @id @default(uuid())
+  suiteId     String
+  suite       UatSuite @relation(fields: [suiteId], references: [id], onDelete: Cascade)
+  category    String?
+  title       String
+  description String   @db.Text
+  steps       String   @db.Text
+  expected    String   @db.Text
+  isCritical  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  results UatResult[]
+
+  @@index([suiteId])
+  @@map("uat_cases")
+}
+
+model UatRun {
+  id             String    @id @default(uuid())
+  suiteId        String
+  suite          UatSuite  @relation(fields: [suiteId], references: [id], onDelete: Cascade)
+  status         String // IN_PROGRESS | COMPLETED | ABORTED
+  testedByUserId String?
+  testedByUser   User?     @relation(fields: [testedByUserId], references: [id], onDelete: SetNull)
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+
+  results UatResult[]
+
+  @@index([suiteId])
+  @@index([status])
+  @@map("uat_runs")
+}
+
+model UatResult {
+  id       String   @id @default(uuid())
+  runId    String
+  run      UatRun   @relation(fields: [runId], references: [id], onDelete: Cascade)
+  caseId   String
+  caseRef  UatCase  @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  status   String // PENDING | PASS | FAIL | BLOCKED | SKIPPED
+  notes    String?  @db.Text
+  testedAt DateTime @default(now())
+
+  evidences UatEvidence[]
+
+  @@unique([runId, caseId])
+  @@index([runId])
+  @@map("uat_results")
+}
+
+model UatEvidence {
+  id               String    @id @default(uuid())
+  resultId         String
+  result           UatResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
+  fileUrl          String
+  fileName         String
+  fileType         String
+  fileSizeBytes    Int?
+  evidenceKind     String    @default("UPLOAD") // UPLOAD | LINK
+  isScrubbed       Boolean   @default(false)
+  containsPhiRisk  Boolean   @default(false)
+  uploadedByUserId String?
+  uploadedByUser   User?     @relation(fields: [uploadedByUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime  @default(now())
+
+  @@index([resultId])
+  @@index([containsPhiRisk])
+  @@map("uat_evidences")
+}
+
+model GoLiveChecklist {
+  id         String    @id @default(uuid())
+  name       String
+  targetDate DateTime?
+  status     String // PREP | CUTOVER | POST_LIVE | COMPLETED | ABORTED
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  items ChecklistItem[]
+
+  @@map("golive_checklists")
+}
+
+model ChecklistItem {
+  id               String          @id @default(uuid())
+  checklistId      String
+  checklist        GoLiveChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  category         String // PRE_FLIGHT | MIGRATION | VALIDATION | SIGNOFF
+  task             String
+  status           String // PENDING | IN_PROGRESS | DONE | BLOCKED | SKIPPED
+  notes            String?         @db.Text
+  assignedToUserId String?
+  assignedToUser   User?           @relation(fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  updatedAt        DateTime        @updatedAt
+
+  @@index([checklistId])
+  @@index([category])
+  @@map("golive_checklist_items")
+}
+
+model TrainingMaterial {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  url         String?
+  roleTarget  String? // DOCTOR, TECHNICIAN, etc or null for ALL
+  isRequired  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignments TrainingAssignment[]
+
+  @@map("training_materials")
+}
+
+model TrainingAssignment {
+  id               String           @id @default(uuid())
+  materialId       String
+  material         TrainingMaterial @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User             @relation("TrainingAssignedTo", fields: [userId], references: [id], onDelete: Cascade)
+  status           String // PENDING | IN_PROGRESS | COMPLETED
+  attestedAt       DateTime?
+  attestedByUserId String? // Can be self or admin
+  attestedByUser   User?            @relation("TrainingAttestedBy", fields: [attestedByUserId], references: [id], onDelete: SetNull)
+  auditReason      String?          @db.Text
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@unique([materialId, userId])
+  @@index([userId])
+  @@map("training_assignments")
+}
+
+model IncidentTicket {
+  id               String    @id @default(uuid())
+  // STRICT RULE: No PHI, no raw clinical data
+  severity         String // SEV1 | SEV2 | SEV3 | SEV4
+  status           String // OPEN | INVESTIGATING | RESOLVED | CLOSED
+  module           String // e.g. VIEWER, HIS_GATEWAY, REPORTING
+  contextType      String? // e.g. STUDY, REPORT, DICOM_NODE
+  contextId        String?
+  contextUrl       String?
+  shortDesc        String    @db.Text // Scrubbed description
+  reportedByUserId String?
+  reportedByUser   User?     @relation("IncidentReportedBy", fields: [reportedByUserId], references: [id], onDelete: SetNull)
+  assigneeUserId   String?
+  assigneeUser     User?     @relation("IncidentAssignee", fields: [assigneeUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  resolvedAt       DateTime?
+
+  comments       IncidentComment[]
+  changeRequests ChangeRequest[]
+
+  @@index([status])
+  @@index([severity])
+  @@index([module])
+  @@index([reportedByUserId])
+  @@map("incident_tickets")
+}
+
+model IncidentComment {
+  id              String         @id @default(uuid())
+  ticketId        String
+  ticket          IncidentTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  content         String         @db.Text
+  wasRedacted     Boolean        @default(false)
+  redactionNotes  String?        @db.Text
+  createdByUserId String?
+  createdByUser   User?          @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt       DateTime       @default(now())
+
+  @@index([ticketId])
+  @@map("incident_comments")
+}
+
+model ChangeRequest {
+  id                 String            @id @default(uuid())
+  title              String
+  description        String            @db.Text
+  module             String            @default("GENERAL")
+  impactSummary      String?           @db.Text
+  rollbackPlan       String?           @db.Text
+  uatRequired        Boolean           @default(false)
+  releaseNotesImpact String?           @db.Text
+  status             String // REQUESTED | REVIEWING | APPROVED | REJECTED | IMPLEMENTED | CANCELLED
+  riskLevel          String // LOW | MEDIUM | HIGH
+  releaseId          String?
+  release            ReleaseCandidate? @relation(fields: [releaseId], references: [id], onDelete: SetNull)
+  uatSuiteId         String?
+  uatSuite           UatSuite?         @relation(fields: [uatSuiteId], references: [id], onDelete: SetNull)
+  incidentId         String?
+  incident           IncidentTicket?   @relation(fields: [incidentId], references: [id], onDelete: SetNull)
+  requestedByUserId  String?
+  requestedByUser    User?             @relation(fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  approvals ChangeApproval[]
+
+  @@index([status])
+  @@index([releaseId])
+  @@index([uatSuiteId])
+  @@index([incidentId])
+  @@map("change_requests")
+}
+
+model ChangeApproval {
+  id             String        @id @default(uuid())
+  changeId       String
+  change         ChangeRequest @relation(fields: [changeId], references: [id], onDelete: Cascade)
+  status         String // PENDING | APPROVED | REJECTED
+  notes          String?       @db.Text
+  reviewerUserId String
+  reviewerUser   User          @relation(fields: [reviewerUserId], references: [id], onDelete: Cascade)
+  reviewedAt     DateTime?
+  createdAt      DateTime      @default(now())
+
+  @@unique([changeId, reviewerUserId])
+  @@index([changeId])
+  @@map("change_approvals")
+}
+
+model Runbook {
+  id          String   @id @default(uuid())
+  name        String
+  description String?  @db.Text
+  category    String // DEPLOYMENT | MAINTENANCE | INCIDENT_RESPONSE
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  steps      RunbookStep[]
+  executions RunbookExecution[]
+
+  @@map("runbooks")
+}
+
+model RunbookStep {
+  id          String  @id @default(uuid())
+  runbookId   String
+  runbook     Runbook @relation(fields: [runbookId], references: [id], onDelete: Cascade)
+  order       Int
+  title       String
+  description String  @db.Text
+  isRisky     Boolean @default(false)
+  actionUrl   String? // Link to existing UI feature
+
+  @@unique([runbookId, order])
+  @@index([runbookId])
+  @@map("runbook_steps")
+}
+
+model RunbookExecution {
+  id               String    @id @default(uuid())
+  runbookId        String
+  runbook          Runbook   @relation(fields: [runbookId], references: [id], onDelete: Cascade)
+  status           String // IN_PROGRESS | COMPLETED | FAILED | ABORTED
+  executedByUserId String?
+  executedByUser   User?     @relation(fields: [executedByUserId], references: [id], onDelete: SetNull)
+  startedAt        DateTime  @default(now())
+  completedAt      DateTime?
+  logJson          String?   @db.Text // Contains confirmation audits for risky steps
+  activeKey        String?   @unique // runbookId while IN_PROGRESS, null after finish
+
+  @@index([runbookId])
+  @@index([status])
+  @@map("runbook_executions")
 }

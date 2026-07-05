@@ -6,7 +6,7 @@ import { getSession, signOut } from "next-auth/react";
 import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X, User, Printer, Camera, Network } from "lucide-react";
 import { hasPermission, type PermissionKey } from "@/lib/permissions";
 
-type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "printTemplates" | "clinic" | "pacs" | "his" | "storage" | "catalogs" | "non-dicom" | "consultations" | "admin_retention" | "admin_backup" | "admin_destructive" | "admin_ops" | "admin_native" | "account";
+type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "printTemplates" | "clinic" | "pacs" | "his" | "storage" | "catalogs" | "non-dicom" | "consultations" | "admin_retention" | "admin_backup" | "admin_destructive" | "admin_ops" | "admin_native" | "admin_release" | "admin_training" | "admin_incident" | "admin_change" | "admin_runbook" | "account";
 
 const mainMenuItems = [
   { key: "studies", label: "Ca chụp", href: "/", icon: LayoutDashboard, permission: "studies.read" },
@@ -26,6 +26,11 @@ const mainMenuItems = [
   { key: "admin_destructive", label: "Destructive", href: "/admin/destructive", icon: Settings, permission: "destructive.audit" },
   { key: "admin_ops", label: "Ops Center", href: "/admin/ops", icon: Settings, permission: "ops.health" },
   { key: "admin_native", label: "Native Bridge", href: "/admin/native", icon: Network, permission: "native.manage" },
+  { key: "admin_release", label: "Release Center", href: "/admin/release", icon: Settings, permission: "release.read" },
+  { key: "admin_training", label: "Training", href: "/admin/training", icon: Settings, permission: "training.read" },
+  { key: "admin_incident", label: "Incidents", href: "/support/incidents", icon: Settings, permission: "incident.read" },
+  { key: "admin_change", label: "Change Requests", href: "/admin/changes", icon: Settings, permission: "change.read" },
+  { key: "admin_runbook", label: "Runbooks", href: "/admin/runbooks", icon: Settings, permission: "runbook.read" },
   { key: "account", label: "Tài khoản", href: "/settings/account", icon: User, permission: "account.selfManage" },
 ] as const;
 

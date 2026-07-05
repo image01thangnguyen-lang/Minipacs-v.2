@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle, ChevronLeft, Loader2, Printer, Save, RefreshCcw, Link as LinkIcon, Users } from "lucide-react";
+import { CheckCircle, ChevronLeft, Loader2, Printer, Save, RefreshCcw, Link as LinkIcon, Users, ShieldAlert } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import TiptapEditor from "./components/TiptapEditor";
 import { PrintTemplateViewer } from "./components/PrintTemplateViewer";
@@ -138,6 +138,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
   const [consultDialogOpen, setConsultDialogOpen] = useState(false);
   const [canShare, setCanShare] = useState(false);
   const [canConsult, setCanConsult] = useState(false);
+  const [canReportIncident, setCanReportIncident] = useState(false);
 
   useEffect(() => {
     setViewerLink(`/viewer/minipacs?StudyInstanceUIDs=${encodeURIComponent(studyInstanceUid)}`);
@@ -145,6 +146,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
       setCanSyncHis(res.permissions.includes("his.sync"));
       setCanShare(res.permissions.includes("share.create"));
       setCanConsult(res.permissions.includes("consult.create"));
+      setCanReportIncident(res.permissions.includes("incident.report") || res.permissions.includes("incident.manage"));
     }).catch(console.error);
   }, [studyInstanceUid]);
 
@@ -514,6 +516,24 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
                 >
                   <Users className="h-4 w-4 text-pink-400" />
                   Hội chẩn
+                </button>
+              )}
+              {canReportIncident && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const query = new URLSearchParams({
+                      module: "REPORTING",
+                      contextType: reportId ? "REPORT" : "STUDY",
+                      contextId: reportId || studyInstanceUid,
+                      contextUrl: `/report/${studyInstanceUid}`,
+                    });
+                    router.push(`/support/incidents/new?${query.toString()}`);
+                  }}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-vin-border bg-vin-shell px-4 py-2 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white"
+                >
+                  <ShieldAlert className="h-4 w-4 text-orange-400" />
+                  Báo sự cố
                 </button>
               )}
               <button

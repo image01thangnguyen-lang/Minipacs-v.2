@@ -1,0 +1,146 @@
+[
+  {
+    "title": "SCN-001 - Create worklist order and generate MWL",
+    "category": "Baseline",
+    "description": "- User has `worklist.manage`.\n- Procedure/modality data exists or manual input is allowed.",
+    "steps": "1. Open `/worklist`.\n2. Create new order with patient, accession, modality, procedure, scheduled date.\n3. Save order.\n4. Regenerate MWL if needed.",
+    "expected": "- Order appears in worklist.\n- Accession is unique.\n- MWL path/status is created or clear error is shown.\n- No DICOM study is required yet.\n[Audit] - `create order` event exists.\n[Audit] - `regenerate MWL` event exists if action was used.",
+    "isCritical": true
+  },
+  {
+    "title": "SCN-002 - Check in and cancel order",
+    "category": "Baseline",
+    "description": "- Order is `REQUESTED` or `SCHEDULED`.\n- User has `worklist.manage`.",
+    "steps": "1. Check in order.\n2. Verify arrived/check-in status.\n3. Cancel order with reason.",
+    "expected": "- Order transitions to arrived/check-in.\n- Cancel requires reason.\n- Order becomes cancelled.\n- If study exists, image data is not deleted.\n[Audit] - Check-in and cancel events include actor and reason.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-003 - Orthanc study sync to MiniPACS",
+    "category": "Baseline",
+    "description": "- Orthanc has a sample study.\n- MiniPACS sync action/service is available.",
+    "steps": "1. Trigger or wait for study sync.\n2. Open study list `/`.\n3. Search by patient ID or accession.",
+    "expected": "- `ImagingStudy` exists with study UID, patient, modality.\n- Status is `RECEIVED` or mapped equivalent.\n- Missing metadata is shown as warning, not crash.\n[Audit] - Study sync/status history event exists.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-004 - Start reading and save draft report",
+    "category": "Baseline",
+    "description": "- Study is ready to read.\n- User has `reports.write`.",
+    "steps": "1. Open study row action.\n2. Click start reading/receive read.\n3. Open report page.\n4. Save findings/conclusion as draft.",
+    "expected": "- Study/report enters `READING`/`DRAFT`.\n- Assigned/reading doctor is set if policy requires.\n- Draft is editable.\n[Audit] - Start reading event exists.\n[Audit] - Draft save event exists.",
+    "isCritical": true
+  },
+  {
+    "title": "SCN-005 - Finalize report, print PDF, mark delivered",
+    "category": "Baseline",
+    "description": "- Draft report exists.\n- User has report finalize/write permission.\n- Reception/admin has `archive.deliver`.",
+    "steps": "1. Finalize report.\n2. Print or export PDF.\n3. Open archive.\n4. Mark delivered.",
+    "expected": "- Report becomes final/read-only.\n- PDF/print output is consistent.\n- Archive row appears.\n- Delivered status/action recorded.\n[Audit] - Finalize, print/PDF, delivered events exist.",
+    "isCritical": true
+  },
+  {
+    "title": "SCN-006 - Cancel approval/edit final with reason",
+    "category": "Baseline",
+    "description": "- Final report exists.\n- User has `reports.unfinalize` or equivalent admin permission.",
+    "steps": "1. Try editing final report without unfinalize permission.\n2. Confirm access is denied.\n3. With authorized user, request cancel approval/edit final.\n4. Enter reason.\n5. Save addendum or new version.",
+    "expected": "- Unauthorized user cannot edit final.\n- Authorized action requires reason.\n- Original final is not silently overwritten.\n- Addendum/history is visible.\n[Audit] - Denied/action/unfinalize/addendum events exist.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-007 - HIS update and send result with retry",
+    "category": "Baseline",
+    "description": "- HIS mode is mock or test adapter.\n- Study/order has accession.\n- User has `his.sync`.",
+    "steps": "1. Update case from HIS.\n2. Verify demographics/clinical info preview or update.\n3. Finalize report.\n4. Send result to HIS.\n5. Simulate failure and retry.",
+    "expected": "- HIS sync status changes pending/sent/failed.\n- Errors are visible and retryable.\n- Draft reports cannot be sent.\n- Failure does not rollback final report.\n[Audit] - Inbound update, outbound send, failure, retry events exist.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-008 - Admin catalog and template mapping",
+    "category": "Baseline",
+    "description": "- User has catalog/template permission.",
+    "steps": "1. Create service type.\n2. Create procedure with modality/body part/HIS code.\n3. Create ICD.\n4. Map procedure/ICD to report template.\n5. Map procedure/machine to print template.",
+    "expected": "- Catalog items can be created/edited/deactivated.\n- Template resolver picks the most specific mapping.\n- Inactive catalog item does not appear for new order.\n[Audit] - Catalog and mapping changes audited.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-009 - Per-machine permission matrix",
+    "category": "Baseline",
+    "description": "- Doctor A has global report write.\n- CT1 and MR1 nodes exist.",
+    "steps": "1. Deny Doctor A `report.write` on CT1.\n2. Keep MR1 default.\n3. Attempt report write on CT1.\n4. Attempt report write on MR1.",
+    "expected": "- CT1 action denied.\n- MR1 follows global permission.\n- Effective permission preview matches behavior.\n[Audit] - Matrix change audited.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-010 - Viewer key image/snapshot/report bridge",
+    "category": "Baseline",
+    "description": "- Study opens in viewer.\n- User has `studies.read` and `reports.write`.",
+    "steps": "1. Open viewer.\n2. Save key image with note.\n3. Save snapshot.\n4. Open gallery.\n5. Select artifacts and send to report.\n6. Open report workspace/report page.",
+    "expected": "- Viewer does not blank.\n- Artifacts have metadata/preview if Phase 4 implemented.\n- Selected artifacts are available in report workflow.\n[Audit] - Viewer open, key image, snapshot, send-to-report events exist.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-011 - Viewer preference and action history",
+    "category": "Baseline",
+    "description": "- User can open viewer.",
+    "steps": "1. Open User Config.\n2. Change WW/WL preset or tool visibility.\n3. Save and reload viewer.\n4. Perform viewer action.\n5. Open Action History.",
+    "expected": "- Preference persists.\n- Bad preference cannot crash viewer.\n- Action history shows recent actions.\n[Audit] - Preference save/reset and viewer action history events exist.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-012 - Viewer download manager and anonymized export",
+    "category": "Baseline",
+    "description": "- Viewer artifacts exist.\n- User has export permission.",
+    "steps": "1. Select key images/snapshots.\n2. Start export with anonymize enabled.\n3. Open download manager.\n4. Download file when ready.",
+    "expected": "- Job status progresses to ready or clear failure.\n- File name/metadata does not expose patient name/id when anonymized.\n- Source study identity is unchanged.\n[Audit] - Job create/ready/download/anonymized export events exist.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-013 - History compare",
+    "category": "Baseline",
+    "description": "- Patient has current and prior studies.",
+    "steps": "1. Open current study viewer.\n2. Open history panel.\n3. Select prior study.\n4. Open compare.",
+    "expected": "- Current/prior viewer layout opens.\n- Current and prior labels are visible.\n- If prior has no image, report-only option appears.\n[Audit] - History opened and compare opened events exist.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-014 - Non-DICOM capture to report",
+    "category": "Baseline",
+    "description": "- Browser camera permission is available.\n- User has Non-DICOM module permission.",
+    "steps": "1. Open Non-DICOM queue.\n2. Start case.\n3. Capture still image.\n4. Record short video if supported.\n5. Save report/final/deliver.",
+    "expected": "- Media saved with case.\n- Report workflow reused.\n- Capture errors are clear.\n[Audit] - Capture/upload/report events exist.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-015 - Share link with patient-info hiding",
+    "category": "Baseline",
+    "description": "- Final report/study exists.\n- User has share permission.",
+    "steps": "1. Create share link with expiry/password.\n2. Enable hide patient info.\n3. Open public share link.\n4. Revoke link.",
+    "expected": "- Public viewer is read-only.\n- Patient info hidden when enabled.\n- Expired/revoked link cannot access.\n[Audit] - Create/access/revoke events exist.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-016 - Consultation lifecycle",
+    "category": "Baseline",
+    "description": "- Study exists.\n- User has consult permission.",
+    "steps": "1. Create consultation request.\n2. Add participant.\n3. Start room.\n4. Send chat/video event if implemented.\n5. Finish consultation.",
+    "expected": "- Status moves requested -> started/in-progress -> finished.\n- Participants are tracked.\n- Consultation does not change report final status automatically.\n[Audit] - Lifecycle and participant events exist.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-017 - Guarded delete series/study dry-run",
+    "category": "Baseline",
+    "description": "- Admin user has delete permission.\n- Study has multiple series.",
+    "steps": "1. Request delete series.\n2. Enter reason.\n3. Run dry-run.\n4. Confirm phrase.\n5. Execute only if Phase 8 actual delete is implemented.",
+    "expected": "- Without reason/permission, action denied.\n- Dry-run shows affected instances.\n- Audit records request and result.\n- If actual delete not implemented, no PACS data is deleted.\n[Audit] - Delete request/dry-run/execute or blocked event exists.",
+    "isCritical": false
+  },
+  {
+    "title": "SCN-018 - Regression smoke after each phase",
+    "category": "Baseline",
+    "description": "- Basic sample data exists.",
+    "steps": "1. Open `/`.\n2. Open `/worklist`.\n3. Open viewer for a valid study.\n4. Open report page.\n5. Open archive.\n6. Open statistics.",
+    "expected": "- No page crashes.\n- Viewer loads nonblank for valid study.\n- Existing report/worklist/archive flows still work.\n[Audit] - No unexpected destructive/audit noise.\n[Audit] ## 5. Required checks before phase handoff\n[Audit] - List tests run.\n[Audit] - List tests not run and reason.\n[Audit] - Mention migration/config/env notes.\n[Audit] - Mention remaining risks and blockers.\n[Audit] - Confirm no PHI/DICOM real data committed.",
+    "isCritical": false
+  }
+]
