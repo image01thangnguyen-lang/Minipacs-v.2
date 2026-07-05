@@ -72,7 +72,19 @@ async function main() {
         'destructive.request',
         'destructive.approve',
         'destructive.execute',
-        'destructive.audit'
+        'destructive.audit',
+        'ops.health',
+        'ops.health.run',
+        'ops.security',
+        'ops.security.resolve',
+        'ops.performance',
+        'ops.dicomConformance',
+        'ops.deployment',
+        'system.audit',
+        'system.audit.export',
+        'account.selfManage',
+        'native.manage',
+        'native.use'
       ],
       isSystem: true,
       isActive: true
@@ -109,7 +121,8 @@ async function main() {
         'export.read',
         'export.create',
         'export.anonymize',
-        'destructive.request'
+        'destructive.request',
+        'account.selfManage'
       ],
       isSystem: true,
       isActive: true
@@ -119,7 +132,7 @@ async function main() {
       name: 'Kỹ thuật viên',
       description: 'Theo dõi danh sách ca, tiếp nhận/worklist và xử lý vận hành kỹ thuật.',
       baseRole: Role.TECHNICIAN,
-      permissions: ['studies.read', 'studies.assign', 'studies.updateClinical', 'worklist.manage', 'archive.read', 'statistics.read', 'his.read', 'his.sync', 'his.retry', 'viewer.configure', 'viewer.history', 'viewer.export', 'viewer.anonymize', 'nonDicom.read', 'nonDicom.create', 'nonDicom.capture', 'nonDicom.edit', 'nonDicom.deleteMedia', 'nonDicom.copyMedia', 'nonDicom.print', 'nonDicom.video', 'export.read', 'export.create', 'backup.read', 'destructive.request'],
+      permissions: ['studies.read', 'studies.assign', 'studies.updateClinical', 'worklist.manage', 'archive.read', 'statistics.read', 'his.read', 'his.sync', 'his.retry', 'viewer.configure', 'viewer.history', 'viewer.export', 'viewer.anonymize', 'nonDicom.read', 'nonDicom.create', 'nonDicom.capture', 'nonDicom.edit', 'nonDicom.deleteMedia', 'nonDicom.copyMedia', 'nonDicom.print', 'nonDicom.video', 'export.read', 'export.create', 'backup.read', 'destructive.request', 'account.selfManage', 'ops.health', 'ops.dicomConformance'],
       isSystem: true,
       isActive: true
     },
@@ -128,7 +141,7 @@ async function main() {
       name: 'Lễ tân',
       description: 'Tạo order, check-in, tìm/in lại kết quả và xem thống kê vận hành cơ bản.',
       baseRole: Role.RECEPTION,
-      permissions: ['studies.read', 'worklist.manage', 'archive.read', 'archive.deliver', 'statistics.read', 'reports.print', 'his.read', 'his.sync', 'his.retry', 'nonDicom.read', 'nonDicom.create', 'export.read', 'export.create'],
+      permissions: ['studies.read', 'worklist.manage', 'archive.read', 'archive.deliver', 'statistics.read', 'reports.print', 'his.read', 'his.sync', 'his.retry', 'nonDicom.read', 'nonDicom.create', 'export.read', 'export.create', 'account.selfManage'],
       isSystem: true,
       isActive: true
     }

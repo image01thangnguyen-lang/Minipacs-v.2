@@ -75,6 +75,18 @@ export const permissionKeys = [
   "destructive.approve",
   "destructive.execute",
   "destructive.audit",
+  "ops.health",
+  "ops.health.run",
+  "ops.security",
+  "ops.security.resolve",
+  "ops.performance",
+  "ops.dicomConformance",
+  "ops.deployment",
+  "system.audit",
+  "system.audit.export",
+  "account.selfManage",
+  "native.manage",
+  "native.use",
 ] as const;
 
 export type PermissionKey = (typeof permissionKeys)[number];
@@ -165,6 +177,18 @@ export const permissionLabels: Record<PermissionKey, string> = {
   "destructive.approve": "Duyệt yêu cầu xóa dữ liệu",
   "destructive.execute": "Thực thi xóa dữ liệu",
   "destructive.audit": "Xem lịch sử thao tác xóa",
+  "ops.health": "Xem trạng thái hệ thống",
+  "ops.health.run": "Chạy kiểm tra hệ thống",
+  "ops.security": "Xem trung tâm bảo mật/audit",
+  "ops.security.resolve": "Xử lý cảnh báo bảo mật",
+  "ops.performance": "Chạy test hiệu năng",
+  "ops.dicomConformance": "Chạy test DICOM Conformance",
+  "ops.deployment": "Xem trạng thái triển khai",
+  "system.audit": "Xem Audit hệ thống",
+  "system.audit.export": "Xuất Audit hệ thống",
+  "account.selfManage": "Quản lý tài khoản cá nhân",
+  "native.manage": "Cấu hình Native Companion",
+  "native.use": "Sử dụng Native Companion",
 };
 
 export const permissionGroups: Array<{ title: string; permissions: PermissionKey[] }> = [
@@ -219,6 +243,15 @@ export const permissionGroups: Array<{ title: string; permissions: PermissionKey
       "retention.read", "retention.manage", "retention.execute", 
       "destructive.request", "destructive.approve", "destructive.execute", "destructive.audit",
       "backup.read", "backup.manage", "backup.restoreChecklist"
+    ],
+  },
+  {
+    title: "Vận hành & Bảo mật Hệ thống",
+    permissions: [
+      "ops.health", "ops.health.run", "ops.security", "ops.security.resolve",
+      "ops.performance", "ops.dicomConformance", "ops.deployment",
+      "system.audit", "system.audit.export", "account.selfManage",
+      "native.manage", "native.use"
     ],
   },
 ];
@@ -296,6 +329,18 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "destructive.approve",
     "destructive.execute",
     "destructive.audit",
+    "ops.health",
+    "ops.health.run",
+    "ops.security",
+    "ops.security.resolve",
+    "ops.performance",
+    "ops.dicomConformance",
+    "ops.deployment",
+    "system.audit",
+    "system.audit.export",
+    "account.selfManage",
+    "native.manage",
+    "native.use",
   ],
   DOCTOR: [
     "studies.read",
@@ -335,6 +380,7 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "export.create",
     "export.anonymize",
     "destructive.request",
+    "account.selfManage",
   ],
   TECHNICIAN: [
     "studies.read",
@@ -372,6 +418,9 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "export.create",
     "backup.read",
     "destructive.request",
+    "account.selfManage",
+    "ops.health",
+    "ops.dicomConformance",
   ],
   RECEPTION: [
     "studies.read",
@@ -393,6 +442,7 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "consult.message",
     "export.read",
     "export.create",
+    "account.selfManage",
   ],
 };
 
@@ -418,6 +468,14 @@ const routePermissions: Array<{ prefix: string; permission: PermissionKey }> = [
   { prefix: "/admin/retention", permission: "retention.read" },
   { prefix: "/admin/backup", permission: "backup.read" },
   { prefix: "/admin/destructive", permission: "destructive.audit" },
+  { prefix: "/admin/ops/health", permission: "ops.health" },
+  { prefix: "/admin/ops/security", permission: "ops.security" },
+  { prefix: "/admin/ops/performance", permission: "ops.performance" },
+  { prefix: "/admin/ops/dicom", permission: "ops.dicomConformance" },
+  { prefix: "/admin/ops/deployment", permission: "ops.deployment" },
+  { prefix: "/admin/ops", permission: "ops.health" },
+  { prefix: "/admin/native", permission: "native.manage" },
+  { prefix: "/settings/account", permission: "account.selfManage" },
   { prefix: "/", permission: "studies.read" },
 ];
 

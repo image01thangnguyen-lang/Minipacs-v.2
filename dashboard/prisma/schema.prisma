@@ -117,14 +117,21 @@ model User {
   viewerAuditLogs               ViewerAuditLog[]            @relation("ViewerAuditLogActor")
 
   // Phase 7
-  shareLinksCreated        ShareLink[]               @relation("ShareLinksCreated")
-  shareLinksRevoked        ShareLink[]               @relation("ShareLinksRevoked")
-  consultationsCreated     Consultation[]            @relation("ConsultationsCreated")
-  consultationsHosted      Consultation[]            @relation("ConsultationsHosted")
-  consultationsAssigned    Consultation[]            @relation("ConsultationsAssigned")
-  consultationParticipants ConsultationParticipant[] @relation("ConsultationParticipants")
-  consultationInvitations  ConsultationParticipant[] @relation("ConsultationInvitations")
-  consultationMessages     ConsultationMessage[]     @relation("ConsultationMessages")
+  shareLinksCreated             ShareLink[]               @relation("ShareLinksCreated")
+  shareLinksRevoked             ShareLink[]               @relation("ShareLinksRevoked")
+  consultationsCreated          Consultation[]            @relation("ConsultationsCreated")
+  consultationsHosted           Consultation[]            @relation("ConsultationsHosted")
+  consultationsAssigned         Consultation[]            @relation("ConsultationsAssigned")
+  consultationParticipants      ConsultationParticipant[] @relation("ConsultationParticipants")
+  consultationInvitations       ConsultationParticipant[] @relation("ConsultationInvitations")
+  consultationMessages          ConsultationMessage[]     @relation("ConsultationMessages")
+  // Phase 9
+  systemHealthCheckRuns         SystemHealthCheckRun[]
+  securityAuditRuns             SecurityAuditRun[]
+  securityAuditFindingsResolved SecurityAuditFinding[]
+  performanceTestRuns           PerformanceTestRun[]
+  dicomConformanceRuns          DicomConformanceRun[]
+  nativeConnectorEvents         NativeConnectorEvent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -692,6 +699,7 @@ model DicomNode {
   doctorPermissions      DoctorMachinePermission[]
   reportTemplateMappings ProcedureReportTemplateMapping[]
   printTemplates         PrintTemplate[]
+  DicomConformanceRun    DicomConformanceRun[]
 
   @@index([facilityId])
   @@index([defaultFolderId])
@@ -1406,7 +1414,7 @@ model HisConnectionConfig {
 
 model HisApiCallLog {
   id                  String   @id @default(uuid())
-  direction           String   // INBOUND / OUTBOUND
+  direction           String // INBOUND / OUTBOUND
   method              String
   path                String
   endpointKey         String?
@@ -1416,7 +1424,7 @@ model HisApiCallLog {
   requestId           String?
   correlationId       String?
   remoteIp            String?
-  actorType           String?  // HIS_SYSTEM, USER, SYSTEM
+  actorType           String? // HIS_SYSTEM, USER, SYSTEM
   actorUserId         String?
   accessionNumber     String?
   studyInstanceUid    String?
@@ -1443,7 +1451,7 @@ model HisApiCallLog {
 model HisFieldMapping {
   id            String   @id @default(uuid())
   name          String
-  direction     String   // INBOUND / OUTBOUND
+  direction     String // INBOUND / OUTBOUND
   sourceField   String
   targetField   String
   transformRule String?  @db.Text
@@ -1464,7 +1472,7 @@ model HisConflict {
   fieldName        String
   currentValue     String?   @db.Text
   incomingValue    String?   @db.Text
-  status           String    // OPEN, ACCEPTED, IGNORED, MERGED
+  status           String // OPEN, ACCEPTED, IGNORED, MERGED
   resolvedByUserId String?
   resolvedAt       DateTime?
   resolutionNote   String?   @db.Text
@@ -1483,8 +1491,8 @@ model HisConflict {
 model ExportJob {
   id                 String    @id @default(uuid())
   jobType            String
-  scope              String    // STUDY | SERIES | INSTANCE_SET | REPORT | NON_DICOM_EXAM | MEDIA_SET | ARCHIVE_BULK
-  status             String    // PENDING | RUNNING | SUCCESS | FAILED | CANCELLED | EXPIRED
+  scope              String // STUDY | SERIES | INSTANCE_SET | REPORT | NON_DICOM_EXAM | MEDIA_SET | ARCHIVE_BULK
+  status             String // PENDING | RUNNING | SUCCESS | FAILED | CANCELLED | EXPIRED
   requestedByUserId  String?
   studyInstanceUid   String?
   seriesInstanceUid  String?
@@ -1494,7 +1502,7 @@ model ExportJob {
   selectedItemsJson  String?   @db.Text
   anonymize          Boolean   @default(false)
   includePatientInfo Boolean   @default(false)
-  format             String    // DICOM | JPEG | PDF | ZIP | CSV | XLSX
+  format             String // DICOM | JPEG | PDF | ZIP | CSV | XLSX
   progress           Int       @default(0)
   itemCount          Int       @default(0)
   fileName           String?
@@ -1523,7 +1531,7 @@ model ExportAccessLog {
   id          String   @id @default(uuid())
   exportJobId String
   actorUserId String?
-  eventType   String   // DOWNLOAD_STARTED | DOWNLOAD_DENIED | DOWNLOAD_COMPLETED | EXPIRED_DENIED
+  eventType   String // DOWNLOAD_STARTED | DOWNLOAD_DENIED | DOWNLOAD_COMPLETED | EXPIRED_DENIED
   ipAddress   String?
   userAgent   String?
   createdAt   DateTime @default(now())
@@ -1535,24 +1543,24 @@ model ExportAccessLog {
 }
 
 model RetentionPolicy {
-  id                    String   @id @default(uuid())
-  name                  String
-  scope                 String   // DICOM | NON_DICOM | EXPORTS | VIEWER_ARTIFACTS | ALL
-  isActive              Boolean  @default(true)
-  olderThanDays         Int
-  statusFilterJson      String?  @db.Text
-  facilityId            String?
-  modality              String?
-  preserveMetadata      Boolean  @default(true)
-  preserveReports       Boolean  @default(true)
-  preserveKeyImages     Boolean  @default(true)
-  deletePhysicalFiles   Boolean  @default(false)
-  dryRunRequired        Boolean  @default(true)
-  approvalRequired      Boolean  @default(true)
-  createdByUserId       String?
-  updatedByUserId       String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id                  String   @id @default(uuid())
+  name                String
+  scope               String // DICOM | NON_DICOM | EXPORTS | VIEWER_ARTIFACTS | ALL
+  isActive            Boolean  @default(true)
+  olderThanDays       Int
+  statusFilterJson    String?  @db.Text
+  facilityId          String?
+  modality            String?
+  preserveMetadata    Boolean  @default(true)
+  preserveReports     Boolean  @default(true)
+  preserveKeyImages   Boolean  @default(true)
+  deletePhysicalFiles Boolean  @default(false)
+  dryRunRequired      Boolean  @default(true)
+  approvalRequired    Boolean  @default(true)
+  createdByUserId     String?
+  updatedByUserId     String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   @@index([isActive])
   @@map("retention_policies")
@@ -1561,8 +1569,8 @@ model RetentionPolicy {
 model RetentionRun {
   id               String    @id @default(uuid())
   policyId         String
-  mode             String    // DRY_RUN | EXECUTE
-  status           String    // PENDING | RUNNING | SUCCESS | FAILED | CANCELLED
+  mode             String // DRY_RUN | EXECUTE
+  status           String // PENDING | RUNNING | SUCCESS | FAILED | CANCELLED
   startedByUserId  String?
   approvedByUserId String?
   startedAt        DateTime?
@@ -1591,7 +1599,7 @@ model RetentionRunItem {
   seriesInstanceUid String?
   filePath          String?
   fileSizeBytes     BigInt?
-  action            String   // KEEP_METADATA_DELETE_FILES | DELETE_EXPORT | VOID_MEDIA | SKIP
+  action            String // KEEP_METADATA_DELETE_FILES | DELETE_EXPORT | VOID_MEDIA | SKIP
   status            String
   reason            String?
   createdAt         DateTime @default(now())
@@ -1605,22 +1613,22 @@ model RetentionRunItem {
 }
 
 model BackupJob {
-  id             String    @id @default(uuid())
-  jobType        String    // STORAGE_TEST | BACKUP_RUN | RESTORE_CHECKLIST | VERIFY_BACKUP
-  status         String    // PENDING | RUNNING | SUCCESS | FAILED | CANCELLED
-  sourceFolderId String?
-  targetFolderId String?
+  id              String    @id @default(uuid())
+  jobType         String // STORAGE_TEST | BACKUP_RUN | RESTORE_CHECKLIST | VERIFY_BACKUP
+  status          String // PENDING | RUNNING | SUCCESS | FAILED | CANCELLED
+  sourceFolderId  String?
+  targetFolderId  String?
   startedByUserId String?
-  progress       Int       @default(0)
-  fileCount      Int       @default(0)
-  totalBytes     BigInt    @default(0)
-  copiedBytes    BigInt    @default(0)
-  errorMessage   String?   @db.Text
-  summaryJson    String?   @db.Text
-  startedAt      DateTime?
-  finishedAt     DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  progress        Int       @default(0)
+  fileCount       Int       @default(0)
+  totalBytes      BigInt    @default(0)
+  copiedBytes     BigInt    @default(0)
+  errorMessage    String?   @db.Text
+  summaryJson     String?   @db.Text
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@index([jobType])
   @@index([status])
@@ -1629,26 +1637,26 @@ model BackupJob {
 }
 
 model DestructiveOperationRequest {
-  id                   String    @id @default(uuid())
-  operationType        String    // DELETE_STUDY | DELETE_SERIES | DELETE_NON_DICOM_MEDIA | PURGE_EXPORT_JOB | RETENTION_EXECUTE
-  status               String    // REQUESTED | DRY_RUN_READY | APPROVED | REJECTED | EXECUTING | COMPLETED | FAILED | CANCELLED
-  entityType           String
-  entityId             String?
-  studyInstanceUid     String?
-  seriesInstanceUid    String?
-  nonDicomMediaId      String?
-  reason               String    @db.Text
-  confirmationPhrase   String?
-  requestedByUserId    String?
-  approvedByUserId     String?
-  executedByUserId     String?
-  dryRunJson           String?   @db.Text
-  impactSummaryJson    String?   @db.Text
-  errorMessage         String?   @db.Text
-  createdAt            DateTime  @default(now())
-  approvedAt           DateTime?
-  executedAt           DateTime?
-  updatedAt            DateTime  @updatedAt
+  id                 String    @id @default(uuid())
+  operationType      String // DELETE_STUDY | DELETE_SERIES | DELETE_NON_DICOM_MEDIA | PURGE_EXPORT_JOB | RETENTION_EXECUTE
+  status             String // REQUESTED | DRY_RUN_READY | APPROVED | REJECTED | EXECUTING | COMPLETED | FAILED | CANCELLED
+  entityType         String
+  entityId           String?
+  studyInstanceUid   String?
+  seriesInstanceUid  String?
+  nonDicomMediaId    String?
+  reason             String    @db.Text
+  confirmationPhrase String?
+  requestedByUserId  String?
+  approvedByUserId   String?
+  executedByUserId   String?
+  dryRunJson         String?   @db.Text
+  impactSummaryJson  String?   @db.Text
+  errorMessage       String?   @db.Text
+  createdAt          DateTime  @default(now())
+  approvedAt         DateTime?
+  executedAt         DateTime?
+  updatedAt          DateTime  @updatedAt
 
   @@index([status])
   @@index([operationType])
@@ -1656,4 +1664,180 @@ model DestructiveOperationRequest {
   @@index([studyInstanceUid])
   @@index([createdAt])
   @@map("destructive_operation_requests")
+}
+
+// Phase 9: Operations & Native Companion
+
+model SystemHealthCheckRun {
+  id                String    @id @default(uuid())
+  status            String // OK | WARN | FAIL
+  triggeredByUserId String?
+  triggeredByUser   User?     @relation(fields: [triggeredByUserId], references: [id], onDelete: SetNull)
+  trigger           String // MANUAL | SCHEDULED | STARTUP
+  summaryJson       String?   @db.Text
+  startedAt         DateTime  @default(now())
+  finishedAt        DateTime?
+
+  items SystemHealthCheckItem[]
+
+  @@index([status])
+  @@index([startedAt])
+  @@index([triggeredByUserId])
+  @@map("system_health_check_runs")
+}
+
+model SystemHealthCheckItem {
+  id           String               @id @default(uuid())
+  runId        String
+  run          SystemHealthCheckRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  checkKey     String
+  category     String
+  status       String // OK | WARN | FAIL | SKIPPED
+  message      String?              @db.Text
+  durationMs   Int?
+  metadataJson String?              @db.Text
+  createdAt    DateTime             @default(now())
+
+  @@index([runId])
+  @@index([checkKey])
+  @@index([status])
+  @@index([createdAt])
+  @@map("system_health_check_items")
+}
+
+model SecurityAuditRun {
+  id                String    @id @default(uuid())
+  status            String // OK | WARN | FAIL
+  triggeredByUserId String?
+  triggeredByUser   User?     @relation(fields: [triggeredByUserId], references: [id], onDelete: SetNull)
+  startedAt         DateTime  @default(now())
+  finishedAt        DateTime?
+
+  findings SecurityAuditFinding[]
+
+  @@index([status])
+  @@index([startedAt])
+  @@index([triggeredByUserId])
+  @@map("security_audit_runs")
+}
+
+model SecurityAuditFinding {
+  id               String            @id @default(uuid())
+  runId            String?
+  run              SecurityAuditRun? @relation(fields: [runId], references: [id], onDelete: Cascade)
+  findingKey       String
+  severity         String // P0 | P1 | P2 | P3
+  status           String // OPEN | ACKNOWLEDGED | FIXED | ACCEPTED_RISK
+  title            String
+  description      String            @db.Text
+  affectedArea     String
+  recommendation   String?           @db.Text
+  resolvedByUserId String?
+  resolvedByUser   User?             @relation(fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+  resolvedAt       DateTime?
+  metadataJson     String?           @db.Text
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([runId])
+  @@index([findingKey])
+  @@index([severity])
+  @@index([status])
+  @@index([resolvedByUserId])
+  @@map("security_audit_findings")
+}
+
+model PerformanceTestRun {
+  id                String    @id @default(uuid())
+  testKey           String
+  status            String // PENDING | RUNNING | SUCCESS | FAILED | CANCELLED
+  triggeredByUserId String?
+  triggeredByUser   User?     @relation(fields: [triggeredByUserId], references: [id], onDelete: SetNull)
+  durationMs        Int?
+  inputJson         String?   @db.Text
+  resultJson        String?   @db.Text
+  errorMessage      String?   @db.Text
+  createdAt         DateTime  @default(now())
+  completedAt       DateTime?
+
+  @@index([testKey])
+  @@index([status])
+  @@index([createdAt])
+  @@index([triggeredByUserId])
+  @@map("performance_test_runs")
+}
+
+model DicomConformanceRun {
+  id                  String     @id @default(uuid())
+  testKey             String
+  dicomNodeId         String?
+  dicomNode           DicomNode? @relation(fields: [dicomNodeId], references: [id], onDelete: SetNull)
+  status              String // SUCCESS | FAILED | SKIPPED
+  durationMs          Int?
+  requestSummaryJson  String?    @db.Text
+  responseSummaryJson String?    @db.Text
+  errorMessage        String?    @db.Text
+  triggeredByUserId   String?
+  triggeredByUser     User?      @relation(fields: [triggeredByUserId], references: [id], onDelete: SetNull)
+  createdAt           DateTime   @default(now())
+
+  items DicomConformanceRunItem[]
+
+  @@index([testKey])
+  @@index([dicomNodeId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([triggeredByUserId])
+  @@map("dicom_conformance_runs")
+}
+
+model DicomConformanceRunItem {
+  id           String              @id @default(uuid())
+  runId        String
+  run          DicomConformanceRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  stepKey      String
+  status       String // SUCCESS | FAILED | SKIPPED
+  durationMs   Int?
+  message      String?             @db.Text
+  metadataJson String?             @db.Text
+  createdAt    DateTime            @default(now())
+
+  @@index([runId])
+  @@index([stepKey])
+  @@index([status])
+  @@map("dicom_conformance_run_items")
+}
+
+model NativeConnectorConfig {
+  id                 String    @id @default(uuid())
+  isEnabled          Boolean   @default(false)
+  baseUrl            String?
+  sharedSecret       String?
+  allowedActionsJson String?   @db.Text
+  lastHealthStatus   String?
+  lastHealthAt       DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@map("native_connector_configs")
+}
+
+model NativeConnectorEvent {
+  id           String   @id @default(uuid())
+  actionKey    String
+  status       String
+  actorUserId  String?
+  actorUser    User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  targetType   String?
+  targetId     String?
+  message      String?  @db.Text
+  metadataJson String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  @@index([actionKey])
+  @@index([status])
+  @@index([actorUserId])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+  @@map("native_connector_events")
 }

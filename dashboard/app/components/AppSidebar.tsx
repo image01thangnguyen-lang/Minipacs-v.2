@@ -6,7 +6,7 @@ import { getSession, signOut } from "next-auth/react";
 import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X, User, Printer, Camera, Network } from "lucide-react";
 import { hasPermission, type PermissionKey } from "@/lib/permissions";
 
-type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "printTemplates" | "clinic" | "pacs" | "his" | "storage" | "catalogs" | "non-dicom" | "consultations" | "admin_retention" | "admin_backup" | "admin_destructive";
+type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "printTemplates" | "clinic" | "pacs" | "his" | "storage" | "catalogs" | "non-dicom" | "consultations" | "admin_retention" | "admin_backup" | "admin_destructive" | "admin_ops" | "admin_native" | "account";
 
 const mainMenuItems = [
   { key: "studies", label: "Ca chụp", href: "/", icon: LayoutDashboard, permission: "studies.read" },
@@ -24,6 +24,9 @@ const mainMenuItems = [
   { key: "admin_retention", label: "Retention", href: "/admin/retention", icon: HardDrive, permission: "retention.read" },
   { key: "admin_backup", label: "Backup", href: "/admin/backup", icon: Archive, permission: "backup.read" },
   { key: "admin_destructive", label: "Destructive", href: "/admin/destructive", icon: Settings, permission: "destructive.audit" },
+  { key: "admin_ops", label: "Ops Center", href: "/admin/ops", icon: Settings, permission: "ops.health" },
+  { key: "admin_native", label: "Native Bridge", href: "/admin/native", icon: Network, permission: "native.manage" },
+  { key: "account", label: "Tài khoản", href: "/settings/account", icon: User, permission: "account.selfManage" },
 ] as const;
 
 const upcomingMenuItems = [
@@ -201,5 +204,6 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
     </aside>
   );
 }
+
 
 
