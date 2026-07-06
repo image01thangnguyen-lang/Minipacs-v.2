@@ -2,12 +2,24 @@
 CREATE TABLE "release_candidates" (
     "id" TEXT NOT NULL,
     "version" TEXT NOT NULL,
+    "title" TEXT NOT NULL DEFAULT '',
+    "targetEnvironment" TEXT NOT NULL DEFAULT 'STAGING',
     "status" TEXT NOT NULL,
     "notes" TEXT,
+    "releaseNotes" TEXT,
+    "rollbackPlan" TEXT,
+    "gitCommit" TEXT,
+    "imageTag" TEXT,
+    "buildChecksum" TEXT,
+    "migrationStatus" TEXT NOT NULL DEFAULT 'UNKNOWN',
+    "seedStatus" TEXT NOT NULL DEFAULT 'UNKNOWN',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "releasedAt" TIMESTAMP(3),
+    "lockedAt" TIMESTAMP(3),
     "createdByUserId" TEXT,
+    "lockedByUserId" TEXT,
+    "uatSuiteId" TEXT,
 
     CONSTRAINT "release_candidates_pkey" PRIMARY KEY ("id")
 );
@@ -19,6 +31,9 @@ CREATE TABLE "release_signoffs" (
     "role" TEXT NOT NULL,
     "status" TEXT NOT NULL,
     "notes" TEXT,
+    "evidenceUrl" TEXT,
+    "readinessJson" TEXT,
+    "attested" BOOLEAN NOT NULL DEFAULT false,
     "signedByUserId" TEXT,
     "signedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -35,9 +50,43 @@ CREATE TABLE "release_known_issues" (
     "description" TEXT NOT NULL,
     "riskLevel" TEXT NOT NULL,
     "workaround" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'OPEN',
+    "acceptanceNotes" TEXT,
+    "acceptedByUserId" TEXT,
+    "acceptedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "release_known_issues_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "release_handoff_records" (
+    "id" TEXT NOT NULL,
+    "releaseId" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'DRAFT',
+    "buildPassed" BOOLEAN NOT NULL DEFAULT false,
+    "typecheckPassed" BOOLEAN NOT NULL DEFAULT false,
+    "prismaValidated" BOOLEAN NOT NULL DEFAULT false,
+    "migrationReviewed" BOOLEAN NOT NULL DEFAULT false,
+    "seedVerified" BOOLEAN NOT NULL DEFAULT false,
+    "manualSmokeCompleted" BOOLEAN NOT NULL DEFAULT false,
+    "docsUpdated" BOOLEAN NOT NULL DEFAULT false,
+    "rollbackReviewed" BOOLEAN NOT NULL DEFAULT false,
+    "monitoringReviewed" BOOLEAN NOT NULL DEFAULT false,
+    "noPhiAttested" BOOLEAN NOT NULL DEFAULT false,
+    "qaSummary" TEXT,
+    "handoffSummary" TEXT,
+    "operationsOwner" TEXT,
+    "supportContact" TEXT,
+    "rollbackOwner" TEXT,
+    "preparedByUserId" TEXT,
+    "preparedAt" TIMESTAMP(3),
+    "acceptedByUserId" TEXT,
+    "acceptedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "release_handoff_records_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -281,6 +330,9 @@ CREATE INDEX "release_candidates_status_idx" ON "release_candidates"("status");
 CREATE INDEX "release_candidates_createdAt_idx" ON "release_candidates"("createdAt");
 
 -- CreateIndex
+CREATE INDEX "release_candidates_uatSuiteId_idx" ON "release_candidates"("uatSuiteId");
+
+-- CreateIndex
 CREATE INDEX "release_signoffs_releaseId_idx" ON "release_signoffs"("releaseId");
 
 -- CreateIndex
@@ -288,6 +340,15 @@ CREATE UNIQUE INDEX "release_signoffs_releaseId_role_key" ON "release_signoffs"(
 
 -- CreateIndex
 CREATE INDEX "release_known_issues_releaseId_idx" ON "release_known_issues"("releaseId");
+
+-- CreateIndex
+CREATE INDEX "release_known_issues_status_idx" ON "release_known_issues"("status");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "release_handoff_records_releaseId_key" ON "release_handoff_records"("releaseId");
+
+-- CreateIndex
+CREATE INDEX "release_handoff_records_status_idx" ON "release_handoff_records"("status");
 
 -- CreateIndex
 CREATE INDEX "uat_cases_suiteId_idx" ON "uat_cases"("suiteId");
@@ -374,6 +435,12 @@ CREATE INDEX "runbook_executions_status_idx" ON "runbook_executions"("status");
 ALTER TABLE "release_candidates" ADD CONSTRAINT "release_candidates_createdByUserId_fkey" FOREIGN KEY ("createdByUserId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "release_candidates" ADD CONSTRAINT "release_candidates_lockedByUserId_fkey" FOREIGN KEY ("lockedByUserId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "release_candidates" ADD CONSTRAINT "release_candidates_uatSuiteId_fkey" FOREIGN KEY ("uatSuiteId") REFERENCES "uat_suites"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "release_signoffs" ADD CONSTRAINT "release_signoffs_releaseId_fkey" FOREIGN KEY ("releaseId") REFERENCES "release_candidates"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -381,6 +448,18 @@ ALTER TABLE "release_signoffs" ADD CONSTRAINT "release_signoffs_signedByUserId_f
 
 -- AddForeignKey
 ALTER TABLE "release_known_issues" ADD CONSTRAINT "release_known_issues_releaseId_fkey" FOREIGN KEY ("releaseId") REFERENCES "release_candidates"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "release_known_issues" ADD CONSTRAINT "release_known_issues_acceptedByUserId_fkey" FOREIGN KEY ("acceptedByUserId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "release_handoff_records" ADD CONSTRAINT "release_handoff_records_releaseId_fkey" FOREIGN KEY ("releaseId") REFERENCES "release_candidates"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "release_handoff_records" ADD CONSTRAINT "release_handoff_records_preparedByUserId_fkey" FOREIGN KEY ("preparedByUserId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "release_handoff_records" ADD CONSTRAINT "release_handoff_records_acceptedByUserId_fkey" FOREIGN KEY ("acceptedByUserId") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "uat_cases" ADD CONSTRAINT "uat_cases_suiteId_fkey" FOREIGN KEY ("suiteId") REFERENCES "uat_suites"("id") ON DELETE CASCADE ON UPDATE CASCADE;

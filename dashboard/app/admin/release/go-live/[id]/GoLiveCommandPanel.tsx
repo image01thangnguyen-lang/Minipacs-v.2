@@ -1,191 +1,84 @@
 "use client";
 
-import { useState } from "react";
-import { CheckCircle, XCircle, AlertTriangle, ShieldAlert } from "lucide-react";
-import { signOffRelease, transitionRelease } from "../actions";
+import { AlertTriangle, CheckCircle, ShieldAlert, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { reopenRelease, signOffRelease, transitionRelease } from "../actions";
 
-type ReadinessBlockers = {
-  incidents: number;
-  securityFindings: number;
-  uatFailures: number;
-  uatPending: number;
-  uatMissing: number;
-  staleChecks: number;
-};
+export type SignOffView = { role: string; status: string; notes?: string | null; evidenceUrl?: string | null; signedAt?: string | null; signedByName?: string | null };
+type ReadinessBlockers = { incidents: number; securityFindings: number; uatFailures: number; uatPending: number; uatMissing: number; staleChecks: number; highKnownIssues: number; handoffIncomplete: number };
 
-const buttonBase = "inline-flex items-center justify-center rounded px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50";
-const outlineButton = `${buttonBase} border border-vin-border bg-vin-panel text-vin-text2 hover:bg-vin-tableSelected hover:text-white`;
-
-export default function GoLiveCommandPanel({
-  releaseId,
-  roles,
-  signOffs,
-  canSignOff,
-  canManage,
-  currentStatus,
-  blockers
-}: {
-  releaseId: string;
-  roles: string[];
-  signOffs: any;
-  canSignOff: boolean;
-  canManage: boolean;
-  currentStatus: string;
-  blockers: ReadinessBlockers;
-}) {
+export default function GoLiveCommandPanel({ releaseId, version, roles, signOffs, canSignOff, canManage, currentStatus, blockers }: { releaseId: string; version: string; roles: string[]; signOffs: Record<string, SignOffView>; canSignOff: boolean; canManage: boolean; currentStatus: string; blockers: ReadinessBlockers }) {
   const router = useRouter();
   const [activeRole, setActiveRole] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [evidenceUrl, setEvidenceUrl] = useState("");
+  const [attested, setAttested] = useState(false);
+  const [reason, setReason] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const blockerCount = Object.values(blockers).reduce((sum, count) => sum + count, 0);
 
-  const allApproved = roles.every(r => signOffs[r]?.status === "APPROVED");
-  const hasBlockerRisk = Object.values(blockers).some(count => count > 0);
-
-  const handleSignOff = async (status: "APPROVED" | "REJECTED") => {
+  async function submitSignOff(status: "APPROVED" | "REJECTED") {
     if (!activeRole) return;
-    setIsSubmitting(true);
-    try {
-      await signOffRelease(releaseId, activeRole, status, notes);
-      setNotes("");
-      setActiveRole(null);
-      router.refresh();
-    } catch (e: any) {
-      alert(e.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    setSubmitting(true); setError("");
+    try { await signOffRelease(releaseId, activeRole, status, notes, evidenceUrl, attested); setActiveRole(null); setNotes(""); setEvidenceUrl(""); setAttested(false); router.refresh(); }
+    catch (caught) { setError(caught instanceof Error ? caught.message : "Không thể lưu sign-off."); }
+    finally { setSubmitting(false); }
+  }
 
-  const handleTransition = async (status: string) => {
-    setIsSubmitting(true);
-    try {
-      await transitionRelease(releaseId, status);
-      router.refresh();
-    } catch (e: any) {
-      alert(e.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  async function transition(status: string) {
+    setSubmitting(true); setError("");
+    try { await transitionRelease(releaseId, status, reason, confirmation); setReason(""); setConfirmation(""); router.refresh(); }
+    catch (caught) { setError(caught instanceof Error ? caught.message : "Không thể chuyển trạng thái."); }
+    finally { setSubmitting(false); }
+  }
+
+  async function reopen() {
+    setSubmitting(true); setError("");
+    try { await reopenRelease(releaseId, reason); setReason(""); router.refresh(); }
+    catch (caught) { setError(caught instanceof Error ? caught.message : "Không thể reopen release."); }
+    finally { setSubmitting(false); }
+  }
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2">
         {roles.map(role => {
-          const so = signOffs[role];
-          const isPending = so.status === "PENDING";
-          const isApproved = so.status === "APPROVED";
-          const isRejected = so.status === "REJECTED";
-
+          const signoff = signOffs[role];
           return (
-            <div key={role} className={`border rounded-lg p-4 ${isApproved ? 'bg-green-50/30 border-green-200' : isRejected ? 'bg-red-50/30 border-red-200' : 'bg-muted/10'}`}>
-              <div className="flex justify-between items-start mb-2">
-                <h4 className="font-semibold text-sm">{role} Sign-Off</h4>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  isApproved ? 'bg-green-100 text-green-700' :
-                  isRejected ? 'bg-red-100 text-red-700' :
-                  'bg-muted text-muted-foreground'
-                }`}>
-                  {so.status}
-                </span>
-              </div>
-              
-              {so.notes && (
-                <p className="text-xs text-muted-foreground mb-3 line-clamp-2" title={so.notes}>
-                  &quot;{so.notes}&quot;
-                </p>
-              )}
-              {so.signedByUser && (
-                <p className="text-xs text-muted-foreground mb-3">
-                  by {so.signedByUser.fullName} on {so.signedAt ? new Date(so.signedAt).toLocaleDateString() : ''}
-                </p>
-              )}
-
-              {canSignOff && currentStatus !== "RELEASED" && currentStatus !== "ROLLED_BACK" && (
-                <div className="mt-2">
-                  {activeRole === role ? (
-                    <div className="space-y-2 mt-2">
-                      <textarea
-                        placeholder="Sign-off notes..." 
-                        value={notes} 
-                        onChange={e => setNotes(e.target.value)}
-                        className="min-h-[60px] w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-xs text-vin-text2 outline-none focus:border-vin-accent"
-                      />
-                      <div className="flex gap-2">
-                        <button type="button" className={`${buttonBase} h-7 bg-green-600 px-2 text-xs text-white hover:bg-green-700`} onClick={() => handleSignOff("APPROVED")} disabled={isSubmitting}>Approve</button>
-                        <button type="button" className={`${buttonBase} h-7 bg-red-600 px-2 text-xs text-white hover:bg-red-700`} onClick={() => handleSignOff("REJECTED")} disabled={isSubmitting}>Reject</button>
-                        <button type="button" className={`${outlineButton} h-7 px-2 text-xs`} onClick={() => setActiveRole(null)} disabled={isSubmitting}>Cancel</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      className={`${outlineButton} h-8 w-full text-xs`}
-                      onClick={() => { setActiveRole(role); setNotes(so.notes || ""); }}
-                    >
-                      Update Sign-Off
-                    </button>
-                  )}
+            <div key={role} className={`rounded-md border p-4 ${signoff.status === "APPROVED" ? "border-emerald-800 bg-emerald-950/20" : signoff.status === "REJECTED" ? "border-red-800 bg-red-950/20" : "border-slate-700"}`}>
+              <div className="flex items-center justify-between"><h3 className="text-sm font-semibold">{role}</h3><span className="rounded bg-slate-800 px-2 py-0.5 text-xs">{signoff.status}</span></div>
+              {signoff.signedByName && <p className="mt-2 text-xs text-slate-400">{signoff.signedByName}{signoff.signedAt ? ` - ${new Date(signoff.signedAt).toLocaleString("vi-VN")}` : ""}</p>}
+              {signoff.notes && <p className="mt-2 whitespace-pre-wrap text-xs text-slate-300">{signoff.notes}</p>}
+              {signoff.evidenceUrl && <a href={signoff.evidenceUrl} className="mt-2 block text-xs text-cyan-400 hover:text-cyan-300">Mở evidence</a>}
+              {canSignOff && currentStatus === "READY_FOR_SIGNOFF" && (activeRole === role ? (
+                <div className="mt-3 space-y-2">
+                  <textarea value={notes} onChange={event => setNotes(event.target.value)} maxLength={3000} rows={3} placeholder="Nhận xét bắt buộc" className="w-full rounded-md border border-slate-600 bg-slate-950 p-2 text-sm" />
+                  <input value={evidenceUrl} onChange={event => setEvidenceUrl(event.target.value)} maxLength={500} placeholder="Evidence URL nội bộ hoặc HTTPS" className="h-9 w-full rounded-md border border-slate-600 bg-slate-950 px-2 text-sm" />
+                  <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={attested} onChange={event => setAttested(event.target.checked)} className="mt-0.5" /><span>Tôi đã kiểm tra evidence, readiness và hiểu trách nhiệm ký.</span></label>
+                  <div className="flex gap-2"><button type="button" onClick={() => submitSignOff("APPROVED")} disabled={submitting || !attested || notes.trim().length < 1} className="h-8 rounded-md bg-emerald-700 px-3 text-xs font-semibold text-white disabled:opacity-50">Duyệt</button><button type="button" onClick={() => submitSignOff("REJECTED")} disabled={submitting || !attested || notes.trim().length < 1} className="h-8 rounded-md bg-red-700 px-3 text-xs font-semibold text-white disabled:opacity-50">Từ chối</button><button type="button" onClick={() => setActiveRole(null)} className="h-8 px-2 text-xs">Hủy</button></div>
                 </div>
-              )}
+              ) : <button type="button" onClick={() => { setActiveRole(role); setNotes(signoff.notes || ""); setEvidenceUrl(signoff.evidenceUrl || ""); }} className="mt-3 h-8 w-full rounded-md border border-slate-600 text-xs hover:bg-slate-800">Ký vai trò này</button>)}
             </div>
           );
         })}
       </div>
 
-      {hasBlockerRisk && activeRole && (
-        <div className="bg-red-50 text-red-800 p-4 rounded-md text-sm flex items-start border border-red-200">
-          <ShieldAlert className="w-5 h-5 mr-3 shrink-0 mt-0.5 text-red-600" />
-          <div>
-            <strong>Warning: Open Blockers Detected</strong>
-            <p className="mt-1 text-red-700">
-              There are open go-live blockers: {blockers.incidents} incident(s), {blockers.securityFindings} security finding(s), {blockers.uatFailures} UAT failure(s), {blockers.uatPending} pending UAT case(s), {blockers.uatMissing} missing UAT run(s), and {blockers.staleChecks} stale or failing readiness check(s). Standard approval is blocked unless the signer has risk-acceptance permission.
-            </p>
-          </div>
-        </div>
-      )}
+      {blockerCount > 0 && <div className="flex gap-3 rounded-md border border-red-800 bg-red-950/30 p-4 text-sm text-red-200"><ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" /><div><strong>Còn readiness blocker</strong><p className="mt-1">Incident: {blockers.incidents}; Security: {blockers.securityFindings}; UAT fail/pending/missing: {blockers.uatFailures}/{blockers.uatPending}/{blockers.uatMissing}; Check lỗi/cũ: {blockers.staleChecks}; Known issue HIGH: {blockers.highKnownIssues}; Handoff: {blockers.handoffIncomplete}.</p></div></div>}
+      {error && <p role="alert" className="rounded-md border border-red-800 bg-red-950/30 p-3 text-sm text-red-300">{error}</p>}
 
       {canManage && (
-        <div className="mt-8 pt-6 border-t flex flex-col gap-4">
-          <h3 className="font-semibold">Release Actions</h3>
-          <div className="flex flex-wrap gap-4">
-            <button
-              type="button"
-              disabled={!allApproved || currentStatus === "RELEASED" || currentStatus === "ROLLED_BACK" || isSubmitting}
-              onClick={() => handleTransition("RELEASED")}
-              className={`${buttonBase} bg-vin-accent text-white hover:bg-vin-accent/80`}
-            >
-              <CheckCircle className="mr-2 h-4 w-4" /> Go Live / Mark Released
-            </button>
-            <button
-              type="button"
-              className={`${buttonBase} border border-red-200 bg-white text-red-700 hover:bg-red-50`}
-              disabled={currentStatus === "ROLLED_BACK" || isSubmitting}
-              onClick={() => {
-                if (confirm("Are you sure you want to block this release?")) handleTransition("BLOCKED");
-              }}
-            >
-              <AlertTriangle className="mr-2 h-4 w-4" /> Block Release
-            </button>
-            {currentStatus === "RELEASED" && (
-              <button
-                type="button"
-                disabled={isSubmitting}
-                className={`${buttonBase} bg-red-600 text-white hover:bg-red-700`}
-                onClick={() => {
-                  if (confirm("Are you sure you want to rollback this release? This will mark it as ROLLED_BACK.")) handleTransition("ROLLED_BACK");
-                }}
-              >
-                <XCircle className="mr-2 h-4 w-4" /> Trigger Rollback
-              </button>
-            )}
-          </div>
-          {!allApproved && currentStatus !== "RELEASED" && currentStatus !== "ROLLED_BACK" && (
-            <p className="text-xs text-muted-foreground">
-              All roles must sign off before the release can go live.
-            </p>
-          )}
+        <div className="space-y-3 border-t border-slate-700 pt-5">
+          <h3 className="font-semibold">Release actions</h3>
+          {(currentStatus === "BLOCKED" || currentStatus === "READY_FOR_SIGNOFF" || currentStatus === "APPROVED") && <textarea value={reason} onChange={event => setReason(event.target.value)} maxLength={3000} rows={2} placeholder="Lý do block/reopen/rollback" className="w-full rounded-md border border-slate-600 bg-slate-950 p-2 text-sm" />}
+          {currentStatus === "DRAFT" && <button type="button" onClick={() => transition("TESTING")} disabled={submitting} className="h-9 rounded-md bg-blue-700 px-3 text-sm font-semibold text-white">Bắt đầu testing</button>}
+          {currentStatus === "TESTING" && <div className="flex gap-2"><button type="button" onClick={() => transition("READY_FOR_SIGNOFF")} disabled={submitting} className="h-9 rounded-md bg-cyan-600 px-3 text-sm font-semibold text-white">Đưa sang sign-off</button><button type="button" onClick={() => transition("BLOCKED")} disabled={submitting || reason.trim().length < 1} className="h-9 rounded-md bg-red-800 px-3 text-sm font-semibold text-white">Block</button></div>}
+          {(currentStatus === "READY_FOR_SIGNOFF" || currentStatus === "APPROVED") && <button type="button" onClick={() => transition("BLOCKED")} disabled={submitting || reason.trim().length < 1} className="inline-flex h-9 items-center gap-2 rounded-md bg-red-800 px-3 text-sm font-semibold text-white"><AlertTriangle className="h-4 w-4" /> Block release</button>}
+          {currentStatus === "BLOCKED" && <button type="button" onClick={reopen} disabled={submitting || reason.trim().length < 1} className="h-9 rounded-md bg-amber-700 px-3 text-sm font-semibold text-white">Reopen về TESTING</button>}
+          {currentStatus === "APPROVED" && <div className="space-y-2"><input value={confirmation} onChange={event => setConfirmation(event.target.value)} placeholder={`Nhập: RELEASE ${version}`} className="h-9 w-full rounded-md border border-slate-600 bg-slate-950 px-3 text-sm" /><button type="button" onClick={() => transition("RELEASED")} disabled={submitting || confirmation !== `RELEASE ${version}`} className="inline-flex h-9 items-center gap-2 rounded-md bg-emerald-700 px-3 text-sm font-semibold text-white disabled:opacity-50"><CheckCircle className="h-4 w-4" /> Mark RELEASED</button></div>}
+          {currentStatus === "RELEASED" && <div className="space-y-2"><textarea value={reason} onChange={event => setReason(event.target.value)} maxLength={3000} rows={2} placeholder="Lý do rollback bắt buộc" className="w-full rounded-md border border-slate-600 bg-slate-950 p-2 text-sm" /><input value={confirmation} onChange={event => setConfirmation(event.target.value)} placeholder={`Nhập: ROLLBACK ${version}`} className="h-9 w-full rounded-md border border-slate-600 bg-slate-950 px-3 text-sm" /><button type="button" onClick={() => transition("ROLLED_BACK")} disabled={submitting || reason.trim().length < 1 || confirmation !== `ROLLBACK ${version}`} className="inline-flex h-9 items-center gap-2 rounded-md bg-red-700 px-3 text-sm font-semibold text-white disabled:opacity-50"><XCircle className="h-4 w-4" /> Mark ROLLED_BACK</button></div>}
         </div>
       )}
     </div>

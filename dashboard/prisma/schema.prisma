@@ -134,15 +134,19 @@ model User {
   nativeConnectorEvents         NativeConnectorEvent[]
 
   // Phase 10
-  releaseCandidatesCreated     ReleaseCandidate[]   @relation("ReleaseCreatedBy")
+  releaseCandidatesCreated     ReleaseCandidate[]     @relation("ReleaseCreatedBy")
+  releaseCandidatesLocked      ReleaseCandidate[]     @relation("ReleaseLockedBy")
   releaseSignOffs              ReleaseSignOff[]
+  releaseKnownIssuesAccepted   ReleaseKnownIssue[]    @relation("ReleaseKnownIssueAcceptedBy")
+  releaseHandoffsPrepared      ReleaseHandoffRecord[] @relation("ReleaseHandoffPreparedBy")
+  releaseHandoffsAccepted      ReleaseHandoffRecord[] @relation("ReleaseHandoffAcceptedBy")
   uatRunsTested                UatRun[]
   uatEvidencesUploaded         UatEvidence[]
   goliveChecklistItemsAssigned ChecklistItem[]
-  trainingAssignments          TrainingAssignment[] @relation("TrainingAssignedTo")
-  trainingAttestations         TrainingAssignment[] @relation("TrainingAttestedBy")
-  incidentsReported            IncidentTicket[]     @relation("IncidentReportedBy")
-  incidentsAssigned            IncidentTicket[]     @relation("IncidentAssignee")
+  trainingAssignments          TrainingAssignment[]   @relation("TrainingAssignedTo")
+  trainingAttestations         TrainingAssignment[]   @relation("TrainingAttestedBy")
+  incidentsReported            IncidentTicket[]       @relation("IncidentReportedBy")
+  incidentsAssigned            IncidentTicket[]       @relation("IncidentAssignee")
   incidentComments             IncidentComment[]
   changeRequestsRequested      ChangeRequest[]
   changeApprovals              ChangeApproval[]
@@ -1862,22 +1866,38 @@ model NativeConnectorEvent {
 // ==========================================
 
 model ReleaseCandidate {
-  id              String    @id @default(uuid())
-  version         String    @unique
-  status          String // DRAFT | TESTING | BLOCKED | READY_FOR_SIGNOFF | APPROVED | RELEASED | ROLLED_BACK
-  notes           String?   @db.Text
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  releasedAt      DateTime?
-  createdByUserId String?
-  createdByUser   User?     @relation("ReleaseCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  id                String    @id @default(uuid())
+  version           String    @unique
+  title             String    @default("")
+  targetEnvironment String    @default("STAGING")
+  status            String // DRAFT | TESTING | BLOCKED | READY_FOR_SIGNOFF | APPROVED | RELEASED | ROLLED_BACK
+  notes             String?   @db.Text
+  releaseNotes      String?   @db.Text
+  rollbackPlan      String?   @db.Text
+  gitCommit         String?
+  imageTag          String?
+  buildChecksum     String?
+  migrationStatus   String    @default("UNKNOWN") // UNKNOWN | PENDING | APPLIED | FAILED
+  seedStatus        String    @default("UNKNOWN") // UNKNOWN | PENDING | APPLIED | FAILED
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  releasedAt        DateTime?
+  lockedAt          DateTime?
+  createdByUserId   String?
+  createdByUser     User?     @relation("ReleaseCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  lockedByUserId    String?
+  lockedByUser      User?     @relation("ReleaseLockedBy", fields: [lockedByUserId], references: [id], onDelete: SetNull)
+  uatSuiteId        String?
+  uatSuite          UatSuite? @relation(fields: [uatSuiteId], references: [id], onDelete: SetNull)
 
   signOffs       ReleaseSignOff[]
   knownIssues    ReleaseKnownIssue[]
   changeRequests ChangeRequest[]
+  handoff        ReleaseHandoffRecord?
 
   @@index([status])
   @@index([createdAt])
+  @@index([uatSuiteId])
   @@map("release_candidates")
 }
 
@@ -1888,6 +1908,9 @@ model ReleaseSignOff {
   role           String
   status         String // PENDING | APPROVED | REJECTED
   notes          String?          @db.Text
+  evidenceUrl    String?
+  readinessJson  String?          @db.Text
+  attested       Boolean          @default(false)
   signedByUserId String?
   signedByUser   User?            @relation(fields: [signedByUserId], references: [id], onDelete: SetNull)
   signedAt       DateTime?
@@ -1900,17 +1923,56 @@ model ReleaseSignOff {
 }
 
 model ReleaseKnownIssue {
-  id          String           @id @default(uuid())
-  releaseId   String
-  release     ReleaseCandidate @relation(fields: [releaseId], references: [id], onDelete: Cascade)
-  ticketId    String?
-  description String           @db.Text
-  riskLevel   String // LOW | MEDIUM | HIGH
-  workaround  String?          @db.Text
-  createdAt   DateTime         @default(now())
+  id               String           @id @default(uuid())
+  releaseId        String
+  release          ReleaseCandidate @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  ticketId         String?
+  description      String           @db.Text
+  riskLevel        String // LOW | MEDIUM | HIGH
+  workaround       String?          @db.Text
+  status           String           @default("OPEN") // OPEN | ACCEPTED | RESOLVED
+  acceptanceNotes  String?          @db.Text
+  acceptedByUserId String?
+  acceptedByUser   User?            @relation("ReleaseKnownIssueAcceptedBy", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+  acceptedAt       DateTime?
+  createdAt        DateTime         @default(now())
 
   @@index([releaseId])
+  @@index([status])
   @@map("release_known_issues")
+}
+
+model ReleaseHandoffRecord {
+  id                   String           @id @default(uuid())
+  releaseId            String           @unique
+  release              ReleaseCandidate @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  status               String           @default("DRAFT") // DRAFT | READY | ACCEPTED
+  buildPassed          Boolean          @default(false)
+  typecheckPassed      Boolean          @default(false)
+  prismaValidated      Boolean          @default(false)
+  migrationReviewed    Boolean          @default(false)
+  seedVerified         Boolean          @default(false)
+  manualSmokeCompleted Boolean          @default(false)
+  docsUpdated          Boolean          @default(false)
+  rollbackReviewed     Boolean          @default(false)
+  monitoringReviewed   Boolean          @default(false)
+  noPhiAttested        Boolean          @default(false)
+  qaSummary            String?          @db.Text
+  handoffSummary       String?          @db.Text
+  operationsOwner      String?
+  supportContact       String?
+  rollbackOwner        String?
+  preparedByUserId     String?
+  preparedByUser       User?            @relation("ReleaseHandoffPreparedBy", fields: [preparedByUserId], references: [id], onDelete: SetNull)
+  preparedAt           DateTime?
+  acceptedByUserId     String?
+  acceptedByUser       User?            @relation("ReleaseHandoffAcceptedBy", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+  acceptedAt           DateTime?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  @@index([status])
+  @@map("release_handoff_records")
 }
 
 model UatSuite {
@@ -1922,9 +1984,10 @@ model UatSuite {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  cases          UatCase[]
-  runs           UatRun[]
-  changeRequests ChangeRequest[]
+  cases             UatCase[]
+  runs              UatRun[]
+  changeRequests    ChangeRequest[]
+  releaseCandidates ReleaseCandidate[]
 
   @@map("uat_suites")
 }

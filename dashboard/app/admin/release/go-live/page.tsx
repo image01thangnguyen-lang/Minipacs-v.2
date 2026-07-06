@@ -22,7 +22,8 @@ export default async function GoLiveListPage() {
     orderBy: { createdAt: "desc" },
     include: {
       createdByUser: true,
-      signOffs: true
+      signOffs: true,
+      handoff: { select: { status: true } },
     }
   });
 
@@ -50,7 +51,8 @@ export default async function GoLiveListPage() {
             <tr>
               <th className="p-3 text-left font-medium">Version</th>
               <th className="p-3 text-left font-medium">Status</th>
-              <th className="p-3 text-left font-medium">Sign-offs</th>
+              <th className="p-3 text-left font-medium">Environment</th>
+              <th className="p-3 text-left font-medium">Sign-offs / Handoff</th>
               <th className="p-3 text-left font-medium">Created</th>
               <th className="p-3 text-right font-medium">Action</th>
             </tr>
@@ -62,7 +64,7 @@ export default async function GoLiveListPage() {
                 <tr key={rc.id} className="hover:bg-muted/50">
                   <td className="p-3">
                     <div className="font-medium text-base">{rc.version}</div>
-                    <div className="text-xs text-muted-foreground line-clamp-1">{rc.notes}</div>
+                    <div className="text-xs text-muted-foreground line-clamp-1">{rc.title || rc.notes}</div>
                   </td>
                   <td className="p-3">
                     <span className={`px-2 py-1 rounded text-xs font-medium ${
@@ -75,8 +77,10 @@ export default async function GoLiveListPage() {
                       {rc.status.replace(/_/g, ' ')}
                     </span>
                   </td>
+                  <td className="p-3">{rc.targetEnvironment}</td>
                   <td className="p-3">
                     <div className="text-sm">{approvedCount} / 4 roles</div>
+                    <div className="text-xs text-muted-foreground">Handoff: {rc.handoff?.status || "MISSING"}</div>
                   </td>
                   <td className="p-3 text-muted-foreground">
                     {new Date(rc.createdAt).toLocaleDateString()}
@@ -94,7 +98,7 @@ export default async function GoLiveListPage() {
             })}
             {releases.length === 0 && (
               <tr>
-                <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                <td colSpan={6} className="p-6 text-center text-muted-foreground">
                   No release candidates found.
                 </td>
               </tr>
