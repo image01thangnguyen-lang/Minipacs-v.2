@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AppSidebar } from "@/app/components/AppSidebar";
 import { Loader2, RefreshCcw, Users, Search, Video, Calendar, ArrowRight } from "lucide-react";
 import { getConsultationsAction, updateParticipantStatusAction } from "./actions";
 import Link from "next/link";
@@ -59,9 +58,7 @@ export default function ConsultationsPage() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="consultations" />
-
+    <div className="flex h-full w-full overflow-hidden bg-vin-root font-sans text-vin-text">
       <section className="flex h-full min-w-0 flex-1 flex-col bg-vin-shell">
         <div className="flex-none border-b border-vin-border/70 px-4 py-3">
           <div className="flex items-center justify-between gap-3">

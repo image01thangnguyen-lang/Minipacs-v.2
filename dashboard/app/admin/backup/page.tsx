@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { AppSidebar } from '@/app/components/AppSidebar';
 import { getBackupJobsAction, createBackupJobAction } from '@/app/actions/backup-actions';
 
 export default function AdminBackupPage() {
@@ -35,8 +34,7 @@ export default function AdminBackupPage() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="admin_backup" />
+    <div className="flex h-full w-full bg-vin-root font-sans text-vin-text">
       <div className="flex-1 flex flex-col min-w-0 bg-vin-shell border-l border-vin-border">
         <div className="p-4 border-b border-vin-border">
           <h1 className="text-xl font-semibold text-white">Quản lý Sao lưu (Backup) <span className="text-sm font-normal text-amber-500">(Simulation)</span></h1>

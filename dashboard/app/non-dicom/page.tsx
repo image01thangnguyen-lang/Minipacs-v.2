@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AppSidebar } from "@/app/components/AppSidebar";
 import { getNonDicomExams } from "./actions";
 import { Loader2, RefreshCcw, Camera } from "lucide-react";
 import Link from "next/link";
@@ -40,7 +39,6 @@ export default function NonDicomQueuePage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30 flex">
-      <AppSidebar active="non-dicom" />
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex-none p-4 pb-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>

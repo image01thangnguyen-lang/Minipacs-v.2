@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { AppSidebar } from "@/app/components/AppSidebar";
+
 import { ClinicalInfoModal } from "@/app/components/ClinicalInfoModal";
 import { CustomSelect, type SelectOption } from "@/app/components/CustomSelect";
 import { CustomDatePicker } from "@/app/components/CustomDatePicker";
@@ -456,9 +456,7 @@ export default function WorklistPage(props: { searchParams?: { orderId?: string 
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="worklist" />
-
+    <div className="flex h-full w-full overflow-hidden bg-vin-root font-sans text-vin-text">
       <section className="flex h-full w-[58%] min-w-[760px] flex-col border-r border-vin-border bg-vin-shell">
         <div className="flex-none border-b border-vin-border/70 px-3 py-2">
           <div className="mb-2 flex items-center justify-between gap-3">

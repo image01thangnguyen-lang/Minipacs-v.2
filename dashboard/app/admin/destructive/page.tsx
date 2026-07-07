@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { AppSidebar } from '@/app/components/AppSidebar';
 import { getDestructiveRequestsAction, approveDestructiveRequestAction, executeDestructiveRequestAction, dryRunDestructiveRequestAction } from '@/app/actions/destructive-actions';
 
 export default function AdminDestructivePage() {
@@ -58,8 +57,7 @@ export default function AdminDestructivePage() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="admin_destructive" />
+    <div className="flex h-full w-full bg-vin-root font-sans text-vin-text">
       <div className="flex-1 flex flex-col min-w-0 bg-vin-shell border-l border-vin-border">
         <div className="p-4 border-b border-vin-border bg-red-950/20">
           <h1 className="text-xl font-semibold text-red-400 flex items-center gap-2">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { AppSidebar } from "@/app/components/AppSidebar";
 import { Loader2, Send, Users, Video, LogOut, CheckCircle, XCircle, ArrowLeft, RefreshCcw } from "lucide-react";
 import { 
   getConsultationByIdAction, 
@@ -90,8 +89,7 @@ export default function ConsultationRoomPage({ params }: { params: { id: string 
 
   if (isLoading && !consultation) {
     return (
-      <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-        <AppSidebar active="consultations" />
+      <div className="flex h-full w-full overflow-hidden bg-vin-root font-sans text-vin-text">
         <div className="flex flex-1 items-center justify-center text-vin-muted">
           <Loader2 className="mb-2 h-8 w-8 animate-spin text-vin-accent" />
         </div>
@@ -102,7 +100,6 @@ export default function ConsultationRoomPage({ params }: { params: { id: string 
   if (error || !consultation) {
     return (
       <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-        <AppSidebar active="consultations" />
         <div className="flex flex-1 items-center justify-center text-red-400">
           {error || "Không tìm thấy hội chẩn"}
         </div>
@@ -123,8 +120,6 @@ export default function ConsultationRoomPage({ params }: { params: { id: string 
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="consultations" />
-
       <section className="flex h-full min-w-0 flex-1 flex-col bg-vin-shell">
         <header className="flex h-14 flex-none items-center justify-between border-b border-vin-border/70 bg-vin-panel px-4">
           <div className="flex items-center gap-3">

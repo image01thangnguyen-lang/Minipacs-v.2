@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { BadgeCheck, Building2, Image as ImageIcon, Loader2, Save, Upload } from "lucide-react";
-import { AppSidebar } from "@/app/components/AppSidebar";
+
 import { CustomSelect } from "@/app/components/CustomSelect";
 import { getClinicProfile, saveClinicProfileAction } from "./actions";
 
@@ -92,9 +92,7 @@ export default function ClinicProfilePage() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="clinic" />
-
+    <div className="flex h-full w-full overflow-hidden bg-vin-root font-sans text-vin-text">
       <section className="flex h-full w-[56%] min-w-[680px] flex-col border-r border-vin-border bg-vin-shell">
         <div className="flex-none border-b border-vin-border/70 px-4 py-3">
           <div className="flex items-center justify-between gap-3">

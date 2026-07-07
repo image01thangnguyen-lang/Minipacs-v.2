@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AppSidebar } from "@/app/components/AppSidebar";
+
 import { 
   AlertCircle,
   CheckCircle2, 
@@ -219,9 +219,7 @@ export default function DicomNodesPage() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="pacs" />
-
+    <div className="flex h-full w-full overflow-hidden bg-vin-root font-sans text-vin-text">
       {/* Main Content Area */}
       <section className="flex h-full w-[60%] min-w-[700px] flex-col border-r border-vin-border bg-vin-shell">
         <div className="flex-none border-b border-vin-border/70 px-4 py-3">

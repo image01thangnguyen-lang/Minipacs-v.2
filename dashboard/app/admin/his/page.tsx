@@ -3,7 +3,6 @@ import { getUserPermissionsAction } from "@/app/actions";
 import { redirect } from "next/navigation";
 import { HisConsoleClient } from "./components/HisConsoleClient";
 import { prisma } from "@/app/db";
-import { AppSidebar } from "@/app/components/AppSidebar";
 
 export const metadata: Metadata = {
   title: "HIS Integration Console",
@@ -55,8 +54,7 @@ export default async function AdminHisPage() {
   });
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="his" />
+    <div className="flex h-full w-full overflow-hidden bg-vin-root font-sans text-vin-text">
       <div className="flex-1 overflow-auto bg-vin-shell p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight text-white">HIS Integration Console</h1>

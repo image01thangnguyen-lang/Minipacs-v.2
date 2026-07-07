@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { AppSidebar } from "@/app/components/AppSidebar";
+
 import {
   Search,
   X,
@@ -184,9 +184,7 @@ export default function CatalogsPage() {
   );
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="catalogs" />
-
+    <div className="flex h-full w-full overflow-hidden bg-vin-root font-sans text-vin-text">
       {/* Main List Section */}
       <section className="flex h-full w-[55%] min-w-[640px] flex-col border-r border-vin-border bg-vin-shell">
         <div className="flex-none border-b border-vin-border/70 px-3 py-2">

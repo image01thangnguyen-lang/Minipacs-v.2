@@ -11,7 +11,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { AppSidebar } from "@/app/components/AppSidebar";
+
 import { CustomSelect } from "@/app/components/CustomSelect";
 import {
   createReportTemplateTextAction,
@@ -177,9 +177,7 @@ export default function ReportTemplateTextPage() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="templates" />
-
+    <div className="flex h-full w-full overflow-hidden bg-vin-root font-sans text-vin-text">
       <section className="flex h-full w-[52%] min-w-[640px] flex-col border-r border-vin-border bg-vin-shell">
         <div className="flex-none border-b border-vin-border/70 px-3 py-2">
           <div className="mb-2 flex items-center justify-between">

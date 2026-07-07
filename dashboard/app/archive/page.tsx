@@ -15,7 +15,7 @@ import {
   RefreshCcw,
   Search,
 } from "lucide-react";
-import { AppSidebar } from "@/app/components/AppSidebar";
+
 import { CustomSelect, type SelectOption } from "@/app/components/CustomSelect";
 import { CustomDatePicker } from "@/app/components/CustomDatePicker";
 import { PrintTemplateViewer } from "@/app/report/[studyInstanceUid]/components/PrintTemplateViewer";
@@ -299,9 +299,7 @@ export default function ArchivePage() {
       };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="archive" />
-
+    <div className="flex h-full w-full overflow-hidden bg-vin-root font-sans text-vin-text">
       <section className="flex h-full min-w-0 flex-1 flex-col bg-vin-shell">
         <div className="flex-none border-b border-vin-border/70 px-4 py-3">
           <div className="flex items-center justify-between gap-3">

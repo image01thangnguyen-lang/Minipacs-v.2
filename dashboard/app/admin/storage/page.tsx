@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { AppSidebar } from "@/app/components/AppSidebar";
 import { Loader2, Plus, HardDrive, RefreshCw, Trash2, CheckCircle2, AlertCircle, X, ShieldAlert } from "lucide-react";
 import { getStorageFoldersAction, upsertStorageFolderAction, checkStorageFolderAction, deleteStorageFolderAction } from "./actions";
 import { CustomSelect } from "@/app/components/CustomSelect";
@@ -112,9 +111,7 @@ export default function StorageAdminPage() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="catalogs" />
-      
+    <div className="flex h-full w-full overflow-hidden bg-vin-root font-sans text-vin-text">
       <main className="flex min-w-0 flex-1 flex-col border-r border-vin-border bg-vin-shell">
         <div className="flex-none border-b border-vin-border/70 px-4 py-3">
           <div className="flex items-center justify-between">

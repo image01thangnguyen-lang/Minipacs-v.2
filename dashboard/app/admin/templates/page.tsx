@@ -13,7 +13,6 @@ import {
   Printer,
   Building
 } from "lucide-react";
-import { AppSidebar } from "@/app/components/AppSidebar";
 import { CustomSelect } from "@/app/components/CustomSelect";
 import {
   createPrintTemplateAction,
@@ -163,9 +162,7 @@ export default function AdminTemplatesPage() {
   );
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="printTemplates" />
-
+    <div className="flex h-full w-full overflow-hidden bg-vin-root font-sans text-vin-text">
       {/* Left List Panel */}
       <section className="flex h-full w-[45%] min-w-[500px] flex-col border-r border-vin-border bg-vin-shell">
         <div className="flex-none border-b border-vin-border/70 px-3 py-2">

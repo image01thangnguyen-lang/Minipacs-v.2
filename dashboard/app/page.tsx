@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { CustomSelect, type SelectOption } from "./components/CustomSelect";
 import { useReactToPrint } from "react-to-print";
-import { AppSidebar } from "./components/AppSidebar";
+import { AppShell } from "./components/shell/AppShell";
 import {
   appendTemplateHtml,
   appendTemplateText,
@@ -755,8 +755,7 @@ export default function DashboardPage() {
   const hisResultDisplay = selectedStudy?.hisResultStatus || patientDetails?.hisResultStatus || "";
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-vin-root font-sans text-vin-text">
-      <AppSidebar active="studies" />
+    <AppShell contentClassName="flex w-full overflow-hidden bg-vin-root font-sans text-vin-text" contentOverflow="hidden">
       <section className="flex h-full w-[52%] min-w-[640px] flex-col border-r border-vin-border bg-vin-shell">
         <div className="flex-none border-b border-vin-border/70 px-3 py-2">
           <div className="mb-2 flex items-center justify-between">
@@ -1277,6 +1276,6 @@ export default function DashboardPage() {
         studyInstanceUid={actionResourceType === 'DICOM' ? actionResourceId : undefined}
         nonDicomExamId={actionResourceType === 'NON_DICOM' ? actionResourceId : undefined}
       />
-    </div>
+    </AppShell>
   );
 }
