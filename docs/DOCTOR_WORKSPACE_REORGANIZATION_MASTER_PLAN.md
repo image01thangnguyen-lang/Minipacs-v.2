@@ -361,6 +361,8 @@ Kế hoạch triển khai chi tiết: [DOCTOR_WORKSPACE_PHASE1_APP_SHELL_NAVIGAT
 
 Mục tiêu: khóa đúng dữ liệu trước khi làm worklist mới.
 
+Kế hoạch triển khai chi tiết: [DOCTOR_WORKSPACE_PHASE2_SCOPE_AUTHORIZATION_ORG_TREE_PLAN.md](./DOCTOR_WORKSPACE_PHASE2_SCOPE_AUTHORIZATION_ORG_TREE_PLAN.md).
+
 - Chuẩn hóa cây Chuỗi → Bệnh viện → Khoa/Chuyên khoa → Phòng/Máy.
 - Bổ sung access grant theo scope/capability và migration dữ liệu.
 - Xây một authorization resolver dùng chung cho list, facet, detail, related cases và actions.

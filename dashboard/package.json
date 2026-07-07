@@ -7,7 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "ts-node lib/services/slaResolver.test.ts && ts-node lib/services/commandCenterUtils.test.ts && ts-node lib/navigation.test.ts"
+    "test": "ts-node lib/services/slaResolver.test.ts && ts-node lib/services/commandCenterUtils.test.ts && ts-node lib/navigation.test.ts && ts-node lib/authz/scope/organization-tree.test.ts && ts-node lib/authz/scope/scope-logic.test.ts && ts-node lib/authz/scope/organization-service.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.4.0",

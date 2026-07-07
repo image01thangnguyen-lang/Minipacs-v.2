@@ -167,6 +167,9 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Phase 2
+  accessScopeGrants           AccessScopeGrant[]
+
   @@index([roleProfileId])
   @@map("users")
 }
@@ -183,6 +186,9 @@ model AppRoleProfile {
   users       User[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  // Phase 2
+  accessScopeGrants AccessScopeGrant[]
 
   @@index([baseRole])
   @@index([isActive])
@@ -321,6 +327,10 @@ model WorklistOrder {
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+  // Phase 2
+  performingUnitId  String?
+  performingUnit    FacilityUnit? @relation("OrderPerformingUnit", fields: [performingUnitId], references: [id])
+
   // Phase 2 HIS Integration
   hisOrderId        String?
   hisPatientId      String?
@@ -340,6 +350,8 @@ model WorklistOrder {
   @@index([sourceFacility])
   @@index([procedureCode])
   @@index([paymentStatus])
+  @@index([performingUnitId, scheduledDate, status])
+  @@index([performingUnitId, createdAt, status])
   @@map("worklist_orders")
 }
 
@@ -394,6 +406,10 @@ model ImagingStudy {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Phase 2
+  performingUnitId  String?
+  performingUnit    FacilityUnit? @relation("StudyPerformingUnit", fields: [performingUnitId], references: [id])
+
   statusHistory             StudyStatusHistory[]
   events                    ImagingStudyEvent[]
   qcEvents                  StudyQcEvent[]
@@ -433,6 +449,7 @@ model ImagingStudy {
   @@index([firstOpenedAt])
   @@index([finalizedAt])
   @@index([deliveredAt])
+  @@index([performingUnitId, createdAt, status])
   @@map("imaging_studies")
 }
 
@@ -756,6 +773,8 @@ model DicomNode {
   DicomConformanceRun    DicomConformanceRun[]
   slaPolicies            SlaPolicy[]                      @relation("SlaPolicyMachine")
 
+  accessScopeGrants      AccessScopeGrant[]
+
   @@index([facilityId])
   @@index([defaultFolderId])
   @@index([defaultShareFolderId])
@@ -988,6 +1007,10 @@ model FacilityUnit {
   storageConfigs         StorageFolderConfig[]
   reportTemplateMappings ProcedureReportTemplateMapping[]
   slaPolicies            SlaPolicy[]
+
+  performingStudies      ImagingStudy[]  @relation("StudyPerformingUnit")
+  performingOrders       WorklistOrder[] @relation("OrderPerformingUnit")
+  accessScopeGrants      AccessScopeGrant[]
 
   @@index([parentId])
   @@map("facility_units")
@@ -2470,4 +2493,35 @@ model ControlThresholdPolicy {
   @@index([scopeType, scopeValue])
   @@index([isActive])
   @@map("control_threshold_policies")
+}
+
+// Phase 2: Scope Authorization
+model AccessScopeGrant {
+  id                 String   @id @default(uuid())
+  userId             String?
+  roleProfileId      String?
+  facilityUnitId     String?
+  dicomNodeId        String?
+  capability         String
+  effect             String   // ALLOW | DENY
+  includeDescendants Boolean  @default(true)
+  validFrom          DateTime?
+  validUntil         DateTime?
+  reason             String?  @db.Text
+  createdByUserId    String?
+  updatedByUserId    String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user          User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleProfile   AppRoleProfile? @relation(fields: [roleProfileId], references: [id], onDelete: Cascade)
+  facilityUnit  FacilityUnit?   @relation(fields: [facilityUnitId], references: [id], onDelete: Cascade)
+  dicomNode     DicomNode?      @relation(fields: [dicomNodeId], references: [id], onDelete: Cascade)
+
+  @@index([userId, capability, effect])
+  @@index([roleProfileId, capability, effect])
+  @@index([facilityUnitId, capability])
+  @@index([dicomNodeId, capability])
+  @@index([validFrom, validUntil])
+  @@map("access_scope_grants")
 }
