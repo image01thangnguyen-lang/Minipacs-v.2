@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getSession, signOut } from "next-auth/react";
-import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X, User, Printer, Camera, Network } from "lucide-react";
+import { Archive, BarChart3, Building2, FileText, HardDrive, LayoutDashboard, LogOut, Menu, Settings, UserCog, X, User, Printer, Camera, Network, Activity } from "lucide-react";
 import { hasPermission, type PermissionKey } from "@/lib/permissions";
 
-type ActiveMenu = "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "printTemplates" | "clinic" | "pacs" | "his" | "storage" | "catalogs" | "non-dicom" | "consultations" | "admin_retention" | "admin_backup" | "admin_destructive" | "admin_ops" | "admin_native" | "admin_release" | "admin_training" | "admin_incident" | "admin_change" | "admin_runbook" | "account";
+type ActiveMenu = "command-center" | "studies" | "worklist" | "archive" | "statistics" | "users" | "templates" | "printTemplates" | "clinic" | "pacs" | "his" | "storage" | "catalogs" | "non-dicom" | "consultations" | "admin_retention" | "admin_backup" | "admin_destructive" | "admin_ops" | "admin_native" | "admin_release" | "admin_training" | "admin_incident" | "admin_change" | "admin_runbook" | "account";
 
 const mainMenuItems = [
+  { key: "command-center", label: "TT Điều hành", href: "/command-center", icon: Activity, permission: "commandCenter.read" },
   { key: "studies", label: "Ca chụp", href: "/", icon: LayoutDashboard, permission: "studies.read" },
   { key: "worklist", label: "Tiếp đón", href: "/worklist", icon: FileText, permission: "worklist.manage" },
   { key: "non-dicom", label: "Non-DICOM", href: "/non-dicom", icon: Camera, permission: "nonDicom.read" },

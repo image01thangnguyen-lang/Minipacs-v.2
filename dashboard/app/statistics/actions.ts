@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { hasPermission } from "@/lib/permissions";
 import { recordStudyEventInTx } from "@/lib/studyEvents";
 import { orthancClient } from "@/lib/orthancClient";
+import { acknowledgeCriticalResultWithAudit, createCriticalResultWithAudit } from "@/lib/criticalResultService";
 import type {
   StatisticsAlerts,
   StatisticsBreakdownRow,
@@ -2998,28 +2999,11 @@ export async function createCriticalResultAction(input: {
   const finding = cleanText(input.finding);
   if (!finding) throw new Error("Critical result bat buoc co noi dung.");
 
-  const study = await prisma.imagingStudy.findUnique({ where: { id: input.studyId } });
-  if (!study) throw new Error("Khong tim thay study de ghi critical result.");
-
-  const result = await prisma.criticalResult.create({
-    data: {
-      imagingStudyId: study.id,
-      severity: cleanText(input.severity) || "critical",
-      finding,
-      communicationStatus: "PENDING",
-      createdByUserId: user.id,
-    },
-  });
-
-  await prisma.auditLog.create({
-    data: {
-      actorUserId: user.id,
-      action: "CRITICAL_RESULT_CREATED",
-      entityType: "CriticalResult",
-      entityId: result.id,
-      message: `Created critical result for ${study.studyInstanceUid}`,
-      metadataJson: JSON.stringify({ severity: result.severity }),
-    },
+  const result = await createCriticalResultWithAudit({
+    studyId: input.studyId,
+    finding,
+    severity: cleanText(input.severity) || "critical",
+    actorUserId: user.id,
   });
 
   return { success: true, id: result.id };
@@ -3030,29 +3014,14 @@ export async function communicateCriticalResultAction(resultId: string, communic
   const target = cleanText(communicatedTo);
   if (!target) throw new Error("Can ghi nguoi/bo phan da nhan thong bao.");
 
-  const result = await prisma.criticalResult.update({
-    where: { id: resultId },
-    data: {
-      communicationStatus: "COMMUNICATED",
-      communicatedTo: target,
-      communicatedAt: new Date(),
-      communicatedByUserId: user.id,
-    },
-  });
-
-  await prisma.auditLog.create({
-    data: {
-      actorUserId: user.id,
-      action: "CRITICAL_RESULT_COMMUNICATED",
-      entityType: "CriticalResult",
-      entityId: result.id,
-      message: `Communicated critical result to ${target}`,
-    },
+  await acknowledgeCriticalResultWithAudit({
+    resultId,
+    recipientName: target,
+    actorUserId: user.id,
   });
 
   return { success: true };
 }
-
 export async function saveStatisticsFilterPresetAction(name: string, filters: StatisticsFilters, isShared = false) {
   const user = await requireStatisticsAccess();
   const presetName = cleanText(name);

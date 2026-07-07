@@ -84,6 +84,9 @@ model Report {
   shareLinks    ShareLink[]
   consultations Consultation[]
 
+  // Phase 11
+  criticalResults CriticalResult[]
+
   @@map("reports")
 }
 
@@ -151,6 +154,15 @@ model User {
   changeRequestsRequested      ChangeRequest[]
   changeApprovals              ChangeApproval[]
   runbookExecutions            RunbookExecution[]
+
+  // Phase 11
+  assignedCriticalResults     CriticalResult[]         @relation("CriticalResultAssignedTo")
+  acknowledgedCriticalResults CriticalResult[]         @relation("CriticalResultAcknowledgedBy")
+  createdAlertRules           AlertRule[]
+  acknowledgedAlertEvents     AlertEvent[]             @relation("AlertEventAcknowledgedBy")
+  resolvedAlertEvents         AlertEvent[]             @relation("AlertEventResolvedBy")
+  slaPoliciesAsDoctor         SlaPolicy[]              @relation("SlaPolicyDoctor")
+  createdThresholdPolicies    ControlThresholdPolicy[] @relation("ControlThresholdPolicyCreator")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -544,22 +556,44 @@ model StudyQcEvent {
 }
 
 model CriticalResult {
-  id                   String       @id @default(uuid())
-  imagingStudyId       String
-  imagingStudy         ImagingStudy @relation(fields: [imagingStudyId], references: [id], onDelete: Cascade)
-  severity             String       @default("critical")
-  finding              String       @db.Text
-  communicationStatus  String       @default("PENDING")
+  id             String       @id @default(uuid())
+  imagingStudyId String
+  imagingStudy   ImagingStudy @relation(fields: [imagingStudyId], references: [id], onDelete: Cascade)
+
+  // Phase 11 Legacy fields (to be deprecated)
+  severity             String    @default("critical")
+  finding              String    @db.Text
+  communicationStatus  String    @default("PENDING")
   communicatedTo       String?
   communicatedAt       DateTime?
   communicatedByUserId String?
   createdByUserId      String?
-  createdAt            DateTime     @default(now())
-  updatedAt            DateTime     @updatedAt
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  // Phase 11 New fields (nullable for migration dual-write)
+  reportId             String?
+  report               Report?   @relation(fields: [reportId], references: [id], onDelete: SetNull)
+  status               String? // PENDING_ACK | ACKNOWLEDGED | ESCALATED | CANCELLED
+  message              String?   @db.Text
+  recipientName        String?
+  recipientContact     String?
+  assignedToUserId     String?
+  assignedToUser       User?     @relation("CriticalResultAssignedTo", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  acknowledgedByUserId String?
+  acknowledgedByUser   User?     @relation("CriticalResultAcknowledgedBy", fields: [acknowledgedByUserId], references: [id], onDelete: SetNull)
+  acknowledgedAt       DateTime?
+  dueAt                DateTime?
+  escalatedAt          DateTime?
+  cancelReason         String?   @db.Text
 
   @@index([imagingStudyId])
   @@index([severity])
   @@index([communicationStatus])
+  @@index([status])
+  @@index([reportId])
+  @@index([assignedToUserId])
+  @@index([dueAt])
   @@index([createdAt])
   @@map("critical_results")
 }
@@ -632,6 +666,7 @@ model ProcedureCatalog {
   machineMappings        MachineProcedureMapping[]
   defaultForNodes        DicomNode[]                      @relation("NodeDefaultProcedure")
   printTemplates         PrintTemplate[]
+  slaPolicies            SlaPolicy[]
 
   @@index([serviceTypeId])
   @@index([modality])
@@ -719,6 +754,7 @@ model DicomNode {
   reportTemplateMappings ProcedureReportTemplateMapping[]
   printTemplates         PrintTemplate[]
   DicomConformanceRun    DicomConformanceRun[]
+  slaPolicies            SlaPolicy[]                      @relation("SlaPolicyMachine")
 
   @@index([facilityId])
   @@index([defaultFolderId])
@@ -951,6 +987,7 @@ model FacilityUnit {
   dicomNodes             DicomNode[]
   storageConfigs         StorageFolderConfig[]
   reportTemplateMappings ProcedureReportTemplateMapping[]
+  slaPolicies            SlaPolicy[]
 
   @@index([parentId])
   @@map("facility_units")
@@ -2263,4 +2300,174 @@ model RunbookExecution {
   @@index([runbookId])
   @@index([status])
   @@map("runbook_executions")
+}
+
+// ==========================================
+// PHASE 11: PR 11.1 Schema Additions
+// ==========================================
+
+model SchedulerLease {
+  id              String      @id @default(uuid())
+  leaseKey        String      @unique
+  fencingToken    Int         @default(0)
+  ownerId         String
+  status          String      @default("ACTIVE") // ACTIVE | EXPIRED | COMPLETED | FAILED
+  expiresAt       DateTime
+  lastHeartbeatAt DateTime    @default(now())
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  runs            WorkerRun[]
+
+  @@index([status])
+  @@index([expiresAt])
+  @@map("scheduler_leases")
+}
+
+model WorkerRun {
+  id             String         @id @default(uuid())
+  leaseKey       String
+  lease          SchedulerLease @relation(fields: [leaseKey], references: [leaseKey], onDelete: Cascade)
+  fencingToken   Int
+  ownerId        String
+  startedAt      DateTime       @default(now())
+  completedAt    DateTime?
+  status         String         @default("IN_PROGRESS") // IN_PROGRESS | COMPLETED | FAILED
+  processedCount Int            @default(0)
+  errorCount     Int            @default(0)
+  logJson        String?        @db.Text
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([leaseKey, fencingToken])
+  @@index([status])
+  @@index([createdAt])
+  @@map("worker_runs")
+}
+
+model AlertRule {
+  id                String                  @id @default(uuid())
+  name              String
+  ruleType          String
+  isActive          Boolean                 @default(true)
+  severity          String                  @default("WARNING")
+  conditionJson     String                  @db.Text
+  actionJson        String?                 @db.Text
+  cooldownMins      Int                     @default(60)
+  metadataJson      String?                 @db.Text
+  thresholdPolicyId String?
+  thresholdPolicy   ControlThresholdPolicy? @relation(fields: [thresholdPolicyId], references: [id], onDelete: SetNull)
+  creatorId         String?
+  creator           User?                   @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  scope             String?
+  lastTriggeredAt   DateTime?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+
+  events AlertEvent[]
+
+  @@index([isActive])
+  @@index([ruleType])
+  @@map("alert_rules")
+}
+
+model AlertEvent {
+  id                   String     @id @default(uuid())
+  idempotencyKey       String     @unique
+  ruleId               String?
+  rule                 AlertRule? @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+  severity             String
+  title                String
+  message              String     @db.Text
+  status               String     @default("OPEN") // OPEN | ACKNOWLEDGED | RESOLVED
+  entityType           String?
+  entityId             String?
+  metadataJson         String?    @db.Text
+  acknowledgedByUserId String?
+  acknowledgedByUser   User?      @relation("AlertEventAcknowledgedBy", fields: [acknowledgedByUserId], references: [id], onDelete: SetNull)
+  acknowledgedAt       DateTime?
+  resolvedByUserId     String?
+  resolvedByUser       User?      @relation("AlertEventResolvedBy", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+  resolvedAt           DateTime?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  @@index([status])
+  @@index([severity])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("alert_events")
+}
+
+model SlaPolicy {
+  id                      String            @id @default(uuid())
+  code                    String            @unique
+  name                    String
+  scope                   String // GLOBAL | FACILITY | MODALITY | PROCEDURE | PRIORITY | DOCTOR | ROLE | MODULE
+  facilityId              String?
+  facility                FacilityUnit?     @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  modality                String?
+  procedureCatalogId      String?
+  procedureCatalog        ProcedureCatalog? @relation(fields: [procedureCatalogId], references: [id], onDelete: SetNull)
+  priority                String?
+  doctorId                String?
+  doctor                  User?             @relation("SlaPolicyDoctor", fields: [doctorId], references: [id], onDelete: SetNull)
+  role                    String?
+  machineId               String?
+  machine                 DicomNode?        @relation("SlaPolicyMachine", fields: [machineId], references: [id], onDelete: SetNull)
+  module                  String?
+  stage                   String // ORDER_TO_CHECKIN | CHECKIN_TO_SCAN | SCAN_TO_RECEIVED | RECEIVED_TO_FIRST_READ | FIRST_READ_TO_FINAL | FINAL_TO_DELIVERED | END_TO_END
+  thresholdMinutes        Int
+  warningThresholdMinutes Int?
+  severity                String            @default("MEDIUM")
+  effectiveFrom           DateTime?
+  effectiveTo             DateTime?
+  description             String?           @db.Text
+  isActive                Boolean           @default(true)
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  @@index([scope])
+  @@index([facilityId])
+  @@index([procedureCatalogId])
+  @@index([doctorId])
+  @@index([machineId])
+  @@index([module])
+  @@index([isActive])
+  @@index([stage])
+  @@map("sla_policies")
+}
+
+model ControlThresholdPolicy {
+  id                      String    @id @default(uuid())
+  code                    String    @unique
+  groupKey                String // SLA_TAT | WORKFLOW_QUEUE | HIS | PACS_DICOM | STORAGE_BACKUP | EXPORT_DOWNLOAD | SHARE_CONSULT | QUALITY_SAFETY | DATA_QUALITY | PERFORMANCE_OPS | SECURITY_AUDIT
+  metricKey               String
+  name                    String
+  description             String?   @db.Text
+  scopeType               String    @default("GLOBAL") // GLOBAL | FACILITY | MODALITY | PROCEDURE | PRIORITY | MACHINE | DOCTOR | ROLE | MODULE
+  scopeValue              String?
+  operator                String    @default(">=")
+  warningValue            Float?
+  criticalValue           Float?
+  unit                    String
+  evaluationWindowMinutes Int?
+  cooldownMinutes         Int       @default(30)
+  escalationMode          String    @default("ALERT") // BADGE_ONLY | ALERT | INCIDENT_SUGGESTION
+  ownerRole               String?
+  playbookUrl             String?
+  isActive                Boolean   @default(true)
+  effectiveFrom           DateTime?
+  effectiveTo             DateTime?
+  createdByUserId         String?
+  createdByUser           User?     @relation("ControlThresholdPolicyCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  alertRules AlertRule[]
+
+  @@index([groupKey])
+  @@index([metricKey])
+  @@index([scopeType, scopeValue])
+  @@index([isActive])
+  @@map("control_threshold_policies")
 }

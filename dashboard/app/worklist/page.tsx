@@ -200,14 +200,14 @@ function priorityClass(priority: string) {
   return "border-white/10 bg-white/5 text-vin-muted";
 }
 
-export default function WorklistPage() {
+export default function WorklistPage(props: { searchParams?: { orderId?: string } }) {
   const [orders, setOrders] = useState<WorklistOrderView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [busyOrderId, setBusyOrderId] = useState("");
   const [selectedDate, setSelectedDate] = useState(toDateInputValue());
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(props.searchParams?.orderId || "");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [canReadStudies, setCanReadStudies] = useState(false);

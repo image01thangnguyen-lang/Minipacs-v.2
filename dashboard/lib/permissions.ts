@@ -108,6 +108,23 @@ export const permissionKeys = [
   "runbook.read",
   "runbook.manage",
   "runbook.execute",
+  // Phase 11
+  "commandCenter.read",
+  "quality.read",
+  "quality.manage",
+  "quality.peerReview",
+  "quality.criticalResult",
+  "quality.qc",
+  "analytics.read",
+  "analytics.doctor",
+  "analytics.export",
+  "alerts.read",
+  "alerts.manage",
+  "alerts.ack",
+  "thresholds.read",
+  "thresholds.manage",
+  "dataQuality.read",
+  "dataQuality.manage",
 ] as const;
 
 export type PermissionKey = (typeof permissionKeys)[number];
@@ -230,6 +247,22 @@ export const permissionLabels: Record<PermissionKey, string> = {
   "runbook.read": "Xem Runbook",
   "runbook.manage": "Quản lý Runbook",
   "runbook.execute": "Thực thi Runbook",
+  "commandCenter.read": "Xem Command Center",
+  "quality.read": "Xem trung tâm chất lượng",
+  "quality.manage": "Quản lý trung tâm chất lượng",
+  "quality.peerReview": "Thực hiện Peer Review",
+  "quality.criticalResult": "Quản lý Critical Result",
+  "quality.qc": "Quản lý lỗi QC",
+  "analytics.read": "Xem phân tích chuyên sâu",
+  "analytics.doctor": "Xem phân tích bác sĩ",
+  "analytics.export": "Xuất dữ liệu phân tích",
+  "alerts.read": "Xem danh sách cảnh báo",
+  "alerts.manage": "Quản lý quy tắc cảnh báo",
+  "alerts.ack": "Xác nhận cảnh báo",
+  "thresholds.read": "Xem ngưỡng cấu hình",
+  "thresholds.manage": "Quản lý ngưỡng cấu hình",
+  "dataQuality.read": "Xem cảnh báo chất lượng dữ liệu",
+  "dataQuality.manage": "Xử lý chất lượng dữ liệu",
 };
 
 export const permissionGroups: Array<{ title: string; permissions: PermissionKey[] }> = [
@@ -304,6 +337,14 @@ export const permissionGroups: Array<{ title: string; permissions: PermissionKey
       "incident.read", "incident.manage", "incident.report",
       "change.read", "change.manage", "change.request", "change.approve",
       "runbook.read", "runbook.manage", "runbook.execute"
+    ],
+  },
+  {
+    title: "Phase 11 Command Center & Quality",
+    permissions: [
+      "commandCenter.read", "quality.read", "quality.manage", "quality.peerReview", "quality.criticalResult",
+      "quality.qc", "analytics.read", "analytics.doctor", "analytics.export", "alerts.read", "alerts.manage",
+      "alerts.ack", "thresholds.read", "thresholds.manage", "dataQuality.read", "dataQuality.manage"
     ],
   },
 ];
@@ -413,6 +454,22 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "runbook.read",
     "runbook.manage",
     "runbook.execute",
+    "commandCenter.read",
+    "quality.read",
+    "quality.manage",
+    "quality.peerReview",
+    "quality.criticalResult",
+    "quality.qc",
+    "analytics.read",
+    "analytics.doctor",
+    "analytics.export",
+    "alerts.read",
+    "alerts.manage",
+    "alerts.ack",
+    "thresholds.read",
+    "thresholds.manage",
+    "dataQuality.read",
+    "dataQuality.manage",
   ],
   DOCTOR: [
     "studies.read",
@@ -462,6 +519,12 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "change.read",
     "change.request",
     "account.selfManage",
+    "quality.peerReview",
+    "quality.criticalResult",
+    "analytics.doctor",
+    "quality.read",
+    "analytics.read",
+    "commandCenter.read",
   ],
   TECHNICIAN: [
     "studies.read",
@@ -511,6 +574,13 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "change.read",
     "change.request",
     "account.selfManage",
+    "quality.read",
+    "quality.criticalResult",
+    "quality.qc",
+    "commandCenter.read",
+    "alerts.read",
+    "alerts.ack",
+    "dataQuality.read",
   ],
   RECEPTION: [
     "studies.read",
@@ -542,6 +612,10 @@ export const rolePermissions: Record<SystemRole, PermissionKey[]> = {
     "change.read",
     "change.request",
     "account.selfManage",
+    "quality.read",
+    "commandCenter.read",
+    "alerts.read",
+    "dataQuality.read",
   ],
 };
 
@@ -582,6 +656,14 @@ const routePermissions: Array<{ prefix: string; permission: PermissionKey }> = [
   { prefix: "/admin/changes", permission: "change.read" },
   { prefix: "/admin/runbooks", permission: "runbook.read" },
   { prefix: "/support/incidents", permission: "incident.read" },
+  { prefix: "/command-center", permission: "commandCenter.read" },
+  { prefix: "/quality", permission: "quality.read" },
+  { prefix: "/statistics/sla", permission: "analytics.read" },
+  { prefix: "/statistics/workload", permission: "analytics.doctor" },
+  { prefix: "/statistics/modalities", permission: "analytics.read" },
+  { prefix: "/admin/alerts", permission: "alerts.read" },
+  { prefix: "/admin/control-thresholds", permission: "thresholds.read" },
+  { prefix: "/admin/sla-policies", permission: "thresholds.read" },
   { prefix: "/", permission: "studies.read" },
 ];
 

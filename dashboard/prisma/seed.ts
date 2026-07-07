@@ -106,7 +106,23 @@ async function main() {
         'change.approve',
         'runbook.read',
         'runbook.manage',
-        'runbook.execute'
+        'runbook.execute',
+        'commandCenter.read',
+        'quality.read',
+        'quality.manage',
+        'quality.peerReview',
+        'quality.criticalResult',
+        'quality.qc',
+        'analytics.read',
+        'analytics.doctor',
+        'analytics.export',
+        'alerts.read',
+        'alerts.manage',
+        'alerts.ack',
+        'thresholds.read',
+        'thresholds.manage',
+        'dataQuality.read',
+        'dataQuality.manage'
       ],
       isSystem: true,
       isActive: true
@@ -153,7 +169,13 @@ async function main() {
         'incident.report',
         'change.read',
         'change.request',
-        'account.selfManage'
+        'account.selfManage',
+        'quality.peerReview',
+        'quality.criticalResult',
+        'analytics.doctor',
+        'quality.read',
+        'analytics.read',
+        'commandCenter.read'
       ],
       isSystem: true,
       isActive: true
@@ -163,7 +185,7 @@ async function main() {
       name: 'Kỹ thuật viên',
       description: 'Theo dõi danh sách ca, tiếp nhận/worklist và xử lý vận hành kỹ thuật.',
       baseRole: Role.TECHNICIAN,
-      permissions: ['studies.read', 'studies.assign', 'studies.updateClinical', 'worklist.manage', 'archive.read', 'statistics.read', 'his.read', 'his.sync', 'his.retry', 'viewer.configure', 'viewer.history', 'viewer.export', 'viewer.anonymize', 'nonDicom.read', 'nonDicom.create', 'nonDicom.capture', 'nonDicom.edit', 'nonDicom.deleteMedia', 'nonDicom.copyMedia', 'nonDicom.print', 'nonDicom.video', 'export.read', 'export.create', 'backup.read', 'destructive.request', 'release.read', 'uat.read', 'uat.execute', 'training.read', 'training.attest', 'incident.read', 'incident.report', 'change.read', 'change.request', 'account.selfManage', 'ops.health', 'ops.dicomConformance'],
+      permissions: ['studies.read', 'studies.assign', 'studies.updateClinical', 'worklist.manage', 'archive.read', 'statistics.read', 'his.read', 'his.sync', 'his.retry', 'viewer.configure', 'viewer.history', 'viewer.export', 'viewer.anonymize', 'nonDicom.read', 'nonDicom.create', 'nonDicom.capture', 'nonDicom.edit', 'nonDicom.deleteMedia', 'nonDicom.copyMedia', 'nonDicom.print', 'nonDicom.video', 'export.read', 'export.create', 'backup.read', 'destructive.request', 'release.read', 'uat.read', 'uat.execute', 'training.read', 'training.attest', 'incident.read', 'incident.report', 'change.read', 'change.request', 'account.selfManage', 'ops.health', 'ops.dicomConformance', 'quality.read', 'quality.criticalResult', 'quality.qc', 'commandCenter.read', 'alerts.read', 'alerts.ack', 'dataQuality.read'],
       isSystem: true,
       isActive: true
     },
@@ -172,7 +194,7 @@ async function main() {
       name: 'Lễ tân',
       description: 'Tạo order, check-in, tìm/in lại kết quả và xem thống kê vận hành cơ bản.',
       baseRole: Role.RECEPTION,
-      permissions: ['studies.read', 'worklist.manage', 'archive.read', 'archive.deliver', 'statistics.read', 'reports.print', 'his.read', 'his.sync', 'his.retry', 'nonDicom.read', 'nonDicom.create', 'export.read', 'export.create', 'release.read', 'uat.read', 'uat.execute', 'training.read', 'training.attest', 'incident.read', 'incident.report', 'change.read', 'change.request', 'account.selfManage'],
+      permissions: ['studies.read', 'worklist.manage', 'archive.read', 'archive.deliver', 'statistics.read', 'reports.print', 'his.read', 'his.sync', 'his.retry', 'nonDicom.read', 'nonDicom.create', 'export.read', 'export.create', 'release.read', 'uat.read', 'uat.execute', 'training.read', 'training.attest', 'incident.read', 'incident.report', 'change.read', 'change.request', 'account.selfManage', 'quality.read', 'commandCenter.read', 'alerts.read', 'dataQuality.read'],
       isSystem: true,
       isActive: true
     }
@@ -325,6 +347,80 @@ async function main() {
     }
     console.log(`Seeded ${cases.length} UAT cases from uat-baseline.json`);
   }
+
+  // Phase 11: Seed default SLA Policies
+  const slaPolicies = [
+    {
+      code: 'GLOBAL_E2E_24H',
+      name: 'Default End-to-End SLA (24h)',
+      scope: 'GLOBAL',
+      stage: 'END_TO_END',
+      thresholdMinutes: 1440,
+      warningThresholdMinutes: 1200,
+      severity: 'HIGH',
+      description: 'Global 24-hour SLA for all studies from check-in to final delivery.'
+    },
+    {
+      code: 'GLOBAL_FIRST_READ_60M',
+      name: 'Default First Read SLA (60m)',
+      scope: 'GLOBAL',
+      stage: 'RECEIVED_TO_FIRST_READ',
+      thresholdMinutes: 60,
+      warningThresholdMinutes: 45,
+      severity: 'MEDIUM',
+      description: 'Global 1-hour SLA for a doctor to open the study.'
+    }
+  ];
+
+  for (const policy of slaPolicies) {
+    await prisma.slaPolicy.upsert({
+      where: { code: policy.code },
+      update: policy,
+      create: policy
+    });
+  }
+  console.log(`SLA Policies seeded: ${slaPolicies.length}`);
+
+  // Phase 11: Seed default Control Threshold Policies
+  const controlPolicies = [
+    {
+      code: 'STUCK_IN_DRAFT_1H',
+      groupKey: 'WORKFLOW_QUEUE',
+      metricKey: 'STUCK_IN_DRAFT',
+      name: 'Studies stuck in draft',
+      scopeType: 'GLOBAL',
+      operator: '>=',
+      warningValue: 5,
+      criticalValue: 10,
+      unit: 'count',
+      evaluationWindowMinutes: 60,
+      escalationMode: 'ALERT',
+      description: 'Alert if more than 10 studies are stuck in draft for over an hour.'
+    },
+    {
+      code: 'DICOM_ECHO_FAIL_15M',
+      groupKey: 'PACS_DICOM',
+      metricKey: 'DICOM_ECHO_FAIL',
+      name: 'DICOM Node Echo Failures',
+      scopeType: 'GLOBAL',
+      operator: '>=',
+      warningValue: 1,
+      criticalValue: 3,
+      unit: 'count',
+      evaluationWindowMinutes: 15,
+      escalationMode: 'ALERT',
+      description: 'Alert if DICOM echo fails 3 times in 15 minutes.'
+    }
+  ];
+
+  for (const policy of controlPolicies) {
+    await prisma.controlThresholdPolicy.upsert({
+      where: { code: policy.code },
+      update: policy,
+      create: policy
+    });
+  }
+  console.log(`Control Threshold Policies seeded: ${controlPolicies.length}`);
 }
 
 main()

@@ -79,3 +79,29 @@ export async function canPerformMachineAction(
   );
   return true;
 }
+
+/**
+ * Bulk-loads a list of AE Titles that are explicitly DENIED for the given user and action.
+ * Useful for filtering large lists (like Command Center) without N+1 queries.
+ */
+export async function getDeniedAeTitlesForAction(
+  user: UserPayload | null,
+  actionKey: MachineActionKey
+): Promise<string[]> {
+  if (!user || user.role === "ADMIN") return [];
+
+  const deniedPerms = await prisma.doctorMachinePermission.findMany({
+    where: {
+      doctorId: user.id,
+      actionKey,
+      allow: false,
+    },
+    include: {
+      dicomNode: true,
+    },
+  });
+
+  return deniedPerms
+    .map(p => p.dicomNode.aeTitle)
+    .filter(Boolean) as string[];
+}
