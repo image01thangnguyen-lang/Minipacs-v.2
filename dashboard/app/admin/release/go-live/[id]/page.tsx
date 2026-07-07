@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -45,7 +46,7 @@ export default async function GoLiveCommandCenterPage({ params }: { params: { id
       <header className="border-b border-slate-700 pb-5">
         <Link href="/admin/release/go-live" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400"><ArrowLeft className="h-4 w-4" /> Quay lại danh sách</Link>
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
-          <div><h1 className="text-2xl font-bold">{release.version}: {release.title || "Untitled release"}</h1><p className="mt-1 text-sm text-slate-400">{release.targetEnvironment} · tạo bởi {release.createdByUser?.fullName || "System"} · {release.createdAt.toLocaleString("vi-VN")}</p>{release.lockedAt && <p className="mt-2 inline-flex items-center gap-1 text-xs text-amber-300"><Lock className="h-3 w-3" /> Khóa lúc {release.lockedAt.toLocaleString("vi-VN")} bởi {release.lockedByUser?.fullName || "System"}</p>}</div>
+          <div><ScreenHeader /><h1 className="mt-4 text-2xl font-bold">{release.version}: {release.title || "Untitled release"}</h1><p className="mt-1 text-sm text-slate-400">{release.targetEnvironment} · tạo bởi {release.createdByUser?.fullName || "System"} · {release.createdAt.toLocaleString("vi-VN")}</p>{release.lockedAt && <p className="mt-2 inline-flex items-center gap-1 text-xs text-amber-300"><Lock className="h-3 w-3" /> Khóa lúc {release.lockedAt.toLocaleString("vi-VN")} bởi {release.lockedByUser?.fullName || "System"}</p>}</div>
           <span className="rounded bg-blue-950 px-3 py-1.5 text-sm font-bold text-blue-300">{release.status}</span>
         </div>
       </header>

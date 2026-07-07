@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -397,7 +399,7 @@ export default function UserManagementPage() {
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="min-w-0 flex items-center gap-3">
               <div className="min-w-[132px]">
-                <h1 className="truncate text-sm font-bold tracking-tight text-white">Quản lý người dùng</h1>
+                <ScreenHeader />
                 <p className="mt-0.5 text-[10px] text-vin-muted">
                   {activeTab === "users" ? `${filteredUsers.length} tài khoản` : `${filteredRoles.length} vai trò`}
                 </p>

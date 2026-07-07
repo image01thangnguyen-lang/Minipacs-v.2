@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -45,7 +46,7 @@ export default async function UatCenterPage() {
     <div className="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">UAT Center</h1>
+          <ScreenHeader />
           <p className="text-sm text-muted-foreground mt-1">
             Manage and execute User Acceptance Testing suites.
           </p>

@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -43,7 +44,7 @@ export default async function ChangeDetailPage({ params }: { params: { id: strin
       <header className="border-b border-slate-700 pb-5">
         <Link href="/admin/changes" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400"><ArrowLeft className="h-4 w-4" /> Quay lại board</Link>
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
-          <div><h1 className="text-2xl font-bold">{change.title}</h1><p className="mt-1 text-sm text-slate-400">Đề xuất bởi {change.requestedByUser?.fullName || "System"} lúc {change.createdAt.toLocaleString("vi-VN")}</p></div>
+          <div><ScreenHeader /><h1 className="mt-4 text-2xl font-bold">{change.title}</h1><p className="mt-1 text-sm text-slate-400">Đề xuất bởi {change.requestedByUser?.fullName || "System"} lúc {change.createdAt.toLocaleString("vi-VN")}</p></div>
           <div className="flex gap-2"><span className="rounded bg-slate-800 px-2 py-1 text-sm">{change.module}</span><span className={`rounded px-2 py-1 text-sm font-bold ${change.riskLevel === "HIGH" ? "bg-red-950 text-red-300" : change.riskLevel === "MEDIUM" ? "bg-amber-950 text-amber-300" : "bg-emerald-950 text-emerald-300"}`}>{change.riskLevel}</span><span className="rounded bg-blue-950 px-2 py-1 text-sm text-blue-300">{change.status}</span></div>
         </div>
       </header>

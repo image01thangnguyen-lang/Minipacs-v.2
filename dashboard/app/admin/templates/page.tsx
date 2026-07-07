@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import React, { useEffect, useState } from "react";
 import {
@@ -169,7 +171,7 @@ export default function AdminTemplatesPage() {
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div>
-                <h1 className="truncate text-sm font-bold tracking-tight text-white">Quản lý Mẫu in & Gán thiết bị</h1>
+                <ScreenHeader />
                 <p className="mt-0.5 text-[10px] text-vin-muted">Print Templates & Mappings</p>
               </div>
             </div>

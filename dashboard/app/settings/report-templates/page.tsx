@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -182,7 +184,7 @@ export default function ReportTemplateTextPage() {
         <div className="flex-none border-b border-vin-border/70 px-3 py-2">
           <div className="mb-2 flex items-center justify-between">
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-white">Mẫu báo cáo</h1>
+              <ScreenHeader />
               <p className="mt-0.5 text-[10px] text-vin-muted">
                 {filteredTemplates.length} mẫu
               </p>

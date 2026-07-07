@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -27,7 +28,7 @@ export default async function ChangeRequestsPage() {
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
       <header className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-700 pb-5">
         <div>
-          <h1 className="text-2xl font-bold">Change Request Board</h1>
+          <ScreenHeader />
           <p className="mt-1 text-sm text-slate-400">Theo dõi đề xuất, review độc lập, UAT và release mục tiêu.</p>
         </div>
         {canCreate && (

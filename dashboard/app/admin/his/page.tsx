@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { Metadata } from "next";
 import { getUserPermissionsAction } from "@/app/actions";
 import { redirect } from "next/navigation";
@@ -57,7 +58,7 @@ export default async function AdminHisPage() {
     <div className="flex h-full w-full overflow-hidden bg-vin-root font-sans text-vin-text">
       <div className="flex-1 overflow-auto bg-vin-shell p-6">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight text-white">HIS Integration Console</h1>
+          <ScreenHeader />
           <p className="text-vin-muted text-sm">
             Manage inbound and outbound API integrations with the Hospital Information System.
           </p>

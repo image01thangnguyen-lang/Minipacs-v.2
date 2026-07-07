@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -35,7 +36,7 @@ export default async function ReleaseHandoffPage({ params }: { params: { id: str
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-6">
-      <header className="border-b border-slate-700 pb-5"><Link href={`/admin/release/go-live/${release.id}`} className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400"><ArrowLeft className="h-4 w-4" /> Quay lại release</Link><div className="mt-4 flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-2xl font-bold">QA & Operations Handoff</h1><p className="mt-1 text-sm text-slate-400">{release.version} · {release.title} · {release.targetEnvironment}</p></div><span className="rounded bg-cyan-950 px-3 py-1 text-sm font-bold text-cyan-300">{handoff?.status || "MISSING"}</span></div></header>
+      <header className="border-b border-slate-700 pb-5"><Link href={`/admin/release/go-live/${release.id}`} className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400"><ArrowLeft className="h-4 w-4" /> Quay lại release</Link><div className="mt-4 flex flex-wrap items-start justify-between gap-4"><div><ScreenHeader /><h1 className="mt-4 text-2xl font-bold">QA &amp; Operations Handoff</h1><p className="mt-1 text-sm text-slate-400">{release.version} · {release.title} · {release.targetEnvironment}</p></div><span className="rounded bg-cyan-950 px-3 py-1 text-sm font-bold text-cyan-300">{handoff?.status || "MISSING"}</span></div></header>
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Link href="/admin/release/uat" className="rounded-md border border-slate-700 p-3 text-sm hover:border-cyan-500"><span className="text-slate-400">UAT</span><strong className="mt-1 block">{readiness.latestUat?.status || "MISSING"}</strong></Link>

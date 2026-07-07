@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 export const dynamic = 'force-dynamic';
 import React from 'react';
 import { prisma } from '@/app/db';
@@ -10,7 +11,7 @@ export default async function DicomConformancePage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">DICOM Conformance Center</h1>
+      <ScreenHeader />
       <p className="text-gray-600 mb-8">
         Run standard DICOM tests like C-ECHO and basic WADO/QIDO availability.
       </p>

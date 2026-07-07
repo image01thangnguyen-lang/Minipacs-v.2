@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -14,7 +15,7 @@ export default async function NewReleasePage() {
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <header><Link href="/admin/release/go-live" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400"><ArrowLeft className="h-4 w-4" /> Quay lại Go-Live Center</Link><h1 className="mt-4 text-2xl font-bold">Tạo Release Candidate</h1><p className="mt-1 text-sm text-slate-400">Khởi tạo release và gắn bộ UAT riêng cho phiên bản này.</p></header>
+      <header><Link href="/admin/release/go-live" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400"><ArrowLeft className="h-4 w-4" /> Quay lại Go-Live Center</Link><ScreenHeader /><h1 className="mt-4 text-2xl font-bold">Tạo Release Candidate</h1><p className="mt-1 text-sm text-slate-400">Khởi tạo release và gắn bộ UAT riêng cho phiên bản này.</p></header>
       <form action={async formData => { "use server"; const id = await createReleaseCandidate(formData); redirect(`/admin/release/go-live/${id}`); }} className="space-y-5 rounded-md border border-slate-700 bg-slate-900/40 p-6">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="text-sm font-medium">Version<input name="version" required maxLength={80} placeholder="v2.1.0-rc.1" className="mt-1 h-10 w-full rounded-md border border-slate-600 bg-slate-950 px-3" /></label>

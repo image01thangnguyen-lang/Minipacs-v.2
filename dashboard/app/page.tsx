@@ -16,6 +16,7 @@ import {
 import { CustomSelect, type SelectOption } from "./components/CustomSelect";
 import { useReactToPrint } from "react-to-print";
 import { AppShell } from "./components/shell/AppShell";
+import { ScreenHeader } from "./components/navigation/ScreenHeader";
 import {
   appendTemplateHtml,
   appendTemplateText,
@@ -758,31 +759,34 @@ export default function DashboardPage() {
     <AppShell contentClassName="flex w-full overflow-hidden bg-vin-root font-sans text-vin-text" contentOverflow="hidden">
       <section className="flex h-full w-[52%] min-w-[640px] flex-col border-r border-vin-border bg-vin-shell">
         <div className="flex-none border-b border-vin-border/70 px-3 py-2">
-          <div className="mb-2 flex items-center justify-between">
-            <div>
-              <h1 className="text-sm font-bold tracking-tight text-white">Danh sách ca chụp</h1>
-              <p className="mt-0.5 text-[10px] text-vin-muted">
-                {filteredStudies.length} ca · Trang {currentPage}/{totalPages}
-              </p>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
-                disabled={currentPage === 1}
-                className="rounded border border-vin-border bg-vin-panel p-1 text-vin-muted transition hover:border-vin-accent hover:text-vin-text disabled:cursor-not-allowed disabled:opacity-30"
-                title="Trang trước"
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </button>
-              <button
-                onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
-                disabled={currentPage >= totalPages}
-                className="rounded border border-vin-border bg-vin-panel p-1 text-vin-muted transition hover:border-vin-accent hover:text-vin-text disabled:cursor-not-allowed disabled:opacity-30"
-                title="Trang sau"
-              >
-                <ChevronRight className="h-3.5 w-3.5" />
-              </button>
-            </div>
+          <div className="mb-2">
+            <ScreenHeader
+              extraContent={
+                <div className="flex items-center gap-3">
+                  <p className="text-[10px] text-vin-muted">
+                    {filteredStudies.length} ca · Trang {currentPage}/{totalPages}
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+                      disabled={currentPage === 1}
+                      className="rounded border border-vin-border bg-vin-panel p-1 text-vin-muted transition hover:border-vin-accent hover:text-vin-text disabled:cursor-not-allowed disabled:opacity-30"
+                      title="Trang trước"
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))}
+                      disabled={currentPage >= totalPages}
+                      className="rounded border border-vin-border bg-vin-panel p-1 text-vin-muted transition hover:border-vin-accent hover:text-vin-text disabled:cursor-not-allowed disabled:opacity-30"
+                      title="Trang sau"
+                    >
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              }
+            />
           </div>
 
           <div className="flex flex-col gap-2">

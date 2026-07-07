@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import { useEffect, useState } from "react";
 import { getNonDicomExams } from "./actions";
@@ -42,7 +44,7 @@ export default function NonDicomQueuePage() {
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex-none p-4 pb-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-white tracking-tight">Non-DICOM Queue</h1>
+            <ScreenHeader />
             <p className="text-sm text-slate-400 mt-1">Quản lý các ca siêu âm, nội soi, chụp ảnh ngoài DICOM</p>
           </div>
           <div className="flex items-center gap-3">

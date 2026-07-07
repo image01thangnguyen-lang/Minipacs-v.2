@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -304,10 +306,7 @@ export default function ArchivePage() {
         <div className="flex-none border-b border-vin-border/70 px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h1 className="flex items-center gap-2 text-[15px] font-bold tracking-tight text-white">
-                <FileText className="h-4 w-4 text-vin-accent" />
-                Lịch sử & In lại / Archive
-              </h1>
+              <ScreenHeader />
               <div className="mt-1 text-[11px] text-vin-muted">{rows.length} ca trong danh sách</div>
             </div>
             <button

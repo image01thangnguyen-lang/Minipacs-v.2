@@ -30,6 +30,7 @@ export const navigationRegistry: NavigationNode[] = [
     label: "Cấu hình chuyên môn",
     children: [
       { type: "item", id: "clinic-profile", label: "Hồ sơ đơn vị", href: "/settings/clinic-profile", iconKey: "Building2", permission: "clinic.manage" },
+      { type: "item", id: "facilities", label: "Phòng ban / Cơ sở", href: "/admin/facilities", iconKey: "Building", permission: "admin.facilities" },
       { type: "item", id: "catalogs", label: "Danh mục chuyên môn", href: "/admin/catalogs", iconKey: "FileText", permission: "admin.catalogs" },
       { type: "item", id: "pacs-nodes", label: "Máy chụp & PACS", href: "/admin/pacs/nodes", iconKey: "Settings", permission: "pacs.manage" },
       { type: "item", id: "his", label: "Tích hợp HIS", href: "/admin/his", iconKey: "Network", permission: "his.manage" },

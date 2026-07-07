@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -25,6 +26,7 @@ export default async function NewChangeRequestPage() {
     <main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
       <header>
         <Link href="/admin/changes" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400"><ArrowLeft className="h-4 w-4" /> Quay lại board</Link>
+        <ScreenHeader />
         <h1 className="mt-4 text-2xl font-bold">Tạo Change Request</h1>
         <p className="mt-1 text-sm text-slate-400">Không nhập PHI, nội dung báo cáo, token, mật khẩu hoặc secret.</p>
       </header>

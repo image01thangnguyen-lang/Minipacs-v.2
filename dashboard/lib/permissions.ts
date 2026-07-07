@@ -624,6 +624,7 @@ const permissionSet = new Set<string>(permissionKeys);
 const routePermissions: Array<{ prefix: string; permission: PermissionKey }> = [
   { prefix: "/admin/catalogs", permission: "admin.catalogs" },
   { prefix: "/admin/templates", permission: "admin.catalogs" },
+  { prefix: "/admin/facilities", permission: "admin.facilities" },
   { prefix: "/admin/permissions", permission: "admin.permissions" },
   { prefix: "/admin/storage", permission: "admin.storage" },
   { prefix: "/admin/users", permission: "users.manage" },

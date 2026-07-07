@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -39,7 +40,7 @@ export default async function IncidentsListPage() {
     <div className="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Incident Response Desk</h1>
+          <ScreenHeader />
           <p className="text-sm text-muted-foreground mt-1">
             Track operational issues and system incidents. {isAdmin ? "Managing all incidents." : "Viewing your reported incidents."}
           </p>

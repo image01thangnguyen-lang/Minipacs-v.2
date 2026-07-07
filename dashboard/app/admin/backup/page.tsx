@@ -1,5 +1,7 @@
 'use client';
 
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 import React, { useState, useEffect } from 'react';
 import { getBackupJobsAction, createBackupJobAction } from '@/app/actions/backup-actions';
 
@@ -37,7 +39,7 @@ export default function AdminBackupPage() {
     <div className="flex h-full w-full bg-vin-root font-sans text-vin-text">
       <div className="flex-1 flex flex-col min-w-0 bg-vin-shell border-l border-vin-border">
         <div className="p-4 border-b border-vin-border">
-          <h1 className="text-xl font-semibold text-white">Quản lý Sao lưu (Backup) <span className="text-sm font-normal text-amber-500">(Simulation)</span></h1>
+          <ScreenHeader />
         </div>
         <div className="p-4 flex-1 overflow-auto">
           <div className="flex gap-4 mb-6 border-b border-vin-border pb-4">

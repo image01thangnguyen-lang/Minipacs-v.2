@@ -1,5 +1,7 @@
 'use client';
 
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 import React, { useState, useEffect } from 'react';
 import { getDestructiveRequestsAction, approveDestructiveRequestAction, executeDestructiveRequestAction, dryRunDestructiveRequestAction } from '@/app/actions/destructive-actions';
 
@@ -60,12 +62,7 @@ export default function AdminDestructivePage() {
     <div className="flex h-full w-full bg-vin-root font-sans text-vin-text">
       <div className="flex-1 flex flex-col min-w-0 bg-vin-shell border-l border-vin-border">
         <div className="p-4 border-b border-vin-border bg-red-950/20">
-          <h1 className="text-xl font-semibold text-red-400 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            Quản lý Thao tác Xóa (Destructive Operations)
-          </h1>
+          <ScreenHeader />
           <p className="text-sm text-vin-muted mt-1">Yêu cầu xóa dữ liệu cần được duyệt bởi người khác. Không thể tự duyệt yêu cầu của chính mình.</p>
         </div>
         <div className="p-4 flex-1 overflow-auto">

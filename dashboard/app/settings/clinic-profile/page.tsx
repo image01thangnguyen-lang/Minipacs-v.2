@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import React, { useEffect, useState } from "react";
 import { BadgeCheck, Building2, Image as ImageIcon, Loader2, Save, Upload } from "lucide-react";
@@ -97,10 +99,7 @@ export default function ClinicProfilePage() {
         <div className="flex-none border-b border-vin-border/70 px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h1 className="flex items-center gap-2 text-sm font-bold tracking-tight text-white">
-                <Building2 className="h-4 w-4 text-vin-accent" />
-                Thông tin phòng khám
-              </h1>
+              <ScreenHeader />
               <p className="mt-0.5 text-[10px] text-vin-muted">
                 Logo, tên đơn vị, địa chỉ và footer dùng khi in phiếu kết quả.
               </p>

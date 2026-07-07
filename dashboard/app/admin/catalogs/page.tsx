@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import React, { useEffect, useState } from "react";
 
@@ -191,7 +193,7 @@ export default function CatalogsPage() {
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <div className="min-w-[132px]">
-                <h1 className="truncate text-sm font-bold tracking-tight text-white">Danh mục từ điển</h1>
+                <ScreenHeader />
                 <p className="mt-0.5 text-[10px] text-vin-muted">Quản lý các danh mục cấu hình</p>
               </div>
               {renderTabs()}

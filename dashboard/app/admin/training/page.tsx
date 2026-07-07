@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -33,7 +34,7 @@ export default async function TrainingCenterPage() {
   return (
     <div className="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
       <header>
-        <h1 className="text-2xl font-bold tracking-tight">Training Center</h1>
+        <ScreenHeader />
         <p className="text-sm text-muted-foreground mt-1">
           Access training materials, verify compliance, and sign off on completion.
         </p>

@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import React, { useEffect, useState } from "react";
 import { Loader2, Plus, HardDrive, RefreshCw, Trash2, CheckCircle2, AlertCircle, X, ShieldAlert } from "lucide-react";
@@ -116,10 +118,7 @@ export default function StorageAdminPage() {
         <div className="flex-none border-b border-vin-border/70 px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-white flex items-center gap-2">
-                <HardDrive className="h-4 w-4 text-vin-accent" />
-                Cấu hình lưu trữ (Storage / Backup)
-              </h1>
+              <ScreenHeader />
               <p className="mt-1 text-[11px] text-vin-muted">Quản lý các thư mục lưu trữ ảnh DICOM, báo cáo, và sao lưu.</p>
             </div>
             <button 

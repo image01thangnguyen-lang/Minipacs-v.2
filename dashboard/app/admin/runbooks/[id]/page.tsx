@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -53,7 +54,7 @@ export default async function RunbookDetailPage({ params }: { params: { id: stri
       <header className="border-b border-slate-700 pb-5">
         <Link href="/admin/runbooks" className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-cyan-400"><ArrowLeft className="h-4 w-4" /> Quay lại thư viện</Link>
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
-          <div><h1 className="text-2xl font-bold">{runbook.name}</h1><p className="mt-1 max-w-3xl text-sm text-slate-400">{runbook.description || "Không có mô tả"}</p></div>
+          <div><ScreenHeader /><h1 className="mt-4 text-2xl font-bold">{runbook.name}</h1><p className="mt-1 max-w-3xl text-sm text-slate-400">{runbook.description || "Không có mô tả"}</p></div>
           <div className="flex items-center gap-2"><span className="rounded bg-slate-800 px-2 py-1 text-xs">{runbook.category}</span><span className={`rounded px-2 py-1 text-xs ${runbook.isActive ? "bg-emerald-950 text-emerald-300" : "bg-slate-800 text-slate-400"}`}>{runbook.isActive ? "ACTIVE" : "INACTIVE"}</span></div>
         </div>
       </header>

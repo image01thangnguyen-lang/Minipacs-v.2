@@ -1,5 +1,7 @@
 'use client';
 
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 import React, { useState, useEffect } from 'react';
 import { getRetentionPoliciesAction, createRetentionPolicyAction, dryRunRetentionPolicyAction, executeRetentionRunAction, getRetentionRunsAction } from '@/app/actions/retention-actions';
 
@@ -72,7 +74,7 @@ export default function AdminRetentionPage() {
     <div className="flex h-full w-full bg-vin-root font-sans text-vin-text">
       <div className="flex-1 flex flex-col min-w-0 bg-vin-shell border-l border-vin-border">
         <div className="p-4 border-b border-vin-border">
-          <h1 className="text-xl font-semibold text-white">Quản lý vòng đời dữ liệu (Retention)</h1>
+          <ScreenHeader />
         </div>
         <div className="p-4 flex-1 overflow-auto grid grid-cols-2 gap-6">
           <div>

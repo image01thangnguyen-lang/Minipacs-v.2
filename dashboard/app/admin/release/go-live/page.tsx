@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -31,7 +32,7 @@ export default async function GoLiveListPage() {
     <div className="flex flex-col gap-6 p-6 max-w-7xl mx-auto">
       <header className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Go-Live Command Center</h1>
+          <ScreenHeader />
           <p className="text-sm text-muted-foreground mt-1">
             Manage release candidates, readiness checklists, and go-live sign-offs.
           </p>

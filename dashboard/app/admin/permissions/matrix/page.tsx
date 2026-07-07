@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import { useEffect, useState } from "react";
 import { Loader2, Save, X, Info } from "lucide-react";
@@ -151,7 +153,7 @@ export default function PermissionMatrixPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-white">Ma trận phân quyền Thiết bị</h1>
+        <ScreenHeader />
         <div className="flex items-center gap-3">
           <div className="w-64">
             <CustomSelect

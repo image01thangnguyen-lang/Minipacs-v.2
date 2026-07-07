@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 export const dynamic = 'force-dynamic';
 import React from 'react';
 import { getNativeConfig, getNativeEvents } from '@/lib/services/nativeConnectorService';
@@ -9,7 +10,7 @@ export default async function NativeCompanionPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Native Workstation Companion</h1>
+      <ScreenHeader />
       <p className="text-gray-600 mb-8">
         Manage the bridge between the web dashboard and local native workstation tools (e.g., advanced 3D rendering, local disk storage).
         <strong> Disabled by default for security.</strong>

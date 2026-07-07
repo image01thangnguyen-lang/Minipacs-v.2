@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 export const dynamic = 'force-dynamic';
 import React from 'react';
 import Link from 'next/link';
@@ -43,7 +44,7 @@ export default function OperationsCommandCenterPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Operations Command Center</h1>
+      <ScreenHeader />
       <p className="text-gray-600 mb-8">
         Welcome to the central operations hub. Monitor health, security, performance, and readiness of the PACS system.
       </p>

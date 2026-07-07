@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import { useState, useEffect, useRef } from "react";
 import { Loader2, Send, Users, Video, LogOut, CheckCircle, XCircle, ArrowLeft, RefreshCcw } from "lucide-react";
@@ -127,10 +129,7 @@ export default function ConsultationRoomPage({ params }: { params: { id: string 
               <ArrowLeft className="h-4 w-4" />
             </Link>
             <div className="h-4 w-px bg-white/10" />
-            <h1 className="flex items-center gap-2 text-[15px] font-bold tracking-tight text-white">
-              <Video className="h-4 w-4 text-pink-400" />
-              {consultation.title}
-            </h1>
+            <ScreenHeader />
             <span className={`ml-2 inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
               consultation.status === 'ACTIVE' ? 'bg-indigo-500 text-white' : 
               consultation.status === 'COMPLETED' ? 'bg-vin-status-approved-bg text-white' : 

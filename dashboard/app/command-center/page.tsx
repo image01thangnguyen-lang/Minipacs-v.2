@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
@@ -102,7 +104,7 @@ export default function CommandCenterPage() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen text-gray-800">
-      <h1 className="text-2xl font-bold mb-6 text-gray-900">Trung tâm điều hành</h1>
+      <ScreenHeader />
       
       {/* Filters */}
       <div className="bg-white p-4 rounded shadow mb-6 flex flex-wrap items-end gap-4">

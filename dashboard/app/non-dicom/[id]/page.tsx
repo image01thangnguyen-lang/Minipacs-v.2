@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/app/db";
 import { requirePermission } from "@/lib/authz";
@@ -52,10 +53,7 @@ export default async function NonDicomExamCapturePage({ params }: { params: { id
             Hàng đợi
           </Link>
           <div className="h-4 w-[1px] bg-white/10" />
-          <h1 className="flex items-center gap-2 text-sm font-semibold tracking-wide text-white">
-            <Camera className="h-4 w-4 text-indigo-400" />
-            Non-DICOM Capture: <span className="text-vin-accent">{exam.patientName}</span>
-          </h1>
+          <ScreenHeader />
         </div>
         <div className="flex items-center gap-4 text-xs">
           <div className="flex flex-col items-end">

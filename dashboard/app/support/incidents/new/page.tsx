@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { hasPermission } from "@/lib/permissions";
 import { redirect } from "next/navigation";
@@ -36,7 +37,8 @@ export default async function ReportIncidentPage({
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Incidents
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Report Incident</h1>
+          <ScreenHeader />
+          <h1 className="mt-4 text-2xl font-bold tracking-tight">Report Incident</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Log an operational issue or system bug. 
           </p>

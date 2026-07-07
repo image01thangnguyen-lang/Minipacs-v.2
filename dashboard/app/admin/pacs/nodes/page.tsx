@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import { useEffect, useState } from "react";
 
@@ -225,10 +227,7 @@ export default function DicomNodesPage() {
         <div className="flex-none border-b border-vin-border/70 px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h1 className="flex items-center gap-2 text-[15px] font-bold tracking-tight text-white">
-                <Server className="h-4 w-4 text-vin-accent" />
-                Quản lý Máy Chụp (DICOM Nodes)
-              </h1>
+              <ScreenHeader />
               <p className="mt-1 text-[11px] text-vin-muted">
                 Khai báo danh sách thiết bị để nhận/gửi ảnh DICOM tới Orthanc PACS.
               </p>

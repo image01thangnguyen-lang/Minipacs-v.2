@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 export const dynamic = 'force-dynamic';
 import React from 'react';
 import { getDeploymentReadinessAction } from './actions';
@@ -7,7 +8,7 @@ export default async function DeploymentReadinessPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Deployment Readiness</h1>
+      <ScreenHeader />
       <p className="text-gray-600 mb-8">
         Review the current configuration and connection status of core dependencies.
       </p>

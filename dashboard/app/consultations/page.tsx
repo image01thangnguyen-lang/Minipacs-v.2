@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import { useState, useEffect } from "react";
 import { Loader2, RefreshCcw, Users, Search, Video, Calendar, ArrowRight } from "lucide-react";
@@ -63,10 +65,7 @@ export default function ConsultationsPage() {
         <div className="flex-none border-b border-vin-border/70 px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h1 className="flex items-center gap-2 text-[15px] font-bold tracking-tight text-white">
-                <Users className="h-4 w-4 text-pink-400" />
-                Hội chẩn / Consultations
-              </h1>
+              <ScreenHeader />
               <div className="mt-1 text-[11px] text-vin-muted">{consultations.length} cuộc hội chẩn</div>
             </div>
             <button

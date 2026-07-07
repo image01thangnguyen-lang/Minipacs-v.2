@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -354,7 +356,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
           </button>
 
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-lg font-bold text-white">Phiếu kết quả chẩn đoán hình ảnh</h1>
+            <ScreenHeader />
             <p className="mt-0.5 truncate font-mono text-[11px] text-vin-muted">{studyInstanceUid}</p>
           </div>
 

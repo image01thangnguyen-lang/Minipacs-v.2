@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -53,7 +54,8 @@ export default async function UatRunPage({ params }: { params: { runId: string }
         </Link>
         <div className="flex justify-between items-end">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Run: {run.suite.name}</h1>
+            <ScreenHeader />
+            <h1 className="mt-4 text-2xl font-bold tracking-tight">Run: {run.suite.name}</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Tested by {run.testedByUser?.fullName} • Status: <span className="font-medium">{run.status}</span>
             </p>

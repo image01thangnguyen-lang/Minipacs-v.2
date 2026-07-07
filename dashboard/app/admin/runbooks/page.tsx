@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -30,7 +31,7 @@ export default async function RunbooksPage() {
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
       <header className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-700 pb-5">
-        <div><h1 className="text-2xl font-bold">Runbook Library</h1><p className="mt-1 text-sm text-slate-400">Quy trình vận hành có kiểm soát, xác nhận step nguy hiểm và audit đầy đủ.</p></div>
+        <div><ScreenHeader /><p className="mt-1 text-sm text-slate-400">Quy trình vận hành có kiểm soát, xác nhận step nguy hiểm và audit đầy đủ.</p></div>
         {canManage && <Link href="/admin/runbooks/new" className="inline-flex h-10 items-center gap-2 rounded-md bg-cyan-600 px-4 text-sm font-semibold text-white hover:bg-cyan-500"><Plus className="h-4 w-4" /> Tạo runbook</Link>}
       </header>
 

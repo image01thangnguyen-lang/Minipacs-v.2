@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -27,7 +28,7 @@ export default async function ReleaseCenterPage() {
   ];
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-6">
-      <header className="border-b border-slate-700 pb-5"><h1 className="text-2xl font-bold">Release Center</h1><p className="mt-1 text-sm text-slate-400">UAT, readiness, sign-off, release notes và operations handoff trên một luồng.</p></header>
+      <header className="border-b border-slate-700 pb-5"><ScreenHeader /><p className="mt-1 text-sm text-slate-400">UAT, readiness, sign-off, release notes và operations handoff trên một luồng.</p></header>
       <section className="grid gap-4 md:grid-cols-3">{cards.map(({ label, value, href, icon: Icon, detail }) => <Link key={label} href={href} className="rounded-md border border-slate-700 bg-slate-900/40 p-5 hover:border-cyan-500"><div className="flex items-center justify-between"><Icon className="h-5 w-5 text-cyan-300" /><span className="text-2xl font-bold">{value}</span></div><h2 className="mt-3 font-semibold">{label}</h2><p className="mt-1 text-sm text-slate-400">{detail}</p></Link>)}</section>
       {latestRelease && <section className="rounded-md border border-slate-700 bg-slate-900/40 p-5"><div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-sm text-slate-400">Release gần nhất</p><h2 className="mt-1 text-xl font-bold">{latestRelease.version}: {latestRelease.title || "Untitled"}</h2><p className="mt-1 text-sm">{latestRelease.status} · {latestRelease.targetEnvironment} · {latestRelease.signOffs.filter(item => item.status === "APPROVED").length}/4 sign-off · Handoff {latestRelease.handoff?.status || "MISSING"}</p></div><Link href={`/admin/release/go-live/${latestRelease.id}`} className="inline-flex items-center gap-2 text-sm font-semibold text-cyan-400">Mở Command Center <ArrowRight className="h-4 w-4" /></Link></div></section>}
       <p className="text-sm text-slate-500">Tổng số release đã phát hành: {releasedReleases}</p>

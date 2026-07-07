@@ -1,3 +1,4 @@
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission } from "@/lib/permissions";
@@ -59,7 +60,8 @@ export default async function IncidentDetailPage({ params }: { params: { id: str
         </Link>
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Incident #{ticket.id.substring(0,8)}</h1>
+            <ScreenHeader />
+            <h1 className="mt-4 text-2xl font-bold tracking-tight">Incident #{ticket.id.substring(0,8)}</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Reported on {new Date(ticket.createdAt).toLocaleDateString()} by {ticket.reportedByUser?.fullName || "System"}
             </p>

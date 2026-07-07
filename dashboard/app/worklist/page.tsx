@@ -1,4 +1,6 @@
 "use client";
+import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -461,10 +463,7 @@ export default function WorklistPage(props: { searchParams?: { orderId?: string 
         <div className="flex-none border-b border-vin-border/70 px-3 py-2">
           <div className="mb-2 flex items-center justify-between gap-3">
             <div>
-              <h1 className="flex items-center gap-2 text-sm font-bold tracking-tight text-white">
-                <CalendarDays className="h-4 w-4 text-vin-accent" />
-                Tiếp đón / Modality Worklist
-              </h1>
+              <ScreenHeader />
               <p className="mt-0.5 text-[10px] text-vin-muted">
                 {orders.length} order trong ngày · MWL được ghi vào PACS worklists
               </p>
