@@ -36,7 +36,8 @@ ALTER TABLE "access_scope_grants" ADD CONSTRAINT "chk_principal" CHECK (
 
 ALTER TABLE "access_scope_grants" ADD CONSTRAINT "chk_scope" CHECK (
     ("facilityUnitId" IS NOT NULL AND "dicomNodeId" IS NULL) OR
-    ("facilityUnitId" IS NULL AND "dicomNodeId" IS NOT NULL)
+    ("facilityUnitId" IS NULL AND "dicomNodeId" IS NOT NULL) OR
+    ("facilityUnitId" IS NULL AND "dicomNodeId" IS NULL)
 );
 
 ALTER TABLE "access_scope_grants" ADD CONSTRAINT "chk_effect" CHECK ("effect" IN ('ALLOW', 'DENY'));

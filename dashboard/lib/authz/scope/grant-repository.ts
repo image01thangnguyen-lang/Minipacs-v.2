@@ -42,7 +42,9 @@ function isGrantValid(grant: AccessScopeGrantRow, now: Date): boolean {
  * Checks if the referenced scope entities are still active.
  */
 function isScopeActive(grant: AccessScopeGrantRow): boolean {
+  if (grant.facilityUnitId && !grant.facilityUnit) return false;
   if (grant.facilityUnit && !grant.facilityUnit.isActive) return false;
+  if (grant.dicomNodeId && !grant.dicomNode) return false;
   if (grant.dicomNode && !grant.dicomNode.isActive) return false;
   return true;
 }

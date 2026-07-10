@@ -66,9 +66,11 @@ export async function resolveResourceContext(
       if (!node.isActive) {
         aeResolution = { status: "RESOURCE_INACTIVE", dicomNodeId: null, facilityUnitId: null, aeTitle: null };
       } else {
-        dicomNodeId = node.id;
-        if (!facilityUnitId && node.facilityId) {
-          facilityUnitId = node.facilityId;
+        if (!facilityUnitId || node.facilityId === facilityUnitId) {
+          dicomNodeId = node.id;
+          if (!facilityUnitId && node.facilityId) {
+            facilityUnitId = node.facilityId;
+          }
         }
       }
     }
@@ -85,7 +87,7 @@ export async function resolveResourceContext(
     } else if (input.stationAeTitle) {
       // Even if we already have a facilityUnitId, still resolve AE for the trace
       aeResolution = await resolveAeTitle(input.stationAeTitle, deps, ctx);
-      if (aeResolution.status === "MATCHED" && !dicomNodeId) {
+      if (aeResolution.status === "MATCHED" && !dicomNodeId && aeResolution.facilityUnitId === facilityUnitId) {
         dicomNodeId = aeResolution.dicomNodeId;
       }
     }
@@ -99,6 +101,8 @@ export async function resolveResourceContext(
     } catch {
       // Cycle in tree — treat as unclassified
       ancestorUnitIds = [];
+      facilityUnitId = null;
+      dicomNodeId = null;
     }
   }
 

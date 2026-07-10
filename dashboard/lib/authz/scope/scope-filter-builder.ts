@@ -149,7 +149,9 @@ export async function buildScopeFilter(
     if (g.validFrom && g.validFrom > now) return false;
     if (g.validUntil && g.validUntil <= now) return false;
     // Check scope activity
+    if (g.facilityUnitId && !g.facilityUnit) return false;
     if (g.facilityUnit && !g.facilityUnit.isActive) return false;
+    if (g.dicomNodeId && !g.dicomNode) return false;
     if (g.dicomNode && !g.dicomNode.isActive) return false;
     return true;
   });
