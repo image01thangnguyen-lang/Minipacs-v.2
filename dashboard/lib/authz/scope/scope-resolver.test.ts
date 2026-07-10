@@ -68,17 +68,21 @@ const defaultTree = makeTree([
 function makeGrant(
   overrides: Partial<AccessScopeGrantRow> = {},
 ): AccessScopeGrantRow {
+  const facilityUnitId = overrides.facilityUnitId || null;
+  const dicomNodeId = overrides.dicomNodeId || null;
   return {
     id: overrides.id || "grant-" + Math.random().toString(36).substr(2, 6),
     userId: null,
     roleProfileId: null,
-    facilityUnitId: null,
-    dicomNodeId: null,
+    facilityUnitId,
+    dicomNodeId,
     capability: "READ_STUDY",
     effect: "ALLOW",
     includeDescendants: true,
     validFrom: null,
     validUntil: null,
+    facilityUnit: facilityUnitId ? { isActive: true } : undefined,
+    dicomNode: dicomNodeId ? { isActive: true, facilityId: null } : undefined,
     ...overrides,
   };
 }

@@ -51,6 +51,8 @@ function makeGrant(
   effect: "ALLOW" | "DENY",
   overrides?: Partial<AccessScopeGrantRow>,
 ): AccessScopeGrantRow {
+  const facilityUnitId = overrides?.facilityUnitId || null;
+  const dicomNodeId = overrides?.dicomNodeId || null;
   return {
     id: "g1",
     userId: "u1",
@@ -58,11 +60,12 @@ function makeGrant(
     capability: "READ_STUDY",
     effect,
     includeDescendants: true,
-    facilityUnitId: null,
-    dicomNodeId: null,
+    facilityUnitId,
+    dicomNodeId,
     validFrom: null,
     validUntil: null,
-    dicomNode: null,
+    facilityUnit: facilityUnitId ? { isActive: true } : undefined,
+    dicomNode: dicomNodeId ? { isActive: true, facilityId: null } : undefined,
     ...overrides,
   } as AccessScopeGrantRow;
 }
