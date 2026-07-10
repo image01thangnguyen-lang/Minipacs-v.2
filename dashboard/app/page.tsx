@@ -35,6 +35,7 @@ import {
   getUserPermissionsAction,
   getActiveDoctorsAction
 } from "./actions";
+import { getScopedWorklistAction } from "./actions/worklist-actions";
 import { createExportJobAction } from "./actions/export-actions";
 import { createDestructiveRequestAction } from "./actions/destructive-actions";
 import { logArchivePrintAction } from "./archive/actions";
@@ -310,13 +311,57 @@ export default function DashboardPage() {
     async function loadStudies() {
       try {
         setIsLoading(true);
-        const [data, clinic, perms] = await Promise.all([
-          getStudies(),
+        // FALLBACK: flag controls whether we use the old un-scoped Orthanc query or the new scoped Prisma query
+        let data = [];
+        const [clinic, perms] = await Promise.all([
           getClinicProfile(),
           getUserPermissionsAction()
         ]);
         setPermissions(perms.permissions);
         setUserRole(perms.role);
+        // Compatibility is fail-safe: legacy remains the default until scoped UI
+        // pagination/filtering parity has passed UAT and the new path is explicitly enabled.
+        const useScoped = process.env.NEXT_PUBLIC_USE_SCOPED_WORKLIST === 'true';
+        if (useScoped) {
+          const to = new Date();
+          const from = new Date(to.getTime() - 365 * 24 * 60 * 60 * 1000);
+          const req = {
+            from: from.toISOString(),
+            to: to.toISOString(),
+            timezone: "Asia/Ho_Chi_Minh",
+            limit: 100
+          };
+          const response = await getScopedWorklistAction(req);
+          data = response.rows.map((row: any) => ({
+            ...row,
+            MainDicomTags: {
+              StudyInstanceUID: row.studyInstanceUid,
+              StudyDate: row.createdAt.substring(0, 10).replace(/-/g, ''),
+              StudyTime: row.createdAt.substring(11, 16).replace(/:/g, '') + '00',
+              StudyDescription: row.bodyPart || "",
+              AccessionNumber: row.accessionNumber,
+              Modality: row.modality,
+              StationName: row.stationAeTitle
+            },
+            PatientMainDicomTags: {
+              PatientName: row.patientName,
+              PatientID: row.patientId,
+            },
+            EnrichedModality: row.modality,
+            WorkflowStatus: row.status,
+            AssignedDoctorId: row.assignedDoctorId,
+            AssignedDoctorName: row.assignedDoctorName,
+            hisSyncStatus: row.hisSyncStatus,
+            stationAeTitle: row.stationAeTitle,
+            machineName: row.machineName,
+            isNonDicom: row.isNonDicom,
+            nonDicomExamId: row.nonDicomExamId,
+            procedureName: row.bodyPart,
+          }));
+        } else {
+          data = await getStudies();
+        }
+
         setStudies(data || []);
 
         if (perms.permissions.includes("studies.assign")) {

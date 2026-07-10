@@ -168,7 +168,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Phase 2
-  accessScopeGrants           AccessScopeGrant[]
+  accessScopeGrants AccessScopeGrant[]
 
   @@index([roleProfileId])
   @@map("users")
@@ -325,11 +325,11 @@ model WorklistOrder {
 
   imagingStudies ImagingStudy[]
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   // Phase 2
-  performingUnitId  String?
-  performingUnit    FacilityUnit? @relation("OrderPerformingUnit", fields: [performingUnitId], references: [id])
+  performingUnitId String?
+  performingUnit   FacilityUnit? @relation("OrderPerformingUnit", fields: [performingUnitId], references: [id])
 
   // Phase 2 HIS Integration
   hisOrderId        String?
@@ -352,6 +352,11 @@ model WorklistOrder {
   @@index([paymentStatus])
   @@index([performingUnitId, scheduledDate, status])
   @@index([performingUnitId, createdAt, status])
+  // Phase 3 PR1: Additive indices for Keyset Pagination (Cursor) and Worklist Sorting
+  @@index([createdAt, id])
+  @@index([priority, createdAt, id])
+  @@index([status, createdAt, id])
+  @@index([patientName, id])
   @@map("worklist_orders")
 }
 
@@ -407,8 +412,8 @@ model ImagingStudy {
   updatedAt DateTime @updatedAt
 
   // Phase 2
-  performingUnitId  String?
-  performingUnit    FacilityUnit? @relation("StudyPerformingUnit", fields: [performingUnitId], references: [id])
+  performingUnitId String?
+  performingUnit   FacilityUnit? @relation("StudyPerformingUnit", fields: [performingUnitId], references: [id])
 
   statusHistory             StudyStatusHistory[]
   events                    ImagingStudyEvent[]
@@ -450,6 +455,12 @@ model ImagingStudy {
   @@index([finalizedAt])
   @@index([deliveredAt])
   @@index([performingUnitId, createdAt, status])
+  // Phase 3 PR1: Additive indices for Keyset Pagination (Cursor) and Worklist Sorting
+  @@index([createdAt, id])
+  @@index([scheduledAt, id])
+  @@index([priority, createdAt, id])
+  @@index([status, createdAt, id])
+  @@index([patientName, id])
   @@map("imaging_studies")
 }
 
@@ -773,7 +784,7 @@ model DicomNode {
   DicomConformanceRun    DicomConformanceRun[]
   slaPolicies            SlaPolicy[]                      @relation("SlaPolicyMachine")
 
-  accessScopeGrants      AccessScopeGrant[]
+  accessScopeGrants AccessScopeGrant[]
 
   @@index([facilityId])
   @@index([defaultFolderId])
@@ -1008,9 +1019,9 @@ model FacilityUnit {
   reportTemplateMappings ProcedureReportTemplateMapping[]
   slaPolicies            SlaPolicy[]
 
-  performingStudies      ImagingStudy[]  @relation("StudyPerformingUnit")
-  performingOrders       WorklistOrder[] @relation("OrderPerformingUnit")
-  accessScopeGrants      AccessScopeGrant[]
+  performingStudies ImagingStudy[]     @relation("StudyPerformingUnit")
+  performingOrders  WorklistOrder[]    @relation("OrderPerformingUnit")
+  accessScopeGrants AccessScopeGrant[]
 
   @@index([parentId])
   @@map("facility_units")
@@ -2497,26 +2508,26 @@ model ControlThresholdPolicy {
 
 // Phase 2: Scope Authorization
 model AccessScopeGrant {
-  id                 String   @id @default(uuid())
+  id                 String    @id @default(uuid())
   userId             String?
   roleProfileId      String?
   facilityUnitId     String?
   dicomNodeId        String?
   capability         String
-  effect             String   // ALLOW | DENY
-  includeDescendants Boolean  @default(true)
+  effect             String // ALLOW | DENY
+  includeDescendants Boolean   @default(true)
   validFrom          DateTime?
   validUntil         DateTime?
-  reason             String?  @db.Text
+  reason             String?   @db.Text
   createdByUserId    String?
   updatedByUserId    String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  user          User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  roleProfile   AppRoleProfile? @relation(fields: [roleProfileId], references: [id], onDelete: Cascade)
-  facilityUnit  FacilityUnit?   @relation(fields: [facilityUnitId], references: [id], onDelete: Cascade)
-  dicomNode     DicomNode?      @relation(fields: [dicomNodeId], references: [id], onDelete: Cascade)
+  user         User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleProfile  AppRoleProfile? @relation(fields: [roleProfileId], references: [id], onDelete: Cascade)
+  facilityUnit FacilityUnit?   @relation(fields: [facilityUnitId], references: [id], onDelete: Cascade)
+  dicomNode    DicomNode?      @relation(fields: [dicomNodeId], references: [id], onDelete: Cascade)
 
   @@index([userId, capability, effect])
   @@index([roleProfileId, capability, effect])

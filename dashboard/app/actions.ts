@@ -428,3 +428,5 @@ export async function getUserPermissionsAction() {
   if (!session?.user) return { role: 'GUEST', permissions: [], userId: '' };
   return { role: session.user.role, permissions: session.user.permissions, userId: session.user.id };
 }
+
+// worklist actions have been moved to actions/worklist-actions.ts

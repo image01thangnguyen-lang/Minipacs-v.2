@@ -2,6 +2,7 @@ import type { ScopeDecision, ResourceContextInput, ResolvedResourceContext, Scop
 import type { ScopeCapability } from "./capability-registry";
 import { CAPABILITY_TO_GLOBAL_PERMISSION } from "./capability-registry";
 import { getAuthorizationMode, type AuthorizationMode } from "./authorization-mode";
+import { emitScopeTelemetry } from "./telemetry-service";
 import { ScopeRequestContext } from "./scope-request-context";
 import { loadPrincipal, type PrincipalLoaderDeps } from "./principal-loader";
 import { resolveResourceContext, type ResourceContextDeps } from "./resource-context";
@@ -58,7 +59,7 @@ export async function resolveScope(
       reasonCode: "GLOBAL_PERMISSION_MISSING",
       scopeTrace: [],
       resourceContext: makeEmptyResourceContext(resourceInput),
-    });
+    }, capability);
   }
 
   // ── Step 2: Check baseline (global permission) ─────────────────────
@@ -75,7 +76,7 @@ export async function resolveScope(
       reasonCode: baselineAllowed ? "ADMIN_BYPASS" : "GLOBAL_PERMISSION_MISSING",
       scopeTrace: [],
       resourceContext: makeEmptyResourceContext(resourceInput),
-    });
+    }, capability);
   }
 
   // ── Step 4: Load organization tree ─────────────────────────────────
@@ -100,7 +101,7 @@ export async function resolveScope(
       reasonCode: "GLOBAL_PERMISSION_MISSING",
       scopeTrace: [],
       resourceContext: resourceCtx,
-    });
+    }, capability);
   }
 
   // ── Step 7: Evaluate scope grants ──────────────────────────────────
@@ -178,13 +179,9 @@ export async function resolveScope(
       // Log divergence if proposedAllowed differs from baselineAllowed
       if (proposedAllowed !== baselineAllowed) {
         console.warn(
-          `[scope-resolver] SHADOW divergence: user=${userId} capability=${capability} ` +
+          `[scope-resolver] SHADOW divergence: capability=${capability} ` +
           `baseline=${baselineAllowed} proposed=${proposedAllowed} reason=${reasonCode} ` +
-          `resource=${JSON.stringify({
-            performingUnitId: resourceCtx.performingUnitId,
-            aeTitle: resourceCtx.aeResolution.aeTitle,
-            aeStatus: resourceCtx.aeResolution.status,
-          })}`
+          `aeStatus=${resourceCtx.aeResolution.status}`
         );
       }
       if (reasonCode === "NO_SCOPE_GRANT" && !grantResult.hasMatchingOpinion && !legacyResult.hasMatchingOpinion) {
@@ -209,12 +206,40 @@ export async function resolveScope(
     reasonCode,
     scopeTrace: allTraces,
     resourceContext: resourceCtx,
-  });
+  }, capability);
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function makeDecision(decision: ScopeDecision): ScopeDecision {
+function makeDecision(decision: ScopeDecision, capability: ScopeCapability): ScopeDecision {
+  if (decision.mode !== "OFF") {
+    const isMismatch = decision.mode === "SHADOW" && decision.baselineAllowed !== decision.proposedAllowed;
+    emitScopeTelemetry({
+      eventName: "AUTHORIZATION_DECISION",
+      mode: decision.mode,
+      capability: capability,
+      reasonCode: decision.reasonCode,
+    });
+
+    if (isMismatch) {
+      emitScopeTelemetry({
+        eventName: "SHADOW_MISMATCH",
+        mode: decision.mode,
+        capability: capability,
+        reasonCode: decision.reasonCode,
+        baselineAllowed: decision.baselineAllowed,
+        proposedAllowed: decision.proposedAllowed,
+      });
+    }
+
+    if (decision.reasonCode === "RESOURCE_UNCLASSIFIED") {
+      emitScopeTelemetry({
+        eventName: "UNCLASSIFIED_RESOURCE",
+        mode: decision.mode,
+        capability: capability,
+      });
+    }
+  }
   return decision;
 }
 

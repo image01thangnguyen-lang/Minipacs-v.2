@@ -120,10 +120,10 @@ export function ScopeMatrixTab() {
     if (!selectedPrincipal || !snapshot || intents.length === 0) return;
     try {
       const res = await previewScopeMatrixDiffAction(selectedPrincipal.id, selectedPrincipal.type, intents, snapshot.hash);
-      if (res.success) {
+      if (res.success && "impact" in res) {
         setPreviewData(res.impact);
       } else {
-        alert(res.error);
+        alert(res.error || "Unknown error");
       }
     } catch (e) {
       console.error(e);

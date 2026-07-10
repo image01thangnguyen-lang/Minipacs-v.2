@@ -1,0 +1,6 @@
+{
+  "mode": "OFF",
+  "approvedBy": null,
+  "ring": "INTERNAL_TEST",
+  "rolloutNotes": "Phase 2 cutover configuration file. Must be approved by security before setting to SHADOW or ENFORCE."
+}
