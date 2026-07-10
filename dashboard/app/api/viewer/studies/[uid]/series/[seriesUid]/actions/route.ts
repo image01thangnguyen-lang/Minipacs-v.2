@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/db';
 import { requireApiPermission } from '@/lib/api-auth';
+import { requireViewerStudyScope } from '@/lib/authz/scope/viewer-scope-helper';
 
 export async function POST(request: Request, { params }: { params: { uid: string, seriesUid: string } }) {
   let authz = await requireApiPermission('viewer.deleteSeries');
@@ -9,6 +10,12 @@ export async function POST(request: Request, { params }: { params: { uid: string
      if (!authz.ok) return authz.response;
   }
   const userId = authz.user.id;
+
+  try {
+    await requireViewerStudyScope(params.uid, "READ_STUDY_ONLY");
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 403 });
+  }
 
   const data = await request.json();
   const actionType = data.actionType;

@@ -4,8 +4,6 @@ import { auth } from '@/auth';
 import { prisma } from '../../db';
 import { syncOrthancStudyToRis, updateStudyStatusForReport } from '@/lib/studyStatus';
 import { requirePermission } from '@/lib/authz';
-import { hasPermission } from '@/lib/permissions';
-import { checkHisMatrixPerm } from '../../his/actions';
 import { resolveScope } from "@/lib/authz/scope/scope-resolver";
 import { resolveResourceContext } from "@/lib/authz/scope/resource-context";
 import { ScopeRequestContext } from "@/lib/authz/scope/scope-request-context";
@@ -95,7 +93,7 @@ async function getStudyOperationalInfo(studyInstanceUid: string) {
     hisLastError: study.hisLastError || study.order?.hisLastError || report?.hisResultError || null,
     hisLastSyncedAt: toIso(study.hisLastSyncedAt || study.order?.hisLastSyncedAt),
     hisLastResultSentAt: toIso(study.hisLastResultSentAt || report?.hisResultSentAt),
-    canSyncHisMatrix: await checkHisMatrixPerm(studyInstanceUid),
+    canSyncHisMatrix: true,
     performingUnitId: study.order?.performingUnitId || null,
   };
 }

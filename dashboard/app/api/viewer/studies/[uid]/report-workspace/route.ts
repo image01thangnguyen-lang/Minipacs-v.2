@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/app/db';
 import { hasPermission } from '@/lib/permissions';
+import { requireViewerStudyScope } from '@/lib/authz/scope/viewer-scope-helper';
 import { formatMeasurementSummary } from '@/lib/viewer-measurement-summary';
 
 export async function GET(request: Request, { params }: { params: { uid: string } }) {
@@ -11,9 +12,10 @@ export async function GET(request: Request, { params }: { params: { uid: string 
     return NextResponse.json({ success: false, message: 'Ban chua dang nhap.' }, { status: 401 });
   }
 
-  // Need at least studies.read to view workspace
-  if (!hasPermission(session.user.role, 'studies.read', session.user.permissions)) {
-    return NextResponse.json({ success: false, message: 'Ban khong co quyen xem ca chup.' }, { status: 403 });
+  try {
+    await requireViewerStudyScope(params.uid, "READ_STUDY_ONLY");
+  } catch (err: any) {
+    return NextResponse.json({ success: false, message: err.message }, { status: 403 });
   }
 
   const canReadReport = hasPermission(session.user.role, 'reports.read', session.user.permissions);

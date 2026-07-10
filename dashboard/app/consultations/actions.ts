@@ -2,22 +2,31 @@
 
 import { auth } from '@/auth';
 import { requirePermission } from '@/lib/authz';
-import { 
-  createConsultation, 
-  getConsultations, 
+import {
+  createConsultation,
+  getConsultations,
   getConsultationById,
   updateConsultationStatus,
   addParticipant,
   updateParticipantStatus,
   addMessage,
-  CreateConsultationInput 
+  CreateConsultationInput
 } from '@/lib/consultationService';
 import { revalidatePath } from 'next/cache';
+import { requireScopedStudyMutation, requireScopedStudyRead } from '@/lib/authz/scope/require-scoped-access';
 
 export async function createConsultationAction(input: Omit<CreateConsultationInput, 'createdByUserId'>) {
   const session = await requirePermission('consult.create');
-  
+
   try {
+    if (input.studyInstanceUid) {
+      await requireScopedStudyMutation({
+        userId: session.id,
+        studyInstanceUid: input.studyInstanceUid,
+        capability: 'CREATE_CONSULT',
+      });
+    }
+
     const consultation = await createConsultation({
       ...input,
       createdByUserId: session.id,
@@ -32,7 +41,7 @@ export async function createConsultationAction(input: Omit<CreateConsultationInp
 
 export async function getConsultationsAction(filters?: any) {
   const session = await requirePermission('consult.read');
-  
+
   try {
     const scopedFilters = {
       ...filters,
@@ -51,14 +60,26 @@ export async function getConsultationsAction(filters?: any) {
 
 export async function getConsultationByIdAction(id: string) {
   const session = await requirePermission('consult.read');
-  
+
   try {
     const consultation = await getConsultationById(id);
     if (!consultation) return { success: false, error: 'Không tìm thấy hội chẩn' };
-    
+
+    // Check scope if bound to a study
+    if (consultation.imagingStudy?.studyInstanceUid) {
+      try {
+        await requireScopedStudyRead({
+          userId: session.id,
+          studyInstanceUid: consultation.imagingStudy.studyInstanceUid,
+        });
+      } catch (err: any) {
+        return { success: false, error: 'Bạn không có quyền truy cập ca chụp của hội chẩn này' };
+      }
+    }
+
     const isOwner = consultation.createdByUserId === session.id;
     const isParticipant = consultation.participants.some(p => p.userId === session.id);
-    
+
     if (!isOwner && !isParticipant) {
       return { success: false, error: 'Bạn không có quyền truy cập hội chẩn này' };
     }
@@ -74,11 +95,19 @@ export async function updateConsultationStatusAction(id: string, status: string,
   const session = await auth();
   if (!session?.user) return { success: false, error: 'Chưa đăng nhập' };
   const user = session.user as any;
-  
+
   try {
     const consultation = await getConsultationById(id);
     if (!consultation) throw new Error('Không tìm thấy');
-    
+
+    // Check scope if bound to a study
+    if (consultation.imagingStudy?.studyInstanceUid) {
+      await requireScopedStudyRead({
+        userId: user.id,
+        studyInstanceUid: consultation.imagingStudy.studyInstanceUid,
+      });
+    }
+
     // Check if the user is owner or has admin rights
     if (consultation.createdByUserId !== user.id && consultation.hostUserId !== user.id) {
       await requirePermission('consult.manage'); // throws if not admin
@@ -95,11 +124,19 @@ export async function updateConsultationStatusAction(id: string, status: string,
 
 export async function inviteParticipantAction(consultationId: string, userId: string, role: string) {
   const session = await requirePermission('consult.invite');
-  
+
   try {
     const consultation = await getConsultationById(consultationId);
     if (!consultation) throw new Error('Không tìm thấy hội chẩn');
-    
+
+    // Check scope if bound to a study
+    if (consultation.imagingStudy?.studyInstanceUid) {
+      await requireScopedStudyRead({
+        userId: session.id,
+        studyInstanceUid: consultation.imagingStudy.studyInstanceUid,
+      });
+    }
+
     const isOwner = consultation.createdByUserId === session.id || consultation.hostUserId === session.id;
     if (!isOwner) {
        await requirePermission('consult.admin'); // throw if not admin and not owner
@@ -116,8 +153,18 @@ export async function inviteParticipantAction(consultationId: string, userId: st
 
 export async function updateParticipantStatusAction(consultationId: string, userId: string, status: string) {
   const session = await requirePermission('consult.read');
-  
+
   try {
+    const consultation = await getConsultationById(consultationId);
+    if (!consultation) throw new Error('Không tìm thấy hội chẩn');
+
+    if (consultation.imagingStudy?.studyInstanceUid) {
+      await requireScopedStudyRead({
+        userId: session.id,
+        studyInstanceUid: consultation.imagingStudy.studyInstanceUid,
+      });
+    }
+
     // Force usage of session.id to prevent updating others
     const participant = await updateParticipantStatus(consultationId, session.id, status);
     revalidatePath(`/consultations/${consultationId}`);
@@ -130,11 +177,19 @@ export async function updateParticipantStatusAction(consultationId: string, user
 
 export async function sendConsultationMessageAction(consultationId: string, body: string) {
   const session = await requirePermission('consult.message');
-  
+
   try {
     const consultation = await getConsultationById(consultationId);
     if (!consultation) throw new Error('Không tìm thấy hội chẩn');
-    
+
+    // Check scope if bound to a study
+    if (consultation.imagingStudy?.studyInstanceUid) {
+      await requireScopedStudyRead({
+        userId: session.id,
+        studyInstanceUid: consultation.imagingStudy.studyInstanceUid,
+      });
+    }
+
     const isParticipantOrOwner = consultation.createdByUserId === session.id || consultation.participants.some(p => p.userId === session.id);
     if (!isParticipantOrOwner) throw new Error('Không có quyền nhắn tin');
 

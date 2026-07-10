@@ -157,6 +157,7 @@ function serializeOrder(order: any, context?: {
   usersById?: Map<string, { fullName: string | null; username: string }>;
   procedureByCode?: Map<string, any>;
   nodeByAeTitle?: Map<string, any>;
+  allowedActionsById?: Record<string, any>;
 }) {
   const study = order.imagingStudies?.[0] || null;
   const report = study?.reports?.[0] || null;
@@ -230,6 +231,7 @@ function serializeOrder(order: any, context?: {
     isNonDicomEligible: Boolean(procedure?.isNonDicomEligible || node?.isNonDicom),
     isNonDicom: study?.isNonDicom || false,
     nonDicomExamId: (study as any)?.nonDicomExam?.id || null,
+    allowedActions: context?.allowedActionsById?.[order.id] || {},
   };
 }
 
@@ -367,7 +369,24 @@ export async function getWorklistOrdersAction(filters: {
     : [];
   const procedureByCode = new Map(procedures.map(procedure => [procedure.code, procedure]));
 
-  return orders.map(order => serializeOrder(order, { usersById, procedureByCode, nodeByAeTitle }));
+  const { getAllowedActionsForStudies } = await import("@/lib/authz/scope/allowed-actions");
+  const studiesForActions = orders.map(order => {
+    const study = order.imagingStudies?.[0];
+    const report = study?.reports?.[0];
+    return {
+      id: order.id,
+      studyInstanceUid: study?.studyInstanceUid || null,
+      stationAeTitle: study?.stationAeTitle || null,
+      status: study?.status || order.orderStatus,
+      assignedDoctorId: study?.assignedDoctorId || null,
+      reportStatus: report?.status || null,
+      performingUnitId: order.performingUnitId || null,
+      scheduledStationAeTitle: order.scheduledStationAeTitle || null,
+    };
+  });
+  const allowedActionsById = await getAllowedActionsForStudies(actor.id, studiesForActions, ctx);
+
+  return orders.map(order => serializeOrder(order, { usersById, procedureByCode, nodeByAeTitle, allowedActionsById }));
 }
 
 export async function createWorklistAction(data: WorklistInput) {

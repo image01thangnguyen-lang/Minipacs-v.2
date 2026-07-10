@@ -1218,6 +1218,44 @@ async function main() {
     process.env.AUTHORIZATION_MODE = originalMode || "";
   });
 
+  await run("ADMIN still requires the mapped global permission", async () => {
+    const originalMode = process.env.AUTHORIZATION_MODE;
+    process.env.AUTHORIZATION_MODE = "ENFORCE";
+
+    const deps = makeScopeResolverDeps({
+      findUserById: async () => ({
+        id: "admin1",
+        role: "ADMIN",
+        isActive: true,
+        roleProfileId: "restricted-admin",
+        roleProfile: {
+          id: "restricted-admin",
+          permissions: ["studies.read"],
+          isActive: true,
+          baseRole: "ADMIN",
+        },
+      }),
+    });
+    const ctx = ScopeRequestContext.create();
+    ctx.setTree(defaultTree);
+
+    const result = await resolveScope(
+      "admin1",
+      "SIGN_REPORT",
+      { resourceType: "STUDY", performingUnitId: "dept1" },
+      deps,
+      ctx,
+    );
+    assert(result.baselineAllowed === false, "restricted ADMIN baseline should be denied");
+    assert(result.effectiveAllowed === false, "ADMIN bypass must not grant a missing global permission");
+    assert(
+      result.reasonCode === "GLOBAL_PERMISSION_MISSING",
+      `Expected GLOBAL_PERMISSION_MISSING, got ${result.reasonCode}`,
+    );
+
+    process.env.AUTHORIZATION_MODE = originalMode || "";
+  });
+
   await run("ENFORCE: unclassified resource is denied", async () => {
     const originalMode = process.env.AUTHORIZATION_MODE;
     process.env.AUTHORIZATION_MODE = "ENFORCE";

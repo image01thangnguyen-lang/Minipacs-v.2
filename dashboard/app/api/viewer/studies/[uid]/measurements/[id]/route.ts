@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/db';
 import { requireApiPermission } from '@/lib/api-auth';
+import { requireViewerStudyScope } from '@/lib/authz/scope/viewer-scope-helper';
 
 // PATCH /api/viewer/studies/[uid]/measurements/[id]
 export async function PATCH(
@@ -15,6 +16,12 @@ export async function PATCH(
       return authResult.response;
     }
     const user = authResult.user;
+
+    try {
+      await requireViewerStudyScope(uid, "EDIT_CLINICAL");
+    } catch (err: any) {
+      return NextResponse.json({ success: false, message: err.message }, { status: 403 });
+    }
 
     // `id` is the measurementUID (the cornerstone annotation UID)
     const existing = await prisma.viewerMeasurement.findFirst({
@@ -95,6 +102,12 @@ export async function DELETE(
       return authResult.response;
     }
     const user = authResult.user;
+
+    try {
+      await requireViewerStudyScope(uid, "EDIT_CLINICAL");
+    } catch (err: any) {
+      return NextResponse.json({ success: false, message: err.message }, { status: 403 });
+    }
 
     // `id` is the measurementUID
     const existing = await prisma.viewerMeasurement.findFirst({

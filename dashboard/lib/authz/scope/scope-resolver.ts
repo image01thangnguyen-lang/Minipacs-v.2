@@ -68,11 +68,11 @@ export async function resolveScope(
   // ── Step 3: ADMIN bypass ───────────────────────────────────────────
   if (principal.baseRole === "ADMIN") {
     return makeDecision({
-      baselineAllowed: true,
+      baselineAllowed,
       proposedAllowed: true,
-      effectiveAllowed: true,
+      effectiveAllowed: baselineAllowed,
       mode,
-      reasonCode: "ADMIN_BYPASS",
+      reasonCode: baselineAllowed ? "ADMIN_BYPASS" : "GLOBAL_PERMISSION_MISSING",
       scopeTrace: [],
       resourceContext: makeEmptyResourceContext(resourceInput),
     });

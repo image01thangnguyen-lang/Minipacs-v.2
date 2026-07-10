@@ -4,6 +4,7 @@ import { prisma } from '@/app/db';
 import { requirePermission } from '@/lib/authz';
 import { auth } from '@/auth';
 import { processExportJob } from '@/lib/export-worker';
+import { requireScopedStudyRead } from '@/lib/authz/scope/require-scoped-access';
 
 export async function createExportJobAction(input: {
   jobType: string;
@@ -32,25 +33,55 @@ export async function createExportJobAction(input: {
     await requirePermission('export.create');
   }
 
-  // Prevent spoofing by verifying resource exists
+  // Prevent spoofing by verifying resource exists and scope is allowed
   if (input.studyInstanceUid) {
-    const study = await prisma.imagingStudy.findUnique({
-      where: { studyInstanceUid: input.studyInstanceUid }
+    await requireScopedStudyRead({
+      userId: session.user.id,
+      studyInstanceUid: input.studyInstanceUid,
     });
-    if (!study) throw new Error('Study not found');
   }
 
   if (input.reportId) {
     const report = await prisma.report.findUnique({ where: { id: input.reportId } });
     if (!report) throw new Error('Report not found');
+    await requireScopedStudyRead({
+      userId: session.user.id,
+      studyInstanceUid: report.studyInstanceUid,
+    });
   }
 
-  // Assuming NonDicomExam exists if there's a schema for it
-  // if (input.nonDicomExamId) { ... }
+  // Handle bulk export items filtering based on scope
+  let finalSelectedItemsJson = input.selectedItemsJson;
+  if (input.scope === 'ARCHIVE_BULK' && input.selectedItemsJson) {
+    try {
+      const uids = JSON.parse(input.selectedItemsJson);
+      if (Array.isArray(uids)) {
+        const allowedUids = [];
+        for (const uid of uids) {
+          if (typeof uid === 'string') {
+            try {
+              await requireScopedStudyRead({ userId: session.user.id, studyInstanceUid: uid });
+              allowedUids.push(uid);
+            } catch (err) {
+              // Ignore denied items for bulk
+            }
+          }
+        }
+        if (allowedUids.length === 0) {
+          throw new Error('Bạn không có quyền tải xuống bất kỳ ca chụp nào đã chọn');
+        }
+        finalSelectedItemsJson = JSON.stringify(allowedUids);
+      }
+    } catch (err: any) {
+      if (err.message.includes('quyền')) throw err;
+      throw new Error('Invalid selectedItemsJson format');
+    }
+  }
 
   const job = await prisma.exportJob.create({
     data: {
       ...input,
+      selectedItemsJson: finalSelectedItemsJson,
       status: 'PENDING',
       requestedByUserId: session.user.id,
       progress: 0,

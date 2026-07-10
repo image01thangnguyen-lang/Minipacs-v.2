@@ -4,8 +4,8 @@ import { auth } from '@/auth';
 import { requirePermission } from '@/lib/authz';
 import { createShareLink, getShareLinksForResource, revokeShareLink, CreateShareLinkInput } from '@/lib/shareService';
 import { revalidatePath } from 'next/cache';
-
 import { prisma } from '@/app/db';
+import { requireScopedStudyRead } from '@/lib/authz/scope/require-scoped-access';
 
 export async function createShareLinkAction(input: Omit<CreateShareLinkInput, 'createdByUserId'>) {
   const session = await requirePermission('share.create');
@@ -21,15 +21,20 @@ export async function createShareLinkAction(input: Omit<CreateShareLinkInput, 'c
 
     // Validate resource
     if (input.studyInstanceUid) {
-      const study = await prisma.imagingStudy.findUnique({ where: { studyInstanceUid: input.studyInstanceUid }});
-      if (!study) throw new Error("Ca chụp không tồn tại");
-      await requirePermission('studies.read'); 
+      await requireScopedStudyRead({
+        userId: session.id,
+        studyInstanceUid: input.studyInstanceUid,
+      });
     }
     
     if (input.reportId) {
       const report = await prisma.report.findUnique({ where: { id: input.reportId }});
       if (!report) throw new Error("Báo cáo không tồn tại");
       if (report.status !== 'FINAL') throw new Error("Chỉ được phép chia sẻ Báo cáo đã hoàn tất (FINAL)");
+      await requireScopedStudyRead({
+        userId: session.id,
+        studyInstanceUid: report.studyInstanceUid,
+      });
       await requirePermission('reports.read');
     }
 
@@ -57,9 +62,17 @@ export async function createShareLinkAction(input: Omit<CreateShareLinkInput, 'c
 }
 
 export async function getShareLinksAction(scope: string, resourceId: string) {
-  await requirePermission('share.read');
+  const session = await requirePermission('share.read');
   
   try {
+    if (scope === 'STUDY') {
+      await requireScopedStudyRead({ userId: session.id, studyInstanceUid: resourceId });
+    } else if (scope === 'REPORT') {
+      const report = await prisma.report.findUnique({ where: { id: resourceId } });
+      if (!report) throw new Error("Báo cáo không tồn tại");
+      await requireScopedStudyRead({ userId: session.id, studyInstanceUid: report.studyInstanceUid });
+    }
+
     const links = await getShareLinksForResource(scope, resourceId);
     return { success: true, links };
   } catch (error: any) {
@@ -75,6 +88,15 @@ export async function revokeShareLinkAction(id: string, reason?: string) {
     const link = await prisma.shareLink.findUnique({ where: { id } });
     if (!link) throw new Error("Không tìm thấy liên kết");
     
+    if (link.scope === 'STUDY' && link.studyInstanceUid) {
+      await requireScopedStudyRead({ userId: session.id, studyInstanceUid: link.studyInstanceUid });
+    } else if (link.scope === 'REPORT' && link.reportId) {
+      const report = await prisma.report.findUnique({ where: { id: link.reportId } });
+      if (report) {
+        await requireScopedStudyRead({ userId: session.id, studyInstanceUid: report.studyInstanceUid });
+      }
+    }
+
     // Only owner can revoke, unless they have share.manage
     if (link.createdByUserId !== session.id) {
       await requirePermission('share.manage');

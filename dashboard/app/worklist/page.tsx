@@ -103,9 +103,10 @@ type WorklistOrderView = {
   hisLastSyncedAt?: string | null;
   hisLastResultSentAt?: string | null;
   hisOrderId?: string | null;
-  isNonDicomEligible?: boolean;
-  isNonDicom?: boolean;
-  nonDicomExamId?: string | null;
+  isNonDicomEligible: boolean;
+  isNonDicom: boolean;
+  nonDicomExamId: string | null;
+  allowedActions?: Record<string, boolean>;
 };
 
 const orderStatusLabels: Record<string, string> = {
@@ -433,7 +434,7 @@ export default function WorklistPage(props: { searchParams?: { orderId?: string 
   };
 
   const canLockForReading = (order: WorklistOrderView) => {
-    return canReadStudies && Boolean(order.studyInstanceUid && order.studyStatus && ["READY_TO_READ", "READING"].includes(order.studyStatus));
+    return order.allowedActions?.draftReport && Boolean(order.studyInstanceUid && order.studyStatus && ["READY_TO_READ", "READING"].includes(order.studyStatus));
   };
 
   const openNonDicomCapture = async (order: WorklistOrderView) => {
@@ -625,7 +626,7 @@ export default function WorklistPage(props: { searchParams?: { orderId?: string 
                               <UserCheck className="h-3.5 w-3.5" />
                             </IconButton>
                           )}
-                          {canSyncHis && (
+                          {order.allowedActions?.syncHis && (
                             <IconButton
                               title="Cập nhật từ HIS"
                               disabled={isBusy}
@@ -654,7 +655,7 @@ export default function WorklistPage(props: { searchParams?: { orderId?: string 
                               <Edit3 className="h-3.5 w-3.5" />
                             </IconButton>
                           )}
-                          {canUpdateClinical && (
+                          {order.allowedActions?.editClinical && (
                             <button
                               onClick={() => openClinicalModal(order, "CLINICAL_INFO")}
                               disabled={!order.orthancStudyId}
@@ -664,7 +665,7 @@ export default function WorklistPage(props: { searchParams?: { orderId?: string 
                               <FileText className="h-4 w-4" />
                             </button>
                           )}
-                          {canUpdateClinical && (
+                          {order.allowedActions?.editClinical && (
                             <button
                               onClick={() => openClinicalModal(order, "INDICATION")}
                               disabled={!order.orthancStudyId}

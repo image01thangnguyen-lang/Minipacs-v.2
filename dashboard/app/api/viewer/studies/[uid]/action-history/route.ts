@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/db';
 import { requireApiPermission } from '@/lib/api-auth';
+import { requireViewerStudyScope } from '@/lib/authz/scope/viewer-scope-helper';
 
 export async function GET(request: Request, { params }: { params: { uid: string } }) {
   const authz = await requireApiPermission('viewer.history');
@@ -10,6 +11,12 @@ export async function GET(request: Request, { params }: { params: { uid: string 
 
   if (!studyInstanceUid) {
     return NextResponse.json({ success: false, error: 'Missing studyInstanceUid' }, { status: 400 });
+  }
+
+  try {
+    await requireViewerStudyScope(studyInstanceUid, "READ_STUDY_ONLY");
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 403 });
   }
 
   const { searchParams } = new URL(request.url);

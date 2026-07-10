@@ -1,10 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/db';
 import { requireApiPermission } from '@/lib/api-auth';
+import { requireViewerStudyScope } from '@/lib/authz/scope/viewer-scope-helper';
 
 export async function GET(request: Request, { params }: { params: { uid: string } }) {
   const authz = await requireApiPermission('studies.read');
   if (!authz.ok) return authz.response;
+
+  try {
+    await requireViewerStudyScope(params.uid, "READ_STUDY_ONLY");
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 403 });
+  }
 
   try {
     // 1. Find the current study to get patientId

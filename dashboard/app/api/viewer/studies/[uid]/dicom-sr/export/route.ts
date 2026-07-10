@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/app/db';
-import { hasPermission } from '@/lib/permissions';
+import { requireViewerStudyScope } from '@/lib/authz/scope/viewer-scope-helper';
 
 export async function POST(request: Request, { params }: { params: { uid: string } }) {
   const session = await auth();
@@ -10,9 +10,10 @@ export async function POST(request: Request, { params }: { params: { uid: string
     return NextResponse.json({ success: false, message: 'Ban chua dang nhap.' }, { status: 401 });
   }
 
-  // Require reports.write to trigger DICOM SR export
-  if (!hasPermission(session.user.role, 'reports.write', session.user.permissions)) {
-    return NextResponse.json({ success: false, message: 'Ban khong co quyen xuat DICOM SR.' }, { status: 403 });
+  try {
+    await requireViewerStudyScope(params.uid, "DRAFT_REPORT");
+  } catch (err: any) {
+    return NextResponse.json({ success: false, message: err.message }, { status: 403 });
   }
 
   try {

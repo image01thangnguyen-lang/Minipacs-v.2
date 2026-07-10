@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/db';
 import { requireApiPermission } from '@/lib/api-auth';
+import { requireViewerStudyScope } from '@/lib/authz/scope/viewer-scope-helper';
 
 function parseOptionalNumber(value: unknown) {
   if (value === null || value === undefined || value === '') return null;
@@ -16,6 +17,12 @@ function trimOptionalString(value: unknown, maxLength = 500) {
 export async function GET(request: Request, { params }: { params: { uid: string } }) {
   const authz = await requireApiPermission('studies.read');
   if (!authz.ok) return authz.response;
+
+  try {
+    await requireViewerStudyScope(params.uid, "READ_STUDY_ONLY");
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 403 });
+  }
 
   try {
     const keyImages = await prisma.viewerKeyImage.findMany({
@@ -34,6 +41,12 @@ export async function POST(request: Request, { params }: { params: { uid: string
   if (!authz.ok) return authz.response;
 
   const userId = authz.user.id;
+
+  try {
+    await requireViewerStudyScope(params.uid, "EDIT_CLINICAL");
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 403 });
+  }
 
   try {
     const data = await request.json();

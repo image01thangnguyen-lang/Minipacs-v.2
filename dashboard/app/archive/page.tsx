@@ -528,19 +528,19 @@ export default function ArchivePage() {
                     <FileDown className="h-3.5 w-3.5" />
                     Xuất PDF
                   </button>
-                  {canShare && (
+                  {detail.allowedActions?.share && (
                     <button type="button" onClick={() => setShareDialogOpen(true)} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white">
                       <LinkIcon className="h-3.5 w-3.5 text-cyan-400" />
                       Chia sẻ
                     </button>
                   )}
-                  {canConsult && (
+                  {detail.allowedActions?.createConsultation && (
                     <button type="button" onClick={() => setConsultDialogOpen(true)} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white">
                       <Users className="h-3.5 w-3.5 text-pink-400" />
                       Hội chẩn
                     </button>
                   )}
-                  {canSyncHis && detail.canSyncHisMatrix && (detail.studyStatus === "FINALIZED" || detail.studyStatus === "DELIVERED") && (
+                  {detail.allowedActions?.syncHis && detail.canSyncHisMatrix && (detail.studyStatus === "FINALIZED" || detail.studyStatus === "DELIVERED") && (
                     <button type="button" onClick={runHisRetry} disabled={isActionBusy || detail.hisResultStatus === 'SYNCED' || detail.hisResultStatus === 'SENT'} className={`flex w-full items-center justify-center gap-1.5 rounded border px-3 py-2 text-[11px] font-semibold transition disabled:opacity-40 col-span-2 ${detail.hisResultStatus === 'FAILED' ? "border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20" : "border-vin-accent/50 bg-vin-accent/10 text-vin-accent hover:bg-vin-accent/20"}`}>
                       {isActionBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCcw className="h-3.5 w-3.5" />}
                       {detail.hisResultStatus === 'FAILED' ? 'Retry Gửi HIS' : 'Gửi HIS'}

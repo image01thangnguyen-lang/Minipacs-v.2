@@ -4,25 +4,38 @@ import { revalidatePath } from "next/cache";
 import { getUserPermissionsAction } from "../actions";
 import { syncOrderFromHis, sendReportToHis } from "../../lib/his/hisSyncService";
 import { prisma } from "@/app/db";
-import { canPerformMachineAction, resolveDicomNodeIdByAETitle } from "@/lib/authz/machine-permissions";
 import { auth } from "@/auth";
+import { requireScopedStudyMutation } from "@/lib/authz/scope/require-scoped-access";
 
-export async function checkHisMatrixPerm(studyInstanceUid: string): Promise<boolean> {
-  const session = await auth();
-  if (!session?.user) return false;
-
-  let aeTitle = null;
-  const study = await prisma.imagingStudy.findUnique({ where: { studyInstanceUid } });
-  if (study) aeTitle = study.stationAeTitle;
-
-  const dicomNodeId = await resolveDicomNodeIdByAETitle(aeTitle);
-  return await canPerformMachineAction(session.user as any, dicomNodeId, "SYNC_HIS");
+// Check if user has scope for an existing study
+async function checkStudyScopeSafe(userId: string, studyInstanceUid: string, capability: "SYNC_HIS" | "READ_STUDY"): Promise<boolean> {
+  try {
+    await requireScopedStudyMutation({ userId, studyInstanceUid, capability });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function updateOrderFromHisAction(accessionNumber: string) {
   const { permissions, userId } = await getUserPermissionsAction();
   if (!permissions.includes("his.sync")) {
     return { success: false, error: "Access Denied: Missing his.sync permission" };
+  }
+
+  // Trust boundary exception: updateOrderFromHisAction imports data.
+  // If order/study already exists locally, check scope.
+  const existingOrder = await prisma.worklistOrder.findUnique({
+    where: { accessionNumber },
+    include: { imagingStudies: true }
+  });
+
+  if (existingOrder && existingOrder.imagingStudies.length > 0) {
+    const studyInstanceUid = existingOrder.imagingStudies[0].studyInstanceUid;
+    const allowed = await checkStudyScopeSafe(userId, studyInstanceUid, "READ_STUDY");
+    if (!allowed) {
+      return { success: false, error: "Access Denied: Study exists but is outside your permitted scope" };
+    }
   }
 
   const result = await syncOrderFromHis(accessionNumber, userId);
@@ -34,16 +47,20 @@ export async function updateOrderFromHisAction(accessionNumber: string) {
 }
 
 export async function sendReportToHisAction(studyInstanceUid: string) {
-  const { permissions, userId } = await getUserPermissionsAction();
-  if (!permissions.includes("his.sync")) {
-    return { success: false, error: "Access Denied: Missing his.sync permission" };
-  }
-  const matrixAllowed = await checkHisMatrixPerm(studyInstanceUid);
-  if (!matrixAllowed) {
-    return { success: false, error: "Access Denied by Machine Permission Matrix" };
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+  try {
+    await requireScopedStudyMutation({
+      userId: session.user.id,
+      studyInstanceUid,
+      capability: "SYNC_HIS",
+    });
+  } catch (err: any) {
+    return { success: false, error: err.message || "Access Denied" };
   }
 
-  const result = await sendReportToHis(studyInstanceUid, userId);
+  const result = await sendReportToHis(studyInstanceUid, session.user.id);
   if (result.success) {
     revalidatePath("/");
     revalidatePath(`/report/${studyInstanceUid}`);
@@ -64,6 +81,18 @@ export async function retryHisSyncAction(syncLogId: string) {
   }
 
   if (log.action === "UPDATE_ORDER" && log.accessionNumber) {
+    const existingOrder = await prisma.worklistOrder.findUnique({
+      where: { accessionNumber: log.accessionNumber },
+      include: { imagingStudies: true }
+    });
+
+    if (existingOrder && existingOrder.imagingStudies.length > 0) {
+      const allowed = await checkStudyScopeSafe(userId, existingOrder.imagingStudies[0].studyInstanceUid, "READ_STUDY");
+      if (!allowed) {
+        return { success: false, error: "Access Denied: Study is outside your permitted scope" };
+      }
+    }
+
     const result = await syncOrderFromHis(log.accessionNumber, userId);
     if (result.success) {
       revalidatePath("/worklist");
@@ -71,8 +100,8 @@ export async function retryHisSyncAction(syncLogId: string) {
     }
     return result;
   } else if (log.action === "SEND_RESULT" && log.studyInstanceUid) {
-    const matrixAllowed = await checkHisMatrixPerm(log.studyInstanceUid);
-    if (!matrixAllowed) return { success: false, error: "Access Denied by Machine Permission Matrix" };
+    const allowed = await checkStudyScopeSafe(userId, log.studyInstanceUid, "SYNC_HIS");
+    if (!allowed) return { success: false, error: "Access Denied: Study is outside your permitted scope" };
 
     const result = await sendReportToHis(log.studyInstanceUid, userId);
     if (result.success) {

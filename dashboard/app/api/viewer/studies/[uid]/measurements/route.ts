@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/db';
 import { requireApiPermission } from '@/lib/api-auth';
+import { requireViewerStudyScope } from '@/lib/authz/scope/viewer-scope-helper';
 
 // GET /api/viewer/studies/[uid]/measurements
 export async function GET(
@@ -15,6 +16,12 @@ export async function GET(
       return authResult.response;
     }
     const user = authResult.user;
+
+    try {
+      await requireViewerStudyScope(uid, "READ_STUDY_ONLY");
+    } catch (err: any) {
+      return NextResponse.json({ success: false, message: err.message }, { status: 403 });
+    }
 
     const measurements = await prisma.viewerMeasurement.findMany({
       where: {
@@ -86,6 +93,12 @@ export async function POST(
       return authResult.response;
     }
     const user = authResult.user;
+
+    try {
+      await requireViewerStudyScope(uid, "EDIT_CLINICAL");
+    } catch (err: any) {
+      return NextResponse.json({ success: false, message: err.message }, { status: 403 });
+    }
 
     const body = await request.json();
 

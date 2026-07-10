@@ -7,6 +7,7 @@ import { hasPermission, type PermissionKey } from "@/lib/permissions";
 import { revalidatePath } from "next/cache";
 import { sendReportToHis } from "@/lib/his/hisSyncService";
 import { canPerformMachineAction, resolveDicomNodeIdByAETitle, type MachineActionKey } from "@/lib/authz/machine-permissions";
+import { requireScopedStudyMutation } from "@/lib/authz/scope/require-scoped-access";
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -53,12 +54,12 @@ async function requirePerm(permission: PermissionKey) {
 
 async function requireMachinePerm(permission: PermissionKey, actionKey: MachineActionKey, studyInstanceUid: string) {
   const user = await requirePerm(permission);
-  
+
   const study = await prisma.imagingStudy.findUnique({
     where: { studyInstanceUid },
     select: { stationAeTitle: true }
   });
-  
+
   if (study) {
     const dicomNodeId = await resolveDicomNodeIdByAETitle(study.stationAeTitle);
     const allowed = await canPerformMachineAction(user as any, dicomNodeId, actionKey);
@@ -100,12 +101,14 @@ export async function assignStudyDoctor(
   doctorId: string
 ): Promise<WorkflowResult> {
   try {
-    const actor = await requireMachinePerm("studies.assign", "ASSIGN_CASE", studyInstanceUid);
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
-    const study = await prisma.imagingStudy.findUnique({
-      where: { studyInstanceUid },
+    const { study } = await requireScopedStudyMutation({
+      userId: session.user.id,
+      studyInstanceUid,
+      capability: "ASSIGN_CASE",
     });
-    if (!study) return { success: false, error: "Ca chụp không tồn tại." };
 
     // Verify doctor exists
     const doctor = await prisma.user.findUnique({ where: { id: doctorId } });
@@ -121,7 +124,7 @@ export async function assignStudyDoctor(
     });
 
     await createAuditLog({
-      actorUserId: actor.id,
+      actorUserId: session.user.id,
       action: "STUDY_DOCTOR_ASSIGNED",
       entityType: "ImagingStudy",
       entityId: study.id,
@@ -145,8 +148,16 @@ export async function startReading(
   studyInstanceUid: string
 ): Promise<WorkflowResult> {
   try {
-    const actor = await requireMachinePerm("reports.write", "DRAFT_REPORT", studyInstanceUid);
-    const result = await claimStudyLock(studyInstanceUid, actor.id);
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    const { study } = await requireScopedStudyMutation({
+      userId: session.user.id,
+      studyInstanceUid,
+      capability: "DRAFT_REPORT",
+    });
+
+    const result = await claimStudyLock(studyInstanceUid, session.user.id);
 
     if (!result.success) {
       return { success: false, error: result.error || "Không thể nhận đọc." };
@@ -169,12 +180,14 @@ export async function updateClinicalInfo(
   input: ClinicalInfoInput
 ): Promise<WorkflowResult> {
   try {
-    const actor = await requireMachinePerm("studies.updateClinical", "EDIT_CLINICAL", studyInstanceUid);
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
-    const study = await prisma.imagingStudy.findUnique({
-      where: { studyInstanceUid },
+    const { study } = await requireScopedStudyMutation({
+      userId: session.user.id,
+      studyInstanceUid,
+      capability: "EDIT_CLINICAL",
     });
-    if (!study) return { success: false, error: "Ca chụp không tồn tại." };
 
     const beforeSummary = {
       clinicalInfo: study.clinicalInfo,
@@ -207,7 +220,7 @@ export async function updateClinicalInfo(
     }
 
     await createAuditLog({
-      actorUserId: actor.id,
+      actorUserId: session.user.id,
       action: "STUDY_CLINICAL_UPDATED",
       entityType: "ImagingStudy",
       entityId: study.id,
@@ -232,12 +245,14 @@ export async function addOrUpdateIndication(
   input: IndicationInput
 ): Promise<WorkflowResult> {
   try {
-    const actor = await requireMachinePerm("studies.updateClinical", "EDIT_CLINICAL", studyInstanceUid);
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
-    const study = await prisma.imagingStudy.findUnique({
-      where: { studyInstanceUid },
+    const { study } = await requireScopedStudyMutation({
+      userId: session.user.id,
+      studyInstanceUid,
+      capability: "EDIT_CLINICAL",
     });
-    if (!study) return { success: false, error: "Ca chụp không tồn tại." };
 
     await prisma.imagingStudy.update({
       where: { id: study.id },
@@ -258,7 +273,7 @@ export async function addOrUpdateIndication(
     }
 
     await createAuditLog({
-      actorUserId: actor.id,
+      actorUserId: session.user.id,
       action: "STUDY_INDICATION_UPDATED",
       entityType: "ImagingStudy",
       entityId: study.id,
@@ -286,7 +301,14 @@ export async function saveReportDraft(
   input: SaveDraftInput
 ): Promise<WorkflowResult & { reportId?: string }> {
   try {
-    const actor = await requireMachinePerm("reports.write", "DRAFT_REPORT", studyInstanceUid);
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    const { study } = await requireScopedStudyMutation({
+      userId: session.user.id,
+      studyInstanceUid,
+      capability: "DRAFT_REPORT",
+    });
 
     const existing = await prisma.report.findUnique({
       where: { studyInstanceUid },
@@ -300,8 +322,8 @@ export async function saveReportDraft(
       return { success: false, error: "Báo cáo đang chờ phê duyệt. Không thể sửa." };
     }
 
-    const doctorId = ["DOCTOR", "ADMIN"].includes(actor.baseRole || actor.role)
-      ? actor.id
+    const doctorId = ["DOCTOR", "ADMIN"].includes((session.user as any).baseRole || (session.user as any).role)
+      ? session.user.id
       : undefined;
 
     const report = await prisma.report.upsert({
@@ -333,26 +355,24 @@ export async function saveReportDraft(
       },
     });
 
-    // Link report to ImagingStudy if not yet linked
-    const study = await prisma.imagingStudy.findUnique({ where: { studyInstanceUid } });
-    if (study && !report.imagingStudyId) {
+    if (!report.imagingStudyId) {
       await prisma.report.update({
         where: { id: report.id },
         data: { imagingStudyId: study.id },
       });
     }
 
-    if (study && study.status !== "READING" && study.status !== "REPORTED") {
+    if (study.status !== "READING" && study.status !== "REPORTED") {
       await setStudyStatus(studyInstanceUid, "READING", {
         source: "REPORT",
         reason: "Report drafted",
-        actorUserId: actor.id,
+        actorUserId: session.user.id,
         metadata: { reportId: report.id },
       });
     }
 
     await createAuditLog({
-      actorUserId: actor.id,
+      actorUserId: session.user.id,
       action: "REPORT_DRAFT_SAVED",
       entityType: "Report",
       entityId: report.id,
@@ -378,7 +398,14 @@ export async function finalizeReport(
   studyInstanceUid: string
 ): Promise<WorkflowResult & { reportStatus?: string, workflowStatus?: string }> {
   try {
-    const actor = await requireMachinePerm("reports.finalize", "SIGN_REPORT", studyInstanceUid);
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    const { study } = await requireScopedStudyMutation({
+      userId: session.user.id,
+      studyInstanceUid,
+      capability: "SIGN_REPORT",
+    });
 
     const report = await prisma.report.findUnique({
       where: { studyInstanceUid },
@@ -390,7 +417,7 @@ export async function finalizeReport(
 
     // Check if actor is a signing doctor
     const doctorProfile = await prisma.doctorProfile.findUnique({
-      where: { userId: actor.id },
+      where: { userId: session.user.id },
     });
     const isSigningDoctor = doctorProfile?.isSigningDoctor ?? false;
 
@@ -401,36 +428,34 @@ export async function finalizeReport(
         data: {
           status: "FINAL",
           finalizedAt: new Date(),
-          doctorId: actor.id,
+          doctorId: session.user.id,
         },
       });
 
       // Transition study to FINALIZED
-      if (report.imagingStudy) {
-        await setStudyStatus(studyInstanceUid, "FINALIZED", {
-          source: "REPORT",
-          reason: "Report finalized (1-step)",
-          actorUserId: actor.id,
-          metadata: { reportId: report.id },
-        });
-      }
+      await setStudyStatus(studyInstanceUid, "FINALIZED", {
+        source: "REPORT",
+        reason: "Report finalized (1-step)",
+        actorUserId: session.user.id,
+        metadata: { reportId: report.id },
+      });
 
       await createAuditLog({
-        actorUserId: actor.id,
+        actorUserId: session.user.id,
         action: "REPORT_FINALIZED",
         entityType: "Report",
         entityId: report.id,
         message: `Finalized report for ${studyInstanceUid} (1-step)`,
         metadata: { studyInstanceUid, mode: "1-step" },
       });
-      
+
       revalidatePath(`/report/${studyInstanceUid}`);
       revalidatePath("/");
 
       // HIS sync (awaited, errors caught — not fire-and-forget)
       let hisResultStatus = "PENDING";
       try {
-        const hisRes = await sendReportToHis(studyInstanceUid, actor.id);
+        const hisRes = await sendReportToHis(studyInstanceUid, session.user.id);
         hisResultStatus = hisRes.status;
       } catch (hisErr) {
         console.error("HIS send after finalize failed:", hisErr);
@@ -444,12 +469,12 @@ export async function finalizeReport(
         where: { id: report.id },
         data: {
           status: "PENDING_APPROVAL",
-          doctorId: actor.id,
+          doctorId: session.user.id,
         },
       });
 
       await createAuditLog({
-        actorUserId: actor.id,
+        actorUserId: session.user.id,
         action: "REPORT_SUBMITTED_FOR_APPROVAL",
         entityType: "Report",
         entityId: report.id,
@@ -474,11 +499,18 @@ export async function approveReport(
   studyInstanceUid: string
 ): Promise<WorkflowResult> {
   try {
-    const actor = await requireMachinePerm("reports.finalize", "APPROVE_REPORT", studyInstanceUid);
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    const { study } = await requireScopedStudyMutation({
+      userId: session.user.id,
+      studyInstanceUid,
+      capability: "APPROVE_REPORT",
+    });
 
     // Must be a signing doctor
     const doctorProfile = await prisma.doctorProfile.findUnique({
-      where: { userId: actor.id },
+      where: { userId: session.user.id },
     });
     if (!doctorProfile?.isSigningDoctor) {
       return { success: false, error: "Chỉ bác sĩ có quyền ký mới được phê duyệt." };
@@ -501,17 +533,15 @@ export async function approveReport(
       },
     });
 
-    if (report.imagingStudy) {
-      await setStudyStatus(studyInstanceUid, "FINALIZED", {
-        source: "REPORT",
-        reason: "Report approved (2-step)",
-        actorUserId: actor.id,
-        metadata: { reportId: report.id, approvedBy: actor.id },
-      });
-    }
+    await setStudyStatus(studyInstanceUid, "FINALIZED", {
+      source: "REPORT",
+      reason: "Report approved (2-step)",
+      actorUserId: session.user.id,
+      metadata: { reportId: report.id, approvedBy: session.user.id },
+    });
 
     await createAuditLog({
-      actorUserId: actor.id,
+      actorUserId: session.user.id,
       action: "REPORT_APPROVED",
       entityType: "Report",
       entityId: report.id,
@@ -525,7 +555,7 @@ export async function approveReport(
     // HIS sync (awaited, errors caught — not fire-and-forget)
     let hisResultStatus = "PENDING";
     try {
-      const hisRes = await sendReportToHis(studyInstanceUid, actor.id);
+      const hisRes = await sendReportToHis(studyInstanceUid, session.user.id);
       hisResultStatus = hisRes.status;
     } catch (hisErr) {
       console.error("HIS send after approve failed:", hisErr);
@@ -552,7 +582,14 @@ export async function cancelReportDraft(
       return { success: false, error: "Cần nhập lý do hủy phiếu." };
     }
 
-    const actor = await requireMachinePerm("reports.cancelDraft", "CANCEL_DRAFT", studyInstanceUid);
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    const { study } = await requireScopedStudyMutation({
+      userId: session.user.id,
+      studyInstanceUid,
+      capability: "CANCEL_DRAFT",
+    });
 
     const report = await prisma.report.findUnique({
       where: { studyInstanceUid },
@@ -577,12 +614,12 @@ export async function cancelReportDraft(
     await setStudyStatus(studyInstanceUid, "READY_TO_READ", {
       source: "REPORT",
       reason: `Report draft cancelled: ${reason.trim()}`,
-      actorUserId: actor.id,
+      actorUserId: session.user.id,
       metadata: { reportId: report.id },
     });
 
     await createAuditLog({
-      actorUserId: actor.id,
+      actorUserId: session.user.id,
       action: "REPORT_DRAFT_CANCELLED",
       entityType: "Report",
       entityId: report.id,
@@ -612,7 +649,14 @@ export async function unfinalizeReport(
       return { success: false, error: "Cần nhập lý do hủy duyệt." };
     }
 
-    const actor = await requireMachinePerm("reports.unfinalize", "UNFINALIZE_REPORT", studyInstanceUid);
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    const { study } = await requireScopedStudyMutation({
+      userId: session.user.id,
+      studyInstanceUid,
+      capability: "UNFINALIZE_REPORT",
+    });
 
     const report = await prisma.report.findUnique({
       where: { studyInstanceUid },
@@ -628,7 +672,7 @@ export async function unfinalizeReport(
       data: {
         reportId: report.id,
         imagingStudyId: report.imagingStudyId,
-        doctorId: actor.id,
+        doctorId: session.user.id,
         reasonCode: "REPORT_UNFINALIZED",
         reason: reason.trim(),
         content: JSON.stringify({
@@ -668,12 +712,12 @@ export async function unfinalizeReport(
     await setStudyStatus(studyInstanceUid, "READING", {
       source: "REPORT",
       reason: `Report unfinalized: ${reason.trim()}`,
-      actorUserId: actor.id,
+      actorUserId: session.user.id,
       metadata: { reportId: report.id },
     });
 
     await createAuditLog({
-      actorUserId: actor.id,
+      actorUserId: session.user.id,
       action: "REPORT_UNFINALIZED",
       entityType: "Report",
       entityId: report.id,
@@ -700,12 +744,14 @@ export async function markDelivered(
   studyInstanceUid: string
 ): Promise<WorkflowResult> {
   try {
-    const actor = await requireMachinePerm("archive.deliver", "DELIVER_RESULT", studyInstanceUid);
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
-    const study = await prisma.imagingStudy.findUnique({
-      where: { studyInstanceUid },
+    const { study } = await requireScopedStudyMutation({
+      userId: session.user.id,
+      studyInstanceUid,
+      capability: "DELIVER_RESULT",
     });
-    if (!study) return { success: false, error: "Ca chụp không tồn tại." };
 
     const allowedStatuses = new Set(["FINALIZED", "REPORTED"]);
     if (!allowedStatuses.has(study.status)) {
@@ -715,11 +761,11 @@ export async function markDelivered(
     await setStudyStatus(studyInstanceUid, "DELIVERED", {
       source: "SYSTEM",
       reason: "Result delivered",
-      actorUserId: actor.id,
+      actorUserId: session.user.id,
     });
 
     await createAuditLog({
-      actorUserId: actor.id,
+      actorUserId: session.user.id,
       action: "RESULT_DELIVERED",
       entityType: "ImagingStudy",
       entityId: study.id,

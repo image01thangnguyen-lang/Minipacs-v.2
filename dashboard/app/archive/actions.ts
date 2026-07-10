@@ -13,7 +13,6 @@ import {
   type ArchiveSearchFilters,
   type ArchiveStudyRow,
 } from "./types";
-import { checkHisMatrixPerm } from "../his/actions";
 import { ScopeRequestContext } from "@/lib/authz/scope/scope-request-context";
 import { buildScopeFilter, applyScopeFilterToPrisma } from "@/lib/authz/scope/scope-filter-builder";
 import { getScopeDeps } from "@/lib/authz/scope/deps";
@@ -166,6 +165,7 @@ function serializeArchiveRow(report: any, context?: {
   usersById?: Map<string, { fullName: string | null; username: string }>;
   procedureByCode?: Map<string, any>;
   nodeByAeTitle?: Map<string, any>;
+  allowedActionsByUid?: Record<string, any>;
 }): ArchiveStudyRow {
   const study = report.imagingStudy;
   const studyStatus = study?.status || reportDrivenStudyStatus(report.status);
@@ -215,6 +215,7 @@ function serializeArchiveRow(report: any, context?: {
     imageWarning,
     hisSyncStatus: study?.hisSyncStatus || study?.order?.hisSyncStatus || null,
     hisResultStatus: study?.hisResultStatus || report.hisResultStatus || null,
+    allowedActions: context?.allowedActionsByUid?.[report.studyInstanceUid] || {},
   };
 }
 
@@ -435,7 +436,20 @@ export async function searchArchiveStudiesAction(filters: ArchiveSearchFilters =
     take: 150,
   });
 
-  const context = await buildArchiveContext(reports);
+  const { getAllowedActionsForStudies } = await import("@/lib/authz/scope/allowed-actions");
+  const studiesForActions = reports.map(r => ({
+    id: r.studyInstanceUid,
+    studyInstanceUid: r.studyInstanceUid,
+    stationAeTitle: r.imagingStudy?.stationAeTitle || null,
+    status: r.imagingStudy?.status || "",
+    assignedDoctorId: r.imagingStudy?.assignedDoctorId || null,
+    reportStatus: r.status,
+    performingUnitId: r.imagingStudy?.order?.performingUnitId || null,
+    scheduledStationAeTitle: r.imagingStudy?.order?.scheduledStationAeTitle || null,
+  }));
+  const allowedActionsByUid = await getAllowedActionsForStudies(actor.id, studiesForActions, ctx);
+
+  const context = { ...(await buildArchiveContext(reports)), allowedActionsByUid };
   return reports.map(report => serializeArchiveRow(report, context));
 }
 
@@ -493,7 +507,7 @@ export async function getArchiveReportAction(studyInstanceUid: string) {
       source: history.source,
       createdAt: history.createdAt.toISOString(),
     })),
-    canSyncHisMatrix: await checkHisMatrixPerm(studyInstanceUid),
+    canSyncHisMatrix: true,
   };
 
   return { success: true, detail };

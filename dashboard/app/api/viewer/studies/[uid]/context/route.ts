@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/db';
 import { requireApiPermission } from '@/lib/api-auth';
-import { canPerformMachineAction, resolveDicomNodeIdByAETitle } from '@/lib/authz/machine-permissions';
+import { requireViewerStudyScope } from '@/lib/authz/scope/viewer-scope-helper';
 
 export async function GET(request: Request, { params }: { params: { uid: string } }) {
   const authz = await requireApiPermission('studies.read');
   if (!authz.ok) return authz.response;
+
+  try {
+    await requireViewerStudyScope(params.uid, "READ_STUDY_ONLY");
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 403 });
+  }
 
   try {
     const study = await prisma.imagingStudy.findUnique({
@@ -21,12 +27,6 @@ export async function GET(request: Request, { params }: { params: { uid: string 
 
     if (!study) {
       return NextResponse.json({ success: false, error: 'Study not found' }, { status: 404 });
-    }
-
-    const dicomNodeId = await resolveDicomNodeIdByAETitle(study.stationAeTitle);
-    const isAllowed = await canPerformMachineAction(authz.user as any, dicomNodeId, "READ_STUDY");
-    if (!isAllowed) {
-      return NextResponse.json({ success: false, error: 'Access Denied by Machine Permission Matrix' }, { status: 403 });
     }
 
     const previousStudyCount = await prisma.imagingStudy.count({

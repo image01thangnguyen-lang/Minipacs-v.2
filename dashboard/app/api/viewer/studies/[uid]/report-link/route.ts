@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/app/db';
-import { hasPermission } from '@/lib/permissions';
+import { requireViewerStudyScope } from '@/lib/authz/scope/viewer-scope-helper';
 
 export async function GET(request: Request, { params }: { params: { uid: string } }) {
   const session = await auth();
@@ -10,8 +10,10 @@ export async function GET(request: Request, { params }: { params: { uid: string 
     return NextResponse.json({ success: false, message: 'Bạn chưa đăng nhập. Vui lòng đăng nhập vào Dashboard để xem báo cáo.' }, { status: 401 });
   }
 
-  if (!hasPermission(session.user.role, 'reports.read', session.user.permissions)) {
-    return NextResponse.json({ success: false, message: 'Bạn không có quyền xem báo cáo.' }, { status: 403 });
+  try {
+    await requireViewerStudyScope(params.uid, "READ_STUDY_ONLY");
+  } catch (err: any) {
+    return NextResponse.json({ success: false, message: err.message }, { status: 403 });
   }
 
   try {
