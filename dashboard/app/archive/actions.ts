@@ -14,6 +14,9 @@ import {
   type ArchiveStudyRow,
 } from "./types";
 import { checkHisMatrixPerm } from "../his/actions";
+import { ScopeRequestContext } from "@/lib/authz/scope/scope-request-context";
+import { buildScopeFilter, applyScopeFilterToPrisma } from "@/lib/authz/scope/scope-filter-builder";
+import { getScopeDeps } from "@/lib/authz/scope/deps";
 
 async function requireArchiveAccess() {
   return requirePermission("archive.read");
@@ -215,7 +218,7 @@ function serializeArchiveRow(report: any, context?: {
   };
 }
 
-function buildArchiveWhere(filters: ArchiveSearchFilters) {
+function buildArchiveWhere(filters: ArchiveSearchFilters, scopeWhere?: any) {
   const and: any[] = [
     {
       OR: [
@@ -224,6 +227,10 @@ function buildArchiveWhere(filters: ArchiveSearchFilters) {
       ],
     },
   ];
+
+  if (scopeWhere && Object.keys(scopeWhere).length > 0) {
+    and.push({ imagingStudy: { is: scopeWhere } });
+  }
 
   const patientName = cleanText(filters.patientName);
   if (patientName) {
@@ -398,10 +405,24 @@ async function buildArchiveContext(reports: any[]) {
 }
 
 export async function searchArchiveStudiesAction(filters: ArchiveSearchFilters = {}): Promise<ArchiveStudyRow[]> {
-  await requireArchiveAccess();
+  const actor = await requireArchiveAccess();
+
+  const ctx = ScopeRequestContext.create();
+  const filterResult = await buildScopeFilter(
+    actor.id,
+    "READ_REPORT",
+    "STUDY",
+    getScopeDeps(),
+    ctx
+  );
+  const scopeWhere = applyScopeFilterToPrisma(
+    filterResult,
+    "performingUnitId",
+    "stationAeTitle"
+  );
 
   const reports = await prisma.report.findMany({
-    where: buildArchiveWhere(filters),
+    where: buildArchiveWhere(filters, scopeWhere),
     include: {
       imagingStudy: {
         include: {

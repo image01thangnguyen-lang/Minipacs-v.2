@@ -1,4 +1,4 @@
-import type { ScopePrincipal, ResourceType, ScopeTraceEntry } from "./scope-decision";
+import type { ResourceType } from "./scope-decision";
 import type { ScopeCapability } from "./capability-registry";
 import { CAPABILITY_TO_GLOBAL_PERMISSION } from "./capability-registry";
 import { getAuthorizationMode, type AuthorizationMode } from "./authorization-mode";
@@ -186,6 +186,11 @@ export async function buildScopeFilter(
     }
   }
 
+  // Global ALLOW remains constrained to active, classified units.
+  if (hasGlobalAllow) {
+    for (const unitId of tree.getAllNodeIds()) allowedUnitIdsSet.add(unitId);
+  }
+
   // Build denied unit IDs (DENY holes)
   const deniedUnitIdsSet = new Set<string>();
   const deniedDicomNodeIds = new Set<string>();
@@ -254,17 +259,29 @@ export async function buildScopeFilter(
     // Get denied AE titles
     const rawDeniedAeTitles = await deps.findDeniedAeTitles(userId, legacyAction);
     deniedAeTitles = rawDeniedAeTitles.filter(ae => uniqueActiveAeTitles.has(ae));
+
+    // Models persist stationAeTitle rather than DicomNode FK. Translate
+    // node-scoped grants only when their AE Title is unique and active.
+    for (const grant of allowGrants) {
+      const ae = grant.dicomNode?.aeTitle;
+      if (grant.dicomNodeId && ae && uniqueActiveAeTitles.has(ae)) allowedAeTitles.push(ae);
+    }
+    for (const grant of denyGrants) {
+      const ae = grant.dicomNode?.aeTitle;
+      if (grant.dicomNodeId && ae && uniqueActiveAeTitles.has(ae)) deniedAeTitles.push(ae);
+    }
+    if (hasGlobalAllow) allowedAeTitles.push(...Array.from(uniqueActiveAeTitles));
   }
 
   // Remove denied AE titles from allowed
+  deniedAeTitles = Array.from(new Set(deniedAeTitles));
   const deniedAeSet = new Set(deniedAeTitles);
-  allowedAeTitles = allowedAeTitles.filter(ae => !deniedAeSet.has(ae));
+  allowedAeTitles = Array.from(new Set(allowedAeTitles)).filter(ae => !deniedAeSet.has(ae));
 
   const hasAnyAllowedScope = hasGlobalAllow || allowedUnitIdsSet.size > 0 || allowedDicomNodeIds.size > 0 || allowedAeTitles.length > 0;
 
-  if (hasGlobalAllow && deniedUnitIdsSet.size === 0 && deniedDicomNodeIds.size === 0 && deniedAeTitles.length === 0) {
-    return { ...noFilter, reason: "Global ALLOW grant with no DENY holes — no filter needed" };
-  }
+  // Do not return noFilter for a non-admin global grant: ENFORCE must still
+  // exclude stale/unknown AE Titles and resources without classification.
 
   return {
     mode,
@@ -280,4 +297,102 @@ export async function buildScopeFilter(
       ? `ENFORCE: ${hasGlobalAllow ? "Global ALLOW, " : ""}${allowedUnitIdsSet.size} units, ${allowedDicomNodeIds.size} nodes, ${allowedAeTitles.length} AE titles allowed`
       : "ENFORCE: no allowed scope — filter to empty set",
   };
+}
+
+/**
+ * Converts a ScopeFilterResult into a Prisma WHERE clause.
+ * Applies strict ENFORCE rules (e.g. unclassified/inactive/ambiguous resources).
+ */
+export function applyScopeFilterToPrisma(
+  filter: ScopeFilterResult,
+  unitField: string,
+  aeField: string,
+  nodeField?: string
+): Record<string, unknown> {
+  if (!filter.shouldFilter) return {};
+
+  if (!filter.globalAllow && filter.allowedUnitIds.length === 0 && filter.allowedAeTitles.length === 0 && filter.allowedDicomNodeIds.length === 0) {
+    // No scopes allowed -> fail closed
+    return { id: "force-empty-result" };
+  }
+
+  const and: Record<string, unknown>[] = [];
+
+  if (filter.globalAllow) {
+    const classified: Record<string, unknown>[] = [];
+    if (filter.allowedUnitIds.length > 0) classified.push({ [unitField]: { in: filter.allowedUnitIds } });
+    if (filter.allowedAeTitles.length > 0) classified.push({ [aeField]: { in: filter.allowedAeTitles } });
+    if (nodeField && filter.allowedDicomNodeIds.length > 0) classified.push({ [nodeField]: { in: filter.allowedDicomNodeIds } });
+    if (classified.length === 0) return { id: "force-empty-result" };
+    and.push({ OR: classified });
+    // Global allow: only exclude explicit DENY holes
+    if (filter.deniedUnitIds.length > 0) {
+      and.push({
+        OR: [
+          { [unitField]: { notIn: filter.deniedUnitIds } },
+          { [unitField]: null }
+        ]
+      });
+    }
+    if (filter.deniedAeTitles.length > 0) {
+      and.push({
+        OR: [
+          { [aeField]: { notIn: filter.deniedAeTitles } },
+          { [aeField]: null }
+        ]
+      });
+    }
+    if (nodeField && filter.deniedDicomNodeIds.length > 0) {
+      and.push({
+        OR: [
+          { [nodeField]: { notIn: filter.deniedDicomNodeIds } },
+          { [nodeField]: null }
+        ]
+      });
+    }
+  } else {
+    // Specific ALLOW: must match one of the allowed scopes
+    const orConditions: Record<string, unknown>[] = [];
+    if (filter.allowedUnitIds.length > 0) {
+      orConditions.push({ [unitField]: { in: filter.allowedUnitIds } });
+    }
+    if (filter.allowedAeTitles.length > 0) {
+      orConditions.push({ [aeField]: { in: filter.allowedAeTitles } });
+    }
+    if (nodeField && filter.allowedDicomNodeIds.length > 0) {
+      orConditions.push({ [nodeField]: { in: filter.allowedDicomNodeIds } });
+    }
+
+    if (orConditions.length > 0) {
+      // Must also exclude any denied holes (if a parent was allowed but child was denied)
+      if (filter.deniedUnitIds.length > 0) {
+        and.push({
+          OR: [
+            { [unitField]: { notIn: filter.deniedUnitIds } },
+            { [unitField]: null }
+          ]
+        });
+      }
+      if (filter.deniedAeTitles.length > 0) {
+        and.push({
+          OR: [
+            { [aeField]: { notIn: filter.deniedAeTitles } },
+            { [aeField]: null }
+          ]
+        });
+      }
+      if (nodeField && filter.deniedDicomNodeIds.length > 0) {
+        and.push({
+          OR: [
+            { [nodeField]: { notIn: filter.deniedDicomNodeIds } },
+            { [nodeField]: null }
+          ]
+        });
+      }
+
+      and.push({ OR: orConditions });
+    }
+  }
+
+  return and.length > 0 ? { AND: and } : {};
 }

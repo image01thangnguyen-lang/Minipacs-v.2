@@ -17,7 +17,7 @@ export type AccessScopeGrantRow = {
   validFrom: Date | null;
   validUntil: Date | null;
   facilityUnit: { isActive: boolean } | null;
-  dicomNode: { isActive: boolean; facilityId: string | null } | null;
+  dicomNode: { isActive: boolean; facilityId: string | null; aeTitle?: string } | null;
 };
 
 // ─── Dependencies ──────────────────────────────────────────────────────────────

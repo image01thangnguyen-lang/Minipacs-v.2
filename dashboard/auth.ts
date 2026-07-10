@@ -55,22 +55,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.baseRole = user.baseRole;
-        token.roleName = user.roleName;
-        token.permissions = user.permissions;
-        token.username = user.username;
+        const u = user as any;
+        token.id = u.id;
+        token.role = u.role;
+        token.baseRole = u.baseRole;
+        token.roleName = u.roleName;
+        token.permissions = u.permissions;
+        token.username = u.username;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
-        session.user.baseRole = token.baseRole as string | undefined;
-        session.user.roleName = token.roleName as string | undefined;
-        session.user.permissions = Array.isArray(token.permissions) ? token.permissions : undefined;
+        const su = session.user as any;
+        su.id = token.id as string;
+        su.role = token.role as string;
+        su.baseRole = token.baseRole as string | undefined;
+        su.roleName = token.roleName as string | undefined;
+        su.permissions = Array.isArray(token.permissions) ? token.permissions : undefined;
       }
       return session;
     }

@@ -1,8 +1,9 @@
 "use server";
 
-import { prisma } from "@/app/db";
-import { requirePermission } from "@/lib/authz";
-import { MACHINE_ACTION_KEYS, MachineActionKey } from "@/lib/authz/machine-permissions";
+import { prisma } from "../../../db";
+import { requirePermission } from "../../../../lib/authz";
+import { MACHINE_ACTION_KEYS, MachineActionKey } from "../../../../lib/authz/machine-permissions";
+import { dualWriteMachinePermission } from "../../../../lib/authz/scope/migration/matrix-dual-write";
 
 export async function getDoctorsAndNodesAction() {
   await requirePermission("admin.permissions");
@@ -82,49 +83,9 @@ export async function saveMatrixAction(doctorId: string, updates: PermissionUpda
       let deleteCount = 0;
 
       for (const update of updates) {
-        if (update.state === "DEFAULT") {
-          // Remove record
-          try {
-            await tx.doctorMachinePermission.delete({
-              where: {
-                doctorId_dicomNodeId_actionKey: {
-                  doctorId,
-                  dicomNodeId: update.dicomNodeId,
-                  actionKey: update.actionKey
-                }
-              }
-            });
-            deleteCount++;
-          } catch (e: any) {
-            // Record might not exist, ignore
-            if (e.code !== 'P2025') {
-              throw e;
-            }
-          }
-        } else {
-          // Upsert record
-          await tx.doctorMachinePermission.upsert({
-            where: {
-              doctorId_dicomNodeId_actionKey: {
-                doctorId,
-                dicomNodeId: update.dicomNodeId,
-                actionKey: update.actionKey
-              }
-            },
-            update: {
-              allow: update.state === "ALLOW",
-              updatedByUserId: actor.id,
-            },
-            create: {
-              doctorId,
-              dicomNodeId: update.dicomNodeId,
-              actionKey: update.actionKey,
-              allow: update.state === "ALLOW",
-              updatedByUserId: actor.id,
-            }
-          });
-          upsertCount++;
-        }
+        const result = await dualWriteMachinePermission(tx, doctorId, actor.id, update);
+        upsertCount += result.upserted;
+        deleteCount += result.deleted;
       }
 
       // Record Audit Log

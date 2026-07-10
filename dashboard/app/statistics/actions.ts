@@ -1,7 +1,10 @@
 "use server";
 
 import { auth } from "@/auth";
-import { prisma } from "@/app/db";
+import { prisma, scopeStorage } from "@/app/db";
+import { ScopeRequestContext } from "@/lib/authz/scope/scope-request-context";
+import { buildScopeFilter, applyScopeFilterToPrisma } from "@/lib/authz/scope/scope-filter-builder";
+import { getScopeDeps } from "@/lib/authz/scope/deps";
 import { redirect } from "next/navigation";
 import { hasPermission } from "@/lib/permissions";
 import { recordStudyEventInTx } from "@/lib/studyEvents";
@@ -3062,27 +3065,35 @@ export async function deleteStatisticsFilterPresetAction(presetId: string) {
 
 export async function exportStatisticsDrilldownAction(filters: StatisticsFilters = {}, format: "csv" | "xlsx" = "csv") {
   const user = await requireStatisticsAccess();
-  const range = toVietnamRange(filters.dateFrom, filters.dateTo);
-  const endExclusive = plusOneDay(range.end);
-  const drilldown = await getDrilldownDashboard(range.start, endExclusive, filters);
-  const rows = exportRows(drilldown.rows, hasPermission(user.role, "reports.read", user.permissions));
-  const suffix = `${range.dateFrom}_${range.dateTo}_${drilldown.activeFilter}`;
 
-  if (format === "xlsx") {
+  const ctx = ScopeRequestContext.create();
+  const filterResult = await buildScopeFilter(user.id, "READ_STUDY", "STUDY", getScopeDeps(), ctx);
+  const scopeWhere = applyScopeFilterToPrisma(filterResult, "performingUnitId", "stationAeTitle");
+  const orderScopeWhere = applyScopeFilterToPrisma(filterResult, "performingUnitId", "scheduledStationAeTitle");
+
+  return scopeStorage.run({ studyWhere: scopeWhere, orderWhere: orderScopeWhere }, async () => {
+    const range = toVietnamRange(filters.dateFrom, filters.dateTo);
+    const endExclusive = plusOneDay(range.end);
+    const drilldown = await getDrilldownDashboard(range.start, endExclusive, filters);
+    const rows = exportRows(drilldown.rows, hasPermission(user.role, "reports.read", user.permissions));
+    const suffix = `${range.dateFrom}_${range.dateTo}_${drilldown.activeFilter}`;
+
+    if (format === "xlsx") {
+      return {
+        filename: `statistics_${suffix}.xlsx`,
+        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        encoding: "base64",
+        content: rowsToXlsxBase64(rows),
+      };
+    }
+
     return {
-      filename: `statistics_${suffix}.xlsx`,
-      mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      encoding: "base64",
-      content: rowsToXlsxBase64(rows),
+      filename: `statistics_${suffix}.csv`,
+      mimeType: "text/csv; charset=utf-8",
+      encoding: "utf-8",
+      content: "\uFEFF" + rows.map(r => r.join(",")).join("\n"),
     };
-  }
-
-  return {
-    filename: `statistics_${suffix}.csv`,
-    mimeType: "text/csv;charset=utf-8",
-    encoding: "utf8",
-    content: buildCsv(rows),
-  };
+  });
 }
 
 export async function upsertProcedureCatalogAction(input: {
@@ -3124,14 +3135,21 @@ export async function upsertProcedureCatalogAction(input: {
 
 export async function getStatisticsDashboardAction(filters: StatisticsFilters = {}): Promise<StatisticsPayload> {
   const user = await requireStatisticsAccess();
-  const range = toVietnamRange(filters.dateFrom, filters.dateTo);
-  const endExclusive = plusOneDay(range.end);
-  const storagePromise = getOrthancStorage();
 
-  await backfillStudyEventsFromExistingData(range.start, endExclusive);
-  await syncOperationalAlerts();
+  const ctx = ScopeRequestContext.create();
+  const filterResult = await buildScopeFilter(user.id, "READ_STUDY", "STUDY", getScopeDeps(), ctx);
+  const scopeWhere = applyScopeFilterToPrisma(filterResult, "performingUnitId", "stationAeTitle");
+  const orderScopeWhere = applyScopeFilterToPrisma(filterResult, "performingUnitId", "scheduledStationAeTitle");
 
-  const [
+  return scopeStorage.run({ studyWhere: scopeWhere, orderWhere: orderScopeWhere }, async () => {
+    const range = toVietnamRange(filters.dateFrom, filters.dateTo);
+    const endExclusive = plusOneDay(range.end);
+    const storagePromise = getOrthancStorage();
+
+    await backfillStudyEventsFromExistingData(range.start, endExclusive);
+    await syncOperationalAlerts();
+
+    const [
     studiesInPeriod,
     readyToRead,
     readingStudies,
@@ -3246,4 +3264,5 @@ export async function getStatisticsDashboardAction(filters: StatisticsFilters = 
     drilldown,
     filterPresets,
   };
+  });
 }

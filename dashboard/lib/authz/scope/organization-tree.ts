@@ -62,6 +62,10 @@ export class OrganizationTree {
     return descendants;
   }
 
+  getAllNodeIds(): string[] {
+    return Array.from(this.nodes.keys());
+  }
+
   getAncestorIds(unitId: string): string[] {
     const ancestors: string[] = [];
     const visited = new Set<string>();
@@ -113,5 +117,3 @@ export class OrganizationTree {
     return allowed.includes(childType);
   }
 }
-
-

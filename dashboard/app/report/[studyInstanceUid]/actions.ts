@@ -6,6 +6,11 @@ import { syncOrthancStudyToRis, updateStudyStatusForReport } from '@/lib/studySt
 import { requirePermission } from '@/lib/authz';
 import { hasPermission } from '@/lib/permissions';
 import { checkHisMatrixPerm } from '../../his/actions';
+import { resolveScope } from "@/lib/authz/scope/scope-resolver";
+import { resolveResourceContext } from "@/lib/authz/scope/resource-context";
+import { ScopeRequestContext } from "@/lib/authz/scope/scope-request-context";
+import { getScopeDeps } from "@/lib/authz/scope/deps";
+import { loadOrganizationTree } from "@/lib/authz/scope/organization-tree-loader";
 
 function cleanText(value?: string | null) {
   return (value || "").trim();
@@ -91,11 +96,37 @@ async function getStudyOperationalInfo(studyInstanceUid: string) {
     hisLastSyncedAt: toIso(study.hisLastSyncedAt || study.order?.hisLastSyncedAt),
     hisLastResultSentAt: toIso(study.hisLastResultSentAt || report?.hisResultSentAt),
     canSyncHisMatrix: await checkHisMatrixPerm(studyInstanceUid),
+    performingUnitId: study.order?.performingUnitId || null,
   };
 }
 
+async function enforceStudyScope(actorId: string, studyInstanceUid: string) {
+  const study = await prisma.imagingStudy.findUnique({
+    where: { studyInstanceUid },
+    include: { order: { select: { performingUnitId: true, scheduledStationAeTitle: true } } }
+  });
+  if (!study) throw new Error("Không tìm thấy ca chụp.");
+
+  const ctx = ScopeRequestContext.create();
+  const decision = await resolveScope(
+    actorId,
+    "READ_STUDY",
+    {
+      resourceType: "STUDY",
+      performingUnitId: study.order?.performingUnitId || null,
+      stationAeTitle: study.stationAeTitle || study.order?.scheduledStationAeTitle || null
+    },
+    getScopeDeps(),
+    ctx
+  );
+  if (!decision.effectiveAllowed) {
+    throw new Error(`Bạn không có quyền truy cập ca chụp này (Mã lỗi: ${decision.reasonCode}).`);
+  }
+}
+
 export async function getStudyDetails(studyInstanceUID: string) {
-  await requirePermission("reports.read");
+  const actor = await requirePermission("reports.read");
+  await enforceStudyScope(actor.id, studyInstanceUID);
 
   const orthancUrl = process.env.ORTHANC_API_URL || 'http://orthanc:8042';
   const username = process.env.ORTHANC_USERNAME || 'admin';
@@ -145,7 +176,8 @@ export async function getStudyDetails(studyInstanceUID: string) {
 }
 
 export async function getReport(studyInstanceUid: string) {
-  await requirePermission("reports.read");
+  const actor = await requirePermission("reports.read");
+  await enforceStudyScope(actor.id, studyInstanceUid);
 
   try {
     return prisma.report.findUnique({
@@ -181,7 +213,9 @@ export {
 };
 
 export async function getViewerArtifactsForReportAction(studyInstanceUid: string) {
-  await requirePermission("reports.read");
+  const actor = await requirePermission("reports.read");
+  await enforceStudyScope(actor.id, studyInstanceUid);
+
   try {
     const [measurements, keyImages] = await Promise.all([
       (prisma as any).viewerMeasurement?.findMany({

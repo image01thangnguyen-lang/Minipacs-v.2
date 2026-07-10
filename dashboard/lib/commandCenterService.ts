@@ -8,6 +8,9 @@ import {
   QueueReference,
 } from "./services/commandCenterUtils";
 import { Prisma } from "@prisma/client";
+import { ScopeRequestContext } from "@/lib/authz/scope/scope-request-context";
+import { buildScopeFilter, applyScopeFilterToPrisma } from "@/lib/authz/scope/scope-filter-builder";
+import { getScopeDeps } from "@/lib/authz/scope/deps";
 
 export interface CommandCenterFilters {
   dateFrom?: string | Date;
@@ -38,19 +41,15 @@ const CANONICAL_STUDY_STATUSES = [
 
 const WORKLIST_STATUSES = ["REQUESTED", "SCHEDULED", "ARRIVED"];
 
-async function buildBaseWhere(user: AuthenticatedUser, filters: CommandCenterFilters) {
-  const deniedAeTitles = await getDeniedAeTitlesForAction(user, "READ_STUDY");
-  
-  const where: Prisma.ImagingStudyWhereInput = {
-    status: { in: CANONICAL_STUDY_STATUSES as any[] }
-  };
+async function buildBaseWhere(user: AuthenticatedUser, filters: CommandCenterFilters, ctx?: ScopeRequestContext) {
+  const effectiveCtx = ctx || ScopeRequestContext.create();
+  const filterResult = await buildScopeFilter(user.id, "READ_STUDY", "STUDY", getScopeDeps(), effectiveCtx);
+  const scopeWhere = applyScopeFilterToPrisma(filterResult, "performingUnitId", "stationAeTitle");
 
-  if (deniedAeTitles.length > 0) {
-    where.OR = [
-      { stationAeTitle: { notIn: deniedAeTitles } },
-      { stationAeTitle: null } // Unresolved follows fallback
-    ];
-  }
+  const where: Prisma.ImagingStudyWhereInput = {
+    status: { in: CANONICAL_STUDY_STATUSES as any[] },
+    ...scopeWhere
+  };
 
   if (filters.dateFrom || filters.dateTo) {
     where.createdAt = {};
@@ -92,20 +91,16 @@ async function buildBaseWhere(user: AuthenticatedUser, filters: CommandCenterFil
   return where;
 }
 
-async function buildWorklistWhere(user: AuthenticatedUser, filters: CommandCenterFilters) {
-  const deniedAeTitles = await getDeniedAeTitlesForAction(user, "READ_STUDY");
-  
+async function buildWorklistWhere(user: AuthenticatedUser, filters: CommandCenterFilters, ctx?: ScopeRequestContext) {
+  const effectiveCtx = ctx || ScopeRequestContext.create();
+  const filterResult = await buildScopeFilter(user.id, "READ_STUDY", "ORDER", getScopeDeps(), effectiveCtx);
+  const scopeWhere = applyScopeFilterToPrisma(filterResult, "performingUnitId", "scheduledStationAeTitle");
+
   const where: Prisma.WorklistOrderWhereInput = {
     orderStatus: { in: WORKLIST_STATUSES as any[] },
-    imagingStudies: { none: {} }
+    imagingStudies: { none: {} },
+    ...scopeWhere
   };
-
-  if (deniedAeTitles.length > 0) {
-    where.OR = [
-      { scheduledStationAeTitle: { notIn: deniedAeTitles } },
-      { scheduledStationAeTitle: null }
-    ];
-  }
 
   if (filters.dateFrom || filters.dateTo) {
     where.createdAt = {};
@@ -148,8 +143,9 @@ async function buildWorklistWhere(user: AuthenticatedUser, filters: CommandCente
 }
 
 export async function getCommandCenterSummary(user: AuthenticatedUser, filters: CommandCenterFilters) {
-  const baseWhere = await buildBaseWhere(user, filters);
-  const worklistWhere = await buildWorklistWhere(user, filters);
+  const ctx = ScopeRequestContext.create();
+  const baseWhere = await buildBaseWhere(user, filters, ctx);
+  const worklistWhere = await buildWorklistWhere(user, filters, ctx);
 
   const [
     studyCounts,
@@ -229,8 +225,9 @@ export async function getCommandCenterSummary(user: AuthenticatedUser, filters: 
 }
 
 export async function getLiveQueue(user: AuthenticatedUser, filters: CommandCenterFilters, pagination: PaginationParams) {
-  const baseWhere = await buildBaseWhere(user, filters);
-  const worklistWhere = await buildWorklistWhere(user, filters);
+  const ctx = ScopeRequestContext.create();
+  const baseWhere = await buildBaseWhere(user, filters, ctx);
+  const worklistWhere = await buildWorklistWhere(user, filters, ctx);
   const skip = (pagination.page - 1) * pagination.pageSize;
   const activeStudyWhere: Prisma.ImagingStudyWhereInput = {
     AND: [
@@ -345,7 +342,8 @@ export async function getLiveQueue(user: AuthenticatedUser, filters: CommandCent
 }
 
 export async function getDoctorMachineBacklog(user: AuthenticatedUser, filters: CommandCenterFilters) {
-  const baseWhere = await buildBaseWhere(user, filters);
+  const ctx = ScopeRequestContext.create();
+  const baseWhere = await buildBaseWhere(user, filters, ctx);
 
   const [doctorGroup, machineGroup] = await Promise.all([
     prisma.imagingStudy.groupBy({
@@ -522,7 +520,8 @@ async function scanScopedOpenAlerts(
 }
 
 export async function getActiveAlerts(user: AuthenticatedUser, filters: CommandCenterFilters, pagination: PaginationParams) {
-  const baseWhere = await buildBaseWhere(user, filters);
+  const ctx = ScopeRequestContext.create();
+  const baseWhere = await buildBaseWhere(user, filters, ctx);
   const result = await scanScopedOpenAlerts(user, filters, baseWhere, pagination);
   return { ...result, truncated: false };
 }
@@ -586,7 +585,8 @@ async function syncSlaDataQualityAlerts(studyIds: string[], signals: SlaDataQual
 }
 
 export async function getSlaBreaches(user: AuthenticatedUser, filters: CommandCenterFilters, pagination: PaginationParams) {
-  const baseWhere = await buildBaseWhere(user, filters);
+  const ctx = ScopeRequestContext.create();
+  const baseWhere = await buildBaseWhere(user, filters, ctx);
   const pageStart = (pagination.page - 1) * pagination.pageSize;
   const pageEnd = pageStart + pagination.pageSize;
   const activePolicies = await prisma.slaPolicy.findMany({ where: { isActive: true } });
@@ -699,7 +699,8 @@ export async function getSlaBreaches(user: AuthenticatedUser, filters: CommandCe
 }
 
 export async function getStuckWorkflow(user: AuthenticatedUser, filters: CommandCenterFilters, pagination: PaginationParams) {
-  const baseWhere = await buildBaseWhere(user, filters);
+  const ctx = ScopeRequestContext.create();
+  const baseWhere = await buildBaseWhere(user, filters, ctx);
   const skip = (pagination.page - 1) * pagination.pageSize;
 
   const canSeePHI = user.role === "ADMIN" || user.permissions?.includes("studies.read");
@@ -717,7 +718,7 @@ export async function getStuckWorkflow(user: AuthenticatedUser, filters: Command
     }),
     prisma.worklistOrder.findMany({
       where: {
-        ...(await buildWorklistWhere(user, filters)),
+        ...(await buildWorklistWhere(user, filters, ctx)),
         orderStatus: { in: ["REQUESTED", "SCHEDULED", "ARRIVED"] }
       }
     })

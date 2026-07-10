@@ -1,4 +1,4 @@
-import { buildScopeFilter } from "./scope-filter-builder";
+import { applyScopeFilterToPrisma, buildScopeFilter } from "./scope-filter-builder";
 import { OrganizationTree } from "./organization-tree";
 import type { ScopePrincipal } from "./scope-decision";
 import type { AccessScopeGrantRow } from "./grant-repository";
@@ -189,7 +189,7 @@ async function main() {
     assert(result.deniedUnitIds.includes("D2"), "D2 denied");
   });
 
-  await run("global ALLOW without DENY => noFilter", async () => {
+  await run("global ALLOW vẫn lọc resource chưa phân loại", async () => {
     const deps = makeDeps({
       findAllGrantsForUser: async () => [
         makeGrant("ALLOW", { facilityUnitId: null, dicomNodeId: null }), // Global allow
@@ -202,11 +202,56 @@ async function main() {
       deps,
       makeCtx(),
     );
-    assert(result.shouldFilter === false, "Should not filter (no holes)");
+    assert(result.shouldFilter === true, "Global grant must still classify rows");
+    assert(result.globalAllow === true, "globalAllow remains explicit");
+    assert(result.allowedUnitIds.includes("H1"), "Active tree units are allowed");
+  });
+
+  await run("global ALLOW Prisma filter requires an active classification", async () => {
+    const where = applyScopeFilterToPrisma(
+      {
+        mode: "ENFORCE",
+        globalAllow: true,
+        shouldFilter: true,
+        allowedUnitIds: ["H1", "D1"],
+        deniedUnitIds: ["D2"],
+        allowedAeTitles: ["A"],
+        deniedAeTitles: ["B"],
+        allowedDicomNodeIds: [],
+        deniedDicomNodeIds: [],
+        reason: "test",
+      },
+      "performingUnitId",
+      "stationAeTitle",
+    ) as any;
+
+    assert(Array.isArray(where.AND), "Expected an AND clause");
     assert(
-      result.globalAllow === false,
-      "globalAllow resets when noFilter is returned",
+      where.AND.some((condition: any) => Array.isArray(condition.OR)
+        && condition.OR.some((item: any) => item.performingUnitId?.in?.includes("H1"))
+        && condition.OR.some((item: any) => item.stationAeTitle?.in?.includes("A"))),
+      "Global ALLOW must require a known unit or AE Title",
     );
+  });
+
+  await run("empty ENFORCE scope creates a fail-closed Prisma filter", async () => {
+    const where = applyScopeFilterToPrisma(
+      {
+        mode: "ENFORCE",
+        globalAllow: false,
+        shouldFilter: true,
+        allowedUnitIds: [],
+        deniedUnitIds: [],
+        allowedAeTitles: [],
+        deniedAeTitles: [],
+        allowedDicomNodeIds: [],
+        deniedDicomNodeIds: [],
+        reason: "test",
+      },
+      "performingUnitId",
+      "stationAeTitle",
+    );
+    assert(where.id === "force-empty-result", "Empty scope must not produce an unfiltered query");
   });
 
   await run("ambiguous AE title không lọt vào allowedAeTitles", async () => {

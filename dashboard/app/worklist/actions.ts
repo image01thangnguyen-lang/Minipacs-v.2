@@ -11,6 +11,9 @@ import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/authz";
 import { worklistSchema, type WorklistInput } from "./schema";
 import { createNonDicomExam } from "@/lib/nonDicomWorkflowService";
+import { ScopeRequestContext } from "@/lib/authz/scope/scope-request-context";
+import { buildScopeFilter, applyScopeFilterToPrisma } from "@/lib/authz/scope/scope-filter-builder";
+import { getScopeDeps } from "@/lib/authz/scope/deps";
 
 const orderStatusValues = ["REQUESTED", "SCHEDULED", "ARRIVED", "CANCELLED", "EXPIRED"] as const;
 
@@ -235,16 +238,31 @@ export async function getWorklistOrdersAction(filters: {
   status?: string;
   search?: string;
 } = {}) {
-  await requireWorklistAccess();
+  const actor = await requireWorklistAccess();
   const { start, end } = readDateRange(filters.date);
   const status = orderStatusValues.includes(filters.status as any) ? filters.status : undefined;
   const search = cleanText(filters.search);
+
+  const ctx = ScopeRequestContext.create();
+  const filterResult = await buildScopeFilter(
+    actor.id,
+    "READ_STUDY",
+    "ORDER",
+    getScopeDeps(),
+    ctx
+  );
+  const scopeWhere = applyScopeFilterToPrisma(
+    filterResult,
+    "performingUnitId",
+    "scheduledStationAeTitle"
+  );
 
   const where: any = {
     scheduledDate: {
       gte: start,
       lt: end,
     },
+    ...scopeWhere
   };
 
   if (status) where.orderStatus = status;
