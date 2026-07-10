@@ -16,6 +16,7 @@ export type AccessScopeGrantRow = {
   includeDescendants: boolean;
   validFrom: Date | null;
   validUntil: Date | null;
+  reason: string | null;
   facilityUnit: { isActive: boolean } | null;
   dicomNode: { isActive: boolean; facilityId: string | null; aeTitle?: string } | null;
 };

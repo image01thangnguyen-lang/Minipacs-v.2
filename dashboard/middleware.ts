@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
-import { auth } from "./auth";
+import NextAuth from "next-auth";
+import { authConfig } from "./auth.config";
 import { getDefaultPathForRole, getRoutePermission, hasPermission } from "./lib/permissions";
+
+// Middleware runs in the Edge runtime. Use only the edge-safe config here;
+// importing ./auth would also bundle Prisma and bcrypt into middleware.
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;

@@ -102,7 +102,44 @@ export async function saveMatrixAction(doctorId: string, updates: PermissionUpda
 
     return { success: true };
   } catch (error: any) {
-    console.error("saveMatrixAction error:", error);
-    return { success: false, error: error.message || "Lỗi hệ thống khi lưu phân quyền." };
+    console.error("saveMatrix error:", error);
+    return { success: false, error: "Đã có lỗi xảy ra khi lưu phân quyền." };
   }
+}
+
+import { getScopeMatrixSnapshot, saveScopeMatrixDiff, previewScopeMatrixDiff, MatrixIntent, PrincipalType } from "../../../../lib/authz/scope/scope-matrix-service";
+
+export async function getScopeMatrixSnapshotAction(principalId: string, principalType: PrincipalType) {
+  await requirePermission("admin.permissions");
+  if (principalType !== "USER" && principalType !== "ROLE") throw new Error("Principal type không hợp lệ.");
+  return getScopeMatrixSnapshot(principalId, principalType);
+}
+
+export async function saveScopeMatrixDiffAction(principalId: string, principalType: PrincipalType, intents: MatrixIntent[], baseSnapshotHash: string) {
+  const actor = await requirePermission("admin.permissions");
+  if (principalType !== "USER" && principalType !== "ROLE") return { success: false, error: "Principal type không hợp lệ." };
+  return saveScopeMatrixDiff(actor.id, principalId, principalType, intents, baseSnapshotHash);
+}
+
+export async function previewScopeMatrixDiffAction(principalId: string, principalType: PrincipalType, intents: MatrixIntent[], baseSnapshotHash: string) {
+  await requirePermission("admin.permissions");
+  if (principalType !== "USER" && principalType !== "ROLE") return { success: false, error: "Principal type không hợp lệ." };
+  return previewScopeMatrixDiff(principalId, principalType, intents, baseSnapshotHash);
+}
+
+export async function getPrincipalsAction() {
+  await requirePermission("admin.permissions");
+  const [users, roles] = await Promise.all([
+    prisma.user.findMany({
+      where: { isActive: true },
+      orderBy: { fullName: 'asc' },
+      select: { id: true, fullName: true, role: true }
+    }),
+    prisma.appRoleProfile.findMany({
+      where: { isActive: true },
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true, description: true }
+    })
+  ]);
+  return { users, roles };
 }

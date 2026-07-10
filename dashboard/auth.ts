@@ -3,8 +3,10 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/app/db"; // or adjust path if necessary
 import { getPermissionsForRole } from "@/lib/permissions";
+import { authConfig } from "./auth.config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       name: "Crendentials",
@@ -52,35 +54,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
     })
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        const u = user as any;
-        token.id = u.id;
-        token.role = u.role;
-        token.baseRole = u.baseRole;
-        token.roleName = u.roleName;
-        token.permissions = u.permissions;
-        token.username = u.username;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        const su = session.user as any;
-        su.id = token.id as string;
-        su.role = token.role as string;
-        su.baseRole = token.baseRole as string | undefined;
-        su.roleName = token.roleName as string | undefined;
-        su.permissions = Array.isArray(token.permissions) ? token.permissions : undefined;
-      }
-      return session;
-    }
-  },
-  session: {
-    strategy: "jwt"
-  },
-  pages: {
-    signIn: "/login"
-  }
 });

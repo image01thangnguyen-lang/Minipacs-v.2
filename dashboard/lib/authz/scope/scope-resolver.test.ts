@@ -81,6 +81,7 @@ function makeGrant(
     includeDescendants: true,
     validFrom: null,
     validUntil: null,
+    reason: null,
     facilityUnit: facilityUnitId ? { isActive: true } : undefined,
     dicomNode: dicomNodeId ? { isActive: true, facilityId: null } : undefined,
     ...overrides,

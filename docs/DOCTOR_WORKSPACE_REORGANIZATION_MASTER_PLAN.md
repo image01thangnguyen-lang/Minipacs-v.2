@@ -363,6 +363,8 @@ Mục tiêu: khóa đúng dữ liệu trước khi làm worklist mới.
 
 Kế hoạch triển khai chi tiết: [DOCTOR_WORKSPACE_PHASE2_SCOPE_AUTHORIZATION_ORG_TREE_PLAN.md](./DOCTOR_WORKSPACE_PHASE2_SCOPE_AUTHORIZATION_ORG_TREE_PLAN.md).
 
+Kế hoạch đóng phase/cutover: [DOCTOR_WORKSPACE_PHASE2_PR10_UAT_ENFORCEMENT_CUTOVER_PLAN.md](./DOCTOR_WORKSPACE_PHASE2_PR10_UAT_ENFORCEMENT_CUTOVER_PLAN.md).
+
 - Chuẩn hóa cây Chuỗi → Bệnh viện → Khoa/Chuyên khoa → Phòng/Máy.
 - Bổ sung access grant theo scope/capability và migration dữ liệu.
 - Xây một authorization resolver dùng chung cho list, facet, detail, related cases và actions.
@@ -375,6 +377,8 @@ Kế hoạch triển khai chi tiết: [DOCTOR_WORKSPACE_PHASE2_SCOPE_AUTHORIZATI
 ### Phase 3 — Worklist query, bộ lọc và bảng nhiều cột
 
 Mục tiêu: thay tải toàn bộ + lọc client bằng truy vấn nhanh, chính xác.
+
+Kế hoạch triển khai chi tiết: [DOCTOR_WORKSPACE_PHASE3_WORKLIST_QUERY_FILTER_GRID_PLAN.md](./DOCTOR_WORKSPACE_PHASE3_WORKLIST_QUERY_FILTER_GRID_PLAN.md).
 
 - Xây API/query có search, date, status, facility, specialty, consultation, priority, doctor, HIS.
 - Thêm server pagination/cursor, sorting và facet counts.
@@ -389,6 +393,8 @@ Mục tiêu: thay tải toàn bộ + lọc client bằng truy vấn nhanh, chín
 
 Mục tiêu: ghép thành không gian làm việc giống ảnh tham chiếu.
 
+Kế hoạch triển khai chi tiết: [DOCTOR_WORKSPACE_PHASE4_SEVEN_REGION_RELATED_STUDIES_PLAN.md](./DOCTOR_WORKSPACE_PHASE4_SEVEN_REGION_RELATED_STUDIES_PLAN.md).
+
 - Dựng CSS grid/split panes cho 7 khu vực.
 - Cho phép thu gọn menu/filter, kéo độ rộng danh sách và report.
 - Thêm truy vấn ca liên quan độc lập theo bệnh nhân và phạm vi thời gian.
@@ -401,6 +407,8 @@ Mục tiêu: ghép thành không gian làm việc giống ảnh tham chiếu.
 ### Phase 5 — Tích hợp báo cáo và hội chẩn trong workspace
 
 Mục tiêu: bác sĩ hoàn tất công việc tại khu vực 7.
+
+Kế hoạch triển khai chi tiết: [DOCTOR_WORKSPACE_PHASE5_REPORT_CONSULTATION_INTEGRATION_PLAN.md](./DOCTOR_WORKSPACE_PHASE5_REPORT_CONSULTATION_INTEGRATION_PLAN.md).
 
 - Tái sử dụng report workflow hiện có trong panel mới.
 - Thêm autosave status, dirty guard và read-only mode.
@@ -415,6 +423,8 @@ Mục tiêu: bác sĩ hoàn tất công việc tại khu vực 7.
 
 Mục tiêu: đưa ngôn ngữ giao diện mới ra toàn ứng dụng.
 
+Kế hoạch triển khai chi tiết: [DOCTOR_WORKSPACE_PHASE6_SHARED_LIST_UI_ADOPTION_PLAN.md](./DOCTOR_WORKSPACE_PHASE6_SHARED_LIST_UI_ADOPTION_PLAN.md).
+
 - Trích xuất component chung từ workspace đã ổn định.
 - Chuyển lần lượt Archive, Worklist, Consultations, Non-DICOM rồi các trang admin.
 - Chuẩn hóa toolbar, filter reset, saved views, table density, status, empty/error/loading.
@@ -427,6 +437,8 @@ Mục tiêu: đưa ngôn ngữ giao diện mới ra toàn ứng dụng.
 
 Mục tiêu: phát hành an toàn cho môi trường y tế.
 
+Kế hoạch triển khai chi tiết: [DOCTOR_WORKSPACE_PHASE7_PERFORMANCE_UAT_CONTROLLED_ROLLOUT_PLAN.md](./DOCTOR_WORKSPACE_PHASE7_PERFORMANCE_UAT_CONTROLLED_ROLLOUT_PLAN.md).
+
 - Test quyền theo role × cơ sở × chuyên khoa × máy × hành động.
 - Test tập dữ liệu lớn, latency cao, Orthanc/HIS gián đoạn và nhiều user đồng thời.
 - Kiểm tra accessibility, bàn phím, màn hình 1280/1440/1920/2560.
@@ -436,6 +448,8 @@ Mục tiêu: phát hành an toàn cho môi trường y tế.
 
 Đầu ra: bản phát hành được ký UAT và có giám sát.  
 Điều kiện hoàn thành: đạt tiêu chí chức năng, bảo mật, hiệu năng và vận hành bên dưới.
+
+Xem chỉ mục đầy đủ 35 kế hoạch PR Phase 3–7: [DOCTOR_WORKSPACE_PHASE3_TO_PHASE7_PR_PLAN_INDEX.md](./DOCTOR_WORKSPACE_PHASE3_TO_PHASE7_PR_PLAN_INDEX.md).
 
 ## 11. Các lát cắt triển khai/PR đề xuất
 
