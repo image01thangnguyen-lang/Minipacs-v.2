@@ -80,11 +80,13 @@ export default function TiptapEditor({
   value,
   onChange,
   shortcutTemplates = [],
+  readOnly,
 }: {
   onShortcutApply?: (template: ReportTemplateOption) => void;
   value: string;
   onChange: (html: string) => void;
   shortcutTemplates?: ReportTemplateOption[];
+  readOnly?: boolean;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<any>(null);
@@ -186,11 +188,13 @@ export default function TiptapEditor({
       }),
     ],
     content: value,
+    editable: !readOnly,
     editorProps: {
       attributes: {
         class: 'prose prose-sm prose-invert focus:outline-none max-w-none text-vin-text2 min-h-[400px]',
       },
       handlePaste: (view, event) => {
+        if (readOnly) return true; // block paste in read-only mode
         const items = event.clipboardData?.items;
         if (!items) return false;
 
@@ -207,6 +211,7 @@ export default function TiptapEditor({
         return hasImage;
       },
       handleDrop: (view, event, slice, moved) => {
+        if (readOnly) return true; // block drop in read-only mode
         if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
           let hasImage = false;
           const pos = view.posAtCoords({ left: event.clientX, top: event.clientY })?.pos;
@@ -307,6 +312,13 @@ export default function TiptapEditor({
     editorRef.current = editor;
   }, [editor]);
 
+  // Sync readOnly state with editor editable
+  useEffect(() => {
+    if (editor) {
+      editor.setEditable(!readOnly);
+    }
+  }, [readOnly, editor]);
+
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
       editor.commands.setContent(value, { emitUpdate: false });
@@ -353,7 +365,11 @@ export default function TiptapEditor({
   };
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-xl border border-vin-border bg-vin-shell transition-colors focus-within:border-vin-accent">
+    <div
+      className="flex flex-col overflow-hidden rounded-xl border border-vin-border bg-vin-shell transition-colors focus-within:border-vin-accent"
+      aria-readonly={readOnly || undefined}
+    >
+      {!readOnly && (
       <div className="flex flex-wrap items-center gap-1 border-b border-vin-border bg-vin-panel2 p-2">
         <ToolbarButton
           disabled={!editor.can().chain().focus().undo().run()}
@@ -443,8 +459,9 @@ export default function TiptapEditor({
 
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePickedImage} />
       </div>
+      )}
 
-      {shortcutSuggestion && (
+      {!readOnly && shortcutSuggestion && (
         <div className="border-b border-vin-border bg-vin-panel2 px-2 py-2">
           <div className="flex flex-wrap gap-1.5">
             {shortcutSuggestion.matches.map((template, index) => {

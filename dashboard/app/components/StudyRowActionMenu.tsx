@@ -36,6 +36,7 @@ type ActionMenuProps = {
   onExportDicom?: () => void;
   onExportAnonymized?: () => void;
   onRequestDelete?: () => void;
+  allowedActions?: string[];
 };
 
 export function StudyRowActionMenu({
@@ -43,13 +44,13 @@ export function StudyRowActionMenu({
   studyStatus,
   reportStatus,
   patientName,
-  canReadReport,
-  canWriteReport,
-  canAssign,
-  canUpdateClinical,
-  canCancelDraft,
-  canUnfinalize,
-  canDeliver,
+  canReadReport: defaultCanReadReport,
+  canWriteReport: defaultCanWriteReport,
+  canAssign: defaultCanAssign,
+  canUpdateClinical: defaultCanUpdateClinical,
+  canCancelDraft: defaultCanCancelDraft,
+  canUnfinalize: defaultCanUnfinalize,
+  canDeliver: defaultCanDeliver,
   onAssignDoctor,
   onUpdateClinical,
   onAddIndication,
@@ -57,9 +58,9 @@ export function StudyRowActionMenu({
   onCancelDraft,
   onUnfinalize,
   onMarkDelivered,
-  canShare,
-  canConsult,
-  canExport,
+  canShare: defaultCanShare,
+  canConsult: defaultCanConsult,
+  canExport: defaultCanExport,
   canDeleteStudy,
   canExportAnonymized,
   onShare,
@@ -67,7 +68,19 @@ export function StudyRowActionMenu({
   onExportDicom,
   onExportAnonymized,
   onRequestDelete,
+  allowedActions,
 }: ActionMenuProps) {
+  const canReadReport = allowedActions ? allowedActions.includes("readReport") : defaultCanReadReport;
+  const canWriteReport = allowedActions ? allowedActions.includes("draftReport") : defaultCanWriteReport;
+  const canAssign = allowedActions ? allowedActions.includes("assignCase") : defaultCanAssign;
+  const canUpdateClinical = allowedActions ? allowedActions.includes("editClinical") : defaultCanUpdateClinical;
+  const canCancelDraft = allowedActions ? allowedActions.includes("cancelDraft") : defaultCanCancelDraft;
+  const canUnfinalize = allowedActions ? allowedActions.includes("unfinalizeReport") : defaultCanUnfinalize;
+  const canDeliver = allowedActions ? allowedActions.includes("deliverResult") : defaultCanDeliver;
+  const canShare = allowedActions ? allowedActions.includes("share") : defaultCanShare;
+  const canConsult = allowedActions ? allowedActions.includes("createConsultation") : defaultCanConsult;
+  const canExport = allowedActions ? allowedActions.includes("export") : defaultCanExport;
+
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);

@@ -1,0 +1,150 @@
+"use server";
+
+import { prisma } from "../db";
+import { requirePermission } from "@/lib/authz";
+import { getAllowedActionsForStudies, type StudyForActions } from "@/lib/authz/scope/allowed-actions";
+import { StudyUidInputSchema, StudyWorkspaceDetailSchema, type StudyWorkspaceResult } from "@/lib/workspace/study-workspace";
+
+/**
+ * Fetch study workspace detail for Region 7 (PatientStudyContextPanel).
+ *
+ * Security invariants:
+ * 1. requirePermission("studies.read") — fail-closed on missing global perm.
+ * 2. Batch allowedActions via getAllowedActionsForStudies (O(1) DB for principal/grants/tree).
+ * 3. If allowedActions.readStudy === false → DENIED (scope revoke).
+ * 4. If allowedActions.readReport === false → report fields nulled (permission split).
+ * 5. No report text/content is ever returned. That's PR2's responsibility.
+ */
+export async function getStudyWorkspaceAction(
+  rawStudyUid: string
+): Promise<StudyWorkspaceResult> {
+  // 1. Authentication + global permission
+  let actor: { id: string };
+  try {
+    actor = await requirePermission("studies.read");
+  } catch {
+    return { error: "UNAUTHORIZED" };
+  }
+
+  // 2. Input validation
+  const uidParse = StudyUidInputSchema.safeParse(rawStudyUid);
+  if (!uidParse.success) {
+    return { error: "NOT_FOUND" };
+  }
+  const studyUid = uidParse.data;
+
+  // 3. Bounded detail query: study + order + latest report.
+  let study;
+  try {
+    study = await prisma.imagingStudy.findUnique({
+      where: { studyInstanceUid: studyUid },
+      include: {
+        order: {
+          select: {
+            performingUnitId: true,
+            scheduledStationAeTitle: true,
+            sourceFacility: true,
+            gender: true,
+            dob: true,
+          },
+        },
+        reports: {
+          orderBy: { updatedAt: "desc" },
+          take: 1,
+          select: {
+            status: true,
+            updatedAt: true,
+            cancelledAt: true,
+          },
+        },
+      },
+    });
+  } catch {
+    return { error: "UNAVAILABLE" };
+  }
+
+  if (!study) {
+    return { error: "NOT_FOUND" };
+  }
+
+  // 4. Batch allowedActions (O(1) DB for principal/grants/tree)
+  const studyForActions: StudyForActions = {
+    id: studyUid,
+    studyInstanceUid: studyUid,
+    stationAeTitle: study.stationAeTitle || null,
+    status: study.status || "READY_TO_READ",
+    assignedDoctorId: study.assignedDoctorId || null,
+    reportStatus: study.reports?.[0]?.status || null,
+    performingUnitId: study.order?.performingUnitId || null,
+    scheduledStationAeTitle: study.order?.scheduledStationAeTitle || null,
+  };
+
+  let actionsMap;
+  try {
+    actionsMap = await getAllowedActionsForStudies(actor.id, [studyForActions]);
+  } catch {
+    return { error: "DENIED" };
+  }
+  const allowedActions = actionsMap[studyUid];
+
+  if (!allowedActions) {
+    return { error: "DENIED" };
+  }
+
+  // 5. Scope revoke check: if user can't read this study, deny
+  if (!allowedActions.readStudy) {
+    return { error: "DENIED" };
+  }
+
+  // 6. Resolve report metadata (permission-split: null if no readReport)
+  const report = study.reports?.[0] || null;
+  const canReadReport = allowedActions.readReport;
+  const reportStatus = canReadReport
+    ? (report?.cancelledAt ? "CANCELLED" : (report?.status || null))
+    : null;
+  const reportRevision = canReadReport && report?.updatedAt
+    ? report.updatedAt.getTime()
+    : null;
+  const reportUpdatedAt = canReadReport
+    ? (report?.updatedAt ? report.updatedAt.toISOString() : null)
+    : null;
+
+  // 7. Resolve assigned doctor name (batch user lookup avoided: single field)
+  let assignedDoctorName: string | null = null;
+  if (study.assignedDoctorId) {
+    try {
+      const doctor = await prisma.user.findUnique({
+        where: { id: study.assignedDoctorId },
+        select: { fullName: true, username: true },
+      });
+      assignedDoctorName = doctor?.fullName || doctor?.username || null;
+    } catch {
+      assignedDoctorName = null;
+    }
+  }
+
+  // 8. Facility name
+  const facilityName = study.order?.sourceFacility || null;
+
+  // 9. Assemble detail (field-minimized, no report content)
+  const detail = StudyWorkspaceDetailSchema.parse({
+    studyUid,
+    patientId: study.patientId || null,
+    patientName: study.patientName || null,
+    patientSex: study.order?.gender || null,
+    patientBirthDate: study.order?.dob ? study.order.dob.toISOString().split("T")[0] : null,
+    studyDate: study.scheduledAt ? study.scheduledAt.toISOString().split("T")[0] : (study.createdAt ? study.createdAt.toISOString().split("T")[0] : null),
+    studyDescription: study.studyDescription || null,
+    modality: study.modality || null,
+    accessionNumber: study.accessionNumber || null,
+    status: study.status || "READY_TO_READ",
+    reportStatus,
+    reportRevision,
+    reportUpdatedAt,
+    assignedDoctorName,
+    facilityName,
+    allowedActions,
+  });
+
+  return { data: detail };
+}

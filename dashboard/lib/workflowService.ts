@@ -339,11 +339,13 @@ export async function saveReportDraft(
         printTemplateId: input.printTemplateId,
         cancelledAt: null,
         cancelReason: null,
+        revision: { increment: 1 },
         ...(doctorId ? { doctorId } : {}),
       },
       create: {
         studyInstanceUid,
         status: "DRAFT",
+        revision: 1,
         findings: input.findings,
         conclusion: input.conclusion,
         recommendation: input.recommendation,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CheckCircle,
   ChevronLeft,
@@ -44,6 +44,19 @@ import { ClinicalInfoModal } from "./components/ClinicalInfoModal";
 import AssignDoctorModal from "./components/AssignDoctorModal";
 import { ShareDialog } from "@/components/share/ShareDialog";
 import { ConsultationDialog } from "@/components/consultation/ConsultationDialog";
+import { useWorklistUrlState, mapUrlStateToQuery } from "../lib/worklist/url-state";
+import { useSelectionUrlState } from "../lib/workspace/selection-state";
+import { getWorkspacePreferencesAction, updateWorkspacePreferencesAction } from "./actions/workspace-preferences-actions";
+import { WorkspacePreferences, defaultWorkspacePreferences } from "../lib/preferences/workspace-preferences";
+import { logShadowRunTelemetry } from "../lib/telemetry";
+import { DoctorWorkspace } from "./components/workspace/DoctorWorkspace";
+import { WorkspaceSwitcher } from "./components/workspace/regions/WorkspaceSwitcher";
+import { WorkspaceSearchBar } from "./components/workspace/regions/WorkspaceSearchBar";
+import { WorkQueueFacets } from "./components/workspace/regions/WorkQueueFacets";
+import { FacilityScopeTree } from "./components/workspace/regions/FacilityScopeTree";
+import { RelatedStudiesPanel } from "./components/workspace/regions/RelatedStudiesPanel";
+import { PatientStudyContextPanel } from "./components/workspace/regions/PatientStudyContextPanel";
+import { resolveWorklistMode } from "../lib/worklist/cutover";
 
 import {
   getDefaultTemplate,
@@ -59,10 +72,9 @@ import { getReportTemplateSuggestions } from "./settings/report-templates/action
 import TiptapEditor from "./report/[studyInstanceUid]/components/TiptapEditor";
 import { PrintTemplateViewer } from "./report/[studyInstanceUid]/components/PrintTemplateViewer";
 
-const fmtName = (name?: string) => (name ? name.replace(/\^/g, " ") : "Unknown Patient");
-const fmtText = (value?: string) => value || "-";
-const fmtSex = (sex?: string) => (sex === "M" ? "Nam" : sex === "F" ? "Nữ" : sex || "?");
-const fmtAge = (age?: string) => (age ? age.replace(/\D/g, "") : "?");
+import { fmtName, fmtText, fmtSex, fmtAge, fmtDateTime, fmtDateTimeIso, fmtDuration, hisStatusLabel } from "./components/workspace/formatters";
+import { ModBadge, RisStatusBadge, risStatusLabels } from "./components/workspace/badges";
+import { StudyDataGrid } from "./components/workspace/StudyDataGrid";
 
 const getDoctorPrintInfo = (report: any) => {
   const doctor = report?.doctor;
@@ -78,42 +90,6 @@ const getDoctorPrintInfo = (report: any) => {
   };
 };
 
-const fmtDateTime = (date?: string, time?: string) => {
-  if (!date) return "-";
-  const dateValue = date.replace(/(\d{4})(\d{2})(\d{2})/, "$3/$2/$1");
-  const timeValue = time ? time.substring(0, 4).replace(/(\d{2})(\d{2})/, "$1:$2") : "";
-  return timeValue ? `${dateValue} ${timeValue}` : dateValue;
-};
-
-const fmtDateTimeIso = (value?: string | null) => {
-  if (!value) return "-";
-  return new Date(value).toLocaleString("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
-
-const fmtDuration = (minutes?: number | null) => {
-  if (minutes === null || minutes === undefined) return "-";
-  if (minutes < 60) return `${minutes}p`;
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  return rest ? `${hours}h ${rest}p` : `${hours}h`;
-};
-
-const hisStatusLabel = (status?: string | null) => {
-  if (!status) return "-";
-  if (status === "SYNCED" || status === "SENT") return "Da dong bo";
-  if (status === "FAILED") return "Loi";
-  if (status === "PENDING") return "Dang cho";
-  if (status === "DISABLED") return "Tat HIS";
-  if (status === "SKIPPED") return "Bo qua";
-  return status;
-};
-
 function MiniInfo({ label, mono, value }: { label: string; mono?: boolean; value?: string | number | null }) {
   return (
     <div className="min-w-0">
@@ -123,75 +99,15 @@ function MiniInfo({ label, mono, value }: { label: string; mono?: boolean; value
   );
 }
 
-const modalityClasses: Record<string, string> = {
-  CT: "border-vin-accent/40 bg-vin-accentSoft/15 text-cyan-100",
-  MR: "border-cyan-400/30 bg-cyan-500/10 text-cyan-100",
-  CR: "border-amber-400/30 bg-amber-500/10 text-amber-100",
-  DX: "border-amber-400/30 bg-amber-500/10 text-amber-100",
-  US: "border-emerald-400/30 bg-emerald-500/10 text-emerald-100",
-};
 
-function ModBadge({ value, isNonDicom }: { value?: string; isNonDicom?: boolean }) {
-  if (isNonDicom) {
-    return (
-      <div className="flex flex-col items-center gap-1">
-        <span className="inline-flex min-w-[2.25rem] items-center justify-center rounded-full border border-indigo-400/35 bg-indigo-500/15 px-2 py-0.5 font-mono text-[10px] font-bold leading-none tracking-widest text-indigo-100 shadow-[0_0_8px_rgba(99,102,241,0.15)]">
-          {value || "NON"}
-        </span>
-        <span className="text-[9px] font-semibold text-indigo-300">Non-DICOM</span>
-      </div>
-    );
-  }
+import { Suspense } from "react";
+import { WorkspaceDirtyProvider, useWorkspaceDirty } from "./components/workspace/hooks/WorkspaceDirtyContext";
+import { UnsavedChangesDialog } from "./components/workspace/UnsavedChangesDialog";
 
-  const label = value || "?";
-  const classes = modalityClasses[label] || "border-white/10 bg-white/5 text-vin-muted";
-
-  return (
-    <span className={`inline-flex min-w-9 items-center justify-center rounded-full border px-2 py-0.5 font-mono text-[10px] font-bold leading-none ${classes}`}>
-      {label}
-    </span>
-  );
-}
-
-const risStatusLabels: Record<string, string> = {
-  ORDERED: "Chờ chụp",
-  READY_FOR_SCAN: "Sẵn sàng chụp",
-  IN_PROGRESS: "Đang chụp",
-  RECEIVED: "Đã nhận ảnh",
-  STABLE: "Ảnh ổn định",
-  NEEDS_QC: "Cần QC",
-  QC_REJECTED: "Chụp lại",
-  READY_TO_READ: "Chờ đọc",
-  READING: "Đang đọc",
-  REPORTED: "Đã có báo cáo",
-  FINALIZED: "Đã ký",
-  DELIVERED: "Đã trả",
-  ARCHIVED: "Lưu trữ",
-  DELETED_FROM_PACS: "Đã xóa ảnh",
-  ERROR: "Lỗi",
-};
-
-function RisStatusBadge({ status }: { status?: string }) {
-  const value = status || "READY_TO_READ";
-  const label = risStatusLabels[value] || value;
-
-  const classes =
-    value === "FINALIZED" || value === "DELIVERED"
-      ? "border-emerald-400/35 bg-emerald-500/15 text-emerald-100"
-      : value === "READING" || value === "REPORTED"
-        ? "border-amber-400/35 bg-amber-500/15 text-amber-100"
-        : value === "QC_REJECTED" || value === "ERROR"
-          ? "border-red-400/35 bg-red-500/15 text-red-100"
-          : value === "READY_TO_READ" || value === "RECEIVED" || value === "STABLE"
-            ? "border-cyan-400/35 bg-cyan-500/15 text-cyan-100"
-            : "border-white/10 bg-white/5 text-vin-text2";
-
-  return <span className={`inline-flex max-w-[118px] items-center justify-center truncate rounded-full border px-2.5 py-1 text-[9px] font-bold leading-none ${classes}`}>{label}</span>;
-}
-
-export default function DashboardPage() {
+function DashboardPageContent() {
   const [studies, setStudies] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [studyLoadError, setStudyLoadError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(50);
   const [clinicalModalOpen, setClinicalModalOpen] = useState(false);
@@ -209,16 +125,44 @@ export default function DashboardPage() {
 
   const [permissions, setPermissions] = useState<string[]>([]);
   const [userRole, setUserRole] = useState<string>("GUEST");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [modalityFilter, setModalityFilter] = useState("ALL");
-  const [workflowStatusFilter, setWorkflowStatusFilter] = useState("ALL");
-  const [stationAeFilter, setStationAeFilter] = useState("ALL");
-  const [assignedDoctorFilter, setAssignedDoctorFilter] = useState("ALL");
-  const [hisStatusFilter, setHisStatusFilter] = useState("ALL");
-  const [datePresetFilter, setDatePresetFilter] = useState("ALL");
+  const [preferences, setPreferences] = useState<WorkspacePreferences>(defaultWorkspacePreferences);
+  const layoutDebounceRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingLayoutRef = useRef<Partial<WorkspacePreferences["layout"]>>({});
 
-  const [selectedStudy, setSelectedStudy] = useState<any>(null);
+  const handleLayoutChange = useCallback((updates: Partial<WorkspacePreferences['layout']>) => {
+    setPreferences(prev => ({
+      ...prev,
+      layout: {
+        ...prev.layout,
+        ...updates
+      }
+    }));
+    pendingLayoutRef.current = { ...pendingLayoutRef.current, ...updates };
+
+    if (layoutDebounceRef.current) {
+      clearTimeout(layoutDebounceRef.current);
+    }
+    layoutDebounceRef.current = setTimeout(() => {
+      const layout = pendingLayoutRef.current;
+      pendingLayoutRef.current = {};
+      layoutDebounceRef.current = null;
+      updateWorkspacePreferencesAction({ layout }).catch(console.error);
+    }, 500);
+  }, []);
+
+  const { state, setFilters, localSearchQuery, setLocalSearchQuery, commitSearchNow, isPending } = useWorklistUrlState();
+  const { studyUid, setSelection } = useSelectionUrlState();
+  const dirtyContext = useWorkspaceDirty();
   const [patientDetails, setPatientDetails] = useState<any>(null);
+
+  const selectedStudy = useMemo(() => {
+    if (!studyUid) return null;
+    const listedStudy = studies.find(s => s.MainDicomTags?.StudyInstanceUID === studyUid);
+    const detailsMatch = patientDetails?.MainDicomTags?.StudyInstanceUID === studyUid;
+    if (listedStudy && detailsMatch) return { ...listedStudy, ...patientDetails };
+    return listedStudy || (detailsMatch ? patientDetails : { MainDicomTags: { StudyInstanceUID: studyUid } });
+  }, [studies, studyUid, patientDetails]);
+
   const [findings, setFindings] = useState("");
   const [conclusion, setConclusion] = useState("");
   const [recommendation, setRecommendation] = useState("");
@@ -252,9 +196,6 @@ export default function DashboardPage() {
     const result = await updateClinicalInfoAction(uid, data);
     if (result.success) {
       setStudies(cur => cur.map(s => s.MainDicomTags?.StudyInstanceUID === uid ? { ...s, ...data } : s));
-      if (selectedStudy?.MainDicomTags?.StudyInstanceUID === uid) {
-        setSelectedStudy((cur: any) => ({ ...cur, ...data }));
-      }
       setPatientDetails((cur: any) => (cur ? { ...cur, ...data } : cur));
     }
     return result;
@@ -308,58 +249,107 @@ export default function DashboardPage() {
 
 
   useEffect(() => {
+    let abort = false;
     async function loadStudies() {
       try {
         setIsLoading(true);
+        setStudyLoadError(null);
         // FALLBACK: flag controls whether we use the old un-scoped Orthanc query or the new scoped Prisma query
         let data = [];
-        const [clinic, perms] = await Promise.all([
+        const [clinic, perms, prefs] = await Promise.all([
           getClinicProfile(),
-          getUserPermissionsAction()
+          getUserPermissionsAction(),
+          getWorkspacePreferencesAction().catch(() => defaultWorkspacePreferences)
         ]);
+        if (abort) return;
         setPermissions(perms.permissions);
         setUserRole(perms.role);
-        // Compatibility is fail-safe: legacy remains the default until scoped UI
-        // pagination/filtering parity has passed UAT and the new path is explicitly enabled.
-        const useScoped = process.env.NEXT_PUBLIC_USE_SCOPED_WORKLIST === 'true';
-        if (useScoped) {
-          const to = new Date();
-          const from = new Date(to.getTime() - 365 * 24 * 60 * 60 * 1000);
-          const req = {
-            from: from.toISOString(),
-            to: to.toISOString(),
-            timezone: "Asia/Ho_Chi_Minh",
-            limit: 100
-          };
+        setPreferences(prefs);
+        // Determine execution mode
+        const mode = resolveWorklistMode(
+          process.env.NEXT_PUBLIC_WORKLIST_MODE,
+          process.env.NEXT_PUBLIC_USE_SCOPED_WORKLIST,
+        );
+
+        const mapScopedRow = (row: any) => ({
+          ...row,
+          MainDicomTags: {
+            StudyInstanceUID: row.studyInstanceUid,
+            StudyDate: row.createdAt.substring(0, 10).replace(/-/g, ''),
+            StudyTime: row.createdAt.substring(11, 16).replace(/:/g, '') + '00',
+            StudyDescription: row.bodyPart || "",
+            AccessionNumber: row.accessionNumber,
+            Modality: row.modality,
+            StationName: row.stationAeTitle
+          },
+          PatientMainDicomTags: {
+            PatientName: row.patientName,
+            PatientID: row.patientId,
+          },
+          EnrichedModality: row.modality,
+          WorkflowStatus: row.status,
+          AssignedDoctorId: row.assignedDoctorId,
+          AssignedDoctorName: row.assignedDoctorName,
+          hisSyncStatus: row.hisSyncStatus,
+          stationAeTitle: row.stationAeTitle,
+          machineName: row.machineName,
+          isNonDicom: row.isNonDicom,
+          nonDicomExamId: row.nonDicomExamId,
+          procedureName: row.bodyPart,
+          allowedActions: row.allowedActions,
+        });
+
+        if (mode === 'SCOPED') {
+          const req = mapUrlStateToQuery(state);
           const response = await getScopedWorklistAction(req);
-          data = response.rows.map((row: any) => ({
-            ...row,
-            MainDicomTags: {
-              StudyInstanceUID: row.studyInstanceUid,
-              StudyDate: row.createdAt.substring(0, 10).replace(/-/g, ''),
-              StudyTime: row.createdAt.substring(11, 16).replace(/:/g, '') + '00',
-              StudyDescription: row.bodyPart || "",
-              AccessionNumber: row.accessionNumber,
-              Modality: row.modality,
-              StationName: row.stationAeTitle
-            },
-            PatientMainDicomTags: {
-              PatientName: row.patientName,
-              PatientID: row.patientId,
-            },
-            EnrichedModality: row.modality,
-            WorkflowStatus: row.status,
-            AssignedDoctorId: row.assignedDoctorId,
-            AssignedDoctorName: row.assignedDoctorName,
-            hisSyncStatus: row.hisSyncStatus,
-            stationAeTitle: row.stationAeTitle,
-            machineName: row.machineName,
-            isNonDicom: row.isNonDicom,
-            nonDicomExamId: row.nonDicomExamId,
-            procedureName: row.bodyPart,
-          }));
+          if (abort) return;
+          data = response.rows.map(mapScopedRow);
+        } else if (mode === 'LEGACY') {
+          const result = await getStudies();
+          if (abort) return;
+          data = result;
         } else {
-          data = await getStudies();
+          // SHADOW mode
+          const req = mapUrlStateToQuery(state);
+
+          const t0 = performance.now();
+          const pLegacy = getStudies().then(res => {
+            const lat = performance.now() - t0;
+            return { data: res, error: null, latency: lat };
+          }).catch(error => {
+            return { data: null, error, latency: performance.now() - t0 };
+          });
+          const pScoped = getScopedWorklistAction(req).then(res => {
+            const lat = performance.now() - t0;
+            return { data: res, error: null, latency: lat };
+          }).catch(err => {
+            return { data: null, error: err, latency: performance.now() - t0 };
+          });
+
+          const [legacyRes, scopedRes] = await Promise.all([pLegacy, pScoped]);
+          if (abort) return;
+
+          if (!legacyRes.error) {
+            data = legacyRes.data!;
+          } else if (!scopedRes.error) {
+            // A scoped fallback is authorization-safe and avoids an outage when
+            // Orthanc is unavailable during the shadow soak period.
+            data = scopedRes.data!.rows.map(mapScopedRow);
+          } else {
+            throw new Error("Both worklist read paths are unavailable");
+          }
+
+          // Aggregate-only telemetry (fire and forget). Do not pass query,
+          // patient/accession identifiers, errors, or raw response payloads.
+          const scopedRows = scopedRes.error ? 0 : scopedRes.data!.rows.length;
+          logShadowRunTelemetry({
+            legacyLatencyMs: Math.round(legacyRes.latency),
+            scopedLatencyMs: Math.round(scopedRes.latency),
+            legacyRowsCount: legacyRes.error ? 0 : legacyRes.data!.length,
+            scopedRowsCount: scopedRows,
+            legacySucceeded: !legacyRes.error,
+            scopedSucceeded: !scopedRes.error,
+          }).catch(console.error);
         }
 
         setStudies(data || []);
@@ -367,10 +357,10 @@ export default function DashboardPage() {
         if (perms.permissions.includes("studies.assign")) {
           try {
             const docs = await getActiveDoctorsAction();
-            setActiveDoctors(docs || []);
+            if (!abort) setActiveDoctors(docs || []);
           } catch (err) {
             console.error("Failed to fetch doctors", err);
-            setActiveDoctors([]);
+            if (!abort) setActiveDoctors([]);
           }
         } else {
           setActiveDoctors([]);
@@ -388,14 +378,17 @@ export default function DashboardPage() {
           clinicLicenseNumber: clinic?.licenseNumber || "",
         });
       } catch (error) {
+        if (abort) return;
         console.error(error);
+        setStudyLoadError("Không thể tải danh sách ca chụp. Vui lòng thử lại.");
       } finally {
-        setIsLoading(false);
+        if (!abort) setIsLoading(false);
       }
     }
 
     loadStudies();
-  }, []);
+    return () => { abort = true; };
+  }, [state]);
 
   useEffect(() => {
     document.title = "Mini PACS - Danh sách ca chụp";
@@ -472,8 +465,8 @@ export default function DashboardPage() {
   const filteredStudies = useMemo(() => {
     let list = studies;
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+    if (state.q) {
+      const query = state.q.toLowerCase();
       list = list.filter(study => {
         const patient = study.PatientMainDicomTags || {};
         const main = study.MainDicomTags || {};
@@ -483,40 +476,40 @@ export default function DashboardPage() {
       });
     }
 
-    if (modalityFilter !== "ALL") {
-      list = list.filter(study => study.EnrichedModality === modalityFilter);
+    if (state.modality && state.modality !== "ALL") {
+      list = list.filter(study => study.EnrichedModality === state.modality);
     }
 
-    if (workflowStatusFilter !== "ALL") {
-      list = list.filter(study => (study.WorkflowStatus || "READY_TO_READ") === workflowStatusFilter);
+    if (state.workflowStatus && state.workflowStatus !== "ALL") {
+      list = list.filter(study => (study.WorkflowStatus || "READY_TO_READ") === state.workflowStatus);
     }
 
-    if (stationAeFilter !== "ALL") {
+    if (state.stationAe && state.stationAe !== "ALL") {
       list = list.filter(study => {
         const station = study.stationAeTitle || study.machineName || study.MainDicomTags?.StationName || study.MainDicomTags?.InstitutionName;
-        return station === stationAeFilter;
+        return station === state.stationAe;
       });
     }
 
-    if (assignedDoctorFilter === "UNASSIGNED") {
+    if (state.assignedDoctor === "UNASSIGNED") {
       list = list.filter(study => !study.AssignedDoctorId);
-    } else if (assignedDoctorFilter !== "ALL") {
-      list = list.filter(study => study.AssignedDoctorId === assignedDoctorFilter);
+    } else if (state.assignedDoctor && state.assignedDoctor !== "ALL") {
+      list = list.filter(study => study.AssignedDoctorId === state.assignedDoctor);
     }
 
-    if (hisStatusFilter === "EMPTY") {
+    if (state.hisStatus === "EMPTY") {
       list = list.filter(study => !study.hisSyncStatus && !study.hisResultStatus);
-    } else if (hisStatusFilter !== "ALL") {
-      list = list.filter(study => study.hisSyncStatus === hisStatusFilter || study.hisResultStatus === hisStatusFilter);
+    } else if (state.hisStatus && state.hisStatus !== "ALL") {
+      list = list.filter(study => study.hisSyncStatus === state.hisStatus || study.hisResultStatus === state.hisStatus);
     }
 
-    if (datePresetFilter !== "ALL") {
+    if (state.datePreset !== "ALL") {
       const now = new Date();
       now.setHours(0, 0, 0, 0);
       list = list.filter(study => {
         const dateStr = study.MainDicomTags?.StudyDate; // "YYYYMMDD"
         if (!dateStr || dateStr.length !== 8) return false;
-        
+
         const year = parseInt(dateStr.substring(0, 4), 10);
         const month = parseInt(dateStr.substring(4, 6), 10) - 1;
         const day = parseInt(dateStr.substring(6, 8), 10);
@@ -525,70 +518,120 @@ export default function DashboardPage() {
         const diffTime = now.getTime() - studyDate.getTime();
         const diffDays = diffTime / (1000 * 3600 * 24);
 
-        if (datePresetFilter === "TODAY") return diffDays <= 0 && diffDays > -1;
-        if (datePresetFilter === "YESTERDAY") return diffDays > 0 && diffDays <= 1;
-        if (datePresetFilter === "3DAYS") return diffDays >= 0 && diffDays <= 3;
-        if (datePresetFilter === "7DAYS") return diffDays >= 0 && diffDays <= 7;
+        if (state.datePreset === "TODAY") return diffDays <= 0 && diffDays > -1;
+        if (state.datePreset === "YESTERDAY") return diffDays > 0 && diffDays <= 1;
+        if (state.datePreset === "3DAYS") return diffDays >= 0 && diffDays <= 3;
+        if (state.datePreset === "7DAYS") return diffDays >= 0 && diffDays <= 7;
         return true;
       });
     }
 
     return list;
-  }, [assignedDoctorFilter, datePresetFilter, hisStatusFilter, modalityFilter, searchQuery, stationAeFilter, studies, workflowStatusFilter]);
+  }, [state, studies]);
 
   const totalPages = Math.ceil(filteredStudies.length / rowsPerPage) || 1;
   const pageStudies = filteredStudies.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
-  const patientHistory = useMemo(() => {
-    if (!selectedStudy) return [];
-    const patientId = selectedStudy.PatientMainDicomTags?.PatientID;
-    if (!patientId) return [];
-    return studies.filter(study => study.PatientMainDicomTags?.PatientID === patientId);
-  }, [selectedStudy, studies]);
 
-  const handleSelect = async (study: any) => {
-    setSelectedStudy(study);
-    const uid = study.MainDicomTags?.StudyInstanceUID;
-    if (!uid) return;
 
-    try {
-      setIsReportLoading(true);
+  const studiesRef = useRef(studies);
+  useEffect(() => { studiesRef.current = studies; }, [studies]);
+  const requestRaceToken = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!studyUid) {
+      requestRaceToken.current = null;
+      setIsReportLoading(false);
+      setPatientDetails(null);
       setFindings("");
       setConclusion("");
       setRecommendation("");
-      setStudyStatus(study.WorkflowStatus || "READY_TO_READ");
+      setStudyStatus("READY_TO_READ");
       setDoctorPrintInfo({});
       setReportTemplates([]);
+      setTemplateHtml("");
+      return;
+    }
 
-      const [report, details, template] = await Promise.all([
-        getReport(uid),
-        getStudyDetails(uid),
-        getDefaultTemplate(),
-      ]);
+    const currentToken = studyUid;
+    requestRaceToken.current = currentToken;
+    let isMounted = true;
 
-      if (report) {
-        setFindings(report.findings || "");
-        setConclusion(report.conclusion || "");
-        setRecommendation(report.recommendation || "");
-        if (report.imagingStudy?.status) setStudyStatus(report.imagingStudy.status);
-        setDoctorPrintInfo(getDoctorPrintInfo(report));
+    async function loadSelectionData() {
+      try {
+        setIsReportLoading(true);
+        setFindings("");
+        setConclusion("");
+        setRecommendation("");
+        setStudyStatus("READY_TO_READ");
+        setDoctorPrintInfo({});
+        setReportTemplates([]);
+        setPatientDetails(null);
+
+        const [report, details, template] = await Promise.all([
+          getReport(studyUid!),
+          getStudyDetails(studyUid!),
+          getDefaultTemplate(),
+        ]);
+
+        if (!isMounted || requestRaceToken.current !== currentToken) return;
+
+        if (report) {
+          setFindings(report.findings || "");
+          setConclusion(report.conclusion || "");
+          setRecommendation(report.recommendation || "");
+          if (report.imagingStudy?.status) setStudyStatus(report.imagingStudy.status);
+          setDoctorPrintInfo(getDoctorPrintInfo(report));
+        }
+
+        if (details) {
+          setPatientDetails(details);
+          if (details.WorkflowStatus) setStudyStatus(details.WorkflowStatus);
+        }
+        if (template) setTemplateHtml(template);
+
+        const studyObj = studiesRef.current.find(s => s.MainDicomTags?.StudyInstanceUID === studyUid);
+        const modality = studyObj?.EnrichedModality || studyObj?.MainDicomTags?.Modality;
+        const bodyPart = studyObj?.MainDicomTags?.BodyPartExamined;
+
+        const cannedTemplates = await getReportTemplateSuggestions({
+          modality,
+          bodyPart,
+        });
+
+        if (isMounted && requestRaceToken.current === currentToken) {
+          setReportTemplates(cannedTemplates || []);
+        }
+
+      } catch (error) {
+        if (!isMounted || requestRaceToken.current !== currentToken) return;
+        console.error(error);
+        setStudyStatus("NOT_FOUND");
+        setPatientDetails({
+          error: true,
+          message: "Ca chụp không tồn tại hoặc bạn không có quyền truy cập."
+        });
+      } finally {
+        if (isMounted && requestRaceToken.current === currentToken) {
+          setIsReportLoading(false);
+        }
       }
+    }
 
-      if (details) {
-        setPatientDetails(details);
-        if (details.WorkflowStatus) setStudyStatus(details.WorkflowStatus);
+    loadSelectionData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [studyUid]); // intentionally omit studies to avoid wiping out draft on polling
+
+  const handleSelect = async (study: any) => {
+    const uid = study?.MainDicomTags?.StudyInstanceUID;
+    if (uid) {
+      if (dirtyContext && dirtyContext.interceptNavigation(() => setSelection(uid))) {
+        return;
       }
-      if (template) setTemplateHtml(template);
-
-      const cannedTemplates = await getReportTemplateSuggestions({
-        modality: study.EnrichedModality || study.MainDicomTags?.Modality,
-        bodyPart: study.MainDicomTags?.BodyPartExamined,
-      });
-      setReportTemplates(cannedTemplates || []);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsReportLoading(false);
+      setSelection(uid);
     }
   };
 
@@ -628,13 +671,6 @@ export default function DashboardPage() {
             : study
         )
       );
-      if (selectedStudy?.MainDicomTags?.StudyInstanceUID === uid) {
-        setSelectedStudy((current: any) => ({
-          ...current,
-          AssignedDoctorId: doctorId,
-          AssignedDoctorName: assignedDoctorName,
-        }));
-      }
       setActiveStudy((current: any) =>
         current?.MainDicomTags?.StudyInstanceUID === uid
           ? { ...current, AssignedDoctorId: doctorId, AssignedDoctorName: assignedDoctorName }
@@ -666,7 +702,6 @@ export default function DashboardPage() {
         );
         if (selectedStudy?.MainDicomTags?.StudyInstanceUID === uid) {
           setStudyStatus("READY_TO_READ");
-          setSelectedStudy((cur: any) => ({ ...cur, WorkflowStatus: "READY_TO_READ", ReportStatus: "CANCELLED" }));
         }
       } else {
         alert((res as any).error || "Lỗi hủy nháp");
@@ -688,7 +723,6 @@ export default function DashboardPage() {
       );
       if (selectedStudy?.MainDicomTags?.StudyInstanceUID === uid) {
         setStudyStatus("READING");
-        setSelectedStudy((cur: any) => ({ ...cur, WorkflowStatus: "READING", ReportStatus: "DRAFT" }));
       }
     } else {
       alert((res as any).error || "Lỗi hủy duyệt");
@@ -751,11 +785,7 @@ export default function DashboardPage() {
             : study
         ))
       );
-      setSelectedStudy((current: any) =>
-        current?.MainDicomTags?.StudyInstanceUID === uid
-          ? { ...current, WorkflowStatus: nextStudyStatus, ReportStatus: nextReportStatus, hisResultStatus: nextHisResultStatus || current.hisResultStatus }
-          : current
-      );
+
       setPatientDetails((current: any) =>
         current
           ? { ...current, WorkflowStatus: nextStudyStatus, ReportStatus: nextReportStatus, hisResultStatus: nextHisResultStatus || current.hisResultStatus }
@@ -800,6 +830,84 @@ export default function DashboardPage() {
   const hisOrderDisplay = selectedStudy?.hisSyncStatus || patientDetails?.hisSyncStatus || "";
   const hisResultDisplay = selectedStudy?.hisResultStatus || patientDetails?.hisResultStatus || "";
 
+  const sharedGrid = (
+    <StudyDataGrid
+      studies={pageStudies}
+      isLoading={isLoading}
+      errorMessage={studyLoadError}
+      selectedUid={selectedUid}
+      startIndex={(currentPage - 1) * rowsPerPage}
+      onSelect={handleSelect}
+      onDoubleClick={openViewer}
+      preferences={preferences}
+      renderActions={(study) => {
+        const uid = study.MainDicomTags?.StudyInstanceUID;
+        const patient = study.PatientMainDicomTags || {};
+        return (
+          <StudyRowActionMenu
+            studyInstanceUid={uid}
+            studyStatus={study.WorkflowStatus}
+            reportStatus={study.ReportStatus}
+            patientName={fmtName(patient.PatientName)}
+            canReadReport={permissions.includes("reports.read")}
+            canWriteReport={permissions.includes("reports.write")}
+            canAssign={permissions.includes("studies.assign")}
+            canUpdateClinical={permissions.includes("studies.updateClinical")}
+            canCancelDraft={permissions.includes("reports.cancelDraft")}
+            canUnfinalize={permissions.includes("reports.unfinalize")}
+            canDeliver={permissions.includes("archive.deliver") && study.WorkflowStatus === "FINALIZED"}
+            canShare={permissions.includes("share.create")}
+            canConsult={permissions.includes("consult.create")}
+            onMarkDelivered={() => handleMarkDelivered(uid)}
+            onUpdateClinical={() => openClinicalModal(study, "CLINICAL_INFO")}
+            onAddIndication={() => openClinicalModal(study, "INDICATION")}
+            onStartReading={() => handleStartReading(uid)}
+            onAssignDoctor={() => openAssignModal(study)}
+            onCancelDraft={() => handleCancelDraft(uid)}
+            onUnfinalize={() => handleUnfinalize(uid)}
+            onShare={() => {
+              setActionResourceId(study.isNonDicom ? study.nonDicomExamId : uid);
+              setActionResourceType(study.isNonDicom ? 'NON_DICOM' : 'DICOM');
+              setShareDialogOpen(true);
+            }}
+            onConsult={() => {
+              setActionResourceId(study.isNonDicom ? study.nonDicomExamId : uid);
+              setActionResourceType(study.isNonDicom ? 'NON_DICOM' : 'DICOM');
+              setConsultDialogOpen(true);
+            }}
+            canExport={permissions.includes("export.create")}
+            canExportAnonymized={permissions.includes("export.anonymize")}
+            canDeleteStudy={permissions.includes("destructive.request")}
+            onExportDicom={() => handleExportDicom(uid)}
+            onExportAnonymized={() => handleExportAnonymized(uid)}
+            onRequestDelete={() => handleRequestDelete(uid)}
+            allowedActions={study.allowedActions}
+          />
+        );
+      }}
+    />
+  );
+
+  const isPhase4 = process.env.NEXT_PUBLIC_PHASE4_WORKSPACE === 'true';
+
+  if (isPhase4) {
+    return (
+      <AppShell contentClassName="flex w-full overflow-hidden bg-vin-root font-sans text-vin-text" contentOverflow="hidden">
+        <DoctorWorkspace
+          switcher={<WorkspaceSwitcher />}
+          searchBar={<WorkspaceSearchBar />}
+          facets={<WorkQueueFacets />}
+          scopeTree={<FacilityScopeTree />}
+          grid={sharedGrid}
+          relatedPanel={<RelatedStudiesPanel anchorStudyUid={studyUid} selectedUid={studyUid} onSelect={handleSelect} onDoubleClick={openViewer} />}
+          contextPanel={<PatientStudyContextPanel studyUid={studyUid} />}
+          layoutPrefs={preferences.layout}
+          onLayoutChange={handleLayoutChange}
+        />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell contentClassName="flex w-full overflow-hidden bg-vin-root font-sans text-vin-text" contentOverflow="hidden">
       <section className="flex h-full w-[52%] min-w-[640px] flex-col border-r border-vin-border bg-vin-shell">
@@ -839,18 +947,21 @@ export default function DashboardPage() {
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-vin-faint" />
                 <input
-                  value={searchQuery}
+                  value={localSearchQuery}
+                  onKeyDown={event => {
+                    if (event.key === "Enter") commitSearchNow();
+                  }}
                   onChange={event => {
-                    setSearchQuery(event.target.value);
+                    setLocalSearchQuery(event.target.value);
                     setCurrentPage(1);
                   }}
                   className="h-[2.25rem] w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-7 text-[11px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent focus:bg-vin-root/20"
                   placeholder="Tìm tên, mã bệnh nhân, accession..."
                 />
-                {searchQuery && (
+                {localSearchQuery && (
                   <button
                     onClick={() => {
-                      setSearchQuery("");
+                      setLocalSearchQuery("");
                       setCurrentPage(1);
                     }}
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-vin-faint transition hover:text-vin-text"
@@ -863,9 +974,9 @@ export default function DashboardPage() {
               <div className="w-[7rem]">
                 <CustomSelect
                   options={modalitySelectOptions}
-                  value={modalityFilter}
+                  value={state.modality}
                   onChange={val => {
-                    setModalityFilter(val);
+                    setFilters({ modality: val });
                     setCurrentPage(1);
                   }}
                   compact
@@ -875,9 +986,9 @@ export default function DashboardPage() {
               <div className="w-[10rem]">
                 <CustomSelect
                   options={datePresetSelectOptions}
-                  value={datePresetFilter}
+                  value={state.datePreset}
                   onChange={val => {
-                    setDatePresetFilter(val);
+                    setFilters({ datePreset: val as any });
                     setCurrentPage(1);
                   }}
                   compact
@@ -888,9 +999,9 @@ export default function DashboardPage() {
               <div className="flex-1">
                 <CustomSelect
                   options={workflowStatusSelectOptions}
-                  value={workflowStatusFilter}
+                  value={state.workflowStatus}
                   onChange={val => {
-                    setWorkflowStatusFilter(val);
+                    setFilters({ workflowStatus: val });
                     setCurrentPage(1);
                   }}
                   compact
@@ -899,9 +1010,9 @@ export default function DashboardPage() {
               <div className="flex-1">
                 <CustomSelect
                   options={stationAeSelectOptions}
-                  value={stationAeFilter}
+                  value={state.stationAe}
                   onChange={val => {
-                    setStationAeFilter(val);
+                    setFilters({ stationAe: val });
                     setCurrentPage(1);
                   }}
                   compact
@@ -910,9 +1021,9 @@ export default function DashboardPage() {
               <div className="flex-1">
                 <CustomSelect
                   options={assignedDoctorSelectOptions}
-                  value={assignedDoctorFilter}
+                  value={state.assignedDoctor}
                   onChange={val => {
-                    setAssignedDoctorFilter(val);
+                    setFilters({ assignedDoctor: val });
                     setCurrentPage(1);
                   }}
                   compact
@@ -921,9 +1032,9 @@ export default function DashboardPage() {
               <div className="w-[9rem]">
                 <CustomSelect
                   options={hisStatusSelectOptions}
-                  value={hisStatusFilter}
+                  value={state.hisStatus}
                   onChange={val => {
-                    setHisStatusFilter(val);
+                    setFilters({ hisStatus: val });
                     setCurrentPage(1);
                   }}
                   compact
@@ -933,213 +1044,10 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-auto scr-dark">
-          <table className="w-full text-left">
-            <thead className="sticky top-0 z-10 border-b border-white/10 bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
-              <tr>
-                <th className="w-9 py-2 pl-2 pr-1 text-center">TT</th>
-                <th className="px-2 py-2">Bệnh nhân</th>
-                <th className="px-2 py-2">Mô tả</th>
-                <th className="px-2 py-2 text-center">Mod</th>
-                <th className="px-2 py-2 text-center">Trạng thái</th>
-                <th className="px-2 py-2">Phu trach</th>
-                <th className="px-2 py-2">Ngày chụp</th>
-                <th className="px-2 py-2 text-center">Ảnh</th>
-                <th className="w-10 px-2 py-2 text-center">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="text-[11px]">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-vin-muted">
-                    <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
-                    Đang tải danh sách ca chụp...
-                  </td>
-                </tr>
-              ) : pageStudies.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="py-12 text-center text-vin-muted">
-                    Không có ca chụp nào.
-                  </td>
-                </tr>
-              ) : (
-                pageStudies.map((study, index) => {
-                  const uid = study.MainDicomTags?.StudyInstanceUID;
-                  const isSelected = uid === selectedUid;
-                  const patient = study.PatientMainDicomTags || {};
-                  const main = study.MainDicomTags || {};
-
-                  return (
-                    <tr
-                      key={study.ID || uid}
-                      onClick={() => handleSelect(study)}
-                      onDoubleClick={() => openViewer(study)}
-                      className={`cursor-pointer select-none border-b border-l-2 border-white/5 transition-colors last:border-b-0 ${
-                        isSelected
-                          ? "border-l-vin-accent bg-vin-tableSelected text-white"
-                          : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
-                      }`}
-                      title="Click: chọn · Double-click: mở OHIF"
-                    >
-                      <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{(currentPage - 1) * rowsPerPage + index + 1}</td>
-                      <td className="px-2 py-2">
-                        <div className="max-w-[210px] truncate font-semibold uppercase tracking-[0.01em] text-white">{fmtName(patient.PatientName)}</div>
-                        <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
-                          {fmtText(patient.PatientID)} &bull; {fmtSex(patient.PatientSex)} &bull; {fmtAge(patient.PatientAge)}T
-                        </div>
-                      </td>
-                      <td className="px-2 py-2">
-                        <div className="max-w-[260px] truncate font-medium text-vin-text2" title={study.procedureDescription || main.StudyDescription || ""}>
-                          {fmtText(study.procedureName || study.procedureDescription || main.StudyDescription)}
-                        </div>
-                        <div className="mt-0.5 max-w-[260px] truncate font-mono text-[10px] text-vin-muted">
-                          {fmtText(study.procedureCode || main.AccessionNumber)}{study.serviceTypeName ? ` · ${study.serviceTypeName}` : ""}
-                        </div>
-                      </td>
-                      <td className="px-2 py-2 text-center">
-                        <ModBadge value={study.EnrichedModality || main.Modality} isNonDicom={study.isNonDicom} />
-                      </td>
-                      <td className="px-2 py-2 text-center">
-                        <RisStatusBadge status={study.WorkflowStatus} />
-                        {(study.hisSyncStatus || study.hisResultStatus) && (
-                          <div className="mt-1 flex flex-col gap-0.5 text-[9px] font-semibold">
-                            {study.hisSyncStatus && (
-                              <span className={study.hisSyncStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}>
-                                HIS Sync: {study.hisSyncStatus}
-                              </span>
-                            )}
-                            {study.hisResultStatus && (
-                              <span className={study.hisResultStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}>
-                                HIS Result: {study.hisResultStatus}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-2 py-2">
-                        <div className={`max-w-[150px] truncate font-semibold ${study.AssignedDoctorName ? "text-vin-text2" : "text-amber-200"}`}>
-                          {study.AssignedDoctorName || "Chua gan bac si"}
-                        </div>
-                        <div className="mt-0.5 max-w-[150px] truncate text-[10px] text-vin-muted">
-                          {study.ReportDoctorName ? `Report: ${study.ReportDoctorName}` : `SLA: ${fmtDuration(study.waitingMinutes)}`}
-                        </div>
-                      </td>
-                      <td className="whitespace-nowrap px-2 py-2 font-mono text-vin-text2">
-                        {fmtDateTime(main.StudyDate, main.StudyTime)}
-                        <div className="mt-0.5 max-w-[140px] truncate font-sans text-[10px] text-vin-muted">
-                          {study.machineName || study.stationAeTitle || "-"}{study.facilityName ? ` · ${study.facilityName}` : ""}
-                        </div>
-                      </td>
-                      <td className="px-2 py-2 text-center font-mono text-vin-muted">
-                        {study.EnrichedInstancesCount ?? study.Instances?.length ?? "-"}
-                      </td>
-                      <td className="px-2 py-2 text-center" onClick={e => e.stopPropagation()}>
-                        <StudyRowActionMenu
-                          studyInstanceUid={uid}
-                          studyStatus={study.WorkflowStatus}
-                          reportStatus={study.ReportStatus}
-                          patientName={fmtName(patient.PatientName)}
-                          canReadReport={permissions.includes("reports.read")}
-                          canWriteReport={permissions.includes("reports.write")}
-                          canAssign={permissions.includes("studies.assign")}
-                          canUpdateClinical={permissions.includes("studies.updateClinical")}
-                          canCancelDraft={permissions.includes("reports.cancelDraft")}
-                          canUnfinalize={permissions.includes("reports.unfinalize")}
-                          canDeliver={permissions.includes("archive.deliver") && study.WorkflowStatus === "FINALIZED"}
-                          canShare={permissions.includes("share.create")}
-                          canConsult={permissions.includes("consult.create")}
-                          onMarkDelivered={() => handleMarkDelivered(uid)}
-                          onUpdateClinical={() => openClinicalModal(study, "CLINICAL_INFO")}
-                          onAddIndication={() => openClinicalModal(study, "INDICATION")}
-                          onStartReading={() => handleStartReading(uid)}
-                          onAssignDoctor={() => openAssignModal(study)}
-                          onCancelDraft={() => handleCancelDraft(uid)}
-                          onUnfinalize={() => handleUnfinalize(uid)}
-                          onShare={() => {
-                            setActionResourceId(study.isNonDicom ? study.nonDicomExamId : uid);
-                            setActionResourceType(study.isNonDicom ? 'NON_DICOM' : 'DICOM');
-                            setShareDialogOpen(true);
-                          }}
-                          onConsult={() => {
-                            setActionResourceId(study.isNonDicom ? study.nonDicomExamId : uid);
-                            setActionResourceType(study.isNonDicom ? 'NON_DICOM' : 'DICOM');
-                            setConsultDialogOpen(true);
-                          }}
-                          canExport={permissions.includes("export.create")}
-                          canExportAnonymized={permissions.includes("export.anonymize")}
-                          canDeleteStudy={permissions.includes("destructive.request")}
-                          onExportDicom={() => handleExportDicom(uid)}
-                          onExportAnonymized={() => handleExportAnonymized(uid)}
-                          onRequestDelete={() => handleRequestDelete(uid)}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+        {sharedGrid}
 
         <div className="h-[28%] min-h-[180px] flex-none border-t border-vin-border bg-vin-sidebar">
-          <div className="flex items-center gap-2 border-b border-vin-border px-3 py-2">
-            <Clock className="h-3.5 w-3.5 text-vin-accent" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-vin-muted">Lịch sử chụp</span>
-            {selectedStudy && (
-              <span className="font-mono text-[10px] text-vin-faint">
-                · PID: {patientId} · {patientHistory.length} ca
-              </span>
-            )}
-          </div>
-
-          <div className="h-[calc(100%-34px)] overflow-auto scr-dark">
-            {!selectedStudy ? (
-              <div className="flex h-full items-center justify-center text-[11px] text-vin-faint">
-                Chọn một bệnh nhân để xem lịch sử chụp
-              </div>
-            ) : patientHistory.length === 0 ? (
-              <div className="flex h-full items-center justify-center text-[11px] text-vin-faint">Không có lịch sử</div>
-            ) : (
-              <table className="w-full text-left">
-                <thead className="sticky top-0 z-10 border-b border-white/10 bg-vin-panel2 text-[9px] font-semibold uppercase tracking-wider text-vin-muted">
-                  <tr>
-                    <th className="py-1 pl-2 pr-1">Ngày chụp</th>
-                    <th className="w-10 px-1 py-1 text-center">Mod</th>
-                    <th className="px-1 py-1">Mô tả</th>
-                    <th className="w-8 py-1 pl-1 pr-2 text-center">TT</th>
-                  </tr>
-                </thead>
-                <tbody className="text-[10px]">
-                  {patientHistory.map(history => {
-                    const uid = history.MainDicomTags?.StudyInstanceUID;
-                    const isCurrent = uid === selectedUid;
-
-                    return (
-                      <tr
-                        key={history.ID || uid}
-                        onClick={() => handleSelect(history)}
-                        onDoubleClick={() => openViewer(history)}
-                        className={`cursor-pointer border-b border-white/5 transition-colors last:border-b-0 ${
-                          isCurrent ? "bg-vin-tableSelected text-white" : "text-vin-text2 hover:bg-vin-tableHover"
-                        }`}
-                      >
-                        <td className="whitespace-nowrap py-1 pl-2 pr-1 font-mono">
-                          {fmtDateTime(history.MainDicomTags?.StudyDate, history.MainDicomTags?.StudyTime)}
-                        </td>
-                        <td className="px-1 py-1 text-center">
-                          <ModBadge value={history.EnrichedModality || "?"} />
-                        </td>
-                        <td className="max-w-[220px] truncate px-1 py-1">{fmtText(history.MainDicomTags?.StudyDescription)}</td>
-                        <td className="py-1 pl-1 pr-2 text-center">
-                          <span className={`inline-block h-1.5 w-1.5 rounded-full ${(history.IsStable ?? true) ? "bg-emerald-400" : "bg-amber-400"}`} />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
+          <RelatedStudiesPanel anchorStudyUid={studyUid} selectedUid={studyUid} onSelect={handleSelect} onDoubleClick={openViewer} />
         </div>
       </section>
 
@@ -1326,5 +1234,16 @@ export default function DashboardPage() {
         nonDicomExamId={actionResourceType === 'NON_DICOM' ? actionResourceId : undefined}
       />
     </AppShell>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="p-4 text-white">Đang tải cấu hình...</div>}>
+      <WorkspaceDirtyProvider>
+        <DashboardPageContent />
+        <UnsavedChangesDialog />
+      </WorkspaceDirtyProvider>
+    </Suspense>
   );
 }
