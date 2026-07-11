@@ -56,6 +56,7 @@ import { WorkQueueFacets } from "./components/workspace/regions/WorkQueueFacets"
 import { FacilityScopeTree } from "./components/workspace/regions/FacilityScopeTree";
 import { RelatedStudiesPanel } from "./components/workspace/regions/RelatedStudiesPanel";
 import { PatientStudyContextPanel } from "./components/workspace/regions/PatientStudyContextPanel";
+import { ReportWorkspacePanel } from "./components/workspace/ReportWorkspacePanel";
 import { resolveWorklistMode } from "../lib/worklist/cutover";
 
 import {
@@ -152,7 +153,7 @@ function DashboardPageContent() {
 
   const { state, setFilters, localSearchQuery, setLocalSearchQuery, commitSearchNow, isPending } = useWorklistUrlState();
   const { studyUid, setSelection } = useSelectionUrlState();
-  const dirtyContext = useWorkspaceDirty();
+  const { interceptNavigation } = useWorkspaceDirty();
   const [patientDetails, setPatientDetails] = useState<any>(null);
 
   const selectedStudy = useMemo(() => {
@@ -296,6 +297,8 @@ function DashboardPageContent() {
           isNonDicom: row.isNonDicom,
           nonDicomExamId: row.nonDicomExamId,
           procedureName: row.bodyPart,
+          ReportStatus: row.reportStatus,
+          Revision: row.revision,
           allowedActions: row.allowedActions,
         });
 
@@ -628,10 +631,7 @@ function DashboardPageContent() {
   const handleSelect = async (study: any) => {
     const uid = study?.MainDicomTags?.StudyInstanceUID;
     if (uid) {
-      if (dirtyContext && dirtyContext.interceptNavigation(() => setSelection(uid))) {
-        return;
-      }
-      setSelection(uid);
+      interceptNavigation(() => setSelection(uid));
     }
   };
 
@@ -688,15 +688,15 @@ function DashboardPageContent() {
     setAssignDoctorModalOpen(true);
   };
 
-  const handleCancelDraft = async (uid: string) => {
+  const handleCancelDraft = async (uid: string, baseRevision: number = 0) => {
     if (confirm("Bạn có chắc chắn muốn hủy phiên bản nháp này?")) {
       const reason = prompt("Lý do hủy (tùy chọn):") || "Hủy nháp";
-      const res = await cancelReportDraft(uid, reason);
+      const res = await cancelReportDraft(uid, baseRevision, reason);
       if (res.success) {
         setStudies(current =>
           current.map(study => (
             study.MainDicomTags?.StudyInstanceUID === uid
-              ? { ...study, ReportStatus: "CANCELLED", WorkflowStatus: "READY_TO_READ" }
+              ? { ...study, ReportStatus: "CANCELLED", WorkflowStatus: "READY_TO_READ", Revision: res.newRevision ?? baseRevision + 1 }
               : study
           ))
         );
@@ -709,15 +709,15 @@ function DashboardPageContent() {
     }
   };
 
-  const handleUnfinalize = async (uid: string) => {
+  const handleUnfinalize = async (uid: string, baseRevision: number = 0) => {
     const reason = prompt("Lý do hủy duyệt (bắt buộc):");
     if (!reason) return;
-    const res = await unfinalizeReport(uid, reason);
+    const res = await unfinalizeReport(uid, baseRevision, reason);
     if (res.success) {
       setStudies(current =>
         current.map(study => (
           study.MainDicomTags?.StudyInstanceUID === uid
-            ? { ...study, ReportStatus: "DRAFT", WorkflowStatus: "READING" }
+            ? { ...study, ReportStatus: "DRAFT", WorkflowStatus: "READING", Revision: res.newRevision ?? baseRevision + 1 }
             : study
         ))
       );
@@ -753,7 +753,8 @@ function DashboardPageContent() {
 
     setIsSaving(true);
     try {
-      const draftResult = await saveReportDraft(uid, { findings, conclusion, recommendation });
+      const baseRevision = selectedStudy?.Revision || 0;
+      const draftResult = await saveReportDraft(uid, baseRevision, { findings, conclusion, recommendation });
       if (!draftResult.success) {
         alert((draftResult as any).error || "Lỗi lưu nháp báo cáo");
         setIsSaving(false);
@@ -763,9 +764,10 @@ function DashboardPageContent() {
       let nextStudyStatus = "READING";
       let nextReportStatus = "DRAFT";
       let nextHisResultStatus: string | undefined = undefined;
+      let nextRevision = draftResult.newRevision ?? baseRevision + 1;
 
       if (status === "FINAL") {
-        const finalResult = await finalizeReport(uid);
+        const finalResult = await finalizeReport(uid, draftResult.newRevision || baseRevision + 1);
         if (!finalResult.success) {
           alert((finalResult as any).error || "Lỗi ký duyệt báo cáo");
           setIsSaving(false);
@@ -774,6 +776,7 @@ function DashboardPageContent() {
         nextStudyStatus = finalResult.workflowStatus || "FINALIZED";
         nextReportStatus = finalResult.reportStatus || "FINAL";
         nextHisResultStatus = finalResult.hisResultStatus;
+        nextRevision = finalResult.newRevision ?? nextRevision + 1;
       }
 
       setStudyStatus(nextStudyStatus);
@@ -781,7 +784,13 @@ function DashboardPageContent() {
       setStudies(current =>
         current.map(study => (
           study.MainDicomTags?.StudyInstanceUID === uid
-            ? { ...study, WorkflowStatus: nextStudyStatus, ReportStatus: nextReportStatus, hisResultStatus: nextHisResultStatus || study.hisResultStatus }
+            ? {
+                ...study,
+                WorkflowStatus: nextStudyStatus,
+                ReportStatus: nextReportStatus,
+                Revision: nextRevision,
+                hisResultStatus: nextHisResultStatus || study.hisResultStatus,
+              }
             : study
         ))
       );
@@ -848,6 +857,7 @@ function DashboardPageContent() {
             studyInstanceUid={uid}
             studyStatus={study.WorkflowStatus}
             reportStatus={study.ReportStatus}
+            revision={study.Revision}
             patientName={fmtName(patient.PatientName)}
             canReadReport={permissions.includes("reports.read")}
             canWriteReport={permissions.includes("reports.write")}
@@ -863,8 +873,8 @@ function DashboardPageContent() {
             onAddIndication={() => openClinicalModal(study, "INDICATION")}
             onStartReading={() => handleStartReading(uid)}
             onAssignDoctor={() => openAssignModal(study)}
-            onCancelDraft={() => handleCancelDraft(uid)}
-            onUnfinalize={() => handleUnfinalize(uid)}
+            onCancelDraft={(rev) => handleCancelDraft(uid, rev || study.Revision || 0)}
+            onUnfinalize={(rev) => handleUnfinalize(uid, rev || study.Revision || 0)}
             onShare={() => {
               setActionResourceId(study.isNonDicom ? study.nonDicomExamId : uid);
               setActionResourceType(study.isNonDicom ? 'NON_DICOM' : 'DICOM');
@@ -889,8 +899,20 @@ function DashboardPageContent() {
   );
 
   const isPhase4 = process.env.NEXT_PUBLIC_PHASE4_WORKSPACE === 'true';
+  const isReportPanelEnabled = process.env.NEXT_PUBLIC_ENABLE_REPORT_PANEL === 'true';
 
   if (isPhase4) {
+    const selectedStudyData = studyUid ? filteredStudies.find(s => s.id === studyUid) : null;
+    const studyContext = selectedStudyData ? {
+      patientName: selectedStudyData.patientName,
+      patientId: selectedStudyData.patientId,
+      studyDate: selectedStudyData.studyDate,
+      studyDescription: selectedStudyData.studyDescription,
+      modality: selectedStudyData.modality,
+      status: selectedStudyData.status,
+      accessionNumber: selectedStudyData.accessionNumber,
+    } : null;
+
     return (
       <AppShell contentClassName="flex w-full overflow-hidden bg-vin-root font-sans text-vin-text" contentOverflow="hidden">
         <DoctorWorkspace
@@ -901,6 +923,7 @@ function DashboardPageContent() {
           grid={sharedGrid}
           relatedPanel={<RelatedStudiesPanel anchorStudyUid={studyUid} selectedUid={studyUid} onSelect={handleSelect} onDoubleClick={openViewer} />}
           contextPanel={<PatientStudyContextPanel studyUid={studyUid} />}
+          reportPanel={isReportPanelEnabled && studyUid ? <ReportWorkspacePanel studyUid={studyUid} studyContext={studyContext} /> : undefined}
           layoutPrefs={preferences.layout}
           onLayoutChange={handleLayoutChange}
         />

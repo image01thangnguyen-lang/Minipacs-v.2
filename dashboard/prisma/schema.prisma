@@ -132,6 +132,9 @@ model User {
   consultationParticipants      ConsultationParticipant[] @relation("ConsultationParticipants")
   consultationInvitations       ConsultationParticipant[] @relation("ConsultationInvitations")
   consultationMessages          ConsultationMessage[]     @relation("ConsultationMessages")
+
+  secondReadsRequested          SecondRead[]              @relation("SecondReadsRequested")
+  secondReadsAssigned           SecondRead[]              @relation("SecondReadsAssigned")
   // Phase 9
   systemHealthCheckRuns         SystemHealthCheckRun[]
   securityAuditRuns             SecurityAuditRun[]
@@ -441,6 +444,7 @@ model ImagingStudy {
   // Phase 7
   shareLinks    ShareLink[]
   consultations Consultation[]
+  secondReads   SecondRead[]
 
   @@index([status])
   @@index([patientId])
@@ -1475,6 +1479,29 @@ model ConsultationMessage {
   @@index([consultationId])
   @@index([createdAt])
   @@map("consultation_messages")
+}
+
+model SecondRead {
+  id                   String        @id @default(uuid())
+  studyInstanceUid     String
+  imagingStudyId       String?
+  imagingStudy         ImagingStudy? @relation(fields: [imagingStudyId], references: [id])
+  status               String        @default("REQUESTED") // REQUESTED | IN_PROGRESS | COMPLETED | CANCELLED
+  requestedByUserId    String
+  requestedByUser      User          @relation("SecondReadsRequested", fields: [requestedByUserId], references: [id])
+  assignedToUserId     String?
+  assignedToUser       User?         @relation("SecondReadsAssigned", fields: [assignedToUserId], references: [id])
+  reason               String?       @db.Text
+  notes                String?       @db.Text
+  completedAt          DateTime?
+  cancelledAt          DateTime?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  @@index([studyInstanceUid])
+  @@index([imagingStudyId])
+  @@index([status])
+  @@map("second_reads")
 }
 
 // -----------------------------------------------------------------------------

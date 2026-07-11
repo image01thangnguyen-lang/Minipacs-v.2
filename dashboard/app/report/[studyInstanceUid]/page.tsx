@@ -123,6 +123,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
   const [isSaving, setIsSaving] = useState(false);
   const [patientDetails, setPatientDetails] = useState<any>(null);
   const [reportId, setReportId] = useState<string>("");
+  const [currentRevision, setCurrentRevision] = useState(0);
   const [findings, setFindings] = useState("");
   const [conclusion, setConclusion] = useState("");
   const [recommendation, setRecommendation] = useState("");
@@ -180,6 +181,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
 
         if (report) {
           setReportId(report.id);
+          setCurrentRevision(report.revision || 0);
           setFindings(report.findings || "");
           setConclusion(report.conclusion || "");
           setRecommendation(report.recommendation || "");
@@ -264,6 +266,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
     try {
       const result = await saveReportAction({
         studyInstanceUid,
+        baseRevision: currentRevision,
         status,
         findings,
         conclusion,
@@ -276,6 +279,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
         const returnedReportStatus = returnedReport?.status;
         setStudyStatus(returnedReportStatus === "FINAL" ? "FINALIZED" : "READING");
         if (returnedReport) {
+          setCurrentRevision((result as any).newRevision || 0);
           setDoctorPrintInfo(getDoctorPrintInfo(returnedReport));
           setPatientDetails((prev: any) => ({
             ...prev,
@@ -284,6 +288,8 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
             hisResultStatus: returnedReport.hisResultStatus,
           }));
         }
+      } else {
+        alert((result as any).error || "Lỗi lưu báo cáo");
       }
     } catch (error) {
       console.error("Failed to save report", error);

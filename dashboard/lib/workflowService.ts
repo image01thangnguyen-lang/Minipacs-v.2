@@ -298,9 +298,13 @@ export async function addOrUpdateIndication(
  */
 export async function saveReportDraft(
   studyInstanceUid: string,
+  baseRevision: number,
   input: SaveDraftInput
-): Promise<WorkflowResult & { reportId?: string }> {
+): Promise<WorkflowResult & { reportId?: string, newRevision?: number, code?: string }> {
   try {
+    if (!Number.isSafeInteger(baseRevision) || baseRevision < 0) {
+      return { success: false, error: "Phiên bản báo cáo không hợp lệ.", code: "INVALID_REVISION" };
+    }
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
@@ -316,52 +320,75 @@ export async function saveReportDraft(
     });
 
     if (existing && existing.status === "FINAL") {
-      return { success: false, error: "Báo cáo đã duyệt. Cần hủy duyệt trước khi sửa." };
+      return { success: false, error: "Báo cáo đã duyệt. Cần hủy duyệt trước khi sửa.", code: "FINALIZED" };
     }
     if (existing && existing.status === "PENDING_APPROVAL" && !existing.cancelledAt) {
-      return { success: false, error: "Báo cáo đang chờ phê duyệt. Không thể sửa." };
+      return { success: false, error: "Báo cáo đang chờ phê duyệt. Không thể sửa.", code: "PENDING_APPROVAL" };
     }
 
     const doctorId = ["DOCTOR", "ADMIN"].includes((session.user as any).baseRole || (session.user as any).role)
       ? session.user.id
       : undefined;
 
-    const report = await prisma.report.upsert({
-      where: { studyInstanceUid },
-      update: {
-        status: "DRAFT",
-        findings: input.findings,
-        conclusion: input.conclusion,
-        recommendation: input.recommendation,
-        technique: input.technique,
-        clinicalInfo: input.clinicalInfo,
-        technologistId: input.technologistId,
-        printTemplateId: input.printTemplateId,
-        cancelledAt: null,
-        cancelReason: null,
-        revision: { increment: 1 },
-        ...(doctorId ? { doctorId } : {}),
-      },
-      create: {
-        studyInstanceUid,
-        status: "DRAFT",
-        revision: 1,
-        findings: input.findings,
-        conclusion: input.conclusion,
-        recommendation: input.recommendation,
-        technique: input.technique,
-        clinicalInfo: input.clinicalInfo,
-        technologistId: input.technologistId,
-        printTemplateId: input.printTemplateId,
-        ...(doctorId ? { doctorId } : {}),
-      },
-    });
+    let reportId = existing?.id;
+    let newRevision = baseRevision + 1;
 
-    if (!report.imagingStudyId) {
-      await prisma.report.update({
-        where: { id: report.id },
-        data: { imagingStudyId: study.id },
+    if (existing) {
+      const { count } = await prisma.report.updateMany({
+        // Workflow state is part of the atomic OCC predicate. A concurrent
+        // finalize/approval must never be reverted to DRAFT by a stale save.
+        where: {
+          id: existing.id,
+          revision: baseRevision,
+          status: "DRAFT",
+          cancelledAt: null,
+        },
+        data: {
+          status: "DRAFT",
+          findings: input.findings,
+          conclusion: input.conclusion,
+          recommendation: input.recommendation,
+          technique: input.technique,
+          clinicalInfo: input.clinicalInfo,
+          technologistId: input.technologistId,
+          printTemplateId: input.printTemplateId,
+          revision: { increment: 1 },
+          ...(doctorId ? { doctorId } : {}),
+        },
       });
+
+      if (count === 0) {
+        return { success: false, error: "Phiên bản báo cáo đã cũ. Vui lòng tải lại.", code: "STALE_REVISION" };
+      }
+    } else {
+      if (baseRevision !== 0) {
+        return { success: false, error: "Phiên bản báo cáo đã thay đổi.", code: "STALE_REVISION" };
+      }
+      try {
+        const report = await prisma.report.create({
+          data: {
+            studyInstanceUid,
+            imagingStudyId: study.id,
+            status: "DRAFT",
+            revision: 1,
+            findings: input.findings,
+            conclusion: input.conclusion,
+            recommendation: input.recommendation,
+            technique: input.technique,
+            clinicalInfo: input.clinicalInfo,
+            technologistId: input.technologistId,
+            printTemplateId: input.printTemplateId,
+            ...(doctorId ? { doctorId } : {}),
+          },
+        });
+        reportId = report.id;
+        newRevision = 1;
+      } catch (error: any) {
+        if (error?.code === "P2002") {
+          return { success: false, error: "Báo cáo vừa được tạo ở nơi khác.", code: "STALE_REVISION" };
+        }
+        throw error;
+      }
     }
 
     if (study.status !== "READING" && study.status !== "REPORTED") {
@@ -369,7 +396,7 @@ export async function saveReportDraft(
         source: "REPORT",
         reason: "Report drafted",
         actorUserId: session.user.id,
-        metadata: { reportId: report.id },
+        metadata: { reportId: reportId },
       });
     }
 
@@ -377,13 +404,13 @@ export async function saveReportDraft(
       actorUserId: session.user.id,
       action: "REPORT_DRAFT_SAVED",
       entityType: "Report",
-      entityId: report.id,
+      entityId: reportId,
       message: `Saved draft report for ${studyInstanceUid}`,
-      metadata: { studyInstanceUid },
+      metadata: { studyInstanceUid, newRevision },
     });
 
     revalidatePath(`/report/${studyInstanceUid}`);
-    return { success: true, reportId: report.id };
+    return { success: true, reportId: reportId, newRevision };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
@@ -397,9 +424,13 @@ export async function saveReportDraft(
  *   - If isSigningDoctor = false → 2-step: DRAFT → PENDING_APPROVAL
  */
 export async function finalizeReport(
-  studyInstanceUid: string
-): Promise<WorkflowResult & { reportStatus?: string, workflowStatus?: string }> {
+  studyInstanceUid: string,
+  baseRevision: number
+): Promise<WorkflowResult & { reportStatus?: string, workflowStatus?: string, hisResultStatus?: string, code?: string, newRevision?: number }> {
   try {
+    if (!Number.isSafeInteger(baseRevision) || baseRevision < 0) {
+      return { success: false, error: "Phiên bản báo cáo không hợp lệ.", code: "INVALID_REVISION" };
+    }
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
@@ -414,8 +445,8 @@ export async function finalizeReport(
       include: { imagingStudy: true },
     });
     if (!report) return { success: false, error: "Báo cáo không tồn tại." };
-    if (report.status === "FINAL") return { success: false, error: "Báo cáo đã duyệt rồi." };
-    if (report.status !== "DRAFT") return { success: false, error: "Chỉ có thể duyệt báo cáo ở trạng thái nháp." };
+    if (report.status === "FINAL") return { success: false, error: "Báo cáo đã duyệt rồi.", code: "FINALIZED" };
+    if (report.status !== "DRAFT") return { success: false, error: "Chỉ có thể duyệt báo cáo ở trạng thái nháp.", code: "INVALID_STATUS" };
 
     // Check if actor is a signing doctor
     const doctorProfile = await prisma.doctorProfile.findUnique({
@@ -423,16 +454,23 @@ export async function finalizeReport(
     });
     const isSigningDoctor = doctorProfile?.isSigningDoctor ?? false;
 
+    let newRevision = baseRevision + 1;
+
     if (isSigningDoctor) {
       // 1-step: DRAFT → FINAL
-      await prisma.report.update({
-        where: { id: report.id },
+      const { count } = await prisma.report.updateMany({
+        where: { id: report.id, revision: baseRevision },
         data: {
           status: "FINAL",
           finalizedAt: new Date(),
           doctorId: session.user.id,
+          revision: { increment: 1 },
         },
       });
+
+      if (count === 0) {
+        return { success: false, error: "Phiên bản báo cáo đã cũ. Vui lòng tải lại.", code: "STALE_REVISION" };
+      }
 
       // Transition study to FINALIZED
       await setStudyStatus(studyInstanceUid, "FINALIZED", {
@@ -464,16 +502,21 @@ export async function finalizeReport(
         hisResultStatus = "FAILED";
       }
 
-      return { success: true, reportStatus: "FINAL", workflowStatus: "FINALIZED", hisResultStatus };
+      return { success: true, reportStatus: "FINAL", workflowStatus: "FINALIZED", hisResultStatus, newRevision };
     } else {
       // 2-step: DRAFT → PENDING_APPROVAL
-      await prisma.report.update({
-        where: { id: report.id },
+      const { count } = await prisma.report.updateMany({
+        where: { id: report.id, revision: baseRevision },
         data: {
           status: "PENDING_APPROVAL",
           doctorId: session.user.id,
+          revision: { increment: 1 },
         },
       });
+
+      if (count === 0) {
+        return { success: false, error: "Phiên bản báo cáo đã cũ. Vui lòng tải lại.", code: "STALE_REVISION" };
+      }
 
       await createAuditLog({
         actorUserId: session.user.id,
@@ -485,7 +528,7 @@ export async function finalizeReport(
       });
       revalidatePath(`/report/${studyInstanceUid}`);
       revalidatePath("/");
-      return { success: true, reportStatus: "PENDING_APPROVAL", workflowStatus: report.imagingStudy?.status || "READING" };
+      return { success: true, reportStatus: "PENDING_APPROVAL", workflowStatus: report.imagingStudy?.status || "READING", newRevision };
     }
 
   } catch (err: any) {
@@ -498,9 +541,13 @@ export async function finalizeReport(
  * Permission: reports.finalize + DoctorProfile.isSigningDoctor = true
  */
 export async function approveReport(
-  studyInstanceUid: string
-): Promise<WorkflowResult> {
+  studyInstanceUid: string,
+  baseRevision: number
+): Promise<WorkflowResult & { hisResultStatus?: string, code?: string, newRevision?: number }> {
   try {
+    if (!Number.isSafeInteger(baseRevision) || baseRevision < 0) {
+      return { success: false, error: "Phiên bản báo cáo không hợp lệ.", code: "INVALID_REVISION" };
+    }
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
@@ -524,16 +571,23 @@ export async function approveReport(
     });
     if (!report) return { success: false, error: "Báo cáo không tồn tại." };
     if (report.status !== "PENDING_APPROVAL") {
-      return { success: false, error: "Chỉ có thể phê duyệt báo cáo đang chờ duyệt." };
+      return { success: false, error: "Chỉ có thể phê duyệt báo cáo đang chờ duyệt.", code: "INVALID_STATUS" };
     }
 
-    await prisma.report.update({
-      where: { id: report.id },
+    let newRevision = baseRevision + 1;
+
+    const { count } = await prisma.report.updateMany({
+      where: { id: report.id, revision: baseRevision },
       data: {
         status: "FINAL",
         finalizedAt: new Date(),
+        revision: { increment: 1 },
       },
     });
+
+    if (count === 0) {
+      return { success: false, error: "Phiên bản báo cáo đã cũ. Vui lòng tải lại.", code: "STALE_REVISION" };
+    }
 
     await setStudyStatus(studyInstanceUid, "FINALIZED", {
       source: "REPORT",
@@ -564,7 +618,7 @@ export async function approveReport(
       hisResultStatus = "FAILED";
     }
 
-    return { success: true, hisResultStatus };
+    return { success: true, hisResultStatus, newRevision };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
@@ -577,9 +631,13 @@ export async function approveReport(
  */
 export async function cancelReportDraft(
   studyInstanceUid: string,
+  baseRevision: number,
   reason: string
-): Promise<WorkflowResult> {
+): Promise<WorkflowResult & { code?: string, newRevision?: number }> {
   try {
+    if (!Number.isSafeInteger(baseRevision) || baseRevision < 0) {
+      return { success: false, error: "Phiên bản báo cáo không hợp lệ.", code: "INVALID_REVISION" };
+    }
     if (!reason?.trim()) {
       return { success: false, error: "Cần nhập lý do hủy phiếu." };
     }
@@ -598,19 +656,26 @@ export async function cancelReportDraft(
     });
     if (!report) return { success: false, error: "Báo cáo không tồn tại." };
     if (report.status === "FINAL") {
-      return { success: false, error: "Không thể hủy phiếu đã duyệt. Sử dụng hủy duyệt." };
+      return { success: false, error: "Không thể hủy phiếu đã duyệt. Sử dụng hủy duyệt.", code: "FINALIZED" };
     }
     if (report.status !== "DRAFT" && report.status !== "PENDING_APPROVAL") {
-      return { success: false, error: "Chỉ có thể hủy phiếu ở trạng thái nháp hoặc chờ duyệt." };
+      return { success: false, error: "Chỉ có thể hủy phiếu ở trạng thái nháp hoặc chờ duyệt.", code: "INVALID_STATUS" };
     }
 
-    await prisma.report.update({
-      where: { id: report.id },
+    let newRevision = baseRevision + 1;
+
+    const { count } = await prisma.report.updateMany({
+      where: { id: report.id, revision: baseRevision },
       data: {
         cancelledAt: new Date(),
         cancelReason: reason.trim(),
+        revision: { increment: 1 },
       },
     });
+
+    if (count === 0) {
+      return { success: false, error: "Phiên bản báo cáo đã thay đổi ở nơi khác. Vui lòng tải lại.", code: "STALE_REVISION" };
+    }
 
     // Transition study back to READY_TO_READ
     await setStudyStatus(studyInstanceUid, "READY_TO_READ", {
@@ -631,7 +696,7 @@ export async function cancelReportDraft(
 
     revalidatePath(`/report/${studyInstanceUid}`);
     revalidatePath("/");
-    return { success: true };
+    return { success: true, newRevision };
   } catch (err: any) {
     return { success: false, error: err.message };
   }
@@ -644,9 +709,13 @@ export async function cancelReportDraft(
  */
 export async function unfinalizeReport(
   studyInstanceUid: string,
+  baseRevision: number,
   reason: string
-): Promise<WorkflowResult> {
+): Promise<WorkflowResult & { code?: string, newRevision?: number }> {
   try {
+    if (!Number.isSafeInteger(baseRevision) || baseRevision < 0) {
+      return { success: false, error: "Phiên bản báo cáo không hợp lệ.", code: "INVALID_REVISION" };
+    }
     if (!reason?.trim()) {
       return { success: false, error: "Cần nhập lý do hủy duyệt." };
     }
@@ -666,7 +735,27 @@ export async function unfinalizeReport(
     });
     if (!report) return { success: false, error: "Báo cáo không tồn tại." };
     if (report.status !== "FINAL") {
-      return { success: false, error: "Chỉ có thể hủy duyệt báo cáo đã final." };
+      return { success: false, error: "Chỉ có thể hủy duyệt báo cáo đã final.", code: "INVALID_STATUS" };
+    }
+
+    let newRevision = baseRevision + 1;
+
+    // We must apply OCC first. Since unfinalize involves creating an Addendum and updating Study,
+    // we should use a transaction or just update the report first.
+    const { count } = await prisma.report.updateMany({
+      where: { id: report.id, revision: baseRevision },
+      data: {
+        status: "DRAFT",
+        reopenReason: reason.trim(),
+        finalizedAt: null,
+        hisResultStatus: null,
+        hisResultError: null,
+        revision: { increment: 1 },
+      },
+    });
+
+    if (count === 0) {
+      return { success: false, error: "Phiên bản báo cáo đã thay đổi ở nơi khác. Vui lòng tải lại.", code: "STALE_REVISION" };
     }
 
     // Create addendum to preserve old final content
@@ -684,18 +773,6 @@ export async function unfinalizeReport(
           technique: report.technique || "",
           finalizedAt: report.finalizedAt?.toISOString(),
         }),
-      },
-    });
-
-    // Reopen report
-    await prisma.report.update({
-      where: { id: report.id },
-      data: {
-        status: "DRAFT",
-        reopenReason: reason.trim(),
-        finalizedAt: null,
-        hisResultStatus: null,
-        hisResultError: null,
       },
     });
 
@@ -729,7 +806,7 @@ export async function unfinalizeReport(
 
     revalidatePath(`/report/${studyInstanceUid}`);
     revalidatePath("/");
-    return { success: true };
+    return { success: true, newRevision };
   } catch (err: any) {
     return { success: false, error: err.message };
   }

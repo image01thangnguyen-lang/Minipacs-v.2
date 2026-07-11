@@ -5,6 +5,9 @@ import { getStudyWorkspaceAction } from "../../../actions/study-workspace-action
 import type { StudyWorkspaceDetail, StudyWorkspaceError } from "../../../../lib/workspace/study-workspace";
 import { fmtName, fmtSex, fmtDateTime, fmtDateTimeIso } from "../formatters";
 import { RisStatusBadge } from "../badges";
+import { ConsultationContext } from "./context/ConsultationContext";
+import { SecondReadContext } from "./context/SecondReadContext";
+import { ViewerArtifactsContext } from "./context/ViewerArtifactsContext";
 
 interface PatientStudyContextPanelProps {
   studyUid?: string | null;
@@ -138,9 +141,24 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
               {state.data.allowedActions.share && <ActionTag label="Chia sẻ" />}
               {state.data.allowedActions.export && <ActionTag label="Xuất file" />}
               {state.data.allowedActions.deliverResult && <ActionTag label="Trả kết quả" />}
-              {state.data.allowedActions.createConsultation && <ActionTag label="Hội chẩn" />}
             </div>
           </section>
+
+          {/* Contextual Workflows (Consultation, Second Read, Viewer Artifacts) */}
+          <ConsultationContext 
+            studyInstanceUid={studyUid!} 
+            patientName={state.data.patientName || 'Chưa rõ'}
+            canCreate={state.data.allowedActions.createConsultation} 
+          />
+          
+          <SecondReadContext 
+            studyInstanceUid={studyUid!}
+            canRequest={state.data.allowedActions.assignCase} // Proxied to ASSIGN_CASE per earlier logic
+          />
+
+          <ViewerArtifactsContext 
+            studyInstanceUid={studyUid!} 
+          />
         </div>
       )}
     </div>

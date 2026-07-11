@@ -216,6 +216,7 @@ function serializeArchiveRow(report: any, context?: {
     hisSyncStatus: study?.hisSyncStatus || study?.order?.hisSyncStatus || null,
     hisResultStatus: study?.hisResultStatus || report.hisResultStatus || null,
     allowedActions: context?.allowedActionsByUid?.[report.studyInstanceUid] || {},
+    revision: report.revision,
   };
 }
 

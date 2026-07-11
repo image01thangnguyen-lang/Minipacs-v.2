@@ -102,7 +102,7 @@ export function ReportWorkspacePanel({
   const [consultDialogOpen, setConsultDialogOpen] = useState(false);
 
   // ─── Autosave hook ──────────────────────────────────────────────────────
-  const { isDirty, autosaveStatus, autosaveError, currentRevision, syncSavedState } = useAutosave({
+  const { isDirty, autosaveStatus, autosaveError, syncSavedState, forceStale, resetSavedState, waitForPendingSave } = useAutosave({
     studyUid: studyUid || null,
     editorState,
     initialRevision: panelState.kind === "loaded" ? panelState.data.revision : null,
@@ -110,13 +110,19 @@ export function ReportWorkspacePanel({
     debounceMs: 1500,
   });
   
-  const dirtyContext = useWorkspaceDirty();
+  const {
+    setDirty,
+    registerSaveCallback,
+  } = useWorkspaceDirty();
 
   useEffect(() => {
-    if (dirtyContext) {
-      dirtyContext.setDirty(isDirty);
-    }
-  }, [isDirty, dirtyContext]);
+    setDirty(isDirty);
+  }, [isDirty, setDirty]);
+
+  // The provider outlives the report panel, so clear its dirty bit when this
+  // panel unmounts. Depend only on the stable setter (not the context value,
+  // which changes with isDirty and previously caused cleanup/set loops).
+  useEffect(() => () => setDirty(false), [setDirty]);
 
   // ─── Load report workspace ─────────────────────────────────────────────
   useEffect(() => {
@@ -170,11 +176,13 @@ export function ReportWorkspacePanel({
         setPanelState({ kind: "loaded", data });
 
         // Initialize editor state from report
-        setEditorState({
+        const loadedEditorState = {
           findings: data.findings || "",
           conclusion: data.conclusion || "",
           recommendation: data.recommendation || "",
-        });
+        };
+        resetSavedState(loadedEditorState, data.revision);
+        setEditorState(loadedEditorState);
 
         // Study status from context or report
         if (studyContext?.status) setStudyStatus(studyContext.status);
@@ -227,8 +235,10 @@ export function ReportWorkspacePanel({
       if (!studyUid || panelState.kind !== "loaded") return false;
       setIsSaving(true);
       try {
+        const latestRevision = await waitForPendingSave();
         const result = await saveReportAction({
           studyInstanceUid: studyUid,
+          baseRevision: latestRevision,
           status,
           findings: editorState.findings,
           conclusion: editorState.conclusion,
@@ -237,18 +247,25 @@ export function ReportWorkspacePanel({
         });
         if (result.success) {
           const returnedReport = (result as any).report;
+          const newRev = (result as any).newRevision;
           if (returnedReport) {
             const newStatus =
               returnedReport.status === "FINAL" ? "FINALIZED" : "READING";
             setStudyStatus(newStatus);
             setHisResultStatus(returnedReport.hisResultStatus || null);
-            if (Number.isInteger(returnedReport.revision)) {
-              syncSavedState(editorState, returnedReport.revision);
+            if (Number.isInteger(newRev)) {
+              syncSavedState(editorState, newRev);
             }
             return true;
           }
+        } else {
+          // Handle explicit failure
+          const errStr = String((result as any).error);
+          if (errStr.includes("STALE_REVISION") || errStr.includes("cũ") || (result as any).code === "STALE_REVISION") {
+            forceStale(errStr || "Phiên bản báo cáo đã thay đổi.");
+          }
+          alert(errStr || "Lỗi lưu báo cáo");
         }
-        return false;
       } catch (error) {
         console.error("Failed to save report", error);
         return false;
@@ -256,17 +273,15 @@ export function ReportWorkspacePanel({
         setIsSaving(false);
       }
     },
-    [studyUid, panelState, editorState, selectedPrintTemplateId, syncSavedState]
+    [studyUid, panelState, editorState, selectedPrintTemplateId, syncSavedState, forceStale, waitForPendingSave]
   );
 
   useEffect(() => {
-    if (dirtyContext) {
-      dirtyContext.registerSaveCallback(() =>
-        autosaveStatus === "STALE" ? Promise.resolve(false) : handleSave("DRAFT")
-      );
-    }
-    return () => dirtyContext?.registerSaveCallback(null);
-  }, [dirtyContext, handleSave, autosaveStatus]);
+    registerSaveCallback(() =>
+      autosaveStatus === "STALE" ? Promise.resolve(false) : handleSave("DRAFT")
+    );
+    return () => registerSaveCallback(null);
+  }, [registerSaveCallback, handleSave, autosaveStatus]);
 
   const handleCopyDraft = useCallback(async () => {
     const draft = [

@@ -32,11 +32,14 @@ export function useAutosave({
   const [status, setStatus] = useState<AutosaveStatus>("IDLE");
   const [currentRevision, setCurrentRevision] = useState<number>(initialRevision || 0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const revisionRef = useRef(initialRevision || 0);
+  const inFlightRef = useRef<Promise<void> | null>(null);
 
   // Sync initial revision when it loads
   useEffect(() => {
     if (initialRevision !== null) {
       setCurrentRevision(initialRevision);
+      revisionRef.current = initialRevision;
     }
   }, [initialRevision]);
 
@@ -45,6 +48,10 @@ export function useAutosave({
   
   // Track previous to detect actual changes
   const prevSavedStateRef = useRef<AutosaveInput>(editorState);
+  // Keep the last payload that was dispatched, including failed attempts.
+  // Without this guard an ERROR status change re-runs the autosave effect and
+  // creates an immediate, unbounded retry loop while the backend is down.
+  const lastAttemptedStateRef = useRef<AutosaveInput>(editorState);
   
   // Prevent outdated requests from overwriting newer local state or status
   const sequenceRef = useRef(0);
@@ -52,19 +59,24 @@ export function useAutosave({
   // Invalidate a request belonging to the previously selected study.
   useEffect(() => {
     sequenceRef.current += 1;
+    inFlightRef.current = null;
+    prevSavedStateRef.current = editorState;
+    lastAttemptedStateRef.current = editorState;
     setStatus("IDLE");
     setErrorMessage(null);
-  }, [studyUid]);
+  }, [studyUid]); // editor state is deliberately snapshotted only on study changes
 
   const save = useCallback(
-    async (stateToSave: AutosaveInput, baseRev: number) => {
+    (stateToSave: AutosaveInput, baseRev: number) => {
       if (!studyUid || !enabled) return;
       if (status === "STALE") return; // Halt if stale
 
       const seq = ++sequenceRef.current;
+      lastAttemptedStateRef.current = stateToSave;
       setStatus("SAVING");
       setErrorMessage(null);
 
+      const request = (async () => {
       try {
         const res = await autosaveReportAction(studyUid, baseRev, stateToSave);
         
@@ -74,6 +86,7 @@ export function useAutosave({
         if (res.success) {
           setStatus("SAVED");
           setCurrentRevision(res.newRevision);
+          revisionRef.current = res.newRevision;
           prevSavedStateRef.current = stateToSave;
         } else {
           const errRes = res as Extract<typeof res, { success: false }>;
@@ -90,6 +103,11 @@ export function useAutosave({
         setStatus("ERROR");
         setErrorMessage("Lỗi kết nối khi lưu nháp.");
       }
+      })();
+      inFlightRef.current = request;
+      void request.finally(() => {
+        if (inFlightRef.current === request) inFlightRef.current = null;
+      });
     },
     [studyUid, enabled, status]
   );
@@ -101,9 +119,13 @@ export function useAutosave({
       debouncedState.findings !== prevSavedStateRef.current.findings ||
       debouncedState.conclusion !== prevSavedStateRef.current.conclusion ||
       debouncedState.recommendation !== prevSavedStateRef.current.recommendation;
+    const hasNotBeenAttempted =
+      debouncedState.findings !== lastAttemptedStateRef.current.findings ||
+      debouncedState.conclusion !== lastAttemptedStateRef.current.conclusion ||
+      debouncedState.recommendation !== lastAttemptedStateRef.current.recommendation;
 
-    if (hasChanged) {
-      save(debouncedState, currentRevision);
+    if (hasChanged && hasNotBeenAttempted) {
+      save(debouncedState, revisionRef.current);
     }
   }, [debouncedState, enabled, currentRevision, save, status]);
 
@@ -139,9 +161,29 @@ export function useAutosave({
       // Manual save wins over any autosave response already in flight.
       sequenceRef.current += 1;
       prevSavedStateRef.current = state;
+      lastAttemptedStateRef.current = state;
+      revisionRef.current = newRev;
       setCurrentRevision(newRev);
       setStatus("SAVED");
       setErrorMessage(null);
-    }
+    },
+    forceStale: (errorMsg: string) => {
+      sequenceRef.current += 1;
+      setStatus("STALE");
+      setErrorMessage(errorMsg);
+    },
+    resetSavedState: (state: AutosaveInput, revision: number) => {
+      sequenceRef.current += 1;
+      prevSavedStateRef.current = state;
+      lastAttemptedStateRef.current = state;
+      revisionRef.current = revision;
+      setCurrentRevision(revision);
+      setStatus("IDLE");
+      setErrorMessage(null);
+    },
+    waitForPendingSave: async () => {
+      await inFlightRef.current;
+      return revisionRef.current;
+    },
   };
 }

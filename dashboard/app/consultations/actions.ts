@@ -58,6 +58,23 @@ export async function getConsultationsAction(filters?: any) {
   }
 }
 
+export async function getStudyConsultationsAction(studyInstanceUid: string) {
+  const session = await requirePermission('consult.read');
+
+  try {
+    await requireScopedStudyRead({
+      userId: session.id,
+      studyInstanceUid,
+    });
+
+    const consultations = await getConsultations({ studyInstanceUid });
+    return { success: true, consultations };
+  } catch (error: any) {
+    console.error("getStudyConsultationsAction error:", error);
+    return { success: false, error: error.message || 'Lỗi hệ thống' };
+  }
+}
+
 export async function getConsultationByIdAction(id: string) {
   const session = await requirePermission('consult.read');
 

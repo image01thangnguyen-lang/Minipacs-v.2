@@ -340,9 +340,10 @@ export async function getActiveDoctorsAction() {
  */
 export async function saveReportAction(data: {
   studyInstanceUid: string;
-  findings: string;
-  conclusion: string;
-  recommendation: string;
+  baseRevision: number;
+  findings?: string;
+  conclusion?: string;
+  recommendation?: string;
   status: 'DRAFT' | 'FINAL';
   doctorId?: string;
   printTemplateId?: string;
@@ -352,7 +353,7 @@ export async function saveReportAction(data: {
   }
 
   try {
-    const draftRes = await saveReportDraft(data.studyInstanceUid, {
+    const draftRes = await saveReportDraft(data.studyInstanceUid, data.baseRevision, {
       findings: data.findings,
       conclusion: data.conclusion,
       recommendation: data.recommendation,
@@ -361,9 +362,12 @@ export async function saveReportAction(data: {
 
     if (!draftRes.success) return draftRes;
 
+    let finalNewRevision = draftRes.newRevision;
+
     if (data.status === 'FINAL') {
-      const finalRes = await finalizeReport(data.studyInstanceUid);
+      const finalRes = await finalizeReport(data.studyInstanceUid, draftRes.newRevision || (data.baseRevision + 1));
       if (!finalRes.success) return finalRes;
+      finalNewRevision = finalRes.newRevision;
     }
 
     const report = await prisma.report.findUnique({
@@ -384,6 +388,7 @@ export async function saveReportAction(data: {
       success: true,
       message,
       report,
+      newRevision: finalNewRevision,
     };
   } catch (error: any) {
     console.error('Error in saveReportAction:', error);
@@ -407,20 +412,20 @@ export async function addIndicationAction(studyInstanceUid: string, input: any) 
   return addOrUpdateIndication(studyInstanceUid, input);
 }
 
-export async function cancelStudyDraftAction(studyInstanceUid: string, reason: string) {
-  return cancelReportDraft(studyInstanceUid, reason);
+export async function cancelStudyDraftAction(studyInstanceUid: string, baseRevision: number, reason: string) {
+  return cancelReportDraft(studyInstanceUid, baseRevision, reason);
 }
 
-export async function unfinalizeStudyAction(studyInstanceUid: string, reason: string) {
-  return unfinalizeReport(studyInstanceUid, reason);
+export async function unfinalizeStudyAction(studyInstanceUid: string, baseRevision: number, reason: string) {
+  return unfinalizeReport(studyInstanceUid, baseRevision, reason);
 }
 
 export async function markStudyDeliveredAction(studyInstanceUid: string) {
   return markDelivered(studyInstanceUid);
 }
 
-export async function approveStudyReportAction(studyInstanceUid: string) {
-  return approveReport(studyInstanceUid);
+export async function approveStudyReportAction(studyInstanceUid: string, baseRevision: number) {
+  return approveReport(studyInstanceUid, baseRevision);
 }
 
 export async function getUserPermissionsAction() {

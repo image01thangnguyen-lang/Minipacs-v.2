@@ -46,6 +46,7 @@ export type ArchiveStudyRow = {
   hisSyncStatus?: string | null;
   hisResultStatus?: string | null;
   allowedActions: Record<string, boolean>;
+  revision?: number;
 };
 
 export type ArchiveReportDetail = ArchiveStudyRow & {

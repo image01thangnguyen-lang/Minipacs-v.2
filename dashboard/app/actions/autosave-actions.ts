@@ -3,6 +3,7 @@
 import { prisma } from "@/app/db";
 import { auth } from "@/auth";
 import { requireScopedStudyMutation } from "@/lib/authz/scope/require-scoped-access";
+import { z } from "zod";
 
 export type AutosaveInput = {
   findings?: string;
@@ -14,12 +15,27 @@ export type AutosaveResult =
   | { success: true; newRevision: number; reportId: string }
   | { success: false; error: string; code: string };
 
+const AutosaveInputSchema = z.object({
+  findings: z.string().max(100_000).optional(),
+  conclusion: z.string().max(50_000).optional(),
+  recommendation: z.string().max(50_000).optional(),
+}).strict();
+
 export async function autosaveReportAction(
   studyInstanceUid: string,
   baseRevision: number,
   input: AutosaveInput
 ): Promise<AutosaveResult> {
   try {
+    if (!studyInstanceUid || !Number.isSafeInteger(baseRevision) || baseRevision < 0) {
+      return { success: false, error: "Dữ liệu phiên bản không hợp lệ.", code: "INVALID_INPUT" };
+    }
+    const parsedInput = AutosaveInputSchema.safeParse(input);
+    if (!parsedInput.success) {
+      return { success: false, error: "Nội dung báo cáo không hợp lệ.", code: "INVALID_INPUT" };
+    }
+    input = parsedInput.data;
+
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: "Unauthorized", code: "UNAUTHORIZED" };
 
@@ -50,7 +66,15 @@ export async function autosaveReportAction(
       // Optimistic Concurrency Control Update
       // We use updateMany to safely enforce the `revision` match.
       const { count } = await prisma.report.updateMany({
-        where: { id: existing.id, revision: baseRevision },
+        // Include the editable status in the atomic predicate. A status can be
+        // changed by another workflow between the read above and this update;
+        // revision alone must not let autosave write into a finalized report.
+        where: {
+          id: existing.id,
+          revision: baseRevision,
+          status: "DRAFT",
+          cancelledAt: null,
+        },
         data: {
           findings: input.findings,
           conclusion: input.conclusion,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from "react";
 
 interface WorkspaceDirtyContextValue {
   isDirty: boolean;
@@ -51,10 +51,11 @@ export function WorkspaceDirtyProvider({ children }: { children: React.ReactNode
 
   const resolvePendingAction = useCallback(
     (proceed: boolean) => {
-      if (proceed && pendingAction) {
-        pendingAction();
-      }
+      const action = pendingAction;
+      // Close the dialog before executing navigation. This also prevents a
+      // double click from invoking the same action twice.
       setPendingAction(null);
+      if (proceed && action) action();
     },
     [pendingAction]
   );
@@ -69,17 +70,27 @@ export function WorkspaceDirtyProvider({ children }: { children: React.ReactNode
     return false;
   }, []);
 
+  const value = useMemo(() => ({
+    isDirty,
+    setDirty,
+    pendingAction,
+    interceptNavigation,
+    resolvePendingAction,
+    registerSaveCallback,
+    executeSave,
+  }), [
+    isDirty,
+    setDirty,
+    pendingAction,
+    interceptNavigation,
+    resolvePendingAction,
+    registerSaveCallback,
+    executeSave,
+  ]);
+
   return (
     <WorkspaceDirtyContext.Provider
-      value={{
-        isDirty,
-        setDirty,
-        pendingAction,
-        interceptNavigation,
-        resolvePendingAction,
-        registerSaveCallback,
-        executeSave,
-      }}
+      value={value}
     >
       {children}
     </WorkspaceDirtyContext.Provider>
@@ -87,5 +98,9 @@ export function WorkspaceDirtyProvider({ children }: { children: React.ReactNode
 }
 
 export function useWorkspaceDirty() {
-  return useContext(WorkspaceDirtyContext);
+  const context = useContext(WorkspaceDirtyContext);
+  if (!context) {
+    throw new Error("useWorkspaceDirty must be used inside WorkspaceDirtyProvider");
+  }
+  return context;
 }

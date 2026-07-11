@@ -30,6 +30,30 @@ PR phải review/test/rollback độc lập. Kết quả gồm contract typed, i
 
 Trọng tâm riêng: **Consumer inventory, semantic tokens, bundle boundaries, exception registry và visual baseline.**
 
+### Inventory baseline đã xác minh (2026-07-11)
+
+| Nhóm | Baseline code | Consumer/route chính | Quyết định PR1 |
+|---|---|---|---|
+| Grid | `ui/data-grid/DataGrid.tsx`, `workspace/StudyDataGrid.tsx` | doctor workspace | Giữ nguyên runtime; chốt contract có `getRowId`, stable column ID, controlled sort/selection |
+| Native tables | 49 vị trí JSX được tìm thấy | archive, worklist, consultations, non-DICOM, statistics, command-center, admin | Không migrate trong PR1; xử lý theo wave PR4–PR7 |
+| Status | `workspace/badges.tsx` và nhiều `StatusBadge` cục bộ | study/admin/catalog | Registry tách theo domain; không hợp nhất taxonomy nghiệp vụ |
+| Filter | `WorkspaceSearchBar`, `WorkQueueFacets`, filter cục bộ từng route | workspace và list routes | URL/route sở hữu state; shared contract là controlled |
+| Layout | `ui/SplitPane.tsx` | doctor workspace | Giữ component client-only, không ép list route dùng split pane |
+| Operational states | loading/empty/error viết cục bộ | toàn bộ waves | Chốt semantic khác nhau; adoption thuộc PR2+ |
+
+Bundle boundary: `shared-contracts.ts` chỉ dùng `import type` từ React và không import service/server action/editor. Component dùng hook phải có client boundary rõ ràng. PR1 không đổi query, authorization, workflow, URL hoặc database.
+
+Exception registry ban đầu:
+
+| Phạm vi | Ngoại lệ | Lý do | Owner / thời điểm review |
+|---|---|---|---|
+| Statistics/Command Center | Chart không dùng DataGrid | Dữ liệu trực quan không có table semantics | Analytics owner / P6-PR6 |
+| Related studies compact table | Chưa migrate | Embedded clinical context, density và keyboard behavior riêng | Workspace owner / P6-PR3 |
+| Permission matrix | Chưa migrate | Tree/matrix semantics và deny-wins controls | Authz owner / P6-PR7 |
+| Existing route-local status badges | Compatibility path | Tránh đổi label/màu/lifecycle trước parity | Route owner / wave tương ứng |
+
+Visual baseline cần chụp tại 1280px và 2560px cho `/`, `/archive`, `/worklist`, `/consultations`, `/non-dicom`, `/statistics`, `/command-center` và các admin table đại diện. PR1 ghi danh sách baseline; ảnh và automated visual diff là gate P6-PR8, không được tuyên bố đã pass nếu chưa có artifact CI.
+
 ## 4. Guardrails
 
 - Server quyết định authorization/workflow; client chỉ gửi intent và không được tin role, scope, allowedActions, status hay facility/patient ID.

@@ -10,6 +10,7 @@ type ActionMenuProps = {
   studyInstanceUid: string;
   studyStatus: string;
   reportStatus?: string;
+  revision?: number;
   patientName: string;
   canReadReport: boolean;
   canWriteReport: boolean;
@@ -23,8 +24,8 @@ type ActionMenuProps = {
   onUpdateClinical?: () => void;
   onAddIndication?: () => void;
   onStartReading?: () => void;
-  onCancelDraft?: () => void;
-  onUnfinalize?: () => void;
+  onCancelDraft?: (revision?: number) => void;
+  onUnfinalize?: (revision?: number) => void;
   onMarkDelivered?: () => void;
   canShare?: boolean;
   canConsult?: boolean;
@@ -43,6 +44,7 @@ export function StudyRowActionMenu({
   studyInstanceUid,
   studyStatus,
   reportStatus,
+  revision,
   patientName,
   canReadReport: defaultCanReadReport,
   canWriteReport: defaultCanWriteReport,
@@ -114,9 +116,9 @@ export function StudyRowActionMenu({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const handleAction = (action?: () => void) => {
+  const handleAction = (action?: (rev?: number) => void) => {
     setIsOpen(false);
-    if (action) action();
+    if (action) action(revision);
   };
 
   const menu = isOpen ? createPortal(
