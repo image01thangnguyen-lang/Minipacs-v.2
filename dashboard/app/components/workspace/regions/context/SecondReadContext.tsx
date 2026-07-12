@@ -16,8 +16,14 @@ export function SecondReadContext({ studyInstanceUid, canRequest }: SecondReadCo
 
   const fetchSecondReads = () => {
     let mounted = true;
+    const normalizedStudyInstanceUid = studyInstanceUid?.trim();
+    if (!normalizedStudyInstanceUid) {
+      setSecondReads([]);
+      setLoading(false);
+      return () => { mounted = false; };
+    }
     setLoading(true);
-    getSecondReadsForStudyAction(studyInstanceUid).then((res) => {
+    getSecondReadsForStudyAction(normalizedStudyInstanceUid).then((res) => {
       if (mounted && res.success) {
         setSecondReads(res.secondReads);
       }
@@ -32,10 +38,11 @@ export function SecondReadContext({ studyInstanceUid, canRequest }: SecondReadCo
   }, [studyInstanceUid]);
 
   const handleRequest = async () => {
-    if (!canRequest || isRequesting) return;
+    const normalizedStudyInstanceUid = studyInstanceUid?.trim();
+    if (!canRequest || isRequesting || !normalizedStudyInstanceUid) return;
     setIsRequesting(true);
     const res = await createSecondReadAction({
-      studyInstanceUid,
+      studyInstanceUid: normalizedStudyInstanceUid,
       reason: 'Yêu cầu đọc chéo chất lượng',
     });
     if (res.success) {

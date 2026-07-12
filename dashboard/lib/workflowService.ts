@@ -1,5 +1,3 @@
-"use server";
-
 import { prisma } from "@/app/db";
 import { setStudyStatus, claimStudyLock } from "@/lib/studyStatus";
 import { auth } from "@/auth";

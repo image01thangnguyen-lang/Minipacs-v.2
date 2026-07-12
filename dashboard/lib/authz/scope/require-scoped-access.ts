@@ -86,13 +86,26 @@ export async function requireScopedStudyMutation(opts: {
   ctx?: ScopeRequestContext;
 }): Promise<ScopedStudyResult> {
   const { userId, studyInstanceUid, capability } = opts;
+  const normalizedStudyInstanceUid =
+    typeof studyInstanceUid === "string" ? studyInstanceUid.trim() : "";
+
+  // Never let malformed client/action input reach Prisma.findUnique(). Prisma
+  // throws a validation error for an undefined/empty unique key, which can
+  // abort the enclosing React Server Components request.
+  if (!normalizedStudyInstanceUid) {
+    throw new ScopedAccessError({
+      code: "RESOURCE_NOT_FOUND",
+      capability,
+      reasonCode: "RESOURCE_NOT_FOUND",
+    });
+  }
   const ctx = opts.ctx || ScopeRequestContext.create();
   const deps = getScopeDeps();
   const mode = getAuthorizationMode();
 
   // Step 1: Load resource from DB
   const study = await prisma.imagingStudy.findUnique({
-    where: { studyInstanceUid },
+    where: { studyInstanceUid: normalizedStudyInstanceUid },
     include: STUDY_CONTEXT_INCLUDE,
   }) as StudyWithContext | null;
 
@@ -132,7 +145,7 @@ export async function requireScopedStudyMutation(opts: {
   }
 
   if (mode === "SHADOW" && !readDecision.proposedAllowed) {
-    logShadowMismatch(userId, "READ_STUDY", studyInstanceUid, readDecision.reasonCode);
+    logShadowMismatch(userId, "READ_STUDY", normalizedStudyInstanceUid, readDecision.reasonCode);
   }
 
   // Step 3: Action capability (skip if same as READ_STUDY)
@@ -156,7 +169,7 @@ export async function requireScopedStudyMutation(opts: {
     }
 
     if (mode === "SHADOW" && !capDecision.proposedAllowed) {
-      logShadowMismatch(userId, capability, studyInstanceUid, capDecision.reasonCode);
+      logShadowMismatch(userId, capability, normalizedStudyInstanceUid, capDecision.reasonCode);
     }
   }
 

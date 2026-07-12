@@ -6,16 +6,21 @@ import { requireScopedStudyRead, requireScopedStudyMutation } from '@/lib/authz/
 import { revalidatePath } from 'next/cache';
 
 export async function getSecondReadsForStudyAction(studyInstanceUid: string) {
-  const session = await requirePermission('studies.read');
-
   try {
+    const normalizedStudyInstanceUid =
+      typeof studyInstanceUid === 'string' ? studyInstanceUid.trim() : '';
+    if (!normalizedStudyInstanceUid) {
+      return { success: false, error: 'Thiếu Study Instance UID' };
+    }
+
+    const session = await requirePermission('studies.read');
     await requireScopedStudyRead({
       userId: session.id,
-      studyInstanceUid,
+      studyInstanceUid: normalizedStudyInstanceUid,
     });
 
     const secondReads = await prisma.secondRead.findMany({
-      where: { studyInstanceUid },
+      where: { studyInstanceUid: normalizedStudyInstanceUid },
       include: {
         requestedByUser: { select: { fullName: true, username: true } },
         assignedToUser: { select: { fullName: true, username: true } },
@@ -35,18 +40,23 @@ export async function createSecondReadAction(input: {
   assignedToUserId?: string;
   reason?: string;
 }) {
-  const session = await requirePermission('reports.write');
-
   try {
+    const studyInstanceUid =
+      typeof input?.studyInstanceUid === 'string' ? input.studyInstanceUid.trim() : '';
+    if (!studyInstanceUid) {
+      return { success: false, error: 'Thiếu Study Instance UID' };
+    }
+
+    const session = await requirePermission('reports.write');
     const { study } = await requireScopedStudyMutation({
       userId: session.id,
-      studyInstanceUid: input.studyInstanceUid,
+      studyInstanceUid,
       capability: 'ASSIGN_CASE',
     });
 
     const secondRead = await prisma.secondRead.create({
       data: {
-        studyInstanceUid: input.studyInstanceUid,
+        studyInstanceUid,
         imagingStudyId: study.id,
         requestedByUserId: session.id,
         assignedToUserId: input.assignedToUserId,
@@ -55,7 +65,7 @@ export async function createSecondReadAction(input: {
       },
     });
 
-    revalidatePath(`/report/${input.studyInstanceUid}`);
+    revalidatePath(`/report/${studyInstanceUid}`);
     return { success: true, secondRead };
   } catch (error: any) {
     console.error("createSecondReadAction error:", error);
