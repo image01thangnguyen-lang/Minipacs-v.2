@@ -40,7 +40,7 @@ export default function AssignDoctorModal({ isOpen, onClose, doctors, onAssign }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-[400px] rounded-xl border border-vin-border bg-vin-bg text-vin-text shadow-2xl">
+      <div className="w-[400px] rounded-xl border border-vin-border bg-vin-shell text-vin-text shadow-2xl">
         <div className="flex items-center justify-between border-b border-vin-border px-5 py-4">
           <h2 className="flex items-center gap-2 text-lg font-bold text-white">
             <UserPlus className="h-5 w-5 text-vin-accent" />

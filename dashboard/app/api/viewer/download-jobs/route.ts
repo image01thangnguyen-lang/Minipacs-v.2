@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       ...job,
       fileSizeBytes: job.fileSizeBytes ? job.fileSizeBytes.toString() : null
     }));
-    
+
     return NextResponse.json({ success: true, data: serializedJobs });
   } catch (error) {
     console.error('Failed to list download jobs:', error);
@@ -64,13 +64,13 @@ export async function POST(request: Request) {
           data: { status: 'RUNNING', progress: 50 }
         });
         if (updatedRunning.count === 0) return;
-        
+
         await new Promise(r => setTimeout(r, 2000));
-        
+
         await prisma.viewerDownloadJob.updateMany({
           where: { id: job.id, status: 'RUNNING' },
-          data: { 
-            status: 'SUCCESS', 
+          data: {
+            status: 'SUCCESS',
             progress: 100,
             fileName: `export_${data.studyInstanceUid.substring(0, 8)}_${job.id.substring(0, 8)}.zip`,
             filePath: `/api/viewer/mock-downloads/export_${data.studyInstanceUid.substring(0, 8)}_${job.id.substring(0, 8)}.zip`,
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
         console.error('Mock processor failed', e);
       }
     }, 1000);
-    
+
     // Log action
     await prisma.viewerAuditLog.create({
       data: {
@@ -93,12 +93,12 @@ export async function POST(request: Request) {
       }
     });
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       data: {
         ...job,
         fileSizeBytes: job.fileSizeBytes ? job.fileSizeBytes.toString() : null
-      } 
+      }
     });
   } catch (error) {
     console.error('Failed to create download job:', error);

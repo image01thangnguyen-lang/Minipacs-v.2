@@ -19,6 +19,7 @@ import {
   CommandCenterStuckGrid,
   CommandCenterAlertsGrid
 } from "./CommandCenterGrids";
+import { FormInput, FormLabel, FormSelect, KpiCard, PageCanvas, PagePanel } from "@/app/components/ui/PagePrimitives";
 
 export default function CommandCenterPage() {
   const [filters, setFilters] = useState<any>({});
@@ -42,7 +43,7 @@ export default function CommandCenterPage() {
     setSlaPrimed(false);
   }, [filters]);
 
-  const enableSharedUI = process.env.NEXT_PUBLIC_ENABLE_COMMAND_CENTER_SHARED_UI === "true";
+  const enableSharedUI = true;
 
   const fetchSummary = useCallback(() => fetchCommandCenterSummary(filters), [filters]);
   const fetchQueue = useCallback(() => fetchLiveQueue(filters, { page: queuePage, pageSize: 50 }), [filters, queuePage]);
@@ -88,20 +89,20 @@ export default function CommandCenterPage() {
     const totalPages = Math.ceil((total || 0) / 50);
     if (totalPages <= 1) return null;
     return (
-      <div className="flex items-center justify-between mt-4 text-sm text-gray-600">
+      <div className="mt-4 flex items-center justify-between text-sm text-vin-muted">
         <div>Trang {page} / {totalPages} (Tổng: {total})</div>
         <div className="space-x-2">
           <button
             disabled={page === 1}
             onClick={() => setPage(page - 1)}
-            className="px-3 py-1 bg-gray-100 rounded disabled:opacity-50"
+            className="rounded border border-vin-border bg-vin-shell px-3 py-1 text-vin-text2 hover:border-vin-accent disabled:opacity-50"
           >
             Trước
           </button>
           <button
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
-            className="px-3 py-1 bg-gray-100 rounded disabled:opacity-50"
+            className="rounded border border-vin-border bg-vin-shell px-3 py-1 text-vin-text2 hover:border-vin-accent disabled:opacity-50"
           >
             Sau
           </button>
@@ -111,26 +112,26 @@ export default function CommandCenterPage() {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen text-gray-800">
+    <PageCanvas className="min-h-0 overflow-y-auto p-4 sm:p-6">
       <ScreenHeader />
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded shadow mb-6 flex flex-wrap items-end gap-4">
+      <PagePanel className="mb-6 flex flex-wrap items-end gap-4 p-4">
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Từ ngày</label>
-          <input type="date" className="border rounded px-3 py-1.5 text-sm"
+          <FormLabel>Từ ngày</FormLabel>
+          <FormInput type="date"
             onChange={(e) => setFilterDraft({...filterDraft, dateFrom: e.target.value})}
             value={filterDraft.dateFrom || ''} />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Đến ngày</label>
-          <input type="date" className="border rounded px-3 py-1.5 text-sm"
+          <FormLabel>Đến ngày</FormLabel>
+          <FormInput type="date"
             onChange={(e) => setFilterDraft({...filterDraft, dateTo: e.target.value})}
             value={filterDraft.dateTo || ''} />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Modality</label>
-          <select className="border rounded px-3 py-1.5 text-sm w-32"
+          <FormLabel>Modality</FormLabel>
+          <FormSelect className="w-32"
             onChange={(e) => setFilterDraft({...filterDraft, modality: e.target.value || undefined})}
             value={filterDraft.modality || ''}>
             <option value="">Tất cả</option>
@@ -139,58 +140,44 @@ export default function CommandCenterPage() {
             <option value="CT">CT</option>
             <option value="MR">MR</option>
             <option value="US">US</option>
-          </select>
+          </FormSelect>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">Độ ưu tiên</label>
-          <select className="border rounded px-3 py-1.5 text-sm w-32"
+          <FormLabel>Độ ưu tiên</FormLabel>
+          <FormSelect className="w-32"
             onChange={(e) => setFilterDraft({...filterDraft, priority: e.target.value || undefined})}
             value={filterDraft.priority || ''}>
             <option value="">Tất cả</option>
             <option value="STAT">STAT</option>
             <option value="URGENT">URGENT</option>
             <option value="ROUTINE">ROUTINE</option>
-          </select>
+          </FormSelect>
         </div>
         <button
           onClick={handleApplyFilters}
-          className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 text-sm font-medium"
+          className="h-9 rounded bg-vin-accent px-4 text-sm font-semibold text-white transition hover:bg-vin-accentHover"
         >
           Áp dụng
         </button>
-      </div>
+      </PagePanel>
 
       {/* Summary Widgets */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-        <div className="bg-white p-4 rounded shadow">
-          <div className="text-sm text-gray-500">Chờ chụp</div>
-          <div className="text-2xl font-semibold">{summary?.WAITING_SCAN || 0}</div>
-        </div>
-        <div className="bg-white p-4 rounded shadow">
-          <div className="text-sm text-gray-500">Chờ đọc</div>
-          <div className="text-2xl font-semibold">{summary?.WAITING_READ || 0}</div>
-        </div>
-        <div className="bg-white p-4 rounded shadow border-l-4 border-red-500">
-          <div className="text-sm text-gray-500">Quá hạn SLA</div>
-          <div className="text-2xl font-semibold text-red-500">{slaPrimed && breaches ? breaches.total : "--"}</div>
-        </div>
-        <div className="bg-white p-4 rounded shadow border-l-4 border-yellow-500">
-          <div className="text-sm text-gray-500">Lỗi HIS</div>
-          <div className="text-2xl font-semibold text-yellow-500">{summary?.HIS_FAILED || 0}</div>
-        </div>
-        <div className="bg-white p-4 rounded shadow border-l-4 border-orange-500">
-          <div className="text-sm text-gray-500">Alerts Open</div>
-          <div className="text-2xl font-semibold text-orange-500">{summary?.ACTIVE_ALERTS || 0}</div>
-        </div>
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <KpiCard label="Chờ chụp" value={summary?.WAITING_SCAN || 0} />
+        <KpiCard label="Chờ đọc" value={summary?.WAITING_READ || 0} />
+        <KpiCard label="Quá hạn SLA" value={slaPrimed && breaches ? breaches.total : "--"} tone="danger" />
+        <KpiCard label="Lỗi HIS" value={summary?.HIS_FAILED || 0} tone="warning" />
+        <KpiCard label="Alerts Open" value={summary?.ACTIVE_ALERTS || 0} tone="warning" />
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b mb-4 space-x-2">
+      <div className="mb-4 flex overflow-x-auto border-b border-vin-border" role="tablist" aria-label="Command center views">
         {['queue', 'sla', 'stuck', 'backlog', 'alerts'].map(tab => (
           <button
             key={tab}
-            className={`py-2 px-4 uppercase text-xs font-semibold tracking-wider ${activeTab === tab ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`whitespace-nowrap border-b-2 px-4 py-2 text-xs font-semibold uppercase tracking-wider ${activeTab === tab ? 'border-vin-accent text-vin-accent' : 'border-transparent text-vin-muted hover:text-vin-text'}`}
             onClick={() => setActiveTab(tab)}
+            role="tab" aria-selected={activeTab === tab}
           >
             {tab === 'queue' ? 'Live Queue' :
              tab === 'sla' ? 'SLA Breaches' :
@@ -201,7 +188,7 @@ export default function CommandCenterPage() {
       </div>
 
       {/* Content */}
-      <div className="bg-white p-4 rounded shadow min-h-[400px]">
+      <PagePanel className="min-h-[400px] overflow-hidden p-4">
         {activeTab === 'queue' && (
           <div>
             {enableSharedUI ? (
@@ -215,7 +202,7 @@ export default function CommandCenterPage() {
               <>
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b bg-gray-50 text-gray-600">
+                    <tr className="border-b bg-vin-panel2 text-vin-text2">
                       <th className="py-2 px-2">Mã ca</th>
                       <th className="px-2">Nguồn</th>
                       <th className="px-2">Bệnh nhân</th>
@@ -225,14 +212,14 @@ export default function CommandCenterPage() {
                   </thead>
                   <tbody>
                     {queue?.data?.map((study: any) => (
-                      <tr key={study.id} className="border-b hover:bg-gray-50">
+                      <tr key={study.id} className="border-b hover:bg-vin-panel2">
                         <td className="py-2 px-2">
                           {study.source === 'HIS' ? (
-                            <Link href={`/worklist?orderId=${study.orderId || study.id}`} className="text-blue-600 hover:underline">
+                            <Link href={`/worklist?orderId=${study.orderId || study.id}`} className="text-vin-accent hover:underline">
                               {study.accessionNumber}
                             </Link>
                           ) : study.uid ? (
-                            <Link href={`/report/${study.uid}`} className="text-blue-600 hover:underline">
+                            <Link href={`/report/${study.uid}`} className="text-vin-accent hover:underline">
                               {study.accessionNumber}
                             </Link>
                           ) : (
@@ -240,7 +227,7 @@ export default function CommandCenterPage() {
                           )}
                         </td>
                         <td className="px-2">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${study.source === 'HIS' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${study.source === 'HIS' ? 'bg-purple-100 text-purple-800' : 'bg-vin-accent/15 text-vin-accent'}`}>
                             {study.source}
                           </span>
                         </td>
@@ -250,7 +237,7 @@ export default function CommandCenterPage() {
                       </tr>
                     ))}
                     {(!queue?.data || queue.data.length === 0) && (
-                      <tr><td colSpan={5} className="py-8 text-center text-gray-500">Không có dữ liệu</td></tr>
+                      <tr><td colSpan={5} className="py-8 text-center text-vin-muted">Không có dữ liệu</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -273,7 +260,7 @@ export default function CommandCenterPage() {
               <>
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b bg-gray-50 text-gray-600">
+                    <tr className="border-b bg-vin-panel2 text-vin-text2">
                       <th className="py-2 px-2">Bệnh nhân</th>
                       <th className="px-2">Chặng (Stage)</th>
                       <th className="px-2">Thời gian (phút)</th>
@@ -283,10 +270,10 @@ export default function CommandCenterPage() {
                   </thead>
                   <tbody>
                     {breaches?.data?.map((breach: any, idx: number) => (
-                      <tr key={idx} className="border-b hover:bg-gray-50">
+                      <tr key={idx} className="border-b hover:bg-vin-panel2">
                         <td className="py-2 px-2">
                           {breach.studyInstanceUid ? (
-                            <Link href={`/report/${breach.studyInstanceUid}`} className="text-blue-600 hover:underline">
+                            <Link href={`/report/${breach.studyInstanceUid}`} className="text-vin-accent hover:underline">
                               {breach.patientName}
                             </Link>
                           ) : breach.patientName}
@@ -294,11 +281,11 @@ export default function CommandCenterPage() {
                         <td className="px-2">{breach.stage}</td>
                         <td className="px-2 text-red-500 font-medium">{Math.round(breach.durationMinutes)}</td>
                         <td className="px-2">{breach.thresholdMinutes}</td>
-                        <td className="px-2">{breach.policyCode} <span className="text-xs text-gray-400">({breach.source})</span></td>
+                        <td className="px-2">{breach.policyCode} <span className="text-xs text-vin-faint">({breach.source})</span></td>
                       </tr>
                     ))}
                     {(!breaches?.data || breaches.data.length === 0) && (
-                      <tr><td colSpan={5} className="py-8 text-center text-gray-500">Không có dữ liệu</td></tr>
+                      <tr><td colSpan={5} className="py-8 text-center text-vin-muted">Không có dữ liệu</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -321,7 +308,7 @@ export default function CommandCenterPage() {
               <>
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b bg-gray-50 text-gray-600">
+                    <tr className="border-b bg-vin-panel2 text-vin-text2">
                       <th className="py-2 px-2">Mã ca</th>
                       <th className="px-2">Bệnh nhân</th>
                       <th className="px-2">Trạng thái</th>
@@ -331,14 +318,14 @@ export default function CommandCenterPage() {
                   </thead>
                   <tbody>
                     {stuck?.data?.map((study: any) => (
-                      <tr key={study.id} className="border-b hover:bg-gray-50">
+                      <tr key={study.id} className="border-b hover:bg-vin-panel2">
                         <td className="py-2 px-2">
                           {study.studyInstanceUid ? (
-                            <Link href={`/report/${study.studyInstanceUid}`} className="text-blue-600 hover:underline">
+                            <Link href={`/report/${study.studyInstanceUid}`} className="text-vin-accent hover:underline">
                               {study.accessionNumber}
                             </Link>
                           ) : (
-                            <span className="text-gray-900">{study.accessionNumber}</span>
+                            <span className="text-vin-text">{study.accessionNumber}</span>
                           )}
                         </td>
                         <td className="px-2 font-medium">{study.patientName}</td>
@@ -348,7 +335,7 @@ export default function CommandCenterPage() {
                       </tr>
                     ))}
                     {(!stuck?.data || stuck.data.length === 0) && (
-                      <tr><td colSpan={5} className="py-8 text-center text-gray-500">Không có dữ liệu</td></tr>
+                      <tr><td colSpan={5} className="py-8 text-center text-vin-muted">Không có dữ liệu</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -365,13 +352,13 @@ export default function CommandCenterPage() {
                {isLoadingBacklog ? <div>Đang tải...</div> : (
                  <ul className="space-y-2">
                    {backlog?.doctorBacklog?.map((d: any, idx: number) => (
-                     <li key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded">
+                     <li key={idx} className="flex justify-between items-center bg-vin-panel2 p-3 rounded">
                        <span className="font-medium">{d.doctorName}</span>
-                       <span className="font-medium bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full">{d.count}</span>
+                       <span className="font-medium bg-vin-accent/15 text-vin-accent px-2.5 py-0.5 rounded-full">{d.count}</span>
                      </li>
                    ))}
                    {(!backlog?.doctorBacklog || backlog.doctorBacklog.length === 0) && (
-                     <li className="text-gray-500">Không có dữ liệu</li>
+                     <li className="text-vin-muted">Không có dữ liệu</li>
                    )}
                  </ul>
                )}
@@ -381,13 +368,13 @@ export default function CommandCenterPage() {
                {isLoadingBacklog ? <div>Đang tải...</div> : (
                  <ul className="space-y-2">
                    {backlog?.machineBacklog?.map((m: any, idx: number) => (
-                     <li key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded">
+                     <li key={idx} className="flex justify-between items-center bg-vin-panel2 p-3 rounded">
                        <span className="font-medium">{m.machineName}</span>
                        <span className="font-medium bg-orange-100 text-orange-800 px-2.5 py-0.5 rounded-full">{m.count}</span>
                      </li>
                    ))}
                    {(!backlog?.machineBacklog || backlog.machineBacklog.length === 0) && (
-                     <li className="text-gray-500">Không có dữ liệu</li>
+                     <li className="text-vin-muted">Không có dữ liệu</li>
                    )}
                  </ul>
                )}
@@ -418,7 +405,7 @@ export default function CommandCenterPage() {
                 )}
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b bg-gray-50 text-gray-600">
+                    <tr className="border-b bg-vin-panel2 text-vin-text2">
                       <th className="py-2 px-2">Cảnh báo</th>
                       <th className="px-2">Độ nghiêm trọng</th>
                       <th className="px-2">Loại đối tượng</th>
@@ -427,22 +414,22 @@ export default function CommandCenterPage() {
                   </thead>
                   <tbody>
                     {alerts?.data?.map((alert: any) => (
-                      <tr key={alert.id} className="border-b hover:bg-gray-50">
+                      <tr key={alert.id} className="border-b hover:bg-vin-panel2">
                         <td className="py-2 px-2">
                           <div className="font-semibold">{alert.title}</div>
-                          <div className="text-xs text-gray-500 truncate max-w-md">{alert.message}</div>
+                          <div className="text-xs text-vin-muted truncate max-w-md">{alert.message}</div>
                         </td>
                         <td className="px-2">
                           <span className={`px-2 py-1 rounded text-xs font-semibold ${alert.severity === 'CRITICAL' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
                             {alert.severity}
                           </span>
                         </td>
-                        <td className="px-2 text-gray-600">{alert.entityType || 'SYSTEM'}</td>
-                        <td className="px-2 text-gray-600">{new Date(alert.createdAt).toLocaleString()}</td>
+                        <td className="px-2 text-vin-text2">{alert.entityType || 'SYSTEM'}</td>
+                        <td className="px-2 text-vin-text2">{new Date(alert.createdAt).toLocaleString()}</td>
                       </tr>
                     ))}
                     {(!alerts?.data || alerts.data.length === 0) && (
-                      <tr><td colSpan={4} className="py-8 text-center text-gray-500">Không có cảnh báo nào</td></tr>
+                      <tr><td colSpan={4} className="py-8 text-center text-vin-muted">Không có cảnh báo nào</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -451,7 +438,7 @@ export default function CommandCenterPage() {
             )}
           </div>
         )}
-      </div>
-    </div>
+      </PagePanel>
+    </PageCanvas>
   );
 }

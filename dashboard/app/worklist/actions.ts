@@ -672,7 +672,7 @@ export async function checkCanReadStudiesAction() {
 
 export async function createNonDicomExamFromWorklistAction(orderId: string) {
   const session = await requirePermission("nonDicom.create");
-  
+
   const order = await prisma.worklistOrder.findUnique({
     where: { id: orderId }
   });
@@ -696,7 +696,7 @@ export async function createNonDicomExamFromWorklistAction(orderId: string) {
     const node = await prisma.dicomNode.findFirst({ where: { aeTitle: order.scheduledStationAeTitle } });
     if ((node as any)?.isNonDicom) isEligible = true;
   }
-  
+
   if (!isEligible) {
     return { success: false, error: "Ca chụp này không được cấu hình hỗ trợ thu nhận Non-DICOM." };
   }

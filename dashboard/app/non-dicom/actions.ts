@@ -12,7 +12,7 @@ export async function getNonDicomExams(query?: { status?: string; search?: strin
   if (query?.status && query.status !== "ALL") {
     where.status = query.status;
   }
-  
+
   if (query?.search) {
     where.OR = [
       { patientName: { contains: query.search, mode: "insensitive" } },

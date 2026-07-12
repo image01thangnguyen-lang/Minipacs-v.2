@@ -10,7 +10,7 @@ export default function OperationsCommandCenterPage() {
       description: 'Run and view system health checks',
       href: '/admin/ops/health',
       icon: '🏥',
-      color: 'bg-blue-100 text-blue-800'
+      color: 'bg-vin-accent/15 text-vin-accent'
     },
     {
       title: 'Security & Audit',
@@ -45,21 +45,21 @@ export default function OperationsCommandCenterPage() {
   return (
     <div className="p-6">
       <ScreenHeader />
-      <p className="text-gray-600 mb-8">
+      <p className="text-vin-text2 mb-8">
         Welcome to the central operations hub. Monitor health, security, performance, and readiness of the PACS system.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((card) => (
           <Link href={card.href} key={card.href} className="block group">
-            <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow bg-white h-full">
+            <div className="border border-vin-border rounded-lg p-6 hover:shadow-md transition-shadow bg-vin-panel h-full">
               <div className={`w-12 h-12 flex items-center justify-center rounded-lg text-2xl mb-4 ${card.color}`}>
                 {card.icon}
               </div>
-              <h2 className="text-xl font-semibold mb-2 group-hover:text-blue-600 transition-colors">
+              <h2 className="text-xl font-semibold mb-2 group-hover:text-vin-accent transition-colors">
                 {card.title}
               </h2>
-              <p className="text-gray-600">
+              <p className="text-vin-text2">
                 {card.description}
               </p>
             </div>

@@ -18,10 +18,10 @@ export function HealthRunClient() {
   };
 
   return (
-    <button 
+    <button
       onClick={handleRun}
       disabled={loading}
-      className={`px-4 py-2 rounded font-semibold text-white ${loading ? 'bg-blue-300' : 'bg-blue-600 hover:bg-blue-700'}`}
+      className={`px-4 py-2 rounded font-semibold text-white ${loading ? 'bg-vin-accent/40' : 'bg-vin-accent hover:bg-vin-accentHover'}`}
     >
       {loading ? 'Running...' : 'Run Health Check Now'}
     </button>

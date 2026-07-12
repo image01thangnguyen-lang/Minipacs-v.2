@@ -116,7 +116,7 @@ export default function PublicSharePage({ params }: { params: { token: string } 
         </div>
         <div className="text-xs text-vin-muted">Bản xem trước công khai</div>
       </header>
-      
+
       <main className="flex-1 p-6 sm:p-10">
         <div className="mx-auto max-w-4xl space-y-6">
           <div className="rounded-2xl border border-vin-border bg-vin-panel p-6 shadow-xl">
@@ -124,7 +124,7 @@ export default function PublicSharePage({ params }: { params: { token: string } 
               <User className="h-5 w-5 text-vin-text2" />
               Thông tin ca chụp
             </h2>
-            
+
             {patientName ? (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>

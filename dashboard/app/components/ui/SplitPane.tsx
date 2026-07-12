@@ -52,16 +52,16 @@ export function SplitPane({
   const handlePointerDown = (e: React.PointerEvent) => {
     // Only handle primary button (left click) or touch
     if (e.button !== 0 && e.pointerType === "mouse") return;
-    
+
     e.preventDefault();
     const startPos = orientation === "vertical" ? e.clientX : e.clientY;
-    
+
     const currentSize = readSize();
 
     const onPointerMove = (moveEvent: PointerEvent) => {
       const currentPos = orientation === "vertical" ? moveEvent.clientX : moveEvent.clientY;
       const delta = currentPos - startPos;
-      
+
       const newSize = reverse ? currentSize - delta : currentSize + delta;
       updateSize(newSize);
     };
@@ -81,7 +81,7 @@ export function SplitPane({
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", cleanup);
     window.addEventListener("pointercancel", cleanup);
-    
+
     document.body.style.cursor = orientation === "vertical" ? "col-resize" : "row-resize";
     document.body.style.userSelect = "none";
   };
@@ -104,7 +104,7 @@ export function SplitPane({
       onResizeEnd?.(minSize);
       return;
     }
-    
+
     if (e.key === "End") {
       e.preventDefault();
       updateSize(maxSize);

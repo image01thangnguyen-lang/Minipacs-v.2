@@ -88,7 +88,7 @@ export const PrintTemplateViewer = forwardRef<HTMLDivElement, PrintTemplateViewe
       if (!data.clinicFooterText) return "";
       return `<div class="clinic-footer">${escapeHtml(data.clinicFooterText)}</div>`;
     };
-    
+
     // Parse function using regex replacement
     const generatePrintHtml = (html: string, data: PrintContext) => {
       let parsed = html;
@@ -139,9 +139,9 @@ export const PrintTemplateViewer = forwardRef<HTMLDivElement, PrintTemplateViewe
 
     return (
       <div ref={ref} className="print-container bg-white text-black p-8 sm:p-12 hidden print:block">
-        <div 
+        <div
           className="print-content"
-          dangerouslySetInnerHTML={{ __html: finalHtml }} 
+          dangerouslySetInnerHTML={{ __html: finalHtml }}
         />
         <style dangerouslySetInnerHTML={{__html: `
           @media print {

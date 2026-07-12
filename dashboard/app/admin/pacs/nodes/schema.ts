@@ -10,7 +10,7 @@ export const dicomNodeSchema = z.object({
   room: z.string().optional(),
   isActive: z.boolean().default(true),
   orthancAlias: z.string().min(1, "Vui lòng nhập Alias cho Orthanc"),
-  
+
   // Phase 3 extensions
   isNonDicom: z.boolean().default(false).optional(),
   facilityId: z.string().optional(),

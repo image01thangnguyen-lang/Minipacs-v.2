@@ -82,7 +82,7 @@ export function DownloadManager() {
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {loading && jobs.length === 0 && <p className="text-vin-muted text-sm text-center">Đang tải...</p>}
             {!loading && jobs.length === 0 && <p className="text-vin-muted text-sm text-center">Chưa có bản ghi nào.</p>}
-            
+
             {jobs.map(job => (
               <div key={job.id} className="bg-vin-surface p-3 rounded border border-vin-border">
                 <div className="flex justify-between items-start mb-2">
@@ -99,7 +99,7 @@ export function DownloadManager() {
                     {job.status}
                   </span>
                 </div>
-                
+
                 <p className="text-xs text-vin-muted mb-2">Scope: {job.scope}</p>
                 {job.anonymize && (
                   <p className="text-xs text-blue-400 mb-2 font-medium">Ẩn thông tin cơ bản / PHI-safe</p>

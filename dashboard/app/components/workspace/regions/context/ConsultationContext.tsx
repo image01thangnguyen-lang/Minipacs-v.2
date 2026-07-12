@@ -35,7 +35,7 @@ export function ConsultationContext({ studyInstanceUid, patientName, canCreate }
           <Users size={12} /> Hội chẩn
         </h3>
         {canCreate && (
-          <button 
+          <button
             onClick={() => setShowDialog(true)}
             className="text-[10px] flex items-center gap-1 font-medium text-vin-primary hover:text-vin-primary-hover"
             title="Tạo hội chẩn mới"
@@ -44,7 +44,7 @@ export function ConsultationContext({ studyInstanceUid, patientName, canCreate }
           </button>
         )}
       </div>
-      
+
       <div className="p-3 flex flex-col gap-2">
         {loading ? (
           <div className="text-[11px] text-vin-muted text-center py-2">Đang tải...</div>
@@ -62,7 +62,7 @@ export function ConsultationContext({ studyInstanceUid, patientName, canCreate }
                 </span>
               </div>
               <div className="text-vin-muted text-[10px] flex items-center gap-1 mt-1.5">
-                <MessageCircle size={10} /> 
+                <MessageCircle size={10} />
                 {c.participants?.length || 0} người tham gia
               </div>
             </div>

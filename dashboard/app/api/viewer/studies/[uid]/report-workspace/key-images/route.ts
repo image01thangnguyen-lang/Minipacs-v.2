@@ -32,10 +32,10 @@ export async function POST(request: Request, { params }: { params: { uid: string
     });
 
     if (report && ['FINAL', 'PENDING_APPROVAL'].includes(report.status)) {
-      return NextResponse.json({ 
-        success: false, 
-        requiresAddendum: true, 
-        message: 'Bao cao da hoan thanh, khong the ghi de.' 
+      return NextResponse.json({
+        success: false,
+        requiresAddendum: true,
+        message: 'Bao cao da hoan thanh, khong the ghi de.'
       });
     }
 
@@ -43,7 +43,7 @@ export async function POST(request: Request, { params }: { params: { uid: string
     const keyImages = await prisma.viewerKeyImage.findMany({
       where: { studyInstanceUid, id: { in: imageIds } }
     });
-    
+
     const snapshots = await prisma.viewerSnapshot.findMany({
       where: { studyInstanceUid, id: { in: imageIds } }
     });
@@ -63,7 +63,7 @@ export async function POST(request: Request, { params }: { params: { uid: string
     const newSectionContent = `[VIEWER_IMAGES_START]\n<p><strong>Anh/Snapshot tu Viewer:</strong></p>\n<ul>\n${formattedLines.map(line => `<li>${escapeHtml(line)}</li>`).join('\n')}\n</ul>\n[VIEWER_IMAGES_END]`;
 
     let newFindings = report?.findings || '';
-    
+
     if (mode === 'replace_image_section' && newFindings.includes('[VIEWER_IMAGES_START]')) {
       const regex = /\[VIEWER_IMAGES_START\][\s\S]*?\[VIEWER_IMAGES_END\]/;
       newFindings = newFindings.replace(regex, newSectionContent);

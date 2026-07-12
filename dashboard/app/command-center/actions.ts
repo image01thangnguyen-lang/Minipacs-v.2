@@ -87,7 +87,7 @@ export async function fetchLiveQueue(filters: any, pagination: any) {
     page: parsed.page ?? 1,
     pageSize: parsed.pageSize ?? 50,
   };
-  
+
   return getLiveQueue(user, validFilters, validPagination);
 }
 
@@ -96,7 +96,7 @@ export async function fetchDoctorMachineBacklog(filters: any) {
   const user = await getAuthenticatedUser();
   enforceCommandCenterRead(user);
   const validFilters = filterSchema.parse(filters);
-  
+
   return getDoctorMachineBacklog(user, validFilters);
 }
 
@@ -110,7 +110,7 @@ export async function fetchActiveAlerts(filters: any, pagination: any) {
     page: parsed.page ?? 1,
     pageSize: parsed.pageSize ?? 50,
   };
-  
+
   return getActiveAlerts(user, validFilters, validPagination);
 }
 
@@ -124,7 +124,7 @@ export async function fetchSlaBreaches(filters: any, pagination: any) {
     page: parsed.page ?? 1,
     pageSize: parsed.pageSize ?? 50,
   };
-  
+
   return getSlaBreaches(user, validFilters, validPagination);
 }
 
@@ -138,6 +138,6 @@ export async function fetchStuckWorkflow(filters: any, pagination: any) {
     page: parsed.page ?? 1,
     pageSize: parsed.pageSize ?? 50,
   };
-  
+
   return getStuckWorkflow(user, validFilters, validPagination);
 }

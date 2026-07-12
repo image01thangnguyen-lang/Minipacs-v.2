@@ -10,7 +10,7 @@ export default async function SystemHealthPage() {
   return (
     <div className="p-6">
       <ScreenHeader />
-      <p className="text-gray-600 mb-8">
+      <p className="text-vin-text2 mb-8">
         Run diagnostic checks on database, storage, DICOM endpoints, and essential services.
       </p>
 
@@ -18,24 +18,24 @@ export default async function SystemHealthPage() {
         <HealthRunClient />
       </div>
 
-      <div className="bg-white rounded-lg shadow border border-gray-200">
+      <div className="bg-vin-panel rounded-lg shadow border border-vin-border">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-200">
-              <th className="p-4 font-semibold text-gray-700">Time</th>
-              <th className="p-4 font-semibold text-gray-700">Trigger</th>
-              <th className="p-4 font-semibold text-gray-700">Status</th>
-              <th className="p-4 font-semibold text-gray-700">Details</th>
+            <tr className="bg-vin-panel2 border-b border-vin-border">
+              <th className="p-4 font-semibold text-vin-text2">Time</th>
+              <th className="p-4 font-semibold text-vin-text2">Trigger</th>
+              <th className="p-4 font-semibold text-vin-text2">Status</th>
+              <th className="p-4 font-semibold text-vin-text2">Details</th>
             </tr>
           </thead>
           <tbody>
             {runs.length === 0 ? (
               <tr>
-                <td colSpan={4} className="p-4 text-center text-gray-500">No health check runs found.</td>
+                <td colSpan={4} className="p-4 text-center text-vin-muted">No health check runs found.</td>
               </tr>
             ) : (
               runs.map((run: any) => (
-                <tr key={run.id} className="border-b border-gray-200">
+                <tr key={run.id} className="border-b border-vin-border">
                   <td className="p-4">
                     {new Date(run.startedAt).toLocaleString()}
                   </td>
@@ -47,7 +47,7 @@ export default async function SystemHealthPage() {
                       run.status === 'OK' ? 'bg-green-100 text-green-800' :
                       run.status === 'WARN' ? 'bg-yellow-100 text-yellow-800' :
                       run.status === 'FAIL' ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-800'
+                      'bg-vin-shell text-vin-text'
                     }`}>
                       {run.status}
                     </span>
@@ -61,7 +61,7 @@ export default async function SystemHealthPage() {
                             item.status === 'OK' ? 'text-green-600' :
                             item.status === 'FAIL' ? 'text-red-600' :
                             item.status === 'WARN' ? 'text-yellow-600' :
-                            'text-gray-500'
+                            'text-vin-muted'
                           }>{item.status}</span> - {item.message}
                         </li>
                       ))}

@@ -27,6 +27,6 @@ export async function GET(request: Request, { params }: { params: { filename: st
   const headers = new Headers();
   headers.set('Content-Type', 'application/zip');
   headers.set('Content-Disposition', `attachment; filename="${filename}"`);
-  
+
   return new NextResponse(mockContent, { status: 200, statusText: "OK", headers });
 }

@@ -16,7 +16,7 @@ export async function getRelatedStudiesAction(payload: unknown) {
   if (!session?.user) {
     throw new Error("Unauthorized");
   }
-  
+
   await requirePermission("studies.read");
 
   const parsed = RelatedStudiesRequestSchema.safeParse(payload);

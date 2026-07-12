@@ -82,7 +82,7 @@ export function MachineMappingGrid({
           {saving === node.id ? (
             <Loader2 className="h-4 w-4 animate-spin text-vin-muted" />
           ) : !node.isActive ? (
-            <button 
+            <button
               type="button"
               onClick={() => onReactivate(node.id)}
               aria-label={`Khôi phục ${node.name}`}
@@ -91,19 +91,19 @@ export function MachineMappingGrid({
               Khôi phục
             </button>
           ) : node.facilityId ? (
-            <button 
+            <button
               type="button"
               onClick={() => onAssign(node.id, null)}
-              className="text-vin-muted hover:text-red-400 transition" 
+              className="text-vin-muted hover:text-red-400 transition"
               title="Gỡ gắn kết"
               aria-label={`Gỡ ${node.name} khỏi đơn vị tổ chức`}
             >
               <Unlink className="h-3.5 w-3.5" />
             </button>
           ) : (
-            <button 
+            <button
               type="button"
-              className="text-vin-muted opacity-30 cursor-not-allowed" 
+              className="text-vin-muted opacity-30 cursor-not-allowed"
               title="Chưa gắn kết"
               aria-label={`${node.name} chưa gắn kết`}
               disabled

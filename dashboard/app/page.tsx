@@ -791,7 +791,7 @@ function DashboardPageContent() {
       }
 
       setStudyStatus(nextStudyStatus);
-      
+
       setStudies(current =>
         current.map(study => (
           study.MainDicomTags?.StudyInstanceUID === uid

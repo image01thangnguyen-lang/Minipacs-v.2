@@ -75,18 +75,18 @@ export async function GET(
     }
 
     const filePath = job.filePath;
-    
+
     // Path traversal check: must be strictly inside configured storage root
     const validRoot = path.resolve(process.env.EXPORTS_ROOT_DIR || '/app/pacs_data/exports');
     const resolvedPath = path.resolve(filePath);
-    
+
     const relative = path.relative(validRoot, resolvedPath);
     if (relative && relative.startsWith('..') || path.isAbsolute(relative)) {
       return NextResponse.json({ error: 'Invalid file path (Directory traversal detected)' }, { status: 403 });
     }
 
     const stat = statSync(resolvedPath);
-    
+
     // Use Web Streams API for Next.js response
     const stream = createReadStream(resolvedPath);
     const webStream = new ReadableStream({

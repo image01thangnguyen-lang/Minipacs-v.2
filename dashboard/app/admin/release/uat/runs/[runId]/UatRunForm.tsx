@@ -21,7 +21,7 @@ export default function UatRunForm({ run, canExecute }: { run: any; canExecute: 
 
   const results = run.results || [];
   const total = results.length;
-  
+
   if (total === 0) {
     return <div className="p-6 text-center text-muted-foreground border rounded bg-card">No test cases found in this suite.</div>;
   }
@@ -51,7 +51,7 @@ export default function UatRunForm({ run, canExecute }: { run: any; canExecute: 
   const handleAddEvidence = async () => {
     if (!isScrubbed) return alert("Must attest PHI is scrubbed.");
     if (!evidenceUrl) return alert("Must provide a link or text.");
-    
+
     setIsSubmitting(true);
     try {
       await addUatEvidence(activeResult.id, evidenceUrl, isScrubbed);
@@ -123,7 +123,7 @@ export default function UatRunForm({ run, canExecute }: { run: any; canExecute: 
               <div>
                 <label className="text-sm font-medium">Actual Result / Notes</label>
                 <textarea
-                  placeholder="Describe what actually happened..." 
+                  placeholder="Describe what actually happened..."
                   className="mt-1 min-h-[90px] w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text2 outline-none focus:border-vin-accent"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -140,7 +140,7 @@ export default function UatRunForm({ run, canExecute }: { run: any; canExecute: 
                   <p className="text-xs text-orange-700">
                     Ensure all screenshots, logs, or links are strictly scrubbed of Protected Health Information (PHI) before attaching.
                   </p>
-                  <input 
+                  <input
                     type="url"
                     placeholder="https://link-to-screenshot-or-doc..."
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
@@ -242,7 +242,7 @@ export default function UatRunForm({ run, canExecute }: { run: any; canExecute: 
               </button>
               {hasFailures && <p className="text-xs text-orange-600 text-center">Cannot approve with failed or blocked cases.</p>}
               {!allCompleted && <p className="text-xs text-orange-600 text-center">Complete or skip every case before approving.</p>}
-              
+
               <button
                 type="button"
                 onClick={() => handleFinish(false)}

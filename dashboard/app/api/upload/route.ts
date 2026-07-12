@@ -4,11 +4,11 @@ import path from "path";
 import crypto from "crypto";
 import fs from "fs";
 
-// Determine the base upload directory. 
+// Determine the base upload directory.
 // Inside Docker (based on our docker-compose), it's mounted to /app/pacs_data/report_images
 // If running locally, we fallback to a relative path.
-const UPLOAD_DIR = process.env.NODE_ENV === 'production' 
-  ? '/app/pacs_data/report_images' 
+const UPLOAD_DIR = process.env.NODE_ENV === 'production'
+  ? '/app/pacs_data/report_images'
   : path.resolve(process.cwd(), '../pacs_data/report_images');
 
 export async function POST(req: NextRequest) {
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     const hash = crypto.randomUUID();
     const ext = path.extname(file.name) || (file.type === "image/jpeg" ? ".jpg" : ".png");
     const filename = `${hash}${ext}`;
-    
+
     const filePath = path.join(UPLOAD_DIR, filename);
 
     // Save the file physically
@@ -48,10 +48,10 @@ export async function POST(req: NextRequest) {
     // Return the URL for the rich text editor to consume
     const imageUrl = `/api/images/${filename}`;
 
-    return NextResponse.json({ 
-      success: true, 
-      url: imageUrl, 
-      filename: filename 
+    return NextResponse.json({
+      success: true,
+      url: imageUrl,
+      filename: filename
     }, { status: 201 });
 
   } catch (error) {

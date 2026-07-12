@@ -41,7 +41,7 @@ export type PermissionUpdate = {
 
 export async function saveMatrixAction(doctorId: string, updates: PermissionUpdate[]) {
   const actor = await requirePermission("admin.permissions");
-  
+
   // Validate doctor exists, active, and is a role that can have machine permissions
   const doctor = await prisma.user.findUnique({
     where: { id: doctorId, isActive: true }

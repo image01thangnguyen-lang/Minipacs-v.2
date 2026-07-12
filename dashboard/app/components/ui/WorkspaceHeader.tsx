@@ -19,7 +19,7 @@ export function WorkspaceHeader({ title, subtitle, extraContent, headingLevel = 
           </div>
         )}
       </div>
-      
+
       {extraContent && (
         <div className="mt-3 md:mt-0 flex items-center gap-3">
           {extraContent}

@@ -80,7 +80,7 @@ export default function AdminRetentionPage() {
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-sm font-semibold">Danh sách chính sách (Policies)</h2>
-              <button 
+              <button
                 onClick={handleCreatePolicy}
                 className="bg-vin-primary text-white px-3 py-1.5 rounded hover:bg-vin-primary-hover text-sm"
               >
@@ -107,7 +107,7 @@ export default function AdminRetentionPage() {
                     </p>
 
                     <div className="flex gap-2">
-                      <button 
+                      <button
                         onClick={() => handleDryRun(p.id)}
                         className="text-xs border border-blue-500/50 text-blue-400 px-3 py-1.5 rounded hover:bg-blue-500/10"
                       >
@@ -147,7 +147,7 @@ export default function AdminRetentionPage() {
                       )}
                     </div>
                     {r.mode === 'DRY_RUN' && r.status === 'SUCCESS' && (
-                      <button 
+                      <button
                         onClick={() => handleExecuteRun(r.id)}
                         className="bg-red-500/20 border border-red-500/50 text-red-400 hover:bg-red-500/30 px-3 py-1.5 rounded text-xs font-bold"
                       >

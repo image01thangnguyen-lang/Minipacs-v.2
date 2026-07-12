@@ -5,7 +5,7 @@ import { requirePermission } from "@/lib/authz";
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
     await requirePermission("nonDicom.read");
-    
+
     const media = await prisma.nonDicomMedia.findMany({
       where: {
         examId: params.id,

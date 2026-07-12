@@ -41,7 +41,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-vin-root text-vin-text flex items-center justify-center p-4 selection:bg-vin-accent/30">
       <div className="absolute inset-0 bg-vin-shell/10 mix-blend-screen pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-vin-shell/40 via-vin-root to-vin-root" />
-      
+
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center p-3 bg-vin-accent rounded-2xl mb-4 shadow-lg shadow-vin-accent/20 ring-1 ring-vin-accent/50">

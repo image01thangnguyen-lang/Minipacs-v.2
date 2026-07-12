@@ -1,0 +1,12 @@
+﻿dashboard/app/admin/facilities/components/DataQualityPanel.tsx
+dashboard/app/admin/facilities/components/MachineMapping.tsx
+dashboard/app/admin/facilities/components/TreeEditor.tsx
+dashboard/app/admin/permissions/matrix/components/LegacyMatrixTab.tsx
+dashboard/app/admin/permissions/matrix/components/ScopeMatrixTab.tsx
+dashboard/app/admin/permissions/matrix/page.tsx
+dashboard/app/command-center/CommandCenterGrids.tsx
+dashboard/app/command-center/page.tsx
+dashboard/app/components/AssignDoctorModal.tsx
+dashboard/app/components/shell/AppShell.tsx
+dashboard/app/non-dicom/[id]/page.tsx
+dashboard/package.json

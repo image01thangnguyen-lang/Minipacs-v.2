@@ -36,7 +36,7 @@ export async function GET(request: Request, { params }: { params: { uid: string 
       take: limit,
       skip: skip,
     });
-    
+
     return NextResponse.json({ success: true, data: logs });
   } catch (error) {
     console.error('Failed to fetch action history:', error);

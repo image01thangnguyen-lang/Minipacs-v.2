@@ -20,14 +20,14 @@ export function useCommandCenterPolling<T>({
   const [error, setError] = useState<Error | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const lastUpdatedRef = useRef<Date | null>(null);
-  
+
   const isFetchingRef = useRef(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const backoffRef = useRef(intervalMs);
 
   const fetchData = useCallback(async (isInitial = false) => {
     if (!enabled || isFetchingRef.current) return;
-    
+
     // Check if document is hidden (tab not active)
     if (typeof document !== 'undefined' && document.hidden && !isInitial) {
       return; // Skip polling if tab is backgrounded
@@ -36,29 +36,29 @@ export function useCommandCenterPolling<T>({
     try {
       isFetchingRef.current = true;
       if (isInitial) setIsLoading(true);
-      
+
       const result = await fetchFn();
-      
+
       setData(result);
       const now = new Date();
       setLastUpdated(now);
       lastUpdatedRef.current = now;
       setError(null);
       backoffRef.current = intervalMs; // Reset backoff on success
-      
+
       if (onSuccess) onSuccess(result);
     } catch (err: any) {
       console.error("Polling error:", err);
       setError(err);
-      
+
       // Exponential backoff up to 2 mins
       backoffRef.current = Math.min(backoffRef.current * 2, 120000);
-      
+
       if (onError) onError(err);
     } finally {
       setIsLoading(false);
       isFetchingRef.current = false;
-      
+
       // Schedule next poll
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => fetchData(), backoffRef.current);
@@ -67,7 +67,7 @@ export function useCommandCenterPolling<T>({
 
   useEffect(() => {
     fetchData(true);
-    
+
     // Visibility change listener to resume polling immediately when tab becomes active
     const handleVisibilityChange = () => {
       if (!document.hidden && enabled) {
@@ -79,9 +79,9 @@ export function useCommandCenterPolling<T>({
         }
       }
     };
-    
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    
+
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       document.removeEventListener("visibilitychange", handleVisibilityChange);

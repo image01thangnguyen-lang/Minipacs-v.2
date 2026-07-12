@@ -9,7 +9,7 @@ import { requireScopedStudyRead } from '@/lib/authz/scope/require-scoped-access'
 
 export async function createShareLinkAction(input: Omit<CreateShareLinkInput, 'createdByUserId'>) {
   const session = await requirePermission('share.create');
-  
+
   try {
     if ((input.scope as string) === 'NON_DICOM_EXAM') {
       throw new Error("Chức năng chia sẻ ca ngoài DICOM (Non-DICOM) đang được hoàn thiện. Vui lòng quay lại sau.");
@@ -26,7 +26,7 @@ export async function createShareLinkAction(input: Omit<CreateShareLinkInput, 'c
         studyInstanceUid: input.studyInstanceUid,
       });
     }
-    
+
     if (input.reportId) {
       const report = await prisma.report.findUnique({ where: { id: input.reportId }});
       if (!report) throw new Error("Báo cáo không tồn tại");
@@ -51,7 +51,7 @@ export async function createShareLinkAction(input: Omit<CreateShareLinkInput, 'c
       reportId: input.scope === 'REPORT' ? input.reportId : undefined,
       nonDicomExamId: (input.scope as string) === 'NON_DICOM_EXAM' ? input.nonDicomExamId : undefined,
     });
-    
+
     // In a real app we might return the token, but we should be careful with what we return
     // Wait, the client needs the token to construct the URL and show it to the user ONCE.
     return { success: true, shareLink: result.shareLink, token: result.token };
@@ -63,7 +63,7 @@ export async function createShareLinkAction(input: Omit<CreateShareLinkInput, 'c
 
 export async function getShareLinksAction(scope: string, resourceId: string) {
   const session = await requirePermission('share.read');
-  
+
   try {
     if (scope === 'STUDY') {
       await requireScopedStudyRead({ userId: session.id, studyInstanceUid: resourceId });
@@ -83,11 +83,11 @@ export async function getShareLinksAction(scope: string, resourceId: string) {
 
 export async function revokeShareLinkAction(id: string, reason?: string) {
   const session = await requirePermission('share.revoke');
-  
+
   try {
     const link = await prisma.shareLink.findUnique({ where: { id } });
     if (!link) throw new Error("Không tìm thấy liên kết");
-    
+
     if (link.scope === 'STUDY' && link.studyInstanceUid) {
       await requireScopedStudyRead({ userId: session.id, studyInstanceUid: link.studyInstanceUid });
     } else if (link.scope === 'REPORT' && link.reportId) {
@@ -103,7 +103,7 @@ export async function revokeShareLinkAction(id: string, reason?: string) {
     }
 
     await revokeShareLink(id, session.id, reason);
-    revalidatePath('/'); 
+    revalidatePath('/');
     return { success: true };
   } catch (error: any) {
     console.error("revokeShareLinkAction error:", error);

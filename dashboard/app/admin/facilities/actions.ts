@@ -2,8 +2,8 @@
 
 import { prisma } from "@/app/db";
 import { requirePermission } from "@/lib/authz";
-import { 
-  OrganizationService, 
+import {
+  OrganizationService,
   FacilityUnitCreateInput,
   FacilityUnitMoveInput,
   FacilityUnitDeactivateInput,
@@ -119,7 +119,7 @@ export async function reactivateDicomNodeAction(nodeId: string) {
 
 export async function getDataQualityMetricsAction() {
   await requirePermission("admin.facilities");
-  
+
   // Unmapped active nodes
   const unmappedNodesCount = await prisma.dicomNode.count({
     where: { isActive: true, facilityId: null }
@@ -141,13 +141,13 @@ export async function getDataQualityMetricsAction() {
   });
 
   // Orders without performingUnitId
-  const unclassifiedOrdersCount = await prisma.worklistOrder.count({ 
-    where: { performingUnitId: null } 
+  const unclassifiedOrdersCount = await prisma.worklistOrder.count({
+    where: { performingUnitId: null }
   });
 
   // Studies without performingUnitId
-  const unclassifiedStudiesCount = await prisma.imagingStudy.count({ 
-    where: { performingUnitId: null } 
+  const unclassifiedStudiesCount = await prisma.imagingStudy.count({
+    where: { performingUnitId: null }
   });
 
   return {

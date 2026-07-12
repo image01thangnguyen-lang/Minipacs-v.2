@@ -4,25 +4,25 @@ import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 
 import { useEffect, useState } from "react";
 
-import { 
+import {
   AlertCircle,
-  CheckCircle2, 
-  HardDrive, 
-  Loader2, 
-  Network, 
-  Plus, 
-  RefreshCcw, 
-  Server, 
-  Trash2, 
+  CheckCircle2,
+  HardDrive,
+  Loader2,
+  Network,
+  Plus,
+  RefreshCcw,
+  Server,
+  Trash2,
   Wifi
 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CustomSelect } from "@/app/components/CustomSelect";
-import { 
-  getNodesAction, 
-  upsertNodeAction, 
-  deleteNodeAction, 
+import {
+  getNodesAction,
+  upsertNodeAction,
+  deleteNodeAction,
   pingNodeAction,
   getNodeReferencesAction
 } from "./actions";
@@ -204,7 +204,7 @@ export default function DicomNodesPage() {
 
   const runDelete = async (id: string) => {
     if (!confirm("Bạn có chắc chắn muốn xóa máy chụp này? (Bao gồm xóa khỏi database và Orthanc)")) return;
-    
+
     setBusyNodeId(id);
     setError("");
     try {
@@ -423,11 +423,11 @@ export default function DicomNodesPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Orthanc Alias (ID) *" error={errors.orthancAlias?.message}>
-              <input 
-                {...register("orthancAlias")} 
+              <input
+                {...register("orthancAlias")}
                 disabled={!!editingNode}
-                className="field-input font-mono disabled:opacity-50" 
-                placeholder="cr_room1" 
+                className="field-input font-mono disabled:opacity-50"
+                placeholder="cr_room1"
                 title="Tên không dấu, không cách dùng để khai báo với Orthanc"
               />
             </Field>
@@ -492,7 +492,7 @@ export default function DicomNodesPage() {
 
           <div className="mt-6 border-t border-vin-border pt-4">
             <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-vin-text2">Cấu hình Mở rộng (Phase 3)</h3>
-            
+
             <div className="grid grid-cols-2 gap-3 mb-3">
               <Field label="Loại thiết bị">
                 <Controller

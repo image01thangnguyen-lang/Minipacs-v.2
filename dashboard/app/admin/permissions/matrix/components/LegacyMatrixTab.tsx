@@ -26,12 +26,12 @@ export function LegacyMatrixTab() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  
+
   const [doctors, setDoctors] = useState<{ id: string; fullName: string; role: string }[]>([]);
   const [nodes, setNodes] = useState<{ id: string; name: string; modality: string; isNonDicom: boolean }[]>([]);
-  
+
   const [selectedDoctorId, setSelectedDoctorId] = useState<string>("");
-  
+
   // matrixState: Record<dicomNodeId, Record<actionKey, CellState>>
   const [matrixState, setMatrixState] = useState<Record<string, Record<string, CellState>>>({});
   // to track changes
@@ -62,7 +62,7 @@ export function LegacyMatrixTab() {
       try {
         const permissions = await getMatrixAction(selectedDoctorId);
         const newState: Record<string, Record<string, CellState>> = {};
-        
+
         nodes.forEach(n => {
           newState[n.id] = {};
           MACHINE_ACTION_KEYS.forEach(ak => {
@@ -101,7 +101,7 @@ export function LegacyMatrixTab() {
 
   const handleSave = async () => {
     if (!selectedDoctorId) return;
-    
+
     // Compute changes
     const updates: PermissionUpdate[] = [];
     nodes.forEach(n => {
@@ -163,7 +163,7 @@ export function LegacyMatrixTab() {
         <button
           onClick={handleSave}
           disabled={saving || !hasChanges}
-          className="flex items-center gap-2 rounded bg-vin-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-vin-accent-hover disabled:opacity-50"
+          className="flex items-center gap-2 rounded bg-vin-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-vin-accentHover disabled:opacity-50"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Lưu thay đổi
@@ -181,7 +181,7 @@ export function LegacyMatrixTab() {
       )}
 
       <div className="rounded-lg border border-vin-border bg-vin-panel overflow-x-auto shadow-sm">
-        <div className="p-3 bg-vin-bg/50 border-b border-vin-border text-sm text-vin-muted flex items-center gap-2">
+        <div className="flex items-center gap-2 border-b border-vin-border bg-vin-shell p-3 text-sm text-vin-muted">
           <Info className="h-4 w-4" />
           <span><strong>Mặc định (---)</strong>: Kế thừa quyền từ System Role. <strong>Allow (Cho)</strong>: Cho phép ở cấp thiết bị (vẫn cần quyền global). <strong>Deny (Chặn)</strong>: Chặn bất kể quyền global.</span>
         </div>
@@ -189,9 +189,9 @@ export function LegacyMatrixTab() {
            <div className="flex h-32 items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-vin-muted" /></div>
         ) : (
           <table className="w-full text-left text-sm">
-            <thead className="bg-vin-bg text-vin-muted sticky top-0 z-10">
+            <thead className="sticky top-0 z-10 bg-vin-shell text-vin-muted">
               <tr>
-                <th className="px-4 py-3 font-semibold w-64 min-w-[200px] border-r border-vin-border sticky left-0 bg-vin-bg z-20">Thiết bị \ Hành động</th>
+                <th className="sticky left-0 z-20 w-64 min-w-[200px] border-r border-vin-border bg-vin-shell px-4 py-3 font-semibold">Thiết bị \ Hành động</th>
                 {MACHINE_ACTION_KEYS.map(ak => (
                   <th key={ak} className="px-3 py-3 font-semibold text-center min-w-[120px]">
                     {ACTION_LABELS[ak] || ak}
@@ -201,7 +201,7 @@ export function LegacyMatrixTab() {
             </thead>
             <tbody className="divide-y divide-vin-border">
               {nodes.map(node => (
-                <tr key={node.id} className="hover:bg-vin-bg/50 transition">
+                <tr key={node.id} className="transition hover:bg-vin-tableHover">
                   <td className="px-4 py-3 border-r border-vin-border sticky left-0 bg-vin-panel z-10">
                     <div className="font-semibold text-white">{node.name}</div>
                     <div className="text-[10px] text-vin-muted mt-0.5">
@@ -217,7 +217,7 @@ export function LegacyMatrixTab() {
                             type="button"
                             onClick={() => handleCellChange(node.id, ak, "ALLOW")}
                             className={`px-2 py-1 text-[10px] font-medium border border-vin-border rounded-l-md transition
-                              ${state === "ALLOW" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50 z-10" : "bg-transparent text-vin-muted hover:bg-vin-bg hover:text-white"}`}
+                              ${state === "ALLOW" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50 z-10" : "bg-transparent text-vin-muted hover:bg-vin-tableHover hover:text-white"}`}
                           >
                             Cho
                           </button>
@@ -225,7 +225,7 @@ export function LegacyMatrixTab() {
                             type="button"
                             onClick={() => handleCellChange(node.id, ak, "DEFAULT")}
                             className={`px-2 py-1 text-[10px] font-medium border-t border-b border-vin-border transition
-                              ${state === "DEFAULT" ? "bg-vin-bg text-white z-10" : "bg-transparent text-vin-muted hover:bg-vin-bg hover:text-white"}`}
+                              ${state === "DEFAULT" ? "bg-vin-tableSelected text-white z-10" : "bg-transparent text-vin-muted hover:bg-vin-tableHover hover:text-white"}`}
                           >
                             ---
                           </button>
@@ -233,7 +233,7 @@ export function LegacyMatrixTab() {
                             type="button"
                             onClick={() => handleCellChange(node.id, ak, "DENY")}
                             className={`px-2 py-1 text-[10px] font-medium border border-vin-border rounded-r-md transition
-                              ${state === "DENY" ? "bg-red-500/20 text-red-400 border-red-500/50 z-10" : "bg-transparent text-vin-muted hover:bg-vin-bg hover:text-white"}`}
+                              ${state === "DENY" ? "bg-red-500/20 text-red-400 border-red-500/50 z-10" : "bg-transparent text-vin-muted hover:bg-vin-tableHover hover:text-white"}`}
                           >
                             Chặn
                           </button>

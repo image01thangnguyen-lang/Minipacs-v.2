@@ -4,11 +4,11 @@ import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 
 import { useState, useEffect, useRef } from "react";
 import { Loader2, Send, Users, Video, LogOut, CheckCircle, XCircle, ArrowLeft, RefreshCcw } from "lucide-react";
-import { 
-  getConsultationByIdAction, 
-  sendConsultationMessageAction, 
-  updateConsultationStatusAction, 
-  updateParticipantStatusAction 
+import {
+  getConsultationByIdAction,
+  sendConsultationMessageAction,
+  updateConsultationStatusAction,
+  updateParticipantStatusAction
 } from "../actions";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -28,7 +28,7 @@ export default function ConsultationRoomPage({ params }: { params: { id: string 
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   const currentUserId = (session?.user as any)?.id;
 
   const loadConsultation = async () => {
@@ -60,7 +60,7 @@ export default function ConsultationRoomPage({ params }: { params: { id: string 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
-    
+
     setIsSending(true);
     try {
       const res = await sendConsultationMessageAction(params.id, message.trim());
@@ -111,7 +111,7 @@ export default function ConsultationRoomPage({ params }: { params: { id: string 
 
   const isOwner = consultation.createdByUserId === currentUserId;
   const isParticipant = consultation.participants.some((p: any) => p.userId === currentUserId);
-  
+
   // OHIF link calculation
   let ohifLink = "";
   if (consultation.sourceType === "DICOM" && consultation.studyInstanceUid) {
@@ -131,8 +131,8 @@ export default function ConsultationRoomPage({ params }: { params: { id: string 
             <div className="h-4 w-px bg-white/10" />
             <ScreenHeader />
             <span className={`ml-2 inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-              consultation.status === 'ACTIVE' ? 'bg-indigo-500 text-white' : 
-              consultation.status === 'COMPLETED' ? 'bg-vin-status-approved-bg text-white' : 
+              consultation.status === 'ACTIVE' ? 'bg-indigo-500 text-white' :
+              consultation.status === 'COMPLETED' ? 'bg-vin-status-approved-bg text-white' :
               'bg-vin-shell border border-vin-border text-vin-text2'
             }`}>
               {statusLabels[consultation.status] || consultation.status}
@@ -255,7 +255,7 @@ export default function ConsultationRoomPage({ params }: { params: { id: string 
           </aside>
         </main>
       </section>
-      
+
       <style>{`
         .scr-dark::-webkit-scrollbar { width: 5px; height: 5px; }
         .scr-dark::-webkit-scrollbar-track { background: transparent; }

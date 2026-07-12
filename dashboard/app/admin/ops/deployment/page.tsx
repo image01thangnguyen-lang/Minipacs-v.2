@@ -9,14 +9,14 @@ export default async function DeploymentReadinessPage() {
   return (
     <div className="p-6">
       <ScreenHeader />
-      <p className="text-gray-600 mb-8">
+      <p className="text-vin-text2 mb-8">
         Review the current configuration and connection status of core dependencies.
       </p>
 
       <div className="space-y-6">
         {readiness.map((categoryGroup: any, idx: number) => (
-          <div key={idx} className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 font-semibold text-gray-700">
+          <div key={idx} className="bg-vin-panel rounded-lg shadow border border-vin-border overflow-hidden">
+            <div className="bg-vin-panel2 px-4 py-3 border-b border-vin-border font-semibold text-vin-text2">
               {categoryGroup.category}
             </div>
             <ul className="divide-y divide-gray-200">
@@ -24,7 +24,7 @@ export default async function DeploymentReadinessPage() {
                 <li key={i} className="p-4 flex items-center justify-between">
                   <div>
                     <span className="font-medium">{item.name}</span>
-                    <span className="ml-4 text-sm text-gray-500">{item.message}</span>
+                    <span className="ml-4 text-sm text-vin-muted">{item.message}</span>
                   </div>
                   <span className={`px-2 py-1 rounded text-sm font-semibold ${
                     item.status === 'OK' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'

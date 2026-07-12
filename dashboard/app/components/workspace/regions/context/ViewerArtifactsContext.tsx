@@ -39,7 +39,7 @@ export function ViewerArtifactsContext({ studyInstanceUid }: ViewerArtifactsCont
           <ImageIcon size={12} /> Hình ảnh đính kèm
         </h3>
       </div>
-      
+
       <div className="p-3 flex flex-col gap-2">
         {artifacts.keyImages.length > 0 && (
           <div className="text-[11px]">

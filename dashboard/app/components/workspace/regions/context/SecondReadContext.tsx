@@ -60,7 +60,7 @@ export function SecondReadContext({ studyInstanceUid, canRequest }: SecondReadCo
           <ShieldCheck size={12} /> Second Read
         </h3>
         {canRequest && (
-          <button 
+          <button
             onClick={handleRequest}
             disabled={isRequesting || loading}
             className="text-[10px] flex items-center gap-1 font-medium text-vin-primary hover:text-vin-primary-hover disabled:opacity-50"
@@ -70,7 +70,7 @@ export function SecondReadContext({ studyInstanceUid, canRequest }: SecondReadCo
           </button>
         )}
       </div>
-      
+
       <div className="p-3 flex flex-col gap-2">
         {loading ? (
           <div className="text-[11px] text-vin-muted text-center py-2">Đang tải...</div>
@@ -90,7 +90,7 @@ export function SecondReadContext({ studyInstanceUid, canRequest }: SecondReadCo
                 </span>
               </div>
               <div className="text-vin-muted text-[10px] flex items-center gap-1 mt-1.5">
-                <CheckCircle2 size={10} /> 
+                <CheckCircle2 size={10} />
                 {sr.assignedToUser ? `Gán cho: ${sr.assignedToUser.fullName}` : 'Chưa phân công'}
               </div>
             </div>

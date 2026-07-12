@@ -6,7 +6,7 @@ import { prisma } from "@/app/db";
 export async function GET(request: NextRequest, { params }: { params: { token: string } }) {
   try {
     const { token } = params;
-    
+
     // First validate token hash exists (no need to check password just to get config layout)
     // Actually, we should make sure the token is valid and not expired.
     const sessionCookie = cookies().get(`share_session_${token}`);

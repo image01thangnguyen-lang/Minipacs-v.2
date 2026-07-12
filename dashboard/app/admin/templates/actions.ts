@@ -27,7 +27,7 @@ export async function getPrintTemplates() {
 
 export async function getTemplateReferences() {
   await requirePermission("admin.catalogs");
-  
+
   try {
     const [facilities, procedures, nodes] = await Promise.all([
       prisma.facilityUnit.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } }),

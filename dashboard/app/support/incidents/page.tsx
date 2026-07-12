@@ -19,7 +19,7 @@ export default async function IncidentsListPage() {
   if (!canRead) {
     redirect("/");
   }
-  
+
   const incidents = await prisma.incidentTicket.findMany({
     where: isAdmin
       ? {}
@@ -78,8 +78,8 @@ export default async function IncidentsListPage() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                       inc.status === 'RESOLVED' ? 'bg-green-100 text-green-700' :
-                      inc.status === 'CLOSED' ? 'bg-gray-100 text-gray-700' :
-                      inc.status === 'INVESTIGATING' ? 'bg-blue-100 text-blue-700' :
+                      inc.status === 'CLOSED' ? 'bg-vin-shell text-vin-text2' :
+                      inc.status === 'INVESTIGATING' ? 'bg-vin-accent/15 text-vin-accent' :
                       'bg-orange-100 text-orange-700'
                     }`}>
                       {inc.status}
@@ -89,7 +89,7 @@ export default async function IncidentsListPage() {
                     inc.severity === 'SEV1' ? 'bg-red-600 text-white' :
                     inc.severity === 'SEV2' ? 'bg-red-100 text-red-800' :
                     inc.severity === 'SEV3' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-slate-100 text-slate-700'
+                    'bg-vin-shell text-vin-text2'
                   }`}>
                     {inc.severity}
                   </span>

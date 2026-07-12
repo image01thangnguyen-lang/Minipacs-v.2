@@ -44,10 +44,10 @@ export async function getNodeReferencesAction() {
 
 export async function upsertNodeAction(data: DicomNodeInput) {
   const actor = await requireAdminAccess();
-  
+
   try {
     const validData = dicomNodeSchema.parse(data);
-    
+
     // Check for alias uniqueness in DB if creating new
     if (!validData.id) {
       const existing = await prisma.dicomNode.findUnique({
@@ -79,9 +79,9 @@ export async function upsertNodeAction(data: DicomNodeInput) {
         await orthancClient.putModality(validData.orthancAlias, config);
       } catch (orthancError: any) {
         console.error("Orthanc putModality error:", orthancError);
-        return { 
-          success: false, 
-          error: `Không thể lưu cấu hình lên Orthanc: ${orthancError.message}. Hãy chắc chắn DicomModalitiesInDatabase được bật.` 
+        return {
+          success: false,
+          error: `Không thể lưu cấu hình lên Orthanc: ${orthancError.message}. Hãy chắc chắn DicomModalitiesInDatabase được bật.`
         };
       }
     }
@@ -142,7 +142,7 @@ export async function upsertNodeAction(data: DicomNodeInput) {
 
 export async function deleteNodeAction(id: string) {
   const actor = await requireAdminAccess();
-  
+
   try {
     const node = await prisma.dicomNode.findUnique({ where: { id } });
     if (!node) return { success: false, error: "Node không tồn tại." };
@@ -157,7 +157,7 @@ export async function deleteNodeAction(id: string) {
     }
 
     // Soft delete instead of hard delete to preserve config relations
-    await prisma.dicomNode.update({ 
+    await prisma.dicomNode.update({
       where: { id },
       data: { isActive: false }
     });
@@ -182,14 +182,14 @@ export async function deleteNodeAction(id: string) {
 
 export async function pingNodeAction(id: string) {
   const actor = await requireAdminAccess();
-  
+
   try {
     const node = await prisma.dicomNode.findUnique({ where: { id } });
     if (!node) return { success: false, error: "Node không tồn tại." };
 
     let status = "UNKNOWN";
     let message = "";
-    
+
     try {
       const response = await orthancClient.pingModality(node.orthancAlias);
       status = "OK";

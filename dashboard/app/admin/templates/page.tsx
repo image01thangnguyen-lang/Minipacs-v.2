@@ -132,7 +132,7 @@ export default function AdminTemplatesPage() {
 
       const updated = await updatePrintTemplateAction(selectedId, payload);
       setTemplates(templates.map((t) => (t.id === updated.id ? updated : t)));
-      
+
       // Auto reload data to update joins
       await loadData();
     } catch (err: any) {
@@ -300,14 +300,14 @@ export default function AdminTemplatesPage() {
                 </button>
               </div>
             </div>
-            
-            <form 
+
+            <form
               key={`${mode}-${selectedId || 'new'}`}
-              onSubmit={mode === "create" ? handleCreateSubmit : handleUpdateSubmit} 
+              onSubmit={mode === "create" ? handleCreateSubmit : handleUpdateSubmit}
               className="min-h-0 flex-1 space-y-5 overflow-auto p-4 scr-dark"
             >
               {(() => {
-                const item = mode === "view" && selectedId 
+                const item = mode === "view" && selectedId
                   ? templates.find(x => x.id === selectedId)
                   : null;
 
@@ -419,9 +419,9 @@ export default function AdminTemplatesPage() {
                       <h3 className="mb-3 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-vin-muted">
                         <FileCode2 className="h-3 w-3" /> HTML / JS Nâng cao
                       </h3>
-                      <textarea 
-                        name="htmlContent" 
-                        defaultValue={item?.htmlContent} 
+                      <textarea
+                        name="htmlContent"
+                        defaultValue={item?.htmlContent}
                         className="h-64 w-full resize-y rounded border border-vin-border bg-vin-shell px-3 py-2 font-mono text-[11px] text-vin-text outline-none focus:border-vin-accent"
                         placeholder="<html><body><h1>Report</h1></body></html>"
                       />
@@ -439,7 +439,7 @@ export default function AdminTemplatesPage() {
                           Xóa mẫu này
                         </button>
                       )}
-                      
+
                       <button
                         type="button"
                         onClick={() => { setMode("view"); setSelectedId(null); }}
@@ -447,7 +447,7 @@ export default function AdminTemplatesPage() {
                       >
                         Hủy
                       </button>
-                      
+
                       <button
                         type="submit"
                         disabled={isSaving}

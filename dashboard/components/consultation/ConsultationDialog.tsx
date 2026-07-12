@@ -25,7 +25,7 @@ export function ConsultationDialog({ isOpen, onClose, sourceType, studyInstanceU
       alert("Vui lòng nhập chủ đề hội chẩn");
       return;
     }
-    
+
     setIsSubmitting(true);
     const res = await createConsultationAction({
       title,
@@ -74,7 +74,7 @@ export function ConsultationDialog({ isOpen, onClose, sourceType, studyInstanceU
                 required
               />
             </div>
-            
+
             <div>
               <label className="mb-1 block text-sm font-medium text-vin-text2">Mức độ ưu tiên</label>
               <select
@@ -98,9 +98,9 @@ export function ConsultationDialog({ isOpen, onClose, sourceType, studyInstanceU
               />
             </div>
           </div>
-          
+
           <div className="mt-6 flex justify-end gap-3">
-            <button 
+            <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
@@ -108,7 +108,7 @@ export function ConsultationDialog({ isOpen, onClose, sourceType, studyInstanceU
             >
               Hủy
             </button>
-            <button 
+            <button
               type="submit"
               disabled={isSubmitting}
               className="flex items-center gap-2 rounded-lg bg-vin-accent px-4 py-2 text-sm font-bold text-white transition hover:bg-vin-accentHover disabled:opacity-50"

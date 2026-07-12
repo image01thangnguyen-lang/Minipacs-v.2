@@ -145,19 +145,19 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
           </section>
 
           {/* Contextual Workflows (Consultation, Second Read, Viewer Artifacts) */}
-          <ConsultationContext 
-            studyInstanceUid={state.data.studyUid || studyUid || ""} 
+          <ConsultationContext
+            studyInstanceUid={state.data.studyUid || studyUid || ""}
             patientName={state.data.patientName || 'Chưa rõ'}
-            canCreate={state.data.allowedActions.createConsultation} 
+            canCreate={state.data.allowedActions.createConsultation}
           />
-          
-          <SecondReadContext 
+
+          <SecondReadContext
             studyInstanceUid={state.data.studyUid || studyUid || ""}
             canRequest={state.data.allowedActions.assignCase} // Proxied to ASSIGN_CASE per earlier logic
           />
 
-          <ViewerArtifactsContext 
-            studyInstanceUid={state.data.studyUid || studyUid || ""} 
+          <ViewerArtifactsContext
+            studyInstanceUid={state.data.studyUid || studyUid || ""}
           />
         </div>
       )}

@@ -9,7 +9,7 @@ import { prisma } from "@/app/db";
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
   const requestId = crypto.randomUUID();
-  
+
   const auth = await authenticateHisGateway(req);
   if (!auth.success) {
     await logHisApiCall({ direction: "INBOUND", method: "POST", path: "/api/his/inbound/orders/upsert", statusCode: auth.status, success: false, durationMs: Date.now() - startTime, actorType: "HIS_SYSTEM", requestId, errorMessage: auth.message });
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       if (mappedData.modality && order.modality !== mappedData.modality) {
         conflict = await detectHisConflict("WorklistOrder", order.id, order.accessionNumber, null, "modality", order.modality, mappedData.modality) || conflict;
       }
-      
+
       await prisma.worklistOrder.update({
         where: { id: order.id },
         data: {

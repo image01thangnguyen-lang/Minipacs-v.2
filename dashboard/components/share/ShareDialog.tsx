@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  X, 
-  Link as LinkIcon, 
-  Copy, 
-  Trash2, 
+import {
+  X,
+  Link as LinkIcon,
+  Copy,
+  Trash2,
   Loader2,
   QrCode,
   ShieldAlert
@@ -80,7 +80,7 @@ export function ShareDialog({ isOpen, onClose, scope, resourceId }: ShareDialogP
     if (res.success) {
       setPassword('');
       await loadLinks();
-      
+
       // Auto copy the generated token link
       if (res.token) {
         const link = `${window.location.origin}/share/${res.token}`;
@@ -122,8 +122,8 @@ export function ShareDialog({ isOpen, onClose, scope, resourceId }: ShareDialogP
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="mb-1 block text-xs font-medium text-vin-muted">Thời hạn (ngày)</label>
-                <select 
-                  value={expiresInDays} 
+                <select
+                  value={expiresInDays}
                   onChange={e => setExpiresInDays(Number(e.target.value))}
                   className="w-full rounded border border-vin-border bg-vin-panel px-3 py-1.5 text-sm text-white focus:border-vin-accent outline-none"
                 >
@@ -135,8 +135,8 @@ export function ShareDialog({ isOpen, onClose, scope, resourceId }: ShareDialogP
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-vin-muted">Mật khẩu bảo vệ (tùy chọn)</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="Để trống nếu không cần"
@@ -145,8 +145,8 @@ export function ShareDialog({ isOpen, onClose, scope, resourceId }: ShareDialogP
               </div>
             </div>
             <div className="mt-4 flex items-center gap-2">
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 id="hidePatientInfo"
                 checked={hidePatientInfo}
                 onChange={e => setHidePatientInfo(e.target.checked)}
@@ -154,9 +154,9 @@ export function ShareDialog({ isOpen, onClose, scope, resourceId }: ShareDialogP
               />
               <label htmlFor="hidePatientInfo" className="text-sm text-vin-text2">Ẩn thông tin bệnh nhân (Tên, PID, Ngày sinh)</label>
             </div>
-            
+
             <div className="mt-4 flex justify-end">
-              <button 
+              <button
                 onClick={handleCreate}
                 disabled={isCreating}
                 className="flex items-center gap-2 rounded-lg bg-vin-accent px-4 py-2 text-sm font-bold text-white transition hover:bg-vin-accentHover disabled:opacity-50"

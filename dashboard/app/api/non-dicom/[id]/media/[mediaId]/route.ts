@@ -8,7 +8,7 @@ import { stat } from "fs/promises";
 export async function GET(req: Request, { params }: { params: { id: string; mediaId: string } }) {
   try {
     await requirePermission("nonDicom.read");
-    
+
     const media = await prisma.nonDicomMedia.findUnique({
       where: { id: params.mediaId }
     });
@@ -23,7 +23,7 @@ export async function GET(req: Request, { params }: { params: { id: string; medi
     }
 
     const fileStream = createReadStream(media.filePath) as any;
-    
+
     return new NextResponse(fileStream, {
       headers: {
         "Content-Type": media.mimeType || "application/octet-stream",
@@ -39,7 +39,7 @@ export async function GET(req: Request, { params }: { params: { id: string; medi
 export async function DELETE(req: Request, { params }: { params: { id: string; mediaId: string } }) {
   try {
     const session = await requirePermission("nonDicom.deleteMedia");
-    
+
     const exam = await prisma.nonDicomExam.findUnique({
       where: { id: params.id },
       include: { media: { where: { id: params.mediaId } } }

@@ -45,14 +45,14 @@ export function useAutosave({
 
   // Debounce the state
   const [debouncedState] = useDebounce(editorState, debounceMs);
-  
+
   // Track previous to detect actual changes
   const prevSavedStateRef = useRef<AutosaveInput>(editorState);
   // Keep the last payload that was dispatched, including failed attempts.
   // Without this guard an ERROR status change re-runs the autosave effect and
   // creates an immediate, unbounded retry loop while the backend is down.
   const lastAttemptedStateRef = useRef<AutosaveInput>(editorState);
-  
+
   // Prevent outdated requests from overwriting newer local state or status
   const sequenceRef = useRef(0);
 
@@ -79,7 +79,7 @@ export function useAutosave({
       const request = (async () => {
       try {
         const res = await autosaveReportAction(studyUid, baseRev, stateToSave);
-        
+
         // Ignore if a newer request was dispatched
         if (seq !== sequenceRef.current) return;
 
@@ -133,12 +133,12 @@ export function useAutosave({
   // (Do not reset if STALE, user must reload)
   useEffect(() => {
     if (status === "STALE") return;
-    
+
     const hasUnsavedChanges =
       editorState.findings !== prevSavedStateRef.current.findings ||
       editorState.conclusion !== prevSavedStateRef.current.conclusion ||
       editorState.recommendation !== prevSavedStateRef.current.recommendation;
-      
+
     if (hasUnsavedChanges && status !== "SAVING" && status !== "IDLE") {
       setStatus("IDLE");
       setErrorMessage(null);

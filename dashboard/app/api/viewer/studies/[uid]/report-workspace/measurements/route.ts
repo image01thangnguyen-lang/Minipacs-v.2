@@ -34,7 +34,7 @@ export async function POST(request: Request, { params }: { params: { uid: string
     if (report && ['FINAL', 'PENDING_APPROVAL'].includes(report.status)) {
       // Logic for addendum or fallback text
       const fallbackText = "Bao cao da hoan thanh, khong the ghi de. Vui long tao phu luc/addendum.";
-      
+
       await prisma.auditLog.create({
         data: {
           actorUserId: session.user.id,
@@ -45,19 +45,19 @@ export async function POST(request: Request, { params }: { params: { uid: string
         }
       });
 
-      return NextResponse.json({ 
-        success: false, 
-        requiresAddendum: true, 
-        message: fallbackText 
+      return NextResponse.json({
+        success: false,
+        requiresAddendum: true,
+        message: fallbackText
       });
     }
 
     // Fetch measurements
     const viewerMeasurements = await prisma.viewerMeasurement.findMany({
-      where: { 
-        studyInstanceUid, 
+      where: {
+        studyInstanceUid,
         measurementUID: { in: measurementUIDs },
-        isDeleted: false 
+        isDeleted: false
       }
     });
 
@@ -77,7 +77,7 @@ export async function POST(request: Request, { params }: { params: { uid: string
     const newSectionContent = `[VIEWER_MEASUREMENTS_START]\n<p><strong>Do dac tu Viewer:</strong></p>\n<ul>\n${formattedLines.map(line => `<li>${escapeHtml(line.replace(/^- /, ''))}</li>`).join('\n')}\n</ul>\n[VIEWER_MEASUREMENTS_END]`;
 
     let newFindings = report?.findings || '';
-    
+
     if (mode === 'replace_measurement_section' && newFindings.includes('[VIEWER_MEASUREMENTS_START]')) {
       const regex = /\[VIEWER_MEASUREMENTS_START\][\s\S]*?\[VIEWER_MEASUREMENTS_END\]/;
       newFindings = newFindings.replace(regex, newSectionContent);

@@ -97,7 +97,7 @@ export async function approveDestructiveRequestAction(id: string) {
   });
 
   if (!req) throw new Error('Not found');
-  
+
   if (req.requestedByUserId === session?.user?.id) {
     throw new Error('Separation of duties: Cannot approve your own request');
   }
@@ -132,7 +132,7 @@ export async function dryRunDestructiveRequestAction(id: string) {
   });
 
   if (!req) throw new Error('Not found');
-  
+
   let impactSummary: any = { safeToDelete: false, warnings: ['Unsupported destructive operation.'] };
 
   if (req.operationType === 'DELETE_STUDY' && req.studyInstanceUid) {
@@ -171,7 +171,7 @@ export async function executeDestructiveRequestAction(id: string, confirmationPh
   if (confirmationPhrase !== 'I CONFIRM THIS DESTRUCTIVE ACTION') {
     throw new Error('Invalid confirmation phrase');
   }
-  
+
   const impactSummary = req.impactSummaryJson ? JSON.parse(req.impactSummaryJson) : null;
   if (impactSummary && impactSummary.safeToDelete === false) {
     throw new Error('Cannot execute: Dry run indicates it is NOT safe to delete. Final report exists.');
@@ -195,7 +195,7 @@ export async function executeDestructiveRequestAction(id: string, confirmationPh
     if (study) {
       const orthancUrl = process.env.ORTHANC_API_URL || 'http://orthanc:8042';
       const orthancAuth = Buffer.from(`${process.env.ORTHANC_USERNAME || 'admin'}:${process.env.ORTHANC_PASSWORD || 'orthanc'}`).toString('base64');
-      
+
       // Find Orthanc Study ID
       const findRes = await fetch(`${orthancUrl}/tools/find`, {
         method: 'POST',

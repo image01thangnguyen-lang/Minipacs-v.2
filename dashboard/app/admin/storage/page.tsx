@@ -121,7 +121,7 @@ export default function StorageAdminPage() {
               <ScreenHeader />
               <p className="mt-1 text-[11px] text-vin-muted">Quản lý các thư mục lưu trữ ảnh DICOM, báo cáo, và sao lưu.</p>
             </div>
-            <button 
+            <button
               onClick={() => handleOpenForm()}
               className="flex items-center gap-1.5 rounded bg-vin-accent px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-vin-accentHover"
             >
@@ -167,13 +167,13 @@ export default function StorageAdminPage() {
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="p-3 flex-1 flex flex-col gap-3 text-[11px]">
                     <div>
                       <span className="text-[10px] uppercase font-bold text-vin-muted block mb-1">Đường dẫn</span>
                       <code className="bg-vin-root px-1.5 py-1 rounded border border-vin-border text-vin-text2 block truncate" title={folder.path}>{folder.path}</code>
                     </div>
-                    
+
                     {folder.facility && (
                       <div>
                         <span className="text-[10px] uppercase font-bold text-vin-muted block mb-1">Cơ sở</span>
@@ -205,7 +205,7 @@ export default function StorageAdminPage() {
                   </div>
                 </div>
               ))}
-              
+
               {folders.length === 0 && (
                 <div className="col-span-full py-12 text-center text-vin-muted border border-dashed border-vin-border rounded-lg">
                   Chưa có cấu hình lưu trữ nào.
@@ -226,7 +226,7 @@ export default function StorageAdminPage() {
               </h3>
               <button onClick={() => setIsFormOpen(false)} className="text-vin-muted hover:text-white"><X className="h-4 w-4" /></button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="flex-1 overflow-auto p-4 flex flex-col gap-4 text-sm">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -235,15 +235,15 @@ export default function StorageAdminPage() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold uppercase text-vin-muted mb-1">Loại</label>
-                  <CustomSelect 
-                    name="type" 
+                  <CustomSelect
+                    name="type"
                     options={[
                       {value: "NORMAL", label: "Normal (Thư mục mặc định)"},
                       {value: "SHARE", label: "Share (Chia sẻ mạng)"},
                       {value: "UPLOAD", label: "Upload (Tải lên)"},
                       {value: "BACKUP", label: "Backup (Sao lưu)"},
-                    ]} 
-                    value={formType} 
+                    ]}
+                    value={formType}
                     onChange={(val) => setFormType(val)}
                   />
                 </div>
@@ -261,10 +261,10 @@ export default function StorageAdminPage() {
 
               <div>
                 <label className="block text-[10px] font-bold uppercase text-vin-muted mb-1">Áp dụng cho cơ sở (Tùy chọn)</label>
-                <CustomSelect 
-                  name="facilityId" 
+                <CustomSelect
+                  name="facilityId"
                   options={[{value: "", label: "-- Tất cả --"}, ...facilities.map(f => ({value: f.id, label: f.name}))]}
-                  value={formFacilityId} 
+                  value={formFacilityId}
                   onChange={(val) => setFormFacilityId(val)}
                 />
               </div>

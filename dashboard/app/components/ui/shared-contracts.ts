@@ -48,17 +48,17 @@ export interface SharedDataGridProps<T> {
   emptyState?: ReactNode;
   errorState?: ReactNode;
   ariaLabel?: string;
-  
+
   // Selection
   onRowClick?: (item: T) => void;
   onRowDoubleClick?: (item: T) => void;
   selectedIds?: readonly string[];
   onSelectionChange?: (ids: readonly string[]) => void;
-  
+
   // Sorting
   sortConfig?: { key: string; direction: SortDirection };
   onSort?: (key: string) => void;
-  
+
   // Presentation
   density?: GridDensity;
   stickyHeader?: boolean;

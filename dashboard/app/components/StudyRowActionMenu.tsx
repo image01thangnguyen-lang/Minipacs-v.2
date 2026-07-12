@@ -19,7 +19,7 @@ type ActionMenuProps = {
   canCancelDraft: boolean;
   canUnfinalize: boolean;
   canDeliver: boolean;
-  
+
   onAssignDoctor?: () => void;
   onUpdateClinical?: () => void;
   onAddIndication?: () => void;

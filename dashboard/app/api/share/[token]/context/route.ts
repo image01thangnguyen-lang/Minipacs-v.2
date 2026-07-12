@@ -6,7 +6,7 @@ import { getClinicProfile } from '@/app/settings/clinic-profile/actions';
 
 export async function GET(request: NextRequest, { params }: { params: { token: string } }) {
   const { token } = params;
-  
+
   const sessionCookie = cookies().get(`share_session_${token}`);
   const hasSession = isValidShareCookie(token, 'session', sessionCookie?.value);
   const { valid, reason, shareLink } = await validateToken(token, hasSession);
@@ -28,19 +28,19 @@ export async function GET(request: NextRequest, { params }: { params: { token: s
   }
 
   // Set a cookie so orthanc proxy knows it's authorized (valid for session)
-  cookies().set(`share_auth_${token}`, getShareCookieValue(token, 'auth'), { 
-    httpOnly: true, 
-    secure: process.env.NODE_ENV === 'production', 
-    sameSite: 'strict', 
-    path: '/' 
+  cookies().set(`share_auth_${token}`, getShareCookieValue(token, 'auth'), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/'
   });
 
   // Track unique session access to prevent exhaustion by reload
   if (!hasSession) {
     if (shareLink.maxAccessCount !== null) {
       const updateResult = await prisma.shareLink.updateMany({
-        where: { 
-          id: shareLink.id, 
+        where: {
+          id: shareLink.id,
           accessCount: { lt: shareLink.maxAccessCount }
         },
         data: {
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest, { params }: { params: { token: s
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      path: '/' 
+      path: '/'
     });
   }
 
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest, { params }: { params: { token: s
 async function getContextData(shareLink: any) {
   let studyData = null;
   let reportData = null;
-  
+
   if (shareLink.reportId) {
     reportData = await prisma.report.findUnique({
       where: { id: shareLink.reportId },
@@ -95,7 +95,7 @@ async function getContextData(shareLink: any) {
     studyData = await prisma.imagingStudy.findUnique({
       where: { studyInstanceUid: shareLink.studyInstanceUid }
     });
-    
+
     if (shareLink.allowReport) {
       reportData = await prisma.report.findFirst({
         where: { studyInstanceUid: shareLink.studyInstanceUid, status: "FINAL" },

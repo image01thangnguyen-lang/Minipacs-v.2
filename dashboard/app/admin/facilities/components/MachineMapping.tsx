@@ -88,7 +88,7 @@ export function MachineMapping() {
             type="checkbox"
             checked={includeInactive}
             onChange={(e) => setIncludeInactive(e.target.checked)}
-            className="rounded border-vin-border bg-vin-bg"
+            className="rounded border-vin-border bg-vin-shell"
           />
           Hiển thị máy chụp đã ngừng hoạt động
         </label>
@@ -111,7 +111,7 @@ export function MachineMapping() {
           />
         ) : (
           <table className="w-full text-left text-sm">
-            <thead className="bg-vin-bg text-vin-muted">
+            <thead className="bg-vin-shell text-vin-muted">
               <tr>
                 <th className="px-4 py-3 font-semibold border-b border-vin-border">Máy chụp (DICOM Node)</th>
                 <th className="px-4 py-3 font-semibold border-b border-vin-border">Modality / AE Title</th>
@@ -121,7 +121,7 @@ export function MachineMapping() {
             </thead>
             <tbody className="divide-y divide-vin-border">
               {nodes.map(node => (
-                <tr key={node.id} className={`transition ${node.isActive ? "hover:bg-vin-bg/50" : "bg-vin-bg/30 opacity-70"}`}>
+                <tr key={node.id} className={`transition ${node.isActive ? "hover:bg-vin-shell/50" : "bg-vin-shell/30 opacity-70"}`}>
                   <td className="px-4 py-3">
                     <div className="font-semibold text-white">
                       {node.name}
@@ -133,7 +133,7 @@ export function MachineMapping() {
                   </td>
                   <td className="px-4 py-3">
                     <select
-                      className="w-full rounded border border-vin-border bg-vin-bg px-3 py-1.5 text-white text-sm"
+                      className="w-full rounded border border-vin-border bg-vin-shell px-3 py-1.5 text-white text-sm"
                       value={node.facilityId || ""}
                       onChange={(e) => handleAssign(node.id, e.target.value || null)}
                       disabled={saving === node.id || !node.isActive}

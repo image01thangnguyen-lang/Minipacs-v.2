@@ -18,7 +18,7 @@ export function PerformanceRunClient() {
   };
 
   return (
-    <button 
+    <button
       onClick={handleRun}
       disabled={loading}
       className={`px-4 py-2 rounded font-semibold text-white ${loading ? 'bg-yellow-300' : 'bg-yellow-600 hover:bg-yellow-700'}`}

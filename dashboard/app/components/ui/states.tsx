@@ -5,11 +5,11 @@ import type { AccessDeniedStateProps, EmptyStateProps, ErrorStateProps, LoadingS
 /**
  * EmptyState Primitive
  */
-export function EmptyState({ 
-  title = "Không có dữ liệu", 
-  message = "Chưa có bản ghi nào để hiển thị trong mục này.", 
+export function EmptyState({
+  title = "Không có dữ liệu",
+  message = "Chưa có bản ghi nào để hiển thị trong mục này.",
   icon: Icon = FolderOpen,
-  action 
+  action
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
@@ -26,9 +26,9 @@ export function EmptyState({
 /**
  * ErrorState Primitive
  */
-export function ErrorState({ 
-  title = "Đã xảy ra lỗi", 
-  message = "Không thể tải dữ liệu. Vui lòng thử lại sau.", 
+export function ErrorState({
+  title = "Đã xảy ra lỗi",
+  message = "Không thể tải dữ liệu. Vui lòng thử lại sau.",
   retry
 }: ErrorStateProps) {
   return (
@@ -39,7 +39,7 @@ export function ErrorState({
       <h3 className="text-lg font-medium text-vin-text">{title}</h3>
       <p className="text-sm text-vin-text2 mt-1 max-w-sm">{message}</p>
       {retry && (
-        <button 
+        <button
           type="button"
           onClick={retry.onClick}
           className="mt-6 px-4 py-2 bg-vin-panel border border-vin-border rounded-md text-sm font-medium hover:bg-vin-panel2 transition-colors"
@@ -54,9 +54,9 @@ export function ErrorState({
 /**
  * AccessDeniedState Primitive
  */
-export function AccessDeniedState({ 
+export function AccessDeniedState({
   title = "Từ chối truy cập",
-  message = "Bạn không có quyền truy cập vào tài nguyên này." 
+  message = "Bạn không có quyền truy cập vào tài nguyên này."
 }: AccessDeniedStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
@@ -72,7 +72,7 @@ export function AccessDeniedState({
 /**
  * LoadingSkeleton Primitive
  */
-export function LoadingSkeleton({ 
+export function LoadingSkeleton({
   rows = 5,
   label = "Đang tải dữ liệu"
 }: LoadingSkeletonProps) {

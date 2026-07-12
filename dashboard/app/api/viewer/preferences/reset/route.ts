@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     await prisma.viewerUserPreference.deleteMany({
       where: { userId }
     });
-    
+
     return NextResponse.json({ success: true, message: 'Preferences reset to default' });
   } catch (error) {
     console.error('Failed to reset preferences', error);

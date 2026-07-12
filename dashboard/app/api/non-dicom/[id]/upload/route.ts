@@ -40,11 +40,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     for (const file of files) {
       // Xác định mime type
       const mimeType = file.type || "application/octet-stream";
-      
+
       if (!allowedMimeTypes.includes(mimeType)) {
         return NextResponse.json({ error: `Tệp ${file.name} có định dạng không được hỗ trợ.` }, { status: 400 });
       }
-      
+
       let mediaType = "DOCUMENT";
       if (mimeType.startsWith("image/")) mediaType = "IMAGE";
       else if (mimeType.startsWith("video/")) mediaType = "VIDEO";
@@ -76,7 +76,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
           filePath: storagePath,
         },
       });
-      
+
       results.push(media);
     }
 

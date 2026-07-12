@@ -28,7 +28,7 @@ export async function GET() {
 
   let dicomwebOk = false;
   let dicomwebMessage = 'Missing Configuration';
-  
+
   if (process.env.ORTHANC_API_URL) {
     try {
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000));

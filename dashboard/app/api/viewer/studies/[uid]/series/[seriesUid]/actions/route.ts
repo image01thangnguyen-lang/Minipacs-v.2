@@ -36,7 +36,7 @@ export async function POST(request: Request, { params }: { params: { uid: string
           requestedByUserId: userId,
         }
       });
-      
+
       await prisma.viewerAuditLog.create({
         data: {
           studyInstanceUid: params.uid,

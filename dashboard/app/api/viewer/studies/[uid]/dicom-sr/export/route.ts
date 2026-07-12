@@ -33,7 +33,7 @@ export async function POST(request: Request, { params }: { params: { uid: string
         action: 'dicom_sr_export_deferred',
         entityType: 'Study',
         entityId: studyInstanceUid,
-        metadataJson: JSON.stringify({ 
+        metadataJson: JSON.stringify({
           eligibleCount: eligibleMeasurements.length,
           ineligibleCount: ineligibleMeasurements.length
         }),

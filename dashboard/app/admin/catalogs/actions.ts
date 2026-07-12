@@ -14,7 +14,7 @@ export async function getServiceTypes() {
 
 export async function createServiceType(data: FormData) {
   await requirePermission("admin.catalogs");
-  
+
   const code = data.get("code") as string;
   const name = data.get("name") as string;
   const description = data.get("description") as string;
@@ -37,14 +37,14 @@ export async function createServiceType(data: FormData) {
       isActive,
     },
   });
-  
+
   revalidatePath("/admin/catalogs");
   return result;
 }
 
 export async function updateServiceType(data: FormData) {
   await requirePermission("admin.catalogs");
-  
+
   const id = data.get("id") as string;
   const name = data.get("name") as string;
   const description = data.get("description") as string;
@@ -64,7 +64,7 @@ export async function updateServiceType(data: FormData) {
       isActive,
     },
   });
-  
+
   revalidatePath("/admin/catalogs");
   return result;
 }
@@ -85,7 +85,7 @@ export async function getProcedures() {
 
 export async function createProcedure(data: FormData) {
   await requirePermission("admin.catalogs");
-  
+
   const code = data.get("code") as string;
   const name = data.get("name") as string;
   const serviceTypeId = data.get("serviceTypeId") as string;
@@ -118,14 +118,14 @@ export async function createProcedure(data: FormData) {
       isActive,
     },
   });
-  
+
   revalidatePath("/admin/catalogs");
   return result;
 }
 
 export async function updateProcedure(data: FormData) {
   await requirePermission("admin.catalogs");
-  
+
   const id = data.get("id") as string;
   const name = data.get("name") as string;
   const serviceTypeId = data.get("serviceTypeId") as string;
@@ -155,7 +155,7 @@ export async function updateProcedure(data: FormData) {
       isActive,
     },
   });
-  
+
   revalidatePath("/admin/catalogs");
   return result;
 }
@@ -170,7 +170,7 @@ export async function getIcds() {
 
 export async function createIcd(data: FormData) {
   await requirePermission("admin.catalogs");
-  
+
   const code = data.get("code") as string;
   const name = data.get("name") as string;
   const chapter = data.get("chapter") as string;
@@ -193,14 +193,14 @@ export async function createIcd(data: FormData) {
       isActive,
     },
   });
-  
+
   revalidatePath("/admin/catalogs");
   return result;
 }
 
 export async function updateIcd(data: FormData) {
   await requirePermission("admin.catalogs");
-  
+
   const id = data.get("id") as string;
   const name = data.get("name") as string;
   const chapter = data.get("chapter") as string;
@@ -220,7 +220,7 @@ export async function updateIcd(data: FormData) {
       isActive,
     },
   });
-  
+
   revalidatePath("/admin/catalogs");
   return result;
 }
@@ -235,7 +235,7 @@ export async function getSupplies() {
 
 export async function createSupply(data: FormData) {
   await requirePermission("admin.catalogs");
-  
+
   const code = data.get("code") as string;
   const name = data.get("name") as string;
   const unit = data.get("unit") as string;
@@ -258,14 +258,14 @@ export async function createSupply(data: FormData) {
       isActive,
     },
   });
-  
+
   revalidatePath("/admin/catalogs");
   return result;
 }
 
 export async function updateSupply(data: FormData) {
   await requirePermission("admin.catalogs");
-  
+
   const id = data.get("id") as string;
   const name = data.get("name") as string;
   const unit = data.get("unit") as string;
@@ -285,7 +285,7 @@ export async function updateSupply(data: FormData) {
       isActive,
     },
   });
-  
+
   revalidatePath("/admin/catalogs");
   return result;
 }

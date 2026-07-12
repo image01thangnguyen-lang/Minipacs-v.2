@@ -125,7 +125,7 @@ function ConfigTab({ config, permissions }: any) {
             <input type="password" value={formData.bearerToken} onChange={e => setFormData({ ...formData, bearerToken: e.target.value })} className="block w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent" />
           </div>
         )}
-        
+
         <div className="flex items-center space-x-4 pt-2">
           <button type="submit" disabled={loading} className="px-4 py-2 bg-vin-accent text-white rounded shadow-sm hover:bg-vin-accentHover transition-colors">Save Config</button>
           <button type="button" onClick={handleTest} disabled={loading} className="px-4 py-2 bg-vin-shell text-vin-text border border-vin-border rounded shadow-sm hover:bg-vin-panel transition-colors">Test Connection</button>

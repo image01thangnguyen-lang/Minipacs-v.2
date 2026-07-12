@@ -210,7 +210,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
         if (printTpls) {
           setPrintTemplates(printTpls);
           let targetTplId = report?.printTemplateId;
-          
+
           if (!targetTplId) {
             const defaultTpl = printTpls.find(t => t.isDefault) || printTpls[0];
             if (defaultTpl) {
@@ -218,7 +218,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
               setSelectedPrintTemplateId(targetTplId);
             }
           }
-          
+
           if (targetTplId) {
             const matchedTpl = printTpls.find(t => t.id === targetTplId);
             if (matchedTpl?.htmlContent) {
@@ -248,7 +248,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
     loadData();
   }, [studyInstanceUid]);
 
-  const printTitle = patientDetails 
+  const printTitle = patientDetails
     ? `Ket_Qua_CDHA_${patientDetails.MainDicomTags?.AccessionNumber || "NA"}_${(studyInstanceUid || "").split('.').pop()?.slice(-6) || "ID"}`
     : `Ket_Qua_CDHA_${(studyInstanceUid || "").split('.').pop()?.slice(-6) || "ID"}`;
 

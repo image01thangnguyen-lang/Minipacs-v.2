@@ -16,7 +16,7 @@ const formatDateTime = (date: Date) => {
 
 export default async function NonDicomExamCapturePage({ params }: { params: { id: string } }) {
   const session = await requirePermission("nonDicom.read");
-  
+
   const canCapture = hasPermission(session.role, "nonDicom.capture", session.permissions);
   const canDelete = hasPermission(session.role, "nonDicom.deleteMedia", session.permissions);
 
@@ -41,18 +41,18 @@ export default async function NonDicomExamCapturePage({ params }: { params: { id
   }
 
   return (
-    <div className="flex h-screen flex-col bg-vin-background text-vin-text">
+    <div className="flex h-screen flex-col bg-vin-root text-vin-text">
       {/* Header */}
       <header className="flex h-12 flex-none items-center justify-between border-b border-vin-border bg-vin-panel2 px-4 shadow-sm">
         <div className="flex items-center gap-3">
           <Link
             href="/non-dicom"
-            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-vin-muted transition hover:bg-white/5 hover:text-white"
+            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium text-vin-muted transition hover:bg-vin-panel/5 hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
             Hàng đợi
           </Link>
-          <div className="h-4 w-[1px] bg-white/10" />
+          <div className="h-4 w-[1px] bg-vin-panel/10" />
           <ScreenHeader />
         </div>
         <div className="flex items-center gap-4 text-xs">
@@ -62,7 +62,7 @@ export default async function NonDicomExamCapturePage({ params }: { params: { id
               ACC: {exam.accessionNumber}
             </span>
           </div>
-          <div className="h-6 w-[1px] bg-white/10" />
+          <div className="h-6 w-[1px] bg-vin-panel/10" />
           <div className="flex flex-col items-end">
             <span className="font-medium text-white">
               {exam.status === "CREATED" ? "Chưa có dữ liệu" : exam.status}

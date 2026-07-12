@@ -123,10 +123,10 @@ export default function ConsultationsPage() {
                       {statusLabels[c.status] || c.status}
                     </span>
                   </div>
-                  
+
                   <div className="flex-1 p-4 text-[12px] text-vin-text2">
                     <p className="line-clamp-2">{c.description || "Không có mô tả"}</p>
-                    
+
                     <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-4 text-[11px]">
                       <div>
                         <span className="text-vin-muted">Người tạo: </span>

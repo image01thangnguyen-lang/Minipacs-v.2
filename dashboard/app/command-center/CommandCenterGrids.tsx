@@ -52,11 +52,11 @@ export function CommandCenterQueueGrid({ rows, isLoading }: { rows: QueueRow[]; 
       width: 150,
       cell: (study) => (
         study.source === 'HIS' ? (
-          <Link href={`/worklist?orderId=${study.orderId || study.id}`} className="text-blue-600 hover:underline">
+          <Link href={`/worklist?orderId=${study.orderId || study.id}`} className="font-semibold text-vin-accent hover:underline">
             {study.accessionNumber}
           </Link>
         ) : study.uid ? (
-          <Link href={`/report/${study.uid}`} className="text-blue-600 hover:underline">
+          <Link href={`/report/${study.uid}`} className="font-semibold text-vin-accent hover:underline">
             {study.accessionNumber}
           </Link>
         ) : (
@@ -69,7 +69,7 @@ export function CommandCenterQueueGrid({ rows, isLoading }: { rows: QueueRow[]; 
       header: "Nguồn",
       width: 100,
       cell: (study) => (
-        <span className={`px-2 py-1 rounded text-xs font-medium ${study.source === 'HIS' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+        <span className={`rounded border px-2 py-1 text-xs font-medium ${study.source === 'HIS' ? 'border-vin-accent/40 bg-vin-accent/15 text-vin-accent' : 'border-cyan-400/40 bg-cyan-500/15 text-cyan-200'}`}>
           {study.source}
         </span>
       ),
@@ -101,7 +101,7 @@ export function CommandCenterQueueGrid({ rows, isLoading }: { rows: QueueRow[]; 
       getRowId={(row) => row.id}
       isLoading={isLoading}
       renderLimit={150}
-      emptyState={<div className="py-8 text-center text-gray-500">Không có dữ liệu</div>}
+      emptyState={<div className="py-8 text-center text-vin-muted">Không có dữ liệu</div>}
       ariaLabel="Hàng đợi trực tiếp"
     />
   );
@@ -115,7 +115,7 @@ export function CommandCenterSlaGrid({ rows, isLoading }: { rows: SlaRow[]; isLo
       width: 200,
       cell: (breach) => (
         breach.studyInstanceUid ? (
-          <Link href={`/report/${breach.studyInstanceUid}`} className="text-blue-600 hover:underline">
+          <Link href={`/report/${breach.studyInstanceUid}`} className="font-semibold text-vin-accent hover:underline">
             {breach.patientName}
           </Link>
         ) : breach.patientName
@@ -145,7 +145,7 @@ export function CommandCenterSlaGrid({ rows, isLoading }: { rows: SlaRow[]; isLo
       width: 180,
       cell: (breach) => (
         <>
-          {breach.policyCode} <span className="text-xs text-gray-400">({breach.source})</span>
+          {breach.policyCode} <span className="text-xs text-vin-muted">({breach.source})</span>
         </>
       ),
     },
@@ -158,7 +158,7 @@ export function CommandCenterSlaGrid({ rows, isLoading }: { rows: SlaRow[]; isLo
       getRowId={(row) => row.id || `${row.studyInstanceUid || "unknown"}:${row.stage}:${row.policyCode}`}
       isLoading={isLoading}
       renderLimit={150}
-      emptyState={<div className="py-8 text-center text-gray-500">Không có dữ liệu</div>}
+      emptyState={<div className="py-8 text-center text-vin-muted">Không có dữ liệu</div>}
       ariaLabel="Danh sách vi phạm SLA"
     />
   );
@@ -172,11 +172,11 @@ export function CommandCenterStuckGrid({ rows, isLoading }: { rows: StuckRow[]; 
       width: 150,
       cell: (study) => (
         study.studyInstanceUid ? (
-          <Link href={`/report/${study.studyInstanceUid}`} className="text-blue-600 hover:underline">
+          <Link href={`/report/${study.studyInstanceUid}`} className="font-semibold text-vin-accent hover:underline">
             {study.accessionNumber}
           </Link>
         ) : (
-          <span className="text-gray-900">{study.accessionNumber}</span>
+          <span className="text-vin-text">{study.accessionNumber}</span>
         )
       ),
     },
@@ -213,7 +213,7 @@ export function CommandCenterStuckGrid({ rows, isLoading }: { rows: StuckRow[]; 
       getRowId={(row) => row.id}
       isLoading={isLoading}
       renderLimit={150}
-      emptyState={<div className="py-8 text-center text-gray-500">Không có dữ liệu</div>}
+      emptyState={<div className="py-8 text-center text-vin-muted">Không có dữ liệu</div>}
       ariaLabel="Danh sách quy trình bị kẹt"
     />
   );
@@ -228,7 +228,7 @@ export function CommandCenterAlertsGrid({ rows, isLoading }: { rows: AlertRow[];
       cell: (alert) => (
         <>
           <div className="font-semibold">{alert.title}</div>
-          <div className="text-xs text-gray-500 truncate max-w-md" title={alert.message}>{alert.message}</div>
+          <div className="max-w-md truncate text-xs text-vin-muted" title={alert.message}>{alert.message}</div>
         </>
       ),
     },
@@ -237,7 +237,7 @@ export function CommandCenterAlertsGrid({ rows, isLoading }: { rows: AlertRow[];
       header: "Độ nghiêm trọng",
       width: 140,
       cell: (alert) => (
-        <span className={`px-2 py-1 rounded text-xs font-semibold ${alert.severity === 'CRITICAL' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+        <span className={`rounded border px-2 py-1 text-xs font-semibold ${alert.severity === 'CRITICAL' ? 'border-red-400/40 bg-vin-status-danger-bg/20 text-red-200' : 'border-amber-400/40 bg-vin-status-warning-bg/20 text-amber-100'}`}>
           {alert.severity}
         </span>
       ),
@@ -246,13 +246,13 @@ export function CommandCenterAlertsGrid({ rows, isLoading }: { rows: AlertRow[];
       id: "entityType",
       header: "Loại đối tượng",
       width: 140,
-      cell: (alert) => <span className="text-gray-600">{alert.entityType || 'SYSTEM'}</span>,
+      cell: (alert) => <span className="text-vin-text2">{alert.entityType || 'SYSTEM'}</span>,
     },
     {
       id: "createdAt",
       header: "Thời gian",
       width: 160,
-      cell: (alert) => <span className="text-gray-600">{new Date(alert.createdAt).toLocaleString()}</span>,
+      cell: (alert) => <span className="text-vin-text2">{new Date(alert.createdAt).toLocaleString()}</span>,
     },
   ], []);
 
@@ -263,7 +263,7 @@ export function CommandCenterAlertsGrid({ rows, isLoading }: { rows: AlertRow[];
       getRowId={(row) => row.id}
       isLoading={isLoading}
       renderLimit={150}
-      emptyState={<div className="py-8 text-center text-gray-500">Không có cảnh báo nào</div>}
+      emptyState={<div className="py-8 text-center text-vin-muted">Không có cảnh báo nào</div>}
       ariaLabel="Danh sách cảnh báo đang hoạt động"
     />
   );

@@ -59,7 +59,7 @@ export function ClinicalInfoModal({
     setError("");
 
     try {
-      const payload = mode === "CLINICAL_INFO" 
+      const payload = mode === "CLINICAL_INFO"
         ? { clinicalInfo, technologistId, bodyPart }
         : { procedureCode, procedureDescription };
 

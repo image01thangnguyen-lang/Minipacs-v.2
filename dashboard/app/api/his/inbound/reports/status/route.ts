@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const startTime = Date.now();
   const requestId = crypto.randomUUID();
-  
+
   const auth = await authenticateHisGateway(req);
   if (!auth.success) {
     await logHisApiCall({ direction: "INBOUND", method: "GET", path: "/api/his/inbound/reports/status", statusCode: auth.status, success: false, durationMs: Date.now() - startTime, actorType: "HIS_SYSTEM", requestId, errorMessage: auth.message });

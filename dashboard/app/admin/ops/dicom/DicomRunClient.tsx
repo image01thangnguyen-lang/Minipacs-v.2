@@ -20,10 +20,10 @@ export function DicomRunClient({ nodes }: { nodes: { id: string, name: string }[
 
   return (
     <div className="flex items-center space-x-4">
-      <select 
+      <select
         value={selectedNode}
         onChange={(e) => setSelectedNode(e.target.value)}
-        className="border border-gray-300 rounded px-3 py-2 text-sm"
+        className="border border-vin-border rounded px-3 py-2 text-sm"
         disabled={loading}
       >
         <option value="">General Test (No specific node)</option>
@@ -31,7 +31,7 @@ export function DicomRunClient({ nodes }: { nodes: { id: string, name: string }[
           <option key={node.id} value={node.id}>{node.name}</option>
         ))}
       </select>
-      <button 
+      <button
         onClick={handleRun}
         disabled={loading}
         className={`px-4 py-2 rounded font-semibold text-white ${loading ? 'bg-green-300' : 'bg-green-600 hover:bg-green-700'}`}

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-const UPLOAD_DIR = process.env.NODE_ENV === 'production' 
-  ? '/app/pacs_data/report_images' 
+const UPLOAD_DIR = process.env.NODE_ENV === 'production'
+  ? '/app/pacs_data/report_images'
   : path.resolve(process.cwd(), '../pacs_data/report_images');
 
 export async function GET(req: NextRequest, props: { params: Promise<{ hash: string }> }) {

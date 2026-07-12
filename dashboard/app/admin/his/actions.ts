@@ -154,7 +154,7 @@ export async function tryApiRequestAction(method: string, path: string, payload:
   try {
     const config = await prisma.hisConnectionConfig.findFirst({ where: { isActive: true } });
     const headers: any = { "Content-Type": "application/json" };
-    
+
     if (config?.authMode === "apiKey") headers["x-api-key"] = decryptHisSecret(config.apiKeyEncrypted);
     else if (config?.authMode === "bearer") headers["Authorization"] = `Bearer ${decryptHisSecret(config.bearerTokenEncrypted)}`;
     else if (config?.authMode === "basic") headers["Authorization"] = `Basic ${Buffer.from(`${config.basicUsername}:${decryptHisSecret(config.basicPasswordEncrypted)}`).toString("base64")}`;

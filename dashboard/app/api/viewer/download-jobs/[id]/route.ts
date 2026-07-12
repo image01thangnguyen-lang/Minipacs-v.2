@@ -13,7 +13,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     const job = await prisma.viewerDownloadJob.findUnique({
       where: { id: jobId }
     });
-    
+
     if (!job) {
       return NextResponse.json({ success: false, error: 'Job not found' }, { status: 404 });
     }
@@ -38,7 +38,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   // This could be for /cancel or other actions if routed here
   // But Next.js App Router usually uses separate folder for /cancel. Let's handle it via query string ?action=cancel if needed, or assume it's just cancel
-  
+
   const authz = await requireApiPermission('viewer.export');
   if (!authz.ok) return authz.response;
 
@@ -53,7 +53,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
       const job = await prisma.viewerDownloadJob.findUnique({ where: { id: jobId } });
       if (!job) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
       if (job.requestedByUserId !== userId) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
-      
+
       if (job.status === 'PENDING' || job.status === 'RUNNING') {
         const updated = await prisma.viewerDownloadJob.update({
           where: { id: jobId },

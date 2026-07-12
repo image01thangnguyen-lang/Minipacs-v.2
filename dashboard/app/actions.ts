@@ -186,10 +186,10 @@ export async function getStudies() {
     );
 
     for (const dbStudy of nonDicomOnlyStudies) {
-      const dicomDate = dbStudy.scanStartedAt 
-        ? dbStudy.scanStartedAt.toISOString().split('T')[0].replace(/-/g, '') 
+      const dicomDate = dbStudy.scanStartedAt
+        ? dbStudy.scanStartedAt.toISOString().split('T')[0].replace(/-/g, '')
         : (dbStudy.createdAt ? dbStudy.createdAt.toISOString().split('T')[0].replace(/-/g, '') : "");
-        
+
       studiesWithWorkflow.push({
         ID: dbStudy.id,
         MainDicomTags: {

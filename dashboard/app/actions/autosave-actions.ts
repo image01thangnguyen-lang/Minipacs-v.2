@@ -11,7 +11,7 @@ export type AutosaveInput = {
   recommendation?: string;
 };
 
-export type AutosaveResult = 
+export type AutosaveResult =
   | { success: true; newRevision: number; reportId: string }
   | { success: false; error: string; code: string };
 
@@ -90,7 +90,7 @@ export async function autosaveReportAction(
       }
 
       // Important: We DO NOT create an AuditLog here to prevent spamming the audit table during rapid typing.
-      
+
       return { success: true, newRevision: baseRevision + 1, reportId: existing.id };
     } else {
       // Revision 0 is the token for "no report existed when loaded". A

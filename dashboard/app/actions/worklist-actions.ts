@@ -12,10 +12,10 @@ export async function getScopedWorklistAction(payload: unknown) {
     throw new Error("Unauthorized");
   }
   await requirePermission("studies.read");
-  
+
   // Xóa cache để luôn lấy mới nhất
   const request = WorklistQueryRequestSchema.parse(payload);
-  
+
   try {
     const result = await queryWorklist(request, session.user.id);
     return result;
@@ -33,9 +33,9 @@ export async function getScopedWorklistFacetsAction(payload: unknown) {
     throw new Error("Unauthorized");
   }
   await requirePermission("studies.read");
-  
+
   const request = WorklistQueryRequestSchema.parse(payload);
-  
+
   try {
     const result = await queryWorklistFacets(request, session.user.id);
     return result;

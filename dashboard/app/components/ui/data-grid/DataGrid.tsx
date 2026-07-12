@@ -67,10 +67,10 @@ export interface DataGridCellProps extends React.TdHTMLAttributes<HTMLTableCellE
 
 export const DataGridCell = ({ children, pinned, pinnedOffset = 0, isHeader, shadow, compact, className = '', style, ...props }: DataGridCellProps) => {
   const Component = isHeader ? 'th' : 'td';
-  
+
   const py = compact ? 'py-1' : 'py-2';
   const baseClasses = isHeader ? `${py} px-2 border-b border-white/10` : `${py} px-2`;
-  
+
   let pinnedClasses = '';
   if (pinned) {
     pinnedClasses = 'sticky z-10 bg-inherit'; // bg-inherit so row bg applies

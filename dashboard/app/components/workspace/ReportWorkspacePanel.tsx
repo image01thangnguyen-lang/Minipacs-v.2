@@ -109,7 +109,7 @@ export function ReportWorkspacePanel({
     enabled: panelState.kind === "loaded" && panelState.data.allowedActions.draftReport,
     debounceMs: 1500,
   });
-  
+
   const {
     setDirty,
     registerSaveCallback,

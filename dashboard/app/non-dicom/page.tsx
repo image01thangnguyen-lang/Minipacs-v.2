@@ -43,12 +43,12 @@ export default function NonDicomQueuePage() {
   const enableSharedUI = process.env.NEXT_PUBLIC_ENABLE_NONDICOM_SHARED_UI === "true";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-indigo-500/30 flex">
+    <div className="h-full min-h-0 bg-vin-root text-vin-text font-sans selection:bg-vin-accent/30 flex">
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex-none p-4 pb-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <ScreenHeader />
-            <p className="text-sm text-slate-400 mt-1">Quản lý các ca siêu âm, nội soi, chụp ảnh ngoài DICOM</p>
+            <p className="text-sm text-vin-muted mt-1">Quản lý các ca siêu âm, nội soi, chụp ảnh ngoài DICOM</p>
           </div>
           <div className="flex items-center gap-3">
             <CustomSelect
@@ -69,11 +69,11 @@ export default function NonDicomQueuePage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && loadExams()}
-              className="bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition-colors w-48"
+              className="bg-vin-panel border border-vin-border rounded-md px-3 py-2 text-sm text-white placeholder-vin-muted focus:outline-none focus:border-vin-accent transition-colors w-48"
             />
             <button
               onClick={loadExams}
-              className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md transition-colors border border-slate-700 flex items-center justify-center disabled:opacity-50"
+              className="px-3 py-2 bg-vin-panel hover:bg-vin-tableHover text-vin-text2 rounded-md transition-colors border border-vin-border flex items-center justify-center disabled:opacity-50"
               disabled={loading}
               title="Làm mới"
             >
@@ -86,10 +86,10 @@ export default function NonDicomQueuePage() {
           {enableSharedUI ? (
             <NonDicomDataGrid rows={exams} isLoading={loading} />
           ) : (
-            <div className="flex-1 bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden flex flex-col">
+            <div className="flex-1 bg-vin-panel/50 rounded-lg border border-vin-border/50 overflow-hidden flex flex-col">
               <div className="overflow-x-auto flex-1">
                 <table className="w-full text-left text-sm whitespace-nowrap">
-                  <thead className="bg-slate-900/80 text-slate-400 sticky top-0 z-10">
+                  <thead className="bg-vin-panel2/80 text-vin-muted sticky top-0 z-10">
                     <tr>
                       <th className="px-4 py-3 font-medium">Trạng thái</th>
                       <th className="px-4 py-3 font-medium">Case Code / Bệnh nhân</th>
@@ -102,38 +102,38 @@ export default function NonDicomQueuePage() {
                   </thead>
                   <tbody className="divide-y divide-slate-700/50">
                     {exams.map((exam) => (
-                      <tr key={exam.id} className="hover:bg-slate-800/80 transition-colors group">
+                      <tr key={exam.id} className="hover:bg-vin-panel/80 transition-colors group">
                         <td className="px-4 py-3">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
                             exam.status === 'REQUESTED' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                            exam.status === 'CAPTURING' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' :
+                            exam.status === 'CAPTURING' ? 'bg-vin-accent/10 text-vin-accent border-vin-accent/20' :
                             exam.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                            'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                            'bg-vin-muted/10 text-vin-muted border-vin-border'
                           }`}>
                             {exam.status}
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="font-medium text-slate-200">{exam.patientName || "Không tên"}</div>
-                          <div className="text-xs text-slate-400">{exam.patientId} • {exam.caseCode}</div>
+                          <div className="font-medium text-vin-text">{exam.patientName || "Không tên"}</div>
+                          <div className="text-xs text-vin-muted">{exam.patientId} • {exam.caseCode}</div>
                         </td>
                         <td className="px-4 py-3">
-                          <div className="text-slate-300">{exam.patientSex === 'M' ? 'Nam' : exam.patientSex === 'F' ? 'Nữ' : 'Khác'}</div>
-                          <div className="text-xs text-slate-400">{exam.patientBirthDate ? new Date(exam.patientBirthDate).getFullYear() : '-'}</div>
+                          <div className="text-vin-text2">{exam.patientSex === 'M' ? 'Nam' : exam.patientSex === 'F' ? 'Nữ' : 'Khác'}</div>
+                          <div className="text-xs text-vin-muted">{exam.patientBirthDate ? new Date(exam.patientBirthDate).getFullYear() : '-'}</div>
                         </td>
-                        <td className="px-4 py-3 text-slate-300">
+                        <td className="px-4 py-3 text-vin-text2">
                           {exam.indication || "-"}
                         </td>
-                        <td className="px-4 py-3 text-slate-300">
+                        <td className="px-4 py-3 text-vin-text2">
                           {new Date(exam.createdAt).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" })}
                         </td>
-                        <td className="px-4 py-3 text-slate-300">
+                        <td className="px-4 py-3 text-vin-text2">
                           {exam._count?.media || 0} files
                         </td>
                         <td className="px-4 py-3 text-right">
                           <Link
                             href={`/non-dicom/${exam.id}`}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 hover:text-indigo-300 rounded-md transition-colors text-xs font-medium"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-vin-accent/20 text-vin-accent hover:bg-vin-accent/30 hover:text-vin-accent rounded-md transition-colors text-xs font-medium"
                           >
                             <Camera className="w-3.5 h-3.5" />
                             Capture
@@ -143,9 +143,9 @@ export default function NonDicomQueuePage() {
                     ))}
                     {exams.length === 0 && !loading && (
                       <tr>
-                        <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
+                        <td colSpan={7} className="px-4 py-12 text-center text-vin-faint">
                           <div className="flex flex-col items-center justify-center">
-                            <Camera className="w-10 h-10 text-slate-600 mb-3" />
+                            <Camera className="w-10 h-10 text-vin-faint mb-3" />
                             <p>Không có ca Non-DICOM nào</p>
                           </div>
                         </td>
@@ -153,9 +153,9 @@ export default function NonDicomQueuePage() {
                     )}
                     {loading && exams.length === 0 && (
                       <tr>
-                        <td colSpan={7} className="px-4 py-12 text-center text-slate-500">
+                        <td colSpan={7} className="px-4 py-12 text-center text-vin-faint">
                           <div className="flex flex-col items-center justify-center">
-                            <Loader2 className="w-8 h-8 animate-spin text-indigo-500 mb-3" />
+                            <Loader2 className="w-8 h-8 animate-spin text-vin-accent mb-3" />
                             <p>Đang tải danh sách...</p>
                           </div>
                         </td>

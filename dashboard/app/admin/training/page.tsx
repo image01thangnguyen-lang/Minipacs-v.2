@@ -52,7 +52,7 @@ export default async function TrainingCenterPage() {
             )}
           </h2>
         </div>
-        
+
         {myAssignments.length === 0 ? (
           <div className="p-6 text-center text-muted-foreground">
             You currently have no training assigned to you.

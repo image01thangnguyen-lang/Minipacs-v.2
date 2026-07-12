@@ -95,7 +95,7 @@ export default function AdminDestructivePage() {
                       )}
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      req.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' : 
+                      req.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
                       req.status === 'APPROVED' ? 'bg-blue-500/20 text-blue-400' :
                       req.status === 'DRY_RUN_READY' ? 'bg-cyan-500/20 text-cyan-400' :
                       req.status === 'FAILED' || req.status === 'REJECTED' ? 'bg-red-500/20 text-red-400' :
@@ -107,7 +107,7 @@ export default function AdminDestructivePage() {
 
                   <div className="flex gap-2 justify-end border-t border-vin-border pt-3 mt-1">
                     {req.status === 'REQUESTED' && (
-                      <button 
+                      <button
                         onClick={() => handleDryRun(req.id)}
                         className="bg-cyan-500/20 border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/30 px-3 py-1.5 rounded text-sm"
                       >
@@ -115,7 +115,7 @@ export default function AdminDestructivePage() {
                       </button>
                     )}
                     {req.status === 'DRY_RUN_READY' && (
-                      <button 
+                      <button
                         onClick={() => handleApprove(req.id)}
                         className="bg-blue-500/20 border border-blue-500/50 text-blue-400 hover:bg-blue-500/30 px-3 py-1.5 rounded text-sm"
                       >
@@ -123,7 +123,7 @@ export default function AdminDestructivePage() {
                       </button>
                     )}
                     {req.status === 'APPROVED' && (
-                      <button 
+                      <button
                         onClick={() => handleExecute(req.id)}
                         className="bg-red-500/20 border border-red-500/50 text-red-400 hover:bg-red-500/30 px-3 py-1.5 rounded text-sm font-bold"
                       >

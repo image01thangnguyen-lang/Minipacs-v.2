@@ -71,14 +71,14 @@ export default async function IncidentDetailPage({ params }: { params: { id: str
               ticket.severity === 'SEV1' ? 'bg-red-600 text-white' :
               ticket.severity === 'SEV2' ? 'bg-red-100 text-red-800' :
               ticket.severity === 'SEV3' ? 'bg-yellow-100 text-yellow-800' :
-              'bg-slate-100 text-slate-700'
+              'bg-vin-shell text-vin-text2'
             }`}>
               {ticket.severity}
             </span>
             <span className={`px-3 py-1 rounded-md text-sm font-medium ${
               ticket.status === 'RESOLVED' ? 'bg-green-100 text-green-700' :
-              ticket.status === 'CLOSED' ? 'bg-gray-100 text-gray-700' :
-              ticket.status === 'INVESTIGATING' ? 'bg-blue-100 text-blue-700' :
+              ticket.status === 'CLOSED' ? 'bg-vin-shell text-vin-text2' :
+              ticket.status === 'INVESTIGATING' ? 'bg-vin-accent/15 text-vin-accent' :
               'bg-orange-100 text-orange-700'
             }`}>
               {ticket.status}
@@ -98,7 +98,7 @@ export default async function IncidentDetailPage({ params }: { params: { id: str
             <div className="p-4 border-b bg-muted/30 font-semibold flex items-center">
               <MessageSquare className="w-4 h-4 mr-2" /> Comments
             </div>
-            
+
             <div className="p-4 space-y-4 flex-1">
               {comments.map(c => (
                 <div key={c.id} className="text-sm bg-muted/30 p-3 rounded-lg border">
@@ -155,8 +155,8 @@ export default async function IncidentDetailPage({ params }: { params: { id: str
             <div className="bg-card border rounded-xl shadow p-5 space-y-4">
               <h3 className="font-semibold border-b pb-2 text-sm">Admin Actions</h3>
               <form className="space-y-2">
-                <select 
-                  name="status" 
+                <select
+                  name="status"
                   defaultValue={ticket.status}
                   className="w-full text-sm border rounded p-1.5"
                 >

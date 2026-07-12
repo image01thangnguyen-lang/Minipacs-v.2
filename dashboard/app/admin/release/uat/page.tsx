@@ -114,7 +114,7 @@ export default async function UatCenterPage() {
                   const total = run.results.length;
                   const completed = run.results.filter(r => r.status !== 'PENDING').length;
                   const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
-                  
+
                   return (
                     <tr key={run.id} className="hover:bg-muted/50">
                       <td className="p-3">

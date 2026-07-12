@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { Loader2, Plus, Move, Trash2, ShieldAlert, RefreshCw, AlertTriangle, Search, Info, Save, ArrowUp, ArrowDown } from "lucide-react";
-import { 
-  getOrganizationTreeAction, 
-  createFacilityUnitAction, 
+import {
+  getOrganizationTreeAction,
+  createFacilityUnitAction,
   deactivateFacilityUnitAction,
   reactivateFacilityUnitAction,
   moveFacilityUnitAction,
@@ -24,7 +24,7 @@ export function TreeEditor() {
   const [units, setUnits] = useState<any[]>([]);
   const [error, setError] = useState("");
   const [includeInactive, setIncludeInactive] = useState(false);
-  
+
   // Layout States
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -32,7 +32,7 @@ export function TreeEditor() {
   // Modal States
   const [modal, setModal] = useState<ModalState>({ type: null });
   const [actionLoading, setActionLoading] = useState(false);
-  
+
   // Detail Panel States
   const [detailForm, setDetailForm] = useState({ name: "", code: "" });
   const [detailSaving, setDetailSaving] = useState(false);
@@ -242,11 +242,11 @@ export function TreeEditor() {
 
     return (
       <div key={node.id} className="ml-6 border-l border-vin-border pl-4 py-2">
-        <div 
+        <div
           onClick={() => selectNode(node)}
           className={`flex items-center justify-between p-3 rounded-lg shadow-sm border cursor-pointer transition-colors ${
             isSelected ? "border-vin-accent bg-vin-accent/10" :
-            node.isActive ? "bg-vin-panel border-vin-border hover:bg-vin-bg/50" : "bg-vin-bg border-vin-border/50 opacity-70 hover:opacity-100"
+            node.isActive ? "bg-vin-panel border-vin-border hover:bg-vin-shell/50" : "bg-vin-shell border-vin-border/50 opacity-70 hover:opacity-100"
           }`}
         >
           <div>
@@ -259,14 +259,14 @@ export function TreeEditor() {
           <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
             {node.isActive ? (
               <>
-                <button onClick={() => handleReorder(node, 'UP')} className="text-vin-muted hover:text-white p-1 rounded hover:bg-vin-bg" title="Lên"><ArrowUp className="h-4 w-4" /></button>
-                <button onClick={() => handleReorder(node, 'DOWN')} className="text-vin-muted hover:text-white p-1 rounded hover:bg-vin-bg" title="Xuống"><ArrowDown className="h-4 w-4" /></button>
-                <button onClick={() => setModal({ type: "ADD", targetNode: node })} className="text-vin-muted hover:text-white p-1 rounded hover:bg-vin-bg" title="Thêm nút con"><Plus className="h-4 w-4" /></button>
-                <button onClick={() => openMoveModal(node)} className="text-vin-muted hover:text-white p-1 rounded hover:bg-vin-bg" title="Chuyển (Move)"><Move className="h-4 w-4" /></button>
-                <button onClick={() => openDeactivateModal(node)} className="text-vin-muted hover:text-red-400 p-1 rounded hover:bg-vin-bg" title="Hủy kích hoạt (Deactivate)"><Trash2 className="h-4 w-4" /></button>
+                <button onClick={() => handleReorder(node, 'UP')} className="text-vin-muted hover:text-white p-1 rounded hover:bg-vin-shell" title="Lên"><ArrowUp className="h-4 w-4" /></button>
+                <button onClick={() => handleReorder(node, 'DOWN')} className="text-vin-muted hover:text-white p-1 rounded hover:bg-vin-shell" title="Xuống"><ArrowDown className="h-4 w-4" /></button>
+                <button onClick={() => setModal({ type: "ADD", targetNode: node })} className="text-vin-muted hover:text-white p-1 rounded hover:bg-vin-shell" title="Thêm nút con"><Plus className="h-4 w-4" /></button>
+                <button onClick={() => openMoveModal(node)} className="text-vin-muted hover:text-white p-1 rounded hover:bg-vin-shell" title="Chuyển (Move)"><Move className="h-4 w-4" /></button>
+                <button onClick={() => openDeactivateModal(node)} className="text-vin-muted hover:text-red-400 p-1 rounded hover:bg-vin-shell" title="Hủy kích hoạt (Deactivate)"><Trash2 className="h-4 w-4" /></button>
               </>
             ) : (
-              <button onClick={() => handleReactivate(node.id)} className="text-vin-muted hover:text-green-400 p-1 rounded hover:bg-vin-bg" title="Kích hoạt lại (Reactivate)"><RefreshCw className="h-4 w-4" /></button>
+              <button onClick={() => handleReactivate(node.id)} className="text-vin-muted hover:text-green-400 p-1 rounded hover:bg-vin-shell" title="Kích hoạt lại (Reactivate)"><RefreshCw className="h-4 w-4" /></button>
             )}
           </div>
         </div>
@@ -290,17 +290,17 @@ export function TreeEditor() {
       )}
       <div className="flex items-center justify-between">
         <label className="flex items-center gap-2 text-sm text-vin-muted cursor-pointer hover:text-white">
-          <input 
-            type="checkbox" 
-            checked={includeInactive} 
-            onChange={(e) => setIncludeInactive(e.target.checked)} 
-            className="rounded border-vin-border bg-vin-bg"
+          <input
+            type="checkbox"
+            checked={includeInactive}
+            onChange={(e) => setIncludeInactive(e.target.checked)}
+            className="rounded border-vin-border bg-vin-shell"
           />
           Hiển thị đơn vị đã ngừng hoạt động
         </label>
-        <button 
+        <button
           onClick={() => setModal({ type: "ADD" })}
-          className="flex items-center gap-2 rounded bg-vin-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-vin-accent-hover"
+          className="flex items-center gap-2 rounded bg-vin-accent px-4 py-2 text-sm font-semibold text-white transition hover:bg-vin-accentHover"
         >
           <Plus className="h-4 w-4" />
           Thêm đơn vị gốc
@@ -312,9 +312,9 @@ export function TreeEditor() {
         <div className="lg:col-span-2 space-y-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-vin-muted" />
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm theo Tên hoặc Mã..." 
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo Tên hoặc Mã..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 rounded-lg bg-vin-panel border border-vin-border text-white text-sm focus:border-vin-accent outline-none transition-colors"
@@ -327,7 +327,7 @@ export function TreeEditor() {
               ) : treeData.length > 0 ? (
                 treeData.map(renderNode)
               ) : (
-                <div className="ml-6 p-8 text-center text-vin-muted bg-vin-bg border border-vin-border/50 rounded-lg">
+                <div className="ml-6 p-8 text-center text-vin-muted bg-vin-shell border border-vin-border/50 rounded-lg">
                   Không tìm thấy đơn vị tổ chức nào.
                 </div>
               )}
@@ -341,7 +341,7 @@ export function TreeEditor() {
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               <Info className="h-5 w-5 text-vin-muted" /> Chi tiết đơn vị
             </h3>
-            
+
             {selectedNodeData ? (
               <form onSubmit={handleDetailSave} className="space-y-4">
                 <div>
@@ -354,36 +354,36 @@ export function TreeEditor() {
                 </div>
                 <div>
                   <label className="block text-sm text-vin-muted mb-1">Loại Taxonomy</label>
-                  <div className="text-white text-sm p-2 bg-vin-bg rounded border border-vin-border/50">
+                  <div className="text-white text-sm p-2 bg-vin-shell rounded border border-vin-border/50">
                     {selectedNodeData.type}
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm text-vin-muted mb-1">Mã đơn vị (Code)</label>
-                  <input 
-                    required 
-                    value={detailForm.code} 
+                  <input
+                    required
+                    value={detailForm.code}
                     readOnly
-                    className="w-full rounded border border-vin-border/50 bg-vin-bg/50 px-3 py-2 text-white text-sm opacity-50 cursor-not-allowed" 
+                    className="w-full rounded border border-vin-border/50 bg-vin-shell/50 px-3 py-2 text-white text-sm opacity-50 cursor-not-allowed"
                   />
                 </div>
                 <div>
                   <label className="block text-sm text-vin-muted mb-1">Tên đơn vị</label>
-                  <input 
-                    required 
-                    value={detailForm.name} 
-                    onChange={e => setDetailForm({...detailForm, name: e.target.value})} 
+                  <input
+                    required
+                    value={detailForm.name}
+                    onChange={e => setDetailForm({...detailForm, name: e.target.value})}
                     disabled={!selectedNodeData.isActive}
-                    className="w-full rounded border border-vin-border bg-vin-bg px-3 py-2 text-white text-sm disabled:opacity-50" 
+                    className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-white text-sm disabled:opacity-50"
                   />
                 </div>
-                
+
                 {selectedNodeData.isActive && (
                   <div className="pt-4 flex justify-end">
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       disabled={detailSaving}
-                      className="px-4 py-2 rounded text-sm font-semibold text-white bg-vin-accent hover:bg-vin-accent-hover transition flex items-center gap-2"
+                      className="px-4 py-2 rounded text-sm font-semibold text-white bg-vin-accent hover:bg-vin-accentHover transition flex items-center gap-2"
                     >
                       {detailSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                       Lưu thay đổi
@@ -404,7 +404,7 @@ export function TreeEditor() {
       {modal.type && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-md rounded-lg bg-vin-panel border border-vin-border shadow-2xl p-6">
-            
+
             {modal.type === "ADD" && (
               <form onSubmit={handleAddSubmit}>
                 <h3 className="text-lg font-bold text-white mb-4">
@@ -413,15 +413,15 @@ export function TreeEditor() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm text-vin-muted mb-1">Mã đơn vị (Code)</label>
-                    <input required value={addForm.code} onChange={e => setAddForm({...addForm, code: e.target.value})} className="w-full rounded border border-vin-border bg-vin-bg px-3 py-2 text-white" />
+                    <input required value={addForm.code} onChange={e => setAddForm({...addForm, code: e.target.value})} className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-white" />
                   </div>
                   <div>
                     <label className="block text-sm text-vin-muted mb-1">Tên đơn vị</label>
-                    <input required value={addForm.name} onChange={e => setAddForm({...addForm, name: e.target.value})} className="w-full rounded border border-vin-border bg-vin-bg px-3 py-2 text-white" />
+                    <input required value={addForm.name} onChange={e => setAddForm({...addForm, name: e.target.value})} className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-white" />
                   </div>
                   <div>
                     <label className="block text-sm text-vin-muted mb-1">Loại (Taxonomy)</label>
-                    <select value={addForm.type} onChange={e => setAddForm({...addForm, type: e.target.value})} className="w-full rounded border border-vin-border bg-vin-bg px-3 py-2 text-white">
+                    <select value={addForm.type} onChange={e => setAddForm({...addForm, type: e.target.value})} className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-white">
                       <option value="CHAIN">Chuỗi (CHAIN)</option>
                       <option value="HOSPITAL">Bệnh viện (HOSPITAL)</option>
                       <option value="DEPARTMENT">Khoa phòng (DEPARTMENT)</option>
@@ -431,8 +431,8 @@ export function TreeEditor() {
                   </div>
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
-                  <button type="button" onClick={() => setModal({ type: null })} className="px-4 py-2 rounded text-sm text-vin-muted hover:text-white hover:bg-vin-bg transition">Hủy</button>
-                  <button type="submit" disabled={actionLoading} className="px-4 py-2 rounded text-sm font-semibold text-white bg-vin-accent hover:bg-vin-accent-hover transition flex items-center gap-2">
+                  <button type="button" onClick={() => setModal({ type: null })} className="px-4 py-2 rounded text-sm text-vin-muted hover:text-white hover:bg-vin-shell transition">Hủy</button>
+                  <button type="submit" disabled={actionLoading} className="px-4 py-2 rounded text-sm font-semibold text-white bg-vin-accent hover:bg-vin-accentHover transition flex items-center gap-2">
                     {actionLoading && <Loader2 className="h-4 w-4 animate-spin" />} Lưu
                   </button>
                 </div>
@@ -445,10 +445,10 @@ export function TreeEditor() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm text-vin-muted mb-1">Đơn vị cha mới</label>
-                    <select 
-                      value={moveForm.newParentId} 
-                      onChange={e => setMoveForm({ newParentId: e.target.value })} 
-                      className="w-full rounded border border-vin-border bg-vin-bg px-3 py-2 text-white"
+                    <select
+                      value={moveForm.newParentId}
+                      onChange={e => setMoveForm({ newParentId: e.target.value })}
+                      className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-white"
                     >
                       <option value="">-- Trở thành đơn vị gốc --</option>
                       {units.filter(u => u.id !== modal.targetNode?.id && u.isActive).map(u => (
@@ -456,7 +456,7 @@ export function TreeEditor() {
                       ))}
                     </select>
                   </div>
-                  
+
                   {impactLoading ? (
                     <div className="flex items-center justify-center p-4"><Loader2 className="h-5 w-5 animate-spin text-vin-muted" /></div>
                   ) : impactError ? (
@@ -477,8 +477,8 @@ export function TreeEditor() {
                   )}
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
-                  <button type="button" onClick={() => setModal({ type: null })} className="px-4 py-2 rounded text-sm text-vin-muted hover:text-white hover:bg-vin-bg transition">Hủy</button>
-                  <button type="submit" disabled={actionLoading || impactLoading || !!impactError} className="px-4 py-2 rounded text-sm font-semibold text-white bg-vin-accent hover:bg-vin-accent-hover transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <button type="button" onClick={() => setModal({ type: null })} className="px-4 py-2 rounded text-sm text-vin-muted hover:text-white hover:bg-vin-shell transition">Hủy</button>
+                  <button type="submit" disabled={actionLoading || impactLoading || !!impactError} className="px-4 py-2 rounded text-sm font-semibold text-white bg-vin-accent hover:bg-vin-accentHover transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     {actionLoading && <Loader2 className="h-4 w-4 animate-spin" />} Chuyển
                   </button>
                 </div>
@@ -490,13 +490,13 @@ export function TreeEditor() {
                 <h3 className="text-lg font-bold text-red-500 mb-4 flex items-center gap-2"><ShieldAlert className="h-5 w-5"/> Hủy kích hoạt</h3>
                 <div className="space-y-4">
                   <p className="text-sm text-vin-muted">Bạn đang muốn ngừng hoạt động <strong>{modal.targetNode?.name}</strong>.</p>
-                  
+
                   <div>
                     <label className="block text-sm text-vin-muted mb-1">Chiến lược xử lý</label>
-                    <select 
-                      value={deactivateStrategy} 
-                      onChange={e => setDeactivateStrategy(e.target.value as any)} 
-                      className="w-full rounded border border-vin-border bg-vin-bg px-3 py-2 text-white"
+                    <select
+                      value={deactivateStrategy}
+                      onChange={e => setDeactivateStrategy(e.target.value as any)}
+                      className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-white"
                     >
                       <option value="BLOCK">BLOCK (Chặn nếu có đơn vị con / máy chụp)</option>
                       <option value="CASCADE">CASCADE (Ngừng hoạt động tất cả đơn vị con và máy chụp)</option>
@@ -521,10 +521,10 @@ export function TreeEditor() {
                   )}
                 </div>
                 <div className="mt-6 flex justify-end gap-3">
-                  <button type="button" onClick={() => setModal({ type: null })} className="px-4 py-2 rounded text-sm text-vin-muted hover:text-white hover:bg-vin-bg transition">Hủy</button>
-                  <button 
-                    type="submit" 
-                    disabled={actionLoading || impactLoading || !!impactError || (deactivateStrategy === "BLOCK" && impact && (impact.affectedDescendants > 0 || impact.affectedMachines > 0))} 
+                  <button type="button" onClick={() => setModal({ type: null })} className="px-4 py-2 rounded text-sm text-vin-muted hover:text-white hover:bg-vin-shell transition">Hủy</button>
+                  <button
+                    type="submit"
+                    disabled={actionLoading || impactLoading || !!impactError || (deactivateStrategy === "BLOCK" && impact && (impact.affectedDescendants > 0 || impact.affectedMachines > 0))}
                     className="px-4 py-2 rounded text-sm font-semibold text-white bg-red-600 hover:bg-red-500 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {actionLoading && <Loader2 className="h-4 w-4 animate-spin" />} Ngừng hoạt động

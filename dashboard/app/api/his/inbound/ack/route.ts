@@ -7,7 +7,7 @@ import { prisma } from "@/app/db";
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
   const requestId = crypto.randomUUID();
-  
+
   const auth = await authenticateHisGateway(req);
   if (!auth.success) {
     await logHisApiCall({ direction: "INBOUND", method: "POST", path: "/api/his/inbound/ack", statusCode: auth.status, success: false, durationMs: Date.now() - startTime, actorType: "HIS_SYSTEM", requestId, errorMessage: auth.message });

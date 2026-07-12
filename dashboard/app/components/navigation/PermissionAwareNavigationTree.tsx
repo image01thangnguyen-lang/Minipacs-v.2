@@ -9,7 +9,7 @@ import { NavigationIcons } from "./navigation-icons";
 function filterTreeBySearch(nodes: NavigationNode[], query: string): NavigationNode[] {
   if (!query) return nodes;
   const lowerQuery = query.toLowerCase();
-  
+
   return nodes.reduce<NavigationNode[]>((acc, node) => {
     if (node.type === "item") {
       if (node.label.toLowerCase().includes(lowerQuery)) {
@@ -46,7 +46,7 @@ export function PermissionAwareNavigationTree({
   searchQuery?: string;
 }) {
   const displayNodes = searchQuery ? filterTreeBySearch(nodes, searchQuery) : nodes;
-  
+
   return (
     <nav aria-label="Điều hướng chính" className="space-y-1">
       {displayNodes.length === 0 ? (

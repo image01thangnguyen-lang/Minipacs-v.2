@@ -46,7 +46,7 @@ export function findActiveNavigationItem(
     for (const node of currentNodes) {
       if (node.type === "item") {
         const hrefMatches = normalizedPath === node.href || node.aliases?.includes(normalizedPath);
-        
+
         if (node.match === "exact") {
           if (hrefMatches) {
             matches.push({ item: node, ancestors, score: Number.MAX_SAFE_INTEGER });

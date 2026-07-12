@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
   try {
     const data = await request.json();
-    
+
     if (!data.studyInstanceUid) {
       return NextResponse.json({ success: false, error: 'Missing studyInstanceUid' }, { status: 400 });
     }

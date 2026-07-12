@@ -88,7 +88,7 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
 
   const captureImage = async () => {
     if (!videoRef.current || !stream) return;
-    
+
     setIsCapturing(true);
     try {
       const canvas = document.createElement("canvas");
@@ -96,15 +96,15 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
       canvas.height = videoRef.current.videoHeight;
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("Could not get 2d context");
-      
+
       ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
       const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/jpeg", 0.9));
-      
+
       if (!blob) throw new Error("Could not create image blob");
-      
+
       const file = new File([blob], `capture_${Date.now()}.jpg`, { type: "image/jpeg" });
       await uploadFiles([file]);
-      
+
       // Visual feedback
       const flash = document.createElement("div");
       flash.className = "absolute inset-0 bg-white z-50 animate-pulse";
@@ -159,7 +159,7 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
       alert("Vui lòng chụp hoặc tải lên ít nhất 1 ảnh/video trước khi hoàn thành.");
       return;
     }
-    
+
     if (!confirm("Bạn có chắc chắn muốn hoàn thành ca chụp này? Không thể thêm ảnh sau khi hoàn thành.")) {
       return;
     }
@@ -167,7 +167,7 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
     try {
       const res = await fetch(`/api/non-dicom/${examId}/finalize`, { method: "POST" });
       if (!res.ok) throw new Error("Failed to finalize");
-      
+
       alert("Đã hoàn thành ca chụp.");
       router.push("/non-dicom");
       router.refresh();
@@ -178,11 +178,11 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
 
   const deleteMedia = async (mediaId: string) => {
     if (!confirm("Xóa tệp này?")) return;
-    
+
     try {
       const res = await fetch(`/api/non-dicom/${examId}/media/${mediaId}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
-      
+
       setMediaList(prev => prev.filter(m => m.id !== mediaId));
       alert("Đã xóa tệp.");
     } catch (err: any) {
@@ -266,7 +266,7 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
               <Upload className="mb-4 h-12 w-12 text-vin-muted" />
               <p className="mb-2 text-lg font-medium text-white">Tải lên Ảnh / Video / PDF</p>
               <p className="mb-6 text-sm text-vin-muted">Kéo thả tệp vào đây hoặc click để chọn tệp</p>
-              
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -299,7 +299,7 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
           </button>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto p-3 space-y-3 scr-dark">
           {mediaList.length === 0 ? (
             <div className="py-8 text-center text-sm text-vin-muted">
@@ -310,9 +310,9 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
               <div key={item.id} className="group relative flex flex-col rounded-lg border border-white/10 bg-vin-panel overflow-hidden">
                 <div className="relative aspect-video bg-black flex items-center justify-center">
                   {item.type === "IMAGE" ? (
-                    <img 
-                      src={`/api/non-dicom/${examId}/media/${item.id}`} 
-                      alt={item.originalFilename} 
+                    <img
+                      src={`/api/non-dicom/${examId}/media/${item.id}`}
+                      alt={item.originalFilename}
                       className="w-full h-full object-cover"
                     />
                   ) : item.type === "VIDEO" ? (
@@ -326,7 +326,7 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
                       <span className="text-xs">Tài liệu</span>
                     </div>
                   )}
-                  
+
                   {!isCompleted && canDelete && (
                     <button
                       onClick={() => deleteMedia(item.id)}

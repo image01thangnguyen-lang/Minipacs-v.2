@@ -14,7 +14,7 @@ export async function getRetentionPoliciesAction() {
 export async function createRetentionPolicyAction(input: any) {
   await requirePermission('retention.manage');
   const session = await auth();
-  
+
   return prisma.retentionPolicy.create({
     data: {
       ...input,
@@ -213,7 +213,7 @@ export async function executeRetentionRunAction(runId: string, confirmationPhras
         });
         continue;
       }
-      
+
       const findRes = await fetch(`${orthancUrl}/tools/find`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Basic ${orthancAuth}` },
@@ -244,7 +244,7 @@ export async function executeRetentionRunAction(runId: string, confirmationPhras
         }).catch(() => {});
         affectedCount++;
       }
-      
+
       await prisma.retentionRunItem.create({
         data: {
           runId: execRun.id,

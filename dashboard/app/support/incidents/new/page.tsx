@@ -40,7 +40,7 @@ export default async function ReportIncidentPage({
           <ScreenHeader />
           <h1 className="mt-4 text-2xl font-bold tracking-tight">Report Incident</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Log an operational issue or system bug. 
+            Log an operational issue or system bug.
           </p>
         </div>
       </header>
@@ -50,24 +50,24 @@ export default async function ReportIncidentPage({
         <div>
           <strong className="text-base font-bold">STRICT RULE: NO PHI ALLOWED</strong>
           <p className="mt-1 text-red-700">
-            Do not include any Protected Health Information (PHI) in incident descriptions. 
-            This includes Patient Names, MRNs, Accession Numbers, or raw clinical text. 
+            Do not include any Protected Health Information (PHI) in incident descriptions.
+            This includes Patient Names, MRNs, Accession Numbers, or raw clinical text.
             Any identifying data must be completely scrubbed before submission.
           </p>
         </div>
       </div>
 
-      <form 
+      <form
         action={async (formData) => {
           "use server";
           const id = await createIncidentTicket(formData);
           redirect(`/support/incidents/${id}`);
-        }} 
+        }}
         className="bg-card border rounded-xl shadow p-6 space-y-5"
       >
         <div>
           <label className="block text-sm font-medium mb-1">Issue Description (Scrubbed)</label>
-          <textarea 
+          <textarea
             name="shortDesc"
             required
             placeholder="Describe the issue without revealing PHI..."
@@ -122,7 +122,7 @@ export default async function ReportIncidentPage({
           </div>
           <div>
             <label className="block text-sm font-medium mb-1">Context ID (Scrubbed / UUID)</label>
-            <input 
+            <input
               name="contextId"
               defaultValue={defaultContextId}
               placeholder="System ID only (no Accessions)"
@@ -141,7 +141,7 @@ export default async function ReportIncidentPage({
 
         <div className="pt-4 border-t border-dashed">
           <label className="flex items-center space-x-3 text-sm">
-            <input type="checkbox" name="containsPhiRisk" id="containsPhiRisk" className="rounded border-gray-300 w-4 h-4" />
+            <input type="checkbox" name="containsPhiRisk" id="containsPhiRisk" className="rounded border-vin-border w-4 h-4" />
             <span className="font-semibold text-red-700">Warning: This description contains or risks containing PHI.</span>
           </label>
           <p className="text-xs text-muted-foreground mt-2 ml-7">

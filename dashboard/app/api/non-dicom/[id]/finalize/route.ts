@@ -6,7 +6,7 @@ import { completeNonDicomExam } from "@/lib/nonDicomWorkflowService";
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
     const session = await requirePermission("nonDicom.capture");
-    
+
     const exam = await prisma.nonDicomExam.findUnique({
       where: { id: params.id },
       include: { media: { where: { status: { not: "VOIDED" } } } }

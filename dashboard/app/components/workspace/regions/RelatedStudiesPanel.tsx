@@ -27,7 +27,7 @@ export function RelatedStudiesPanel({
   const [range, setRange] = useState<RelatedStudyRange>("ALL");
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const rowRefs = useRef<Array<HTMLTableRowElement | null>>([]);
-  
+
   const requestRaceToken = useRef<string | null>(null);
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export function RelatedStudiesPanel({
   }, [focusedIndex]);
 
   return (
-    <div 
+    <div
       className="flex h-full flex-col bg-vin-sidebar focus:outline-none focus:ring-1 focus:ring-inset focus:ring-vin-accent"
     >
       <div className="flex items-center justify-between border-b border-vin-border px-3 py-1.5 bg-vin-panel2">
@@ -110,7 +110,7 @@ export function RelatedStudiesPanel({
             </span>
           )}
         </div>
-        
+
         {/* Range Switcher */}
         {anchorStudyUid && (
           <div className="flex bg-vin-shell rounded border border-vin-border p-0.5" role="group" aria-label="Khoảng thời gian lịch sử">
@@ -172,7 +172,7 @@ export function RelatedStudiesPanel({
                 const isCurrent = uid === selectedUid;
                 const isFocused = idx === focusedIndex;
                 const isStable = row.status === "FINALIZED" || row.status === "DELIVERED";
-                
+
                 const legacyHistoryObject = {
                   ...row,
                   MainDicomTags: {
@@ -195,8 +195,8 @@ export function RelatedStudiesPanel({
                     }}
                     onDoubleClick={() => onDoubleClick?.(legacyHistoryObject)}
                     className={`cursor-pointer border-b border-white/5 transition-colors last:border-b-0 ${
-                      isCurrent 
-                        ? "bg-vin-tableSelected text-white" 
+                      isCurrent
+                        ? "bg-vin-tableSelected text-white"
                         : isFocused
                           ? "bg-vin-tableHover/50 text-white"
                           : "text-vin-text2 hover:bg-vin-tableHover"

@@ -38,9 +38,9 @@ export function ChangePasswordClient() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md bg-white p-6 rounded-lg shadow border border-gray-200">
+    <form onSubmit={handleSubmit} className="max-w-md bg-vin-panel p-6 rounded-lg shadow border border-vin-border">
       <h2 className="text-xl font-semibold mb-4">Change Password</h2>
-      
+
       {message.text && (
         <div className={`p-3 mb-4 rounded text-sm ${message.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
           {message.text}
@@ -48,43 +48,43 @@ export function ChangePasswordClient() {
       )}
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-        <input 
-          type="password" 
+        <label className="block text-sm font-medium text-vin-text2 mb-1">Current Password</label>
+        <input
+          type="password"
           value={currentPassword}
           onChange={e => setCurrentPassword(e.target.value)}
-          className="w-full border border-gray-300 rounded px-3 py-2"
-          required 
+          className="w-full border border-vin-border rounded px-3 py-2"
+          required
         />
       </div>
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">New Password (min 8 chars)</label>
-        <input 
-          type="password" 
+        <label className="block text-sm font-medium text-vin-text2 mb-1">New Password (min 8 chars)</label>
+        <input
+          type="password"
           value={newPassword}
           onChange={e => setNewPassword(e.target.value)}
-          className="w-full border border-gray-300 rounded px-3 py-2"
-          required 
+          className="w-full border border-vin-border rounded px-3 py-2"
+          required
           minLength={8}
         />
       </div>
 
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-        <input 
-          type="password" 
+        <label className="block text-sm font-medium text-vin-text2 mb-1">Confirm New Password</label>
+        <input
+          type="password"
           value={confirmPassword}
           onChange={e => setConfirmPassword(e.target.value)}
-          className="w-full border border-gray-300 rounded px-3 py-2"
-          required 
+          className="w-full border border-vin-border rounded px-3 py-2"
+          required
         />
       </div>
 
-      <button 
-        type="submit" 
+      <button
+        type="submit"
         disabled={loading}
-        className={`w-full py-2 rounded font-semibold text-white ${loading ? 'bg-blue-300' : 'bg-blue-600 hover:bg-blue-700'}`}
+        className={`w-full py-2 rounded font-semibold text-white ${loading ? 'bg-vin-accent/40' : 'bg-vin-accent hover:bg-vin-accentHover'}`}
       >
         {loading ? 'Updating...' : 'Change Password'}
       </button>

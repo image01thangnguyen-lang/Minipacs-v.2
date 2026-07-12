@@ -33,7 +33,7 @@ export async function changeMyPasswordAction(currentPassword: string, newPasswor
     } else {
       rateLimits.set(userId, { attempts, lockUntil: 0 });
     }
-    
+
     // Log audit for failed password attempt (no plaintext)
     await prisma.auditLog.create({
       data: {

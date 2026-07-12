@@ -71,7 +71,7 @@ export function WorkspaceSwitcher({
       </button>
 
       {isOpen && (
-        <div 
+        <div
           className="absolute left-0 top-full z-50 mt-1 w-64 max-h-[80vh] flex flex-col overflow-hidden rounded-md border border-vin-border bg-vin-sidebar shadow-lg"
           role="dialog"
           aria-label="Workspace Switcher"

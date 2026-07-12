@@ -6,7 +6,7 @@ import { cookies } from 'next/headers';
 // It MUST validate the token and ensure the requested path is scoped to the allowed Study/Series/Instance.
 export async function GET(request: Request, { params }: { params: { token: string, path: string[] } }) {
   const { token, path } = params;
-  
+
   const sessionCookie = cookies().get(`share_session_${token}`);
   const hasSession = isValidShareCookie(token, 'session', sessionCookie?.value);
   const { valid, shareLink } = await validateToken(token, hasSession);
@@ -26,7 +26,7 @@ export async function GET(request: Request, { params }: { params: { token: strin
   }
 
   const joinedPath = path.join('/');
-  
+
   if (shareLink.studyInstanceUid) {
     const url = new URL(request.url);
     let isAllowed = false;

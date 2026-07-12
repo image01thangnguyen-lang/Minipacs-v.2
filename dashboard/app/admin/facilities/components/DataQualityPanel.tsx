@@ -33,11 +33,11 @@ export function DataQualityPanel() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        
+
         {/* Unmapped Nodes */}
         <div className={`p-4 rounded-lg border shadow-sm ${metrics.unmappedNodesCount > 0 ? "border-amber-500/50 bg-amber-500/10" : "border-vin-border bg-vin-panel"}`}>
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-full ${metrics.unmappedNodesCount > 0 ? "bg-amber-500/20 text-amber-500" : "bg-vin-bg text-vin-muted"}`}>
+            <div className={`p-2 rounded-full ${metrics.unmappedNodesCount > 0 ? "bg-amber-500/20 text-amber-500" : "bg-vin-shell text-vin-muted"}`}>
               {metrics.unmappedNodesCount > 0 ? <AlertTriangle className="h-5 w-5" /> : <Info className="h-5 w-5" />}
             </div>
             <div>
@@ -52,7 +52,7 @@ export function DataQualityPanel() {
         {/* Duplicate AEs */}
         <div className={`p-4 rounded-lg border shadow-sm ${metrics.duplicateAeTitlesCount > 0 ? "border-red-500/50 bg-red-500/10" : "border-vin-border bg-vin-panel"}`}>
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-full ${metrics.duplicateAeTitlesCount > 0 ? "bg-red-500/20 text-red-500" : "bg-vin-bg text-vin-muted"}`}>
+            <div className={`p-2 rounded-full ${metrics.duplicateAeTitlesCount > 0 ? "bg-red-500/20 text-red-500" : "bg-vin-shell text-vin-muted"}`}>
               {metrics.duplicateAeTitlesCount > 0 ? <AlertCircle className="h-5 w-5" /> : <Info className="h-5 w-5" />}
             </div>
             <div>
@@ -67,7 +67,7 @@ export function DataQualityPanel() {
         {/* Missing AEs */}
         <div className={`p-4 rounded-lg border shadow-sm ${metrics.missingAeTitleNodesCount > 0 ? "border-amber-500/50 bg-amber-500/10" : "border-vin-border bg-vin-panel"}`}>
           <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-full ${metrics.missingAeTitleNodesCount > 0 ? "bg-amber-500/20 text-amber-500" : "bg-vin-bg text-vin-muted"}`}>
+            <div className={`p-2 rounded-full ${metrics.missingAeTitleNodesCount > 0 ? "bg-amber-500/20 text-amber-500" : "bg-vin-shell text-vin-muted"}`}>
               {metrics.missingAeTitleNodesCount > 0 ? <AlertTriangle className="h-5 w-5" /> : <Info className="h-5 w-5" />}
             </div>
             <div>
@@ -82,7 +82,7 @@ export function DataQualityPanel() {
         {/* Unclassified Orders */}
         <div className="p-4 rounded-lg border border-vin-border bg-vin-panel shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-vin-bg text-vin-muted">
+            <div className="p-2 rounded-full bg-vin-shell text-vin-muted">
               <Info className="h-5 w-5" />
             </div>
             <div>
@@ -97,7 +97,7 @@ export function DataQualityPanel() {
         {/* Unclassified Studies */}
         <div className="p-4 rounded-lg border border-vin-border bg-vin-panel shadow-sm">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-vin-bg text-vin-muted">
+            <div className="p-2 rounded-full bg-vin-shell text-vin-muted">
               <Info className="h-5 w-5" />
             </div>
             <div>

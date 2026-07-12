@@ -84,12 +84,12 @@ export async function upsertStorageFolderAction(data: {
 export async function checkStorageFolderAction(id: string) {
   const actor = await requirePermission("admin.storage");
   const folder = await prisma.storageFolderConfig.findUnique({ where: { id } });
-  
+
   if (!folder) return { success: false, error: "Không tìm thấy cấu hình lưu trữ" };
-  
+
   let status = "FAILED";
   let message = "";
-  
+
   try {
     const stat = await fs.stat(folder.path);
     if (stat.isDirectory()) {
@@ -137,7 +137,7 @@ export async function deleteStorageFolderAction(id: string) {
       where: { id },
       data: { isActive: false },
     });
-    
+
     await prisma.auditLog.create({
       data: {
         actorUserId: actor.id,
