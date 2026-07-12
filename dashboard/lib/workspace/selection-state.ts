@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 export const MAX_STUDY_UID_LENGTH = 128;
@@ -25,11 +25,22 @@ export function useSelectionUrlState() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const studyUid = normalizeStudyUid(searchParams.get("study"));
+  const urlStudyUid = normalizeStudyUid(searchParams.get("study"));
+  // Keep selection responsive even while a Next.js App Router navigation is
+  // waiting for (or recovering from) an RSC request. Previously the URL was
+  // the only source of truth, so a failed/delayed router.push made a valid row
+  // click appear to do nothing and reset all dependent panels.
+  const [studyUid, setStudyUid] = useState<string | undefined>(urlStudyUid);
+
+  useEffect(() => {
+    setStudyUid(urlStudyUid);
+  }, [urlStudyUid]);
 
   const setSelection = useCallback(
     (uid?: string) => {
-      router.push(buildSelectionHref(pathname, searchParams.toString(), uid), { scroll: false });
+      const normalizedUid = normalizeStudyUid(uid);
+      setStudyUid(normalizedUid);
+      router.push(buildSelectionHref(pathname, searchParams.toString(), normalizedUid), { scroll: false });
     },
     [router, pathname, searchParams]
   );
