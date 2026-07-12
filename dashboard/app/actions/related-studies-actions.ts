@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { requirePermission } from "@/lib/authz";
 import { queryRelatedStudies } from "@/lib/workspace/related-studies";
 
-export const RelatedStudiesRequestSchema = z.object({
+const RelatedStudiesRequestSchema = z.object({
   anchorStudyUid: z.string().trim().min(1).max(128).regex(/^\d+(?:\.\d+)+$/),
   limit: z.number().int().min(1).max(100).default(50),
   range: z.enum(["ENCOUNTER", "30D", "1Y", "ALL"]).default("ALL"),
