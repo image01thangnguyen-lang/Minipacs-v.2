@@ -42,72 +42,15 @@ import {
   getTechnologistsAction,
   createNonDicomExamFromWorklistAction
 } from "./actions";
+import { WorklistDataGrid } from "./WorklistDataGrid";
 import { updateOrderFromHisAction } from "../his/actions";
 import { updateClinicalInfoAction, addIndicationAction } from "@/app/actions";
 import { worklistSchema, type WorklistInput } from "./schema";
+import type { WorklistOrderView } from "./utils";
 
 type FormValues = WorklistInput;
 
-type WorklistOrderView = {
-  id: string;
-  patientName: string;
-  patientId: string;
-  dob?: string | null;
-  gender?: string;
-  phone?: string;
-  referringPhysician?: string;
-  referringDepartment?: string;
-  sourceFacility?: string;
-  modality: string;
-  bodyPart?: string;
-  procedureCode?: string;
-  procedureName?: string;
-  procedureDescription?: string;
-  serviceTypeName?: string;
-  clinicalInfo?: string;
-  technologistId?: string;
-  technologistName?: string;
-  assignedDoctorId?: string;
-  assignedDoctorName?: string;
-  reportDoctorId?: string;
-  reportDoctorName?: string;
-  reportStatus?: string;
-  price?: number | null;
-  paymentStatus?: string;
-  priority: string;
-  scheduledStationAeTitle?: string;
-  scheduledStationName?: string;
-  accessionNumber: string;
-  requestedStudyInstanceUid?: string;
-  scheduledDate?: string | null;
-  arrivedAt?: string | null;
-  cancelledAt?: string | null;
-  notes?: string;
-  orderStatus: string;
-  createdAt?: string | null;
-  updatedAt?: string | null;
-  studyStatus?: string | null;
-  orthancStudyId?: string | null;
-  studyInstanceUid?: string;
-  isDicomMatched?: boolean;
-  noDicomOverdue?: boolean;
-  waitingMinutes?: number | null;
-  waitingSince?: string | null;
-  stationAeTitle?: string;
-  machineName?: string;
-  facilityName?: string;
-  room?: string;
-  hisSyncStatus?: string | null;
-  hisResultStatus?: string | null;
-  hisLastError?: string | null;
-  hisLastSyncedAt?: string | null;
-  hisLastResultSentAt?: string | null;
-  hisOrderId?: string | null;
-  isNonDicomEligible: boolean;
-  isNonDicom: boolean;
-  nonDicomExamId: string | null;
-  allowedActions?: Record<string, boolean>;
-};
+
 
 const orderStatusLabels: Record<string, string> = {
   REQUESTED: "Mới tạo",
@@ -220,6 +163,8 @@ export default function WorklistPage(props: { searchParams?: { orderId?: string 
   const [activeOrder, setActiveOrder] = useState<WorklistOrderView | null>(null);
   const [technologists, setTechnologists] = useState<{ id: string; name: string }[]>([]);
   const [canSyncHis, setCanSyncHis] = useState(false);
+
+  const enableSharedUI = process.env.NEXT_PUBLIC_ENABLE_WORKLIST_SHARED_UI === "true";
 
   const defaultValues = useMemo<FormValues>(() => ({
     patientName: "",
@@ -480,11 +425,15 @@ export default function WorklistPage(props: { searchParams?: { orderId?: string 
           </div>
 
           {(message || error) && (
-            <div className={`mb-2 rounded border px-3 py-2 text-[11px] font-semibold ${
+            <div
+              role={error ? "alert" : "status"}
+              aria-live="polite"
+              className={`mb-2 rounded border px-3 py-2 text-[11px] font-semibold ${
               error
                 ? "border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 text-red-200"
                 : "border-vin-status-approved-bg/60 bg-vin-status-approved-bg/15 text-emerald-100"
-            }`}>
+            }`}
+            >
               {error || message}
             </div>
           )}
@@ -517,177 +466,193 @@ export default function WorklistPage(props: { searchParams?: { orderId?: string 
         </div>
 
         <div className="min-h-0 flex-1 overflow-auto scr-dark">
-          <table className="w-full text-left">
-            <thead className="sticky top-0 z-10 border-b border-white/10 bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
-              <tr>
-                <th className="w-9 py-2 pl-2 pr-1 text-center">#</th>
-                <th className="px-2 py-2">Bệnh nhân</th>
-                <th className="px-2 py-2">Chỉ định</th>
-                <th className="px-2 py-2 text-center">Mod</th>
-                <th className="px-2 py-2">Lịch</th>
-                <th className="px-2 py-2 text-center">Trạng thái</th>
-                <th className="px-2 py-2 text-right">Tác vụ</th>
-              </tr>
-            </thead>
-            <tbody className="text-[11px]">
-              {isLoading ? (
+          {enableSharedUI ? (
+            <WorklistDataGrid
+              rows={orders}
+              isLoading={isLoading}
+              busyOrderId={busyOrderId}
+              onCheckin={(id) => runOrderAction(id, "checkin")}
+              onCancel={(id) => runOrderAction(id, "cancel")}
+              onRegen={(id) => runOrderAction(id, "regen")}
+              onHisSync={runHisSync}
+              onOpenClinical={openClinicalModal}
+              onOpenViewer={openViewer}
+              onStartReading={runViewToDictate}
+              onNonDicomCapture={openNonDicomCapture}
+            />
+          ) : (
+            <table className="w-full text-left">
+              <thead className="sticky top-0 z-10 border-b border-white/10 bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-vin-muted">
-                    <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
-                    Đang tải danh sách order...
-                  </td>
+                  <th className="w-9 py-2 pl-2 pr-1 text-center">#</th>
+                  <th className="px-2 py-2">Bệnh nhân</th>
+                  <th className="px-2 py-2">Chỉ định</th>
+                  <th className="px-2 py-2 text-center">Mod</th>
+                  <th className="px-2 py-2">Lịch</th>
+                  <th className="px-2 py-2 text-center">Trạng thái</th>
+                  <th className="px-2 py-2 text-right">Tác vụ</th>
                 </tr>
-              ) : orders.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-vin-muted">Chưa có order nào trong ngày.</td>
-                </tr>
-              ) : (
-                orders.map((order, index) => {
-                  const isBusy = busyOrderId === order.id;
-                  const canMutate = order.orderStatus !== "CANCELLED";
+              </thead>
+              <tbody className="text-[11px]">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-vin-muted">
+                      <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
+                      Đang tải danh sách order...
+                    </td>
+                  </tr>
+                ) : orders.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-vin-muted">Chưa có order nào trong ngày.</td>
+                  </tr>
+                ) : (
+                  orders.map((order, index) => {
+                    const isBusy = busyOrderId === order.id;
+                    const canMutate = order.orderStatus !== "CANCELLED";
 
-                  return (
-                    <tr key={order.id} className="border-b border-white/5 odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 transition-colors last:border-b-0 hover:bg-vin-tableHover">
-                      <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
-                      <td className="px-2 py-2">
-                        <div className="max-w-[180px] truncate font-semibold uppercase tracking-[0.01em] text-white">{order.patientName}</div>
-                        <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
-                          {order.patientId} &bull; {order.gender || "?"} &bull; {order.phone || "-"}
-                        </div>
-                      </td>
-                      <td className="px-2 py-2">
-                        <div className="max-w-[240px] truncate font-medium text-vin-text2" title={order.procedureDescription || ""}>
-                          {order.procedureName || order.procedureDescription || "-"}
-                        </div>
-                        <div className="mt-0.5 flex items-center gap-1.5">
-                          <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold leading-none ${priorityClass(order.priority)}`}>{order.priority}</span>
-                          <span className="truncate font-mono text-[10px] text-vin-muted">{order.procedureCode || order.accessionNumber}</span>
-                        </div>
-                        <div className="mt-0.5 max-w-[240px] truncate text-[10px] text-vin-muted">
-                          {order.serviceTypeName || "Fallback DICOM"}{order.clinicalInfo ? " · Co lam sang" : ""}
-                        </div>
-                      </td>
-                      <td className="px-2 py-2 text-center">
-                        <span className="inline-flex min-w-9 items-center justify-center rounded-full border border-vin-accent/40 bg-vin-accentSoft/15 px-2 py-0.5 font-mono text-[10px] font-bold leading-none text-cyan-100">
-                          {order.modality}
-                        </span>
-                        <div className="mt-1 text-[10px] text-vin-muted">{order.bodyPart || "-"}</div>
-                      </td>
-                      <td className="whitespace-nowrap px-2 py-2">
-                        <div className="flex items-center gap-1 text-vin-text2">
-                          <Clock className="h-3 w-3 text-vin-accent" />
-                          {formatDateTime(order.scheduledDate)}
-                        </div>
-                        <div className="mt-0.5 font-mono text-[10px] text-vin-muted">
-                          AE: {order.stationAeTitle || order.scheduledStationAeTitle || "AETITLE"}
-                        </div>
-                        <div className="mt-0.5 max-w-[150px] truncate text-[10px] text-vin-muted">
-                          {order.machineName || order.scheduledStationName || "-"}{order.facilityName ? ` · ${order.facilityName}` : ""}
-                        </div>
-                      </td>
-                      <td className="px-2 py-2 text-center">
-                        <span className={`inline-flex max-w-[110px] items-center justify-center truncate rounded-full border px-2.5 py-1 text-[9px] font-bold leading-none ${statusClass(order.orderStatus)}`}>
-                          {orderStatusLabels[order.orderStatus] || order.orderStatus}
-                        </span>
-                        <div className="mt-1 flex items-center justify-center gap-1 text-[10px] text-vin-muted">
-                          {order.orthancStudyId ? studyStatusLabels[order.studyStatus || ""] || order.studyStatus : "Chưa có ảnh"}
-                          {order.noDicomOverdue && (
-                            <span title="Quá hạn 24h chưa có ảnh">
-                              <AlertTriangle className="h-3 w-3 text-amber-500" />
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-1 text-[9px] text-vin-muted">
-                          {order.isDicomMatched ? "Da match DICOM" : `Cho ${formatDuration(order.waitingMinutes)}`}
-                        </div>
-                        {order.hisSyncStatus && (
-                          <Link href={`/admin/his`} className={`mt-1 block w-fit rounded px-1.5 py-0.5 text-[9px] font-semibold transition hover:opacity-80 ${order.hisSyncStatus === 'FAILED' ? 'bg-red-900/40 text-red-300' : 'bg-emerald-900/40 text-emerald-300'}`} title="Click to view HIS Logs">
-                            HIS order: {order.hisSyncStatus}
-                          </Link>
-                        )}
-                        {order.hisResultStatus && (
-                          <div className={`mt-1 text-[9px] font-semibold ${order.hisResultStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}`}>
-                            HIS result: {order.hisResultStatus}
+                    return (
+                      <tr key={order.id} className="border-b border-white/5 odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 transition-colors last:border-b-0 hover:bg-vin-tableHover">
+                        <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
+                        <td className="px-2 py-2">
+                          <div className="max-w-[180px] truncate font-semibold uppercase tracking-[0.01em] text-white">{order.patientName}</div>
+                          <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
+                            {order.patientId} &bull; {order.gender || "?"} &bull; {order.phone || "-"}
                           </div>
-                        )}
-                        <div className="mt-1 max-w-[140px] truncate text-[9px] text-vin-muted">
-                          {order.assignedDoctorName ? `BS: ${order.assignedDoctorName}` : "Chua gan BS"}
-                          {order.technologistName ? ` · KTV: ${order.technologistName}` : ""}
-                        </div>
-                      </td>
-                      <td className="px-2 py-2">
-                        <div className="flex justify-end gap-1">
-                          {order.orderStatus === "SCHEDULED" && (
-                            <IconButton
-                              title="Check-in"
-                              disabled={isBusy}
-                              onClick={() => runOrderAction(order.id, "checkin")}
-                            >
-                              <UserCheck className="h-3.5 w-3.5" />
-                            </IconButton>
+                        </td>
+                        <td className="px-2 py-2">
+                          <div className="max-w-[240px] truncate font-medium text-vin-text2" title={order.procedureDescription || ""}>
+                            {order.procedureName || order.procedureDescription || "-"}
+                          </div>
+                          <div className="mt-0.5 flex items-center gap-1.5">
+                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold leading-none ${priorityClass(order.priority)}`}>{order.priority}</span>
+                            <span className="truncate font-mono text-[10px] text-vin-muted">{order.procedureCode || order.accessionNumber}</span>
+                          </div>
+                          <div className="mt-0.5 max-w-[240px] truncate text-[10px] text-vin-muted">
+                            {order.serviceTypeName || "Fallback DICOM"}{order.clinicalInfo ? " · Co lam sang" : ""}
+                          </div>
+                        </td>
+                        <td className="px-2 py-2 text-center">
+                          <span className="inline-flex min-w-9 items-center justify-center rounded-full border border-vin-accent/40 bg-vin-accentSoft/15 px-2 py-0.5 font-mono text-[10px] font-bold leading-none text-cyan-100">
+                            {order.modality}
+                          </span>
+                          <div className="mt-1 text-[10px] text-vin-muted">{order.bodyPart || "-"}</div>
+                        </td>
+                        <td className="whitespace-nowrap px-2 py-2">
+                          <div className="flex items-center gap-1 text-vin-text2">
+                            <Clock className="h-3 w-3 text-vin-accent" />
+                            {formatDateTime(order.scheduledDate)}
+                          </div>
+                          <div className="mt-0.5 font-mono text-[10px] text-vin-muted">
+                            AE: {order.stationAeTitle || order.scheduledStationAeTitle || "AETITLE"}
+                          </div>
+                          <div className="mt-0.5 max-w-[150px] truncate text-[10px] text-vin-muted">
+                            {order.machineName || order.scheduledStationName || "-"}{order.facilityName ? ` · ${order.facilityName}` : ""}
+                          </div>
+                        </td>
+                        <td className="px-2 py-2 text-center">
+                          <span className={`inline-flex max-w-[110px] items-center justify-center truncate rounded-full border px-2.5 py-1 text-[9px] font-bold leading-none ${statusClass(order.orderStatus)}`}>
+                            {orderStatusLabels[order.orderStatus] || order.orderStatus}
+                          </span>
+                          <div className="mt-1 flex items-center justify-center gap-1 text-[10px] text-vin-muted">
+                            {order.orthancStudyId ? studyStatusLabels[order.studyStatus || ""] || order.studyStatus : "Chưa có ảnh"}
+                            {order.noDicomOverdue && (
+                              <span title="Quá hạn 24h chưa có ảnh">
+                                <AlertTriangle className="h-3 w-3 text-amber-500" />
+                              </span>
+                            )}
+                          </div>
+                          <div className="mt-1 text-[9px] text-vin-muted">
+                            {order.isDicomMatched ? "Da match DICOM" : `Cho ${formatDuration(order.waitingMinutes)}`}
+                          </div>
+                          {order.hisSyncStatus && (
+                            <Link href={`/admin/his`} className={`mt-1 block w-fit rounded px-1.5 py-0.5 text-[9px] font-semibold transition hover:opacity-80 ${order.hisSyncStatus === 'FAILED' ? 'bg-red-900/40 text-red-300' : 'bg-emerald-900/40 text-emerald-300'}`} title="Click to view HIS Logs">
+                              HIS order: {order.hisSyncStatus}
+                            </Link>
                           )}
-                          {order.allowedActions?.syncHis && (
-                            <IconButton
-                              title="Cập nhật từ HIS"
-                              disabled={isBusy}
-                              onClick={() => runHisSync(order.accessionNumber)}
-                            >
-                              <RefreshCcw className={`h-3.5 w-3.5 ${isBusy && busyOrderId === order.accessionNumber ? "animate-spin" : ""}`} />
-                            </IconButton>
+                          {order.hisResultStatus && (
+                            <div className={`mt-1 text-[9px] font-semibold ${order.hisResultStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}`}>
+                              HIS result: {order.hisResultStatus}
+                            </div>
                           )}
-                          {canMutate && (
-                            <IconButton title="Tạo lại MWL" disabled={isBusy} onClick={() => runOrderAction(order.id, "regen")}>
-                              <MonitorUp className="h-3.5 w-3.5" />
-                            </IconButton>
-                          )}
-                          {canOpenViewer(order) && !order.isNonDicom && (
-                            <IconButton title="Mở viewer" disabled={isBusy} onClick={() => openViewer(order)}>
-                              <BadgeCheck className="h-3.5 w-3.5" />
-                            </IconButton>
-                          )}
-                          {order.isNonDicomEligible && (
-                            <IconButton title={order.nonDicomExamId ? "Mở chụp/tải Non-DICOM" : "Tạo ca Non-DICOM"} disabled={isBusy} onClick={() => openNonDicomCapture(order)}>
-                              <Camera className="h-3.5 w-3.5 text-indigo-400" />
-                            </IconButton>
-                          )}
-                          {canLockForReading(order) && (
-                            <IconButton title="Đọc ca (khóa)" disabled={isBusy} onClick={() => runViewToDictate(order)}>
-                              <Edit3 className="h-3.5 w-3.5" />
-                            </IconButton>
-                          )}
-                          {order.allowedActions?.editClinical && (
-                            <button
-                              onClick={() => openClinicalModal(order, "CLINICAL_INFO")}
-                              disabled={!order.orthancStudyId}
-                              className="rounded border border-vin-border bg-vin-panel p-1.5 text-vin-muted transition hover:border-vin-accent hover:text-cyan-400 disabled:cursor-not-allowed disabled:opacity-30"
-                              title={order.orthancStudyId ? "Cập nhật lâm sàng" : "Order chưa có DICOM study"}
-                            >
-                              <FileText className="h-4 w-4" />
-                            </button>
-                          )}
-                          {order.allowedActions?.editClinical && (
-                            <button
-                              onClick={() => openClinicalModal(order, "INDICATION")}
-                              disabled={!order.orthancStudyId}
-                              className="rounded border border-vin-border bg-vin-panel p-1.5 text-vin-muted transition hover:border-vin-accent hover:text-amber-400 disabled:cursor-not-allowed disabled:opacity-30"
-                              title={order.orthancStudyId ? "Thêm chỉ định" : "Order chưa có DICOM study"}
-                            >
-                              <PlusCircle className="h-4 w-4" />
-                            </button>
-                          )}
-                          {canMutate && (
-                            <IconButton title="Hủy order" danger disabled={isBusy} onClick={() => runOrderAction(order.id, "cancel")}>
-                              {isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
-                            </IconButton>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                          <div className="mt-1 max-w-[140px] truncate text-[9px] text-vin-muted">
+                            {order.assignedDoctorName ? `BS: ${order.assignedDoctorName}` : "Chua gan BS"}
+                            {order.technologistName ? ` · KTV: ${order.technologistName}` : ""}
+                          </div>
+                        </td>
+                        <td className="px-2 py-2">
+                          <div className="flex justify-end gap-1">
+                            {order.orderStatus === "SCHEDULED" && (
+                              <IconButton
+                                title="Check-in"
+                                disabled={isBusy}
+                                onClick={() => runOrderAction(order.id, "checkin")}
+                              >
+                                <UserCheck className="h-3.5 w-3.5" />
+                              </IconButton>
+                            )}
+                            {order.allowedActions?.syncHis && (
+                              <IconButton
+                                title="Cập nhật từ HIS"
+                                disabled={isBusy}
+                                onClick={() => runHisSync(order.accessionNumber)}
+                              >
+                                <RefreshCcw className={`h-3.5 w-3.5 ${isBusy && busyOrderId === order.accessionNumber ? "animate-spin" : ""}`} />
+                              </IconButton>
+                            )}
+                            {canMutate && (
+                              <IconButton title="Tạo lại MWL" disabled={isBusy} onClick={() => runOrderAction(order.id, "regen")}>
+                                <MonitorUp className="h-3.5 w-3.5" />
+                              </IconButton>
+                            )}
+                            {canOpenViewer(order) && !order.isNonDicom && (
+                              <IconButton title="Mở viewer" disabled={isBusy} onClick={() => openViewer(order)}>
+                                <BadgeCheck className="h-3.5 w-3.5" />
+                              </IconButton>
+                            )}
+                            {order.isNonDicomEligible && (
+                              <IconButton title={order.nonDicomExamId ? "Mở chụp/tải Non-DICOM" : "Tạo ca Non-DICOM"} disabled={isBusy} onClick={() => openNonDicomCapture(order)}>
+                                <Camera className="h-3.5 w-3.5 text-indigo-400" />
+                              </IconButton>
+                            )}
+                            {canLockForReading(order) && (
+                              <IconButton title="Đọc ca (khóa)" disabled={isBusy} onClick={() => runViewToDictate(order)}>
+                                <Edit3 className="h-3.5 w-3.5" />
+                              </IconButton>
+                            )}
+                            {order.allowedActions?.editClinical && (
+                              <button
+                                onClick={() => openClinicalModal(order, "CLINICAL_INFO")}
+                                disabled={!order.orthancStudyId}
+                                className="rounded border border-vin-border bg-vin-panel p-1.5 text-vin-muted transition hover:border-vin-accent hover:text-cyan-400 disabled:cursor-not-allowed disabled:opacity-30"
+                                title={order.orthancStudyId ? "Cập nhật lâm sàng" : "Order chưa có DICOM study"}
+                              >
+                                <FileText className="h-4 w-4" />
+                              </button>
+                            )}
+                            {order.allowedActions?.editClinical && (
+                              <button
+                                onClick={() => openClinicalModal(order, "INDICATION")}
+                                disabled={!order.orthancStudyId}
+                                className="rounded border border-vin-border bg-vin-panel p-1.5 text-vin-muted transition hover:border-vin-accent hover:text-amber-400 disabled:cursor-not-allowed disabled:opacity-30"
+                                title={order.orthancStudyId ? "Thêm chỉ định" : "Order chưa có DICOM study"}
+                              >
+                                <PlusCircle className="h-4 w-4" />
+                              </button>
+                            )}
+                            {canMutate && (
+                              <IconButton title="Hủy order" danger disabled={isBusy} onClick={() => runOrderAction(order.id, "cancel")}>
+                                {isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
+                              </IconButton>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </section>
 

@@ -5,14 +5,20 @@ import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useCommandCenterPolling } from "./useCommandCenterPolling";
-import { 
-  fetchCommandCenterSummary, 
-  fetchLiveQueue, 
+import {
+  fetchCommandCenterSummary,
+  fetchLiveQueue,
   fetchDoctorMachineBacklog,
   fetchActiveAlerts,
   fetchSlaBreaches,
   fetchStuckWorkflow
 } from "./actions";
+import {
+  CommandCenterQueueGrid,
+  CommandCenterSlaGrid,
+  CommandCenterStuckGrid,
+  CommandCenterAlertsGrid
+} from "./CommandCenterGrids";
 
 export default function CommandCenterPage() {
   const [filters, setFilters] = useState<any>({});
@@ -20,7 +26,7 @@ export default function CommandCenterPage() {
   const [activeTab, setActiveTab] = useState("queue");
 
   const handleApplyFilters = () => setFilters(filterDraft);
-  
+
   const [queuePage, setQueuePage] = useState(1);
   const [slaPage, setSlaPage] = useState(1);
   const [alertsPage, setAlertsPage] = useState(1);
@@ -35,6 +41,8 @@ export default function CommandCenterPage() {
     setStuckPage(1);
     setSlaPrimed(false);
   }, [filters]);
+
+  const enableSharedUI = process.env.NEXT_PUBLIC_ENABLE_COMMAND_CENTER_SHARED_UI === "true";
 
   const fetchSummary = useCallback(() => fetchCommandCenterSummary(filters), [filters]);
   const fetchQueue = useCallback(() => fetchLiveQueue(filters, { page: queuePage, pageSize: 50 }), [filters, queuePage]);
@@ -83,15 +91,15 @@ export default function CommandCenterPage() {
       <div className="flex items-center justify-between mt-4 text-sm text-gray-600">
         <div>Trang {page} / {totalPages} (Tổng: {total})</div>
         <div className="space-x-2">
-          <button 
-            disabled={page === 1} 
+          <button
+            disabled={page === 1}
             onClick={() => setPage(page - 1)}
             className="px-3 py-1 bg-gray-100 rounded disabled:opacity-50"
           >
             Trước
           </button>
-          <button 
-            disabled={page === totalPages} 
+          <button
+            disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
             className="px-3 py-1 bg-gray-100 rounded disabled:opacity-50"
           >
@@ -105,19 +113,19 @@ export default function CommandCenterPage() {
   return (
     <div className="p-6 bg-gray-50 min-h-screen text-gray-800">
       <ScreenHeader />
-      
+
       {/* Filters */}
       <div className="bg-white p-4 rounded shadow mb-6 flex flex-wrap items-end gap-4">
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Từ ngày</label>
-          <input type="date" className="border rounded px-3 py-1.5 text-sm" 
-            onChange={(e) => setFilterDraft({...filterDraft, dateFrom: e.target.value})} 
+          <input type="date" className="border rounded px-3 py-1.5 text-sm"
+            onChange={(e) => setFilterDraft({...filterDraft, dateFrom: e.target.value})}
             value={filterDraft.dateFrom || ''} />
         </div>
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Đến ngày</label>
-          <input type="date" className="border rounded px-3 py-1.5 text-sm" 
-            onChange={(e) => setFilterDraft({...filterDraft, dateTo: e.target.value})} 
+          <input type="date" className="border rounded px-3 py-1.5 text-sm"
+            onChange={(e) => setFilterDraft({...filterDraft, dateTo: e.target.value})}
             value={filterDraft.dateTo || ''} />
         </div>
         <div>
@@ -144,7 +152,7 @@ export default function CommandCenterPage() {
             <option value="ROUTINE">ROUTINE</option>
           </select>
         </div>
-        <button 
+        <button
           onClick={handleApplyFilters}
           className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 text-sm font-medium"
         >
@@ -179,14 +187,14 @@ export default function CommandCenterPage() {
       {/* Tabs */}
       <div className="flex border-b mb-4 space-x-2">
         {['queue', 'sla', 'stuck', 'backlog', 'alerts'].map(tab => (
-          <button 
+          <button
             key={tab}
             className={`py-2 px-4 uppercase text-xs font-semibold tracking-wider ${activeTab === tab ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
             onClick={() => setActiveTab(tab)}
           >
-            {tab === 'queue' ? 'Live Queue' : 
-             tab === 'sla' ? 'SLA Breaches' : 
-             tab === 'stuck' ? 'Stuck Workflow' : 
+            {tab === 'queue' ? 'Live Queue' :
+             tab === 'sla' ? 'SLA Breaches' :
+             tab === 'stuck' ? 'Stuck Workflow' :
              tab === 'backlog' ? 'Workload' : 'Active Alerts'}
           </button>
         ))}
@@ -196,7 +204,12 @@ export default function CommandCenterPage() {
       <div className="bg-white p-4 rounded shadow min-h-[400px]">
         {activeTab === 'queue' && (
           <div>
-            {isLoadingQueue ? (
+            {enableSharedUI ? (
+              <>
+                <CommandCenterQueueGrid rows={queue?.data || []} isLoading={isLoadingQueue} />
+                {renderPagination(queuePage, setQueuePage, queue?.total || 0)}
+              </>
+            ) : isLoadingQueue ? (
               <div className="text-center py-10">Đang tải...</div>
             ) : (
               <>
@@ -249,7 +262,12 @@ export default function CommandCenterPage() {
 
         {activeTab === 'sla' && (
           <div>
-             {isLoadingBreaches ? (
+            {enableSharedUI ? (
+              <>
+                <CommandCenterSlaGrid rows={breaches?.data || []} isLoading={isLoadingBreaches} />
+                {renderPagination(slaPage, setSlaPage, breaches?.total || 0)}
+              </>
+            ) : isLoadingBreaches ? (
               <div className="text-center py-10">Đang tải...</div>
             ) : (
               <>
@@ -292,7 +310,12 @@ export default function CommandCenterPage() {
 
         {activeTab === 'stuck' && (
           <div>
-            {isLoadingStuck ? (
+            {enableSharedUI ? (
+              <>
+                <CommandCenterStuckGrid rows={stuck?.data || []} isLoading={isLoadingStuck} />
+                {renderPagination(stuckPage, setStuckPage, stuck?.total || 0)}
+              </>
+            ) : isLoadingStuck ? (
               <div className="text-center py-10">Đang tải...</div>
             ) : (
               <>
@@ -374,7 +397,17 @@ export default function CommandCenterPage() {
 
         {activeTab === 'alerts' && (
           <div>
-            {isLoadingAlerts ? (
+            {enableSharedUI ? (
+              <>
+                {alerts?.truncated && (
+                  <div className="mb-4 bg-orange-50 text-orange-800 p-2 rounded text-sm font-medium">
+                    Có hơn 1000 Alerts đang chờ xử lý. Vui lòng sử dụng bộ lọc để thu hẹp phạm vi.
+                  </div>
+                )}
+                <CommandCenterAlertsGrid rows={alerts?.data || []} isLoading={isLoadingAlerts} />
+                {renderPagination(alertsPage, setAlertsPage, alerts?.total || 0)}
+              </>
+            ) : isLoadingAlerts ? (
               <div className="text-center py-10">Đang tải...</div>
             ) : (
               <>

@@ -24,6 +24,8 @@ import { PrintTemplateViewer } from "@/app/report/[studyInstanceUid]/components/
 import { ShareDialog } from "@/components/share/ShareDialog";
 import { ConsultationDialog } from "@/components/consultation/ConsultationDialog";
 import { Link as LinkIcon, Users } from "lucide-react";
+import { ArchiveDataGrid } from "./ArchiveDataGrid";
+import { formatDate, formatDateTime, reportStatusLabels, statusClass, studyStatusLabels } from "./utils";
 import { getUserPermissionsAction } from "../actions";
 import {
   getArchiveDoctorsAction,
@@ -54,44 +56,7 @@ const statusOptions = [
   { value: "DELETED_FROM_PACS", label: "Đã xóa ảnh" },
 ];
 
-const studyStatusLabels: Record<string, string> = {
-  FINALIZED: "Đã ký",
-  DELIVERED: "Đã trả",
-  ARCHIVED: "Lưu trữ",
-  DELETED_FROM_PACS: "Đã xóa ảnh",
-  READY_TO_READ: "Chờ đọc",
-  READING: "Đang đọc",
-  REPORTED: "Đã có báo cáo",
-};
 
-const reportStatusLabels: Record<string, string> = {
-  PENDING_APPROVAL: "Chờ duyệt",
-  DRAFT: "Nháp",
-  FINAL: "Đã duyệt",
-};
-
-function formatDateTime(value?: string | null) {
-  if (!value) return "-";
-  return new Date(value).toLocaleString("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
-
-function formatDate(value?: string | null) {
-  if (!value) return "-";
-  return new Date(value).toLocaleDateString("vi-VN");
-}
-
-function statusClass(status: string) {
-  if (status === "DELIVERED" || status === "FINALIZED") return "bg-vin-status-approved-bg text-white";
-  if (status === "ARCHIVED") return "bg-vin-accentSoft text-white";
-  if (status === "DELETED_FROM_PACS") return "bg-vin-status-danger-bg text-white";
-  return "bg-vin-status-new-bg text-white";
-}
 
 function normalizeFilterValue(value?: string) {
   return value === "ALL" ? "" : value || "";
@@ -127,6 +92,8 @@ export default function ArchivePage() {
   const [canShare, setCanShare] = useState(false);
   const [canConsult, setCanConsult] = useState(false);
   const [canSyncHis, setCanSyncHis] = useState(false);
+
+  const enableSharedUI = process.env.NEXT_PUBLIC_ENABLE_ARCHIVE_SHARED_UI === "true";
 
   useEffect(() => {
     getUserPermissionsAction().then(res => {
@@ -322,6 +289,8 @@ export default function ArchivePage() {
 
           {(message || error) && (
             <div
+              role={error ? "alert" : "status"}
+              aria-live="polite"
               className={`mt-3 rounded border px-3 py-2 text-[11px] font-semibold ${
                 error
                   ? "border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 text-red-200"
@@ -371,85 +340,94 @@ export default function ArchivePage() {
 
         <main className="grid min-h-0 flex-1 grid-cols-[minmax(680px,1fr)_420px] overflow-hidden">
           <section className="min-h-0 overflow-auto border-r border-vin-border scr-dark">
-            <table className="w-full text-left">
-              <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
-                <tr>
-                  <th className="px-4 py-3">Bệnh nhân</th>
-                  <th className="px-3 py-3">Ca chụp</th>
-                  <th className="px-3 py-3 text-center">Mod</th>
-                  <th className="px-3 py-3">Bác sĩ</th>
-                  <th className="px-3 py-3 text-center">Trạng thái</th>
-                  <th className="px-4 py-3 text-right">Ngày</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-vin-border/45 text-[11px]">
-                {isLoading ? (
+            {enableSharedUI ? (
+              <ArchiveDataGrid
+                rows={rows}
+                isLoading={isLoading}
+                selectedUid={selectedUid}
+                onSelect={(row) => loadDetail(row.studyInstanceUid)}
+              />
+            ) : (
+              <table className="w-full text-left">
+                <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-vin-muted">
-                      <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
-                      Đang tải archive...
-                    </td>
+                    <th className="px-4 py-3">Bệnh nhân</th>
+                    <th className="px-3 py-3">Ca chụp</th>
+                    <th className="px-3 py-3 text-center">Mod</th>
+                    <th className="px-3 py-3">Bác sĩ</th>
+                    <th className="px-3 py-3 text-center">Trạng thái</th>
+                    <th className="px-4 py-3 text-right">Ngày</th>
                   </tr>
-                ) : rows.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-12 text-center text-vin-muted">Chưa có ca final/delivered phù hợp.</td>
-                  </tr>
-                ) : (
-                  rows.map(row => {
-                    const isSelected = selectedUid === row.studyInstanceUid;
-                    return (
-                      <tr
-                        key={row.id}
-                        onClick={() => loadDetail(row.studyInstanceUid)}
-                        className={`cursor-pointer transition ${isSelected ? "bg-vin-tableSelected text-white" : "odd:bg-vin-table even:bg-vin-tableAlt hover:bg-vin-tableHover"}`}
-                      >
-                        <td className="px-4 py-3">
-                          <div className="max-w-[220px] truncate font-semibold text-white">{row.patientName}</div>
-                          <div className="mt-1 truncate font-mono text-[10px] text-vin-muted">PID: {row.patientId}</div>
-                        </td>
-                        <td className="px-3 py-3">
-                          <div className="max-w-[260px] truncate text-vin-text2" title={row.procedureDescription || row.studyDescription}>
-                            {row.procedureName || row.procedureDescription || row.studyDescription}
-                          </div>
-                          <div className="mt-1 truncate font-mono text-[10px] text-vin-muted">{row.procedureCode || row.accessionNumber}</div>
-                          <div className="mt-1 max-w-[260px] truncate text-[10px] text-vin-muted">
-                            {row.serviceTypeName || row.machineName || "Fallback DICOM"}
-                          </div>
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <span className="inline-flex min-w-9 justify-center rounded border border-vin-accent/40 bg-vin-accentSoft/20 px-1.5 py-px font-mono text-[10px] font-bold text-vin-accent">{row.modality}</span>
-                          <div className="mt-1 text-[10px] text-vin-muted">{row.bodyPart || "-"}</div>
-                        </td>
-                        <td className="px-3 py-3">
-                          <div className="max-w-[150px] truncate text-vin-text2">{row.assignedDoctorName || "Chua gan"}</div>
-                          <div className="mt-1 max-w-[150px] truncate text-[10px] text-vin-muted">Report: {row.doctorName}</div>
-                          <div className="mt-1 font-mono text-[10px] text-vin-muted">{reportStatusLabels[row.reportStatus] || row.reportStatus}</div>
-                        </td>
-                        <td className="px-3 py-3 text-center">
-                          <span className={`inline-flex rounded px-2 py-0.5 text-[9px] font-bold ${statusClass(row.studyStatus)}`}>{studyStatusLabels[row.studyStatus] || row.studyStatus}</span>
-                          {!row.canOpenViewer && <div className="mt-1 text-[10px] text-amber-200">Không mở ảnh</div>}
-                          {(row.hisSyncStatus || row.hisResultStatus) && (
-                            <div className="mt-1 flex flex-col gap-0.5 text-[9px] font-semibold">
-                              {row.hisSyncStatus && (
-                                <Link href={`/admin/his`} className={`mt-1 block w-fit rounded px-1.5 py-0.5 text-[9px] font-semibold transition hover:opacity-80 ${row.hisSyncStatus === 'FAILED' ? 'bg-red-900/40 text-red-300' : 'bg-emerald-900/40 text-emerald-300'}`} title="Click to view HIS Logs">
-                                  HIS Sync: {row.hisSyncStatus}
-                                </Link>
-                              )}
-                              {row.hisResultStatus && (
-                                <span className={row.hisResultStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}>
-                                  HIS Result: {row.hisResultStatus}
-                                </span>
-                              )}
+                </thead>
+                <tbody className="divide-y divide-vin-border/45 text-[11px]">
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-vin-muted">
+                        <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
+                        Đang tải archive...
+                      </td>
+                    </tr>
+                  ) : rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-vin-muted">Chưa có ca final/delivered phù hợp.</td>
+                    </tr>
+                  ) : (
+                    rows.map(row => {
+                      const isSelected = selectedUid === row.studyInstanceUid;
+                      return (
+                        <tr
+                          key={row.id}
+                          onClick={() => loadDetail(row.studyInstanceUid)}
+                          className={`cursor-pointer transition ${isSelected ? "bg-vin-tableSelected text-white" : "odd:bg-vin-table even:bg-vin-tableAlt hover:bg-vin-tableHover"}`}
+                        >
+                          <td className="px-4 py-3">
+                            <div className="max-w-[220px] truncate font-semibold text-white">{row.patientName}</div>
+                            <div className="mt-1 truncate font-mono text-[10px] text-vin-muted">PID: {row.patientId}</div>
+                          </td>
+                          <td className="px-3 py-3">
+                            <div className="max-w-[260px] truncate text-vin-text2" title={row.procedureDescription || row.studyDescription}>
+                              {row.procedureName || row.procedureDescription || row.studyDescription}
                             </div>
-                          )}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-right text-vin-text2">{formatDate(row.studyDate)}</td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                            <div className="mt-1 truncate font-mono text-[10px] text-vin-muted">{row.procedureCode || row.accessionNumber}</div>
+                            <div className="mt-1 max-w-[260px] truncate text-[10px] text-vin-muted">
+                              {row.serviceTypeName || row.machineName || "Fallback DICOM"}
+                            </div>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <span className="inline-flex min-w-9 justify-center rounded border border-vin-accent/40 bg-vin-accentSoft/20 px-1.5 py-px font-mono text-[10px] font-bold text-vin-accent">{row.modality}</span>
+                            <div className="mt-1 text-[10px] text-vin-muted">{row.bodyPart || "-"}</div>
+                          </td>
+                          <td className="px-3 py-3">
+                            <div className="max-w-[150px] truncate text-vin-text2">{row.assignedDoctorName || "Chua gan"}</div>
+                            <div className="mt-1 max-w-[150px] truncate text-[10px] text-vin-muted">Report: {row.doctorName}</div>
+                            <div className="mt-1 font-mono text-[10px] text-vin-muted">{reportStatusLabels[row.reportStatus] || row.reportStatus}</div>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <span className={`inline-flex rounded px-2 py-0.5 text-[9px] font-bold ${statusClass(row.studyStatus)}`}>{studyStatusLabels[row.studyStatus] || row.studyStatus}</span>
+                            {!row.canOpenViewer && <div className="mt-1 text-[10px] text-amber-200">Không mở ảnh</div>}
+                            {(row.hisSyncStatus || row.hisResultStatus) && (
+                              <div className="mt-1 flex flex-col gap-0.5 text-[9px] font-semibold">
+                                {row.hisSyncStatus && (
+                                  <Link href={`/admin/his`} className={`mt-1 block w-fit rounded px-1.5 py-0.5 text-[9px] font-semibold transition hover:opacity-80 ${row.hisSyncStatus === 'FAILED' ? 'bg-red-900/40 text-red-300' : 'bg-emerald-900/40 text-emerald-300'}`} title="Click to view HIS Logs">
+                                    HIS Sync: {row.hisSyncStatus}
+                                  </Link>
+                                )}
+                                {row.hisResultStatus && (
+                                  <span className={row.hisResultStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}>
+                                    HIS Result: {row.hisResultStatus}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-right text-vin-text2">{formatDate(row.studyDate)}</td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )}
           </section>
 
           <aside className="min-h-0 overflow-auto bg-vin-panel p-4 scr-dark">

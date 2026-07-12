@@ -345,14 +345,19 @@ function DashboardPageContent() {
           // Aggregate-only telemetry (fire and forget). Do not pass query,
           // patient/accession identifiers, errors, or raw response payloads.
           const scopedRows = scopedRes.error ? 0 : scopedRes.data!.rows.length;
-          logShadowRunTelemetry({
-            legacyLatencyMs: Math.round(legacyRes.latency),
-            scopedLatencyMs: Math.round(scopedRes.latency),
-            legacyRowsCount: legacyRes.error ? 0 : legacyRes.data!.length,
-            scopedRowsCount: scopedRows,
-            legacySucceeded: !legacyRes.error,
-            scopedSucceeded: !scopedRes.error,
-          }).catch(console.error);
+          try {
+            logShadowRunTelemetry({
+              legacyLatencyMs: Math.round(legacyRes.latency),
+              scopedLatencyMs: Math.round(scopedRes.latency),
+              legacyRowsCount: legacyRes.error ? 0 : legacyRes.data!.length,
+              scopedRowsCount: scopedRows,
+              legacySucceeded: !legacyRes.error,
+              scopedSucceeded: !scopedRes.error,
+            });
+          } catch (telemetryError) {
+            // Observability must never make the clinical read path fail.
+            console.error("Failed to emit shadow-run telemetry", telemetryError);
+          }
         }
 
         setStudies(data || []);

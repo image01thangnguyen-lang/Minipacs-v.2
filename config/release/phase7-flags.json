@@ -1,0 +1,5 @@
+[
+  { "version": 1, "capability": "observability", "enabled": true, "percentage": 100, "allowFacilityIds": [], "denyFacilityIds": [], "dependencies": [] },
+  { "version": 1, "capability": "shared-list-ui", "enabled": true, "percentage": 10, "allowFacilityIds": [], "denyFacilityIds": [], "dependencies": ["observability"] },
+  { "version": 1, "capability": "doctor-workspace", "enabled": true, "percentage": 10, "allowFacilityIds": [], "denyFacilityIds": [], "dependencies": ["observability", "shared-list-ui"] }
+]

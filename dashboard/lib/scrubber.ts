@@ -3,7 +3,7 @@
  * from diagnostic, health, and security outputs before logging or returning to UI.
  */
 
-export function scrubDiagnosticOutput(data: any): any {
+export function scrubDiagnosticOutput(data: unknown, seen = new WeakSet<object>()): unknown {
   if (data === null || data === undefined) {
     return data;
   }
@@ -13,11 +13,15 @@ export function scrubDiagnosticOutput(data: any): any {
   }
 
   if (Array.isArray(data)) {
-    return data.map(item => scrubDiagnosticOutput(item));
+    if (seen.has(data)) return '***SCRUBBED_CIRCULAR***';
+    seen.add(data);
+    return data.map(item => scrubDiagnosticOutput(item, seen));
   }
 
   if (typeof data === 'object') {
-    const scrubbed: Record<string, any> = {};
+    if (seen.has(data)) return '***SCRUBBED_CIRCULAR***';
+    seen.add(data);
+    const scrubbed: Record<string, unknown> = {};
     for (const key of Object.keys(data)) {
       const lowerKey = key.toLowerCase();
       
@@ -59,7 +63,7 @@ export function scrubDiagnosticOutput(data: any): any {
         continue;
       }
 
-      scrubbed[key] = scrubDiagnosticOutput(data[key]);
+      scrubbed[key] = scrubDiagnosticOutput((data as Record<string, unknown>)[key], seen);
     }
     return scrubbed;
   }

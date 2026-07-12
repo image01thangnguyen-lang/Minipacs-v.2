@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "syntheticOnly": true,
+  "facilities": ["facility-a", "facility-b"],
+  "actors": [
+    { "id": "synthetic-admin-a", "role": "ADMIN", "facilityId": "facility-a" },
+    { "id": "synthetic-radiologist-a", "role": "RADIOLOGIST", "facilityId": "facility-a" },
+    { "id": "synthetic-doctor-a", "role": "DOCTOR", "facilityId": "facility-a" },
+    { "id": "synthetic-technician-b", "role": "TECHNICIAN", "facilityId": "facility-b" },
+    { "id": "synthetic-reception-b", "role": "RECEPTION", "facilityId": "facility-b" },
+    { "id": "synthetic-denied-b", "role": "RADIOLOGIST", "facilityId": "facility-b" }
+  ],
+  "cases": [
+    { "id": "P7-SCOPE-001", "category": "SCOPE", "actorIds": ["synthetic-radiologist-a", "synthetic-denied-b"], "expected": "facility-a cannot read facility-b row/count/facet/detail/action" },
+    { "id": "P7-TAMPER-001", "category": "TAMPER", "actorIds": ["synthetic-radiologist-a"], "expected": "unknown and forged scope fields are rejected" },
+    { "id": "P7-A11Y-001", "category": "A11Y", "actorIds": ["synthetic-radiologist-a"], "expected": "grid keyboard navigation and accessible name pass" },
+    { "id": "P7-RACE-001", "category": "RACE", "actorIds": ["synthetic-radiologist-a"], "expected": "stale revision and repeated submission cannot overwrite the current state" },
+    { "id": "P7-FAILURE-001", "category": "FAILURE", "actorIds": ["synthetic-radiologist-a"], "expected": "dependency outage fails closed and never falls back to an unscoped query" },
+    { "id": "P7-ROLLBACK-001", "category": "ROLLBACK", "actorIds": ["synthetic-radiologist-a"], "expected": "flag off restores legacy path without data mutation" }
+  ]
+}

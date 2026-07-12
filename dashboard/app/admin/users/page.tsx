@@ -30,73 +30,20 @@ import {
   updateUserAction,
 } from "./actions";
 import {
+  type SystemRole,
   getPermissionsForRole,
   permissionGroups,
   permissionLabels,
   roleDescriptions,
   roleLabels as systemRoleLabels,
-  type SystemRole,
 } from "@/lib/permissions";
-
-type RoleProfile = {
-  id: string;
-  code: string;
-  name: string;
-  description: string | null;
-  baseRole: SystemRole;
-  permissions: string[];
-  isSystem: boolean;
-  isActive: boolean;
-  createdAt: string | Date;
-  updatedAt: string | Date;
-  _count?: { users: number };
-};
-
-type UserRow = {
-  id: string;
-  username: string;
-  fullName: string;
-  role: SystemRole;
-  roleProfileId?: string | null;
-  roleProfile?: RoleProfile | null;
-  isActive: boolean;
-  createdAt: string | Date;
-  updatedAt: string | Date;
-  doctorProfile?: any;
-};
-
-type ActiveTab = "users" | "roles";
-type Mode = "view" | "createUser" | "createRole" | "importUsers";
-
-function StatusBadge({ active }: { active: boolean }) {
-  return (
-    <span className={`inline-flex max-w-[92px] justify-center truncate rounded px-2 py-0.5 text-[9px] font-bold ${
-      active ? "bg-vin-status-approved-bg text-white" : "bg-vin-status-danger-bg text-white"
-    }`}>
-      {active ? "Đang dùng" : "Đã khóa"}
-    </span>
-  );
-}
-
-function RoleBadge({ roleProfile, fallbackRole }: { roleProfile?: RoleProfile | null; fallbackRole?: string }) {
-  const label = roleProfile?.name || (fallbackRole ? systemRoleLabels[fallbackRole as SystemRole] || fallbackRole : "Chưa gán");
-  const isAdmin = (roleProfile?.baseRole || fallbackRole) === "ADMIN";
-  const isDoctor = (roleProfile?.baseRole || fallbackRole) === "DOCTOR";
-  const isTech = (roleProfile?.baseRole || fallbackRole) === "TECHNICIAN";
-  const classes = isAdmin
-    ? "bg-amber-900/25 text-amber-200 border-amber-500/30"
-    : isDoctor
-      ? "bg-vin-accentSoft/20 text-vin-accent border-vin-accent/40"
-      : isTech
-        ? "bg-cyan-900/30 text-cyan-200 border-cyan-500/30"
-        : "bg-emerald-900/25 text-emerald-200 border-emerald-500/30";
-
-  return (
-    <span className={`inline-flex max-w-[150px] justify-center truncate rounded border px-1.5 py-px text-[10px] font-bold ${classes}`}>
-      {label}
-    </span>
-  );
-}
+import {
+  type RoleProfile,
+  type UserRow,
+  type ActiveTab,
+  type Mode,
+} from "./utils";
+import { UsersDataGrid, RolesDataGrid, ImportPreviewGrid, StatusBadge, RoleBadge } from "./AdminUsersGrids";
 
 function getRolePermissions(roleProfile?: RoleProfile | null, fallbackRole?: string | null) {
   return roleProfile?.permissions?.length ? roleProfile.permissions : getPermissionsForRole(fallbackRole);
@@ -232,6 +179,8 @@ export default function UserManagementPage() {
   const [createRoleProfileId, setCreateRoleProfileId] = useState("");
   const [editRoleProfileId, setEditRoleProfileId] = useState("");
   const [importResults, setImportResults] = useState<{successCount: number; errorCount: number; results: any[]} | null>(null);
+
+  const enableSharedUI = process.env.NEXT_PUBLIC_ENABLE_ADMIN_USERS_SHARED_UI === "true";
 
   const loadData = async () => {
     try {
@@ -493,134 +442,160 @@ export default function UserManagementPage() {
 
         <div className="min-h-0 flex-1 overflow-auto scr-dark">
           {activeTab === "users" ? (
-            <table className="w-full text-left">
-              <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
-                <tr>
-                  <th className="w-9 py-2 pl-2 pr-1 text-center">TT</th>
-                  <th className="px-2 py-2">Username</th>
-                  <th className="px-2 py-2">Họ tên</th>
-                  <th className="px-2 py-2 text-center">Vai trò</th>
-                  <th className="px-2 py-2 text-center">Trạng thái</th>
-                  <th className="px-2 py-2">Ngày tạo</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-vin-border/45 text-[11px]">
-                {isLoading ? (
+            enableSharedUI ? (
+              <UsersDataGrid
+                rows={filteredUsers}
+                isLoading={isLoading}
+                selectedId={mode === "view" ? selectedUserId : null}
+                onSelect={(id) => {
+                  setSelectedUserId(id);
+                  setMode("view");
+                  setErrorMessage("");
+                }}
+              />
+            ) : (
+              <table className="w-full text-left">
+                <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-vin-muted">
-                      <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
-                      Đang tải danh sách người dùng...
-                    </td>
+                    <th className="w-9 py-2 pl-2 pr-1 text-center">TT</th>
+                    <th className="px-2 py-2">Username</th>
+                    <th className="px-2 py-2">Họ tên</th>
+                    <th className="px-2 py-2 text-center">Vai trò</th>
+                    <th className="px-2 py-2 text-center">Trạng thái</th>
+                    <th className="px-2 py-2">Ngày tạo</th>
                   </tr>
-                ) : filteredUsers.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-12 text-center text-vin-muted">Không tìm thấy người dùng nào.</td>
-                  </tr>
-                ) : (
-                  filteredUsers.map((user, index) => {
-                    const isSelected = user.id === selectedUserId && mode === "view";
-                    const profile = effectiveRoleProfile(user);
+                </thead>
+                <tbody className="divide-y divide-vin-border/45 text-[11px]">
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-vin-muted">
+                        <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
+                        Đang tải danh sách người dùng...
+                      </td>
+                    </tr>
+                  ) : filteredUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-vin-muted">Không tìm thấy người dùng nào.</td>
+                    </tr>
+                  ) : (
+                    filteredUsers.map((user, index) => {
+                      const isSelected = user.id === selectedUserId && mode === "view";
+                      const profile = effectiveRoleProfile(user);
 
-                    return (
-                      <tr
-                        key={user.id}
-                        onClick={() => {
-                          setSelectedUserId(user.id);
-                          setMode("view");
-                          setErrorMessage("");
-                        }}
-                        className={`cursor-pointer select-none border-l-2 transition-colors ${
-                          isSelected
-                            ? "border-l-vin-accent bg-vin-tableSelected text-white"
-                            : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
-                        }`}
-                      >
-                        <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
-                        <td className="px-2 py-2">
-                          <div className="flex items-center gap-1.5">
-                            <Shield className="h-3 w-3 text-vin-accent" />
-                            <span className="font-semibold text-white">{user.username}</span>
-                          </div>
-                        </td>
-                        <td className="px-2 py-2">
-                          <div className="max-w-[200px] truncate">{user.fullName}</div>
-                        </td>
-                        <td className="px-2 py-2 text-center">
-                          <RoleBadge roleProfile={profile} fallbackRole={user.role} />
-                        </td>
-                        <td className="px-2 py-2 text-center">
-                          <StatusBadge active={user.isActive} />
-                        </td>
-                        <td className="whitespace-nowrap px-2 py-2 font-mono text-vin-text2">
-                          {new Date(user.createdAt).toLocaleDateString("vi-VN")}
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                      return (
+                        <tr
+                          key={user.id}
+                          onClick={() => {
+                            setSelectedUserId(user.id);
+                            setMode("view");
+                            setErrorMessage("");
+                          }}
+                          className={`cursor-pointer select-none border-l-2 transition-colors ${
+                            isSelected
+                              ? "border-l-vin-accent bg-vin-tableSelected text-white"
+                              : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
+                          }`}
+                        >
+                          <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
+                          <td className="px-2 py-2">
+                            <div className="flex items-center gap-1.5">
+                              <Shield className="h-3 w-3 text-vin-accent" />
+                              <span className="font-semibold text-white">{user.username}</span>
+                            </div>
+                          </td>
+                          <td className="px-2 py-2">
+                            <div className="max-w-[200px] truncate">{user.fullName}</div>
+                          </td>
+                          <td className="px-2 py-2 text-center">
+                            <RoleBadge roleProfile={profile} fallbackRole={user.role} />
+                          </td>
+                          <td className="px-2 py-2 text-center">
+                            <StatusBadge active={user.isActive} />
+                          </td>
+                          <td className="whitespace-nowrap px-2 py-2 font-mono text-vin-text2">
+                            {new Date(user.createdAt).toLocaleDateString("vi-VN")}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )
           ) : (
-            <table className="w-full text-left">
-              <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
-                <tr>
-                  <th className="w-9 py-2 pl-2 pr-1 text-center">TT</th>
-                  <th className="px-2 py-2">Vai trò</th>
-                  <th className="px-2 py-2">Mã</th>
-                  <th className="px-2 py-2 text-center">Nhóm gốc</th>
-                  <th className="px-2 py-2 text-center">Users</th>
-                  <th className="px-2 py-2 text-center">Trạng thái</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-vin-border/45 text-[11px]">
-                {isLoading ? (
+            enableSharedUI ? (
+              <RolesDataGrid
+                rows={filteredRoles}
+                isLoading={isLoading}
+                selectedId={mode === "view" ? selectedRoleId : null}
+                onSelect={(id) => {
+                  setSelectedRoleId(id);
+                  setMode("view");
+                  setErrorMessage("");
+                }}
+              />
+            ) : (
+              <table className="w-full text-left">
+                <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-vin-muted">
-                      <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
-                      Đang tải danh sách vai trò...
-                    </td>
+                    <th className="w-9 py-2 pl-2 pr-1 text-center">TT</th>
+                    <th className="px-2 py-2">Vai trò</th>
+                    <th className="px-2 py-2">Mã</th>
+                    <th className="px-2 py-2 text-center">Nhóm gốc</th>
+                    <th className="px-2 py-2 text-center">Users</th>
+                    <th className="px-2 py-2 text-center">Trạng thái</th>
                   </tr>
-                ) : filteredRoles.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-12 text-center text-vin-muted">Không tìm thấy vai trò nào.</td>
-                  </tr>
-                ) : (
-                  filteredRoles.map((role, index) => {
-                    const isSelected = role.id === selectedRoleId && mode === "view";
+                </thead>
+                <tbody className="divide-y divide-vin-border/45 text-[11px]">
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-vin-muted">
+                        <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
+                        Đang tải danh sách vai trò...
+                      </td>
+                    </tr>
+                  ) : filteredRoles.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-vin-muted">Không tìm thấy vai trò nào.</td>
+                    </tr>
+                  ) : (
+                    filteredRoles.map((role, index) => {
+                      const isSelected = role.id === selectedRoleId && mode === "view";
 
-                    return (
-                      <tr
-                        key={role.id}
-                        onClick={() => {
-                          setSelectedRoleId(role.id);
-                          setMode("view");
-                          setErrorMessage("");
-                        }}
-                        className={`cursor-pointer select-none border-l-2 transition-colors ${
-                          isSelected
-                            ? "border-l-vin-accent bg-vin-tableSelected text-white"
-                            : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
-                        }`}
-                      >
-                        <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
-                        <td className="px-2 py-2">
-                          <div className="flex items-center gap-1.5">
-                            {role.isSystem ? <Lock className="h-3 w-3 text-amber-300" /> : <ShieldCheck className="h-3 w-3 text-vin-accent" />}
-                            <span className="font-semibold text-white">{role.name}</span>
-                          </div>
-                        </td>
-                        <td className="px-2 py-2 font-mono text-vin-muted">{role.code}</td>
-                        <td className="px-2 py-2 text-center">{systemRoleLabels[role.baseRole] || role.baseRole}</td>
-                        <td className="px-2 py-2 text-center font-mono">{role._count?.users || 0}</td>
-                        <td className="px-2 py-2 text-center">
-                          <StatusBadge active={role.isActive} />
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                      return (
+                        <tr
+                          key={role.id}
+                          onClick={() => {
+                            setSelectedRoleId(role.id);
+                            setMode("view");
+                            setErrorMessage("");
+                          }}
+                          className={`cursor-pointer select-none border-l-2 transition-colors ${
+                            isSelected
+                              ? "border-l-vin-accent bg-vin-tableSelected text-white"
+                              : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
+                          }`}
+                        >
+                          <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
+                          <td className="px-2 py-2">
+                            <div className="flex items-center gap-1.5">
+                              {role.isSystem ? <Lock className="h-3 w-3 text-amber-300" /> : <ShieldCheck className="h-3 w-3 text-vin-accent" />}
+                              <span className="font-semibold text-white">{role.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-2 py-2 font-mono text-vin-muted">{role.code}</td>
+                          <td className="px-2 py-2 text-center">{systemRoleLabels[role.baseRole] || role.baseRole}</td>
+                          <td className="px-2 py-2 text-center font-mono">{role._count?.users || 0}</td>
+                          <td className="px-2 py-2 text-center">
+                            <StatusBadge active={role.isActive} />
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )
           )}
         </div>
       </section>
@@ -791,30 +766,34 @@ export default function UserManagementPage() {
                     <span className="text-emerald-400">Hợp lệ: {importResults.successCount}</span>
                     <span className="text-red-400">Lỗi: {importResults.errorCount}</span>
                   </div>
-                  <table className="w-full text-left text-[11px]">
-                    <thead className="bg-vin-panel2 text-vin-muted border-b border-vin-border">
-                      <tr>
-                        <th className="py-1 px-2">Dòng</th>
-                        <th className="py-1 px-2">Username</th>
-                        <th className="py-1 px-2">Họ tên</th>
-                        <th className="py-1 px-2">Role</th>
-                        <th className="py-1 px-2">Trạng thái</th>
-                        <th className="py-1 px-2">Ghi chú</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-vin-border/40 text-vin-text2">
-                      {importResults.results.map((r, i) => (
-                        <tr key={i} className={r.status === "Lỗi" ? "bg-red-950/20" : ""}>
-                          <td className="py-1 px-2">{r.row}</td>
-                          <td className="py-1 px-2">{r.username}</td>
-                          <td className="py-1 px-2">{r.fullName}</td>
-                          <td className="py-1 px-2">{r.role}</td>
-                          <td className={`py-1 px-2 font-bold ${r.status === "Lỗi" ? "text-red-400" : "text-emerald-400"}`}>{r.status}</td>
-                          <td className="py-1 px-2">{r.message}</td>
+                  {enableSharedUI ? (
+                    <ImportPreviewGrid rows={importResults.results} />
+                  ) : (
+                    <table className="w-full text-left text-[11px]">
+                      <thead className="bg-vin-panel2 text-vin-muted border-b border-vin-border">
+                        <tr>
+                          <th className="py-1 px-2">Dòng</th>
+                          <th className="py-1 px-2">Username</th>
+                          <th className="py-1 px-2">Họ tên</th>
+                          <th className="py-1 px-2">Role</th>
+                          <th className="py-1 px-2">Trạng thái</th>
+                          <th className="py-1 px-2">Ghi chú</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-vin-border/40 text-vin-text2">
+                        {importResults.results.map((r, i) => (
+                          <tr key={i} className={r.status === "Lỗi" ? "bg-red-950/20" : ""}>
+                            <td className="py-1 px-2">{r.row}</td>
+                            <td className="py-1 px-2">{r.username}</td>
+                            <td className="py-1 px-2">{r.fullName}</td>
+                            <td className="py-1 px-2">{r.role}</td>
+                            <td className={`py-1 px-2 font-bold ${r.status === "Lỗi" ? "text-red-400" : "text-emerald-400"}`}>{r.status}</td>
+                            <td className="py-1 px-2">{r.message}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               )}
             </div>

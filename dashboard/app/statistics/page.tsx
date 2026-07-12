@@ -65,6 +65,7 @@ import type {
   StatisticsWorkloadDoctorRow,
   StatisticsWorkloadQueueRow,
 } from "./types";
+import { DrilldownDataGrid } from "./DrilldownDataGrid";
 
 function todayInput() {
   const now = new Date();
@@ -1578,7 +1579,9 @@ function DrilldownPanel({
         </div>
       </div>
 
-      {drilldown.rows.length === 0 ? (
+      {process.env.NEXT_PUBLIC_ENABLE_STATISTICS_SHARED_UI === "true" ? (
+        <DrilldownDataGrid rows={drilldown.rows} />
+      ) : drilldown.rows.length === 0 ? (
         <div className="px-3 py-10 text-center text-[11px] text-vin-muted">Không có ca phù hợp bộ lọc hiện tại.</div>
       ) : (
         <div className="max-h-[380px] overflow-auto scr-dark">

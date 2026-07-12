@@ -26,12 +26,14 @@ export interface ColumnDef<T> {
   id: string;
   header: ReactNode;
   accessorKey?: keyof T;
-  cell?: (item: T) => ReactNode;
+  cell?: (item: T, index: number) => ReactNode;
   sortable?: boolean;
   align?: 'left' | 'center' | 'right';
   width?: number | string;
   minWidth?: number | string;
   maxWidth?: number | string;
+  pinned?: 'left' | 'right';
+  pinnedOffset?: number | string;
 }
 
 /**
@@ -44,9 +46,12 @@ export interface SharedDataGridProps<T> {
   getRowId: (item: T) => string;
   isLoading?: boolean;
   emptyState?: ReactNode;
+  errorState?: ReactNode;
+  ariaLabel?: string;
   
   // Selection
   onRowClick?: (item: T) => void;
+  onRowDoubleClick?: (item: T) => void;
   selectedIds?: readonly string[];
   onSelectionChange?: (ids: readonly string[]) => void;
   
@@ -59,6 +64,10 @@ export interface SharedDataGridProps<T> {
   stickyHeader?: boolean;
   containerClassName?: string;
   tableClassName?: string;
+  /** Maximum rendered rows; this is a render cap, not true virtualization. */
+  renderLimit?: number;
+  /** @deprecated Use renderLimit; retained for adapter compatibility. */
+  virtualizationThreshold?: number;
 }
 
 /**

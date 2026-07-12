@@ -7,23 +7,12 @@ import { Loader2, RefreshCcw, Users, Search, Video, Calendar, ArrowRight } from 
 import { getConsultationsAction, updateParticipantStatusAction } from "./actions";
 import Link from "next/link";
 import { CustomSelect } from "@/app/components/CustomSelect";
-
-const statusLabels: Record<string, string> = {
-  REQUESTED: "Đã yêu cầu",
-  ACTIVE: "Đang diễn ra",
-  COMPLETED: "Đã kết thúc",
-  CANCELLED: "Đã hủy",
-};
-
-const statusClasses: Record<string, string> = {
-  REQUESTED: "bg-vin-status-new-bg text-white",
-  ACTIVE: "bg-indigo-500 text-white",
-  COMPLETED: "bg-vin-status-approved-bg text-white",
-  CANCELLED: "bg-vin-status-danger-bg text-white",
-};
+import { ConsultationDataGrid } from "./ConsultationDataGrid";
+import { statusLabels, statusClasses } from "./utils";
+import type { ConsultationView } from "./utils";
 
 export default function ConsultationsPage() {
-  const [consultations, setConsultations] = useState<any[]>([]);
+  const [consultations, setConsultations] = useState<ConsultationView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -58,6 +47,8 @@ export default function ConsultationsPage() {
     }
     window.location.href = `/consultations/${consultationId}`;
   };
+
+  const enableSharedUI = process.env.NEXT_PUBLIC_ENABLE_CONSULTATIONS_SHARED_UI === "true";
 
   return (
     <div className="flex h-full w-full overflow-hidden bg-vin-root font-sans text-vin-text">
@@ -99,7 +90,7 @@ export default function ConsultationsPage() {
 
         <main className="min-h-0 flex-1 overflow-auto p-4 scr-dark">
           {error && (
-            <div className="mb-4 rounded border border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 px-3 py-2 text-[11px] font-semibold text-red-200">
+            <div role="alert" aria-live="polite" className="mb-4 rounded border border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 px-3 py-2 text-[11px] font-semibold text-red-200">
               {error}
             </div>
           )}
@@ -114,6 +105,8 @@ export default function ConsultationsPage() {
               <Users className="mb-3 h-8 w-8 text-vin-faint" />
               <div className="text-sm font-semibold text-vin-text2">Không có cuộc hội chẩn nào.</div>
             </div>
+          ) : enableSharedUI ? (
+            <ConsultationDataGrid rows={consultations} isLoading={isLoading} />
           ) : (
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
               {consultations.map(c => (

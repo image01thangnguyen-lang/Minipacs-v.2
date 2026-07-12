@@ -31,21 +31,15 @@ import {
 } from "./actions";
 import { CustomSelect } from "@/app/components/CustomSelect";
 
-type ActiveTab = "services" | "procedures" | "icds" | "supplies";
+import {
+  ServicesDataGrid,
+  ProceduresDataGrid,
+  IcdsDataGrid,
+  SuppliesDataGrid,
+  StatusBadge,
+} from "./AdminCatalogsGrids";
 
-function StatusBadge({ active }: { active: boolean }) {
-  return (
-    <span
-      className={`inline-flex max-w-[92px] justify-center truncate rounded px-2 py-0.5 text-[9px] font-bold ${
-        active
-          ? "bg-vin-status-approved-bg text-white"
-          : "bg-vin-status-danger-bg text-white"
-      }`}
-    >
-      {active ? "Đang dùng" : "Đã khóa"}
-    </span>
-  );
-}
+type ActiveTab = "services" | "procedures" | "icds" | "supplies";
 
 export default function CatalogsPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("services");
@@ -63,6 +57,8 @@ export default function CatalogsPage() {
   // Selection
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mode, setMode] = useState<"view" | "create">("view");
+
+  const enableSharedUI = process.env.NEXT_PUBLIC_ENABLE_ADMIN_CATALOGS_SHARED_UI === "true";
 
   const loadData = async () => {
     try {
@@ -110,7 +106,7 @@ export default function CatalogsPage() {
       else if (activeTab === "procedures") await createProcedure(formData);
       else if (activeTab === "icds") await createIcd(formData);
       else if (activeTab === "supplies") await createSupply(formData);
-      
+
       await loadData();
       setMode("view");
       event.currentTarget.reset();
@@ -132,7 +128,7 @@ export default function CatalogsPage() {
       else if (activeTab === "procedures") await updateProcedure(formData);
       else if (activeTab === "icds") await updateIcd(formData);
       else if (activeTab === "supplies") await updateSupply(formData);
-      
+
       await loadData();
     } catch (error) {
       console.error(error);
@@ -238,95 +234,132 @@ export default function CatalogsPage() {
               Đang tải dữ liệu...
             </div>
           ) : (
-            <table className="w-full text-left">
-              <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
-                <tr>
-                  <th className="w-9 py-2 pl-2 pr-1 text-center">TT</th>
-                  <th className="px-2 py-2">Mã</th>
-                  <th className="px-2 py-2">Tên / Mô tả</th>
-                  <th className="px-2 py-2 text-center">Trạng thái</th>
-                  {activeTab === "procedures" && <th className="px-2 py-2">Nhóm</th>}
-                  {activeTab === "services" && <th className="px-2 py-2 text-center">Modality</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-vin-border/45 text-[11px]">
-                {activeTab === "services" && filteredServices.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    onClick={() => { setSelectedId(item.id); setMode("view"); setErrorMessage(""); }}
-                    className={`cursor-pointer select-none border-l-2 transition-colors ${
-                      selectedId === item.id && mode === "view"
-                        ? "border-l-vin-accent bg-vin-tableSelected text-white"
-                        : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
-                    }`}
-                  >
-                    <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
-                    <td className="px-2 py-2 font-mono text-white">{item.code}</td>
-                    <td className="px-2 py-2 font-semibold text-white">{item.name}</td>
-                    <td className="px-2 py-2 text-center"><StatusBadge active={item.isActive} /></td>
-                    <td className="px-2 py-2 text-center font-mono">{item.defaultModality || "-"}</td>
+            enableSharedUI ? (
+              <>
+                {activeTab === "services" && (
+                  <ServicesDataGrid
+                    rows={filteredServices}
+                    isLoading={false}
+                    selectedId={mode === "view" ? selectedId : null}
+                    onSelect={(id: string) => { setSelectedId(id); setMode("view"); setErrorMessage(""); }}
+                  />
+                )}
+                {activeTab === "procedures" && (
+                  <ProceduresDataGrid
+                    rows={filteredProcedures}
+                    isLoading={false}
+                    selectedId={mode === "view" ? selectedId : null}
+                    onSelect={(id: string) => { setSelectedId(id); setMode("view"); setErrorMessage(""); }}
+                  />
+                )}
+                {activeTab === "icds" && (
+                  <IcdsDataGrid
+                    rows={filteredIcds}
+                    isLoading={false}
+                    selectedId={mode === "view" ? selectedId : null}
+                    onSelect={(id: string) => { setSelectedId(id); setMode("view"); setErrorMessage(""); }}
+                  />
+                )}
+                {activeTab === "supplies" && (
+                  <SuppliesDataGrid
+                    rows={filteredSupplies}
+                    isLoading={false}
+                    selectedId={mode === "view" ? selectedId : null}
+                    onSelect={(id: string) => { setSelectedId(id); setMode("view"); setErrorMessage(""); }}
+                  />
+                )}
+              </>
+            ) : (
+              <table className="w-full text-left">
+                <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
+                  <tr>
+                    <th className="w-9 py-2 pl-2 pr-1 text-center">TT</th>
+                    <th className="px-2 py-2">Mã</th>
+                    <th className="px-2 py-2">Tên / Mô tả</th>
+                    <th className="px-2 py-2 text-center">Trạng thái</th>
+                    {activeTab === "procedures" && <th className="px-2 py-2">Nhóm</th>}
+                    {activeTab === "services" && <th className="px-2 py-2 text-center">Modality</th>}
                   </tr>
-                ))}
-                
-                {activeTab === "procedures" && filteredProcedures.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    onClick={() => { setSelectedId(item.id); setMode("view"); setErrorMessage(""); }}
-                    className={`cursor-pointer select-none border-l-2 transition-colors ${
-                      selectedId === item.id && mode === "view"
-                        ? "border-l-vin-accent bg-vin-tableSelected text-white"
-                        : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
-                    }`}
-                  >
-                    <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
-                    <td className="px-2 py-2 font-mono text-white">{item.code}</td>
-                    <td className="px-2 py-2">
-                      <div className="font-semibold text-white">{item.name}</div>
-                      <div className="text-[10px] text-vin-muted">{item.hisCode ? `HIS: ${item.hisCode}` : ""}</div>
-                    </td>
-                    <td className="px-2 py-2 text-center"><StatusBadge active={item.isActive} /></td>
-                    <td className="px-2 py-2">{item.serviceType?.name || "-"}</td>
-                  </tr>
-                ))}
-                
-                {activeTab === "icds" && filteredIcds.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    onClick={() => { setSelectedId(item.id); setMode("view"); setErrorMessage(""); }}
-                    className={`cursor-pointer select-none border-l-2 transition-colors ${
-                      selectedId === item.id && mode === "view"
-                        ? "border-l-vin-accent bg-vin-tableSelected text-white"
-                        : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
-                    }`}
-                  >
-                    <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
-                    <td className="px-2 py-2 font-mono text-white">{item.code}</td>
-                    <td className="px-2 py-2 font-semibold text-white">{item.name}</td>
-                    <td className="px-2 py-2 text-center"><StatusBadge active={item.isActive} /></td>
-                  </tr>
-                ))}
+                </thead>
+                <tbody className="divide-y divide-vin-border/45 text-[11px]">
+                  {activeTab === "services" && filteredServices.map((item, index) => (
+                    <tr
+                      key={item.id}
+                      onClick={() => { setSelectedId(item.id); setMode("view"); setErrorMessage(""); }}
+                      className={`cursor-pointer select-none border-l-2 transition-colors ${
+                        selectedId === item.id && mode === "view"
+                          ? "border-l-vin-accent bg-vin-tableSelected text-white"
+                          : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
+                      }`}
+                    >
+                      <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
+                      <td className="px-2 py-2 font-mono text-white">{item.code}</td>
+                      <td className="px-2 py-2 font-semibold text-white">{item.name}</td>
+                      <td className="px-2 py-2 text-center"><StatusBadge active={item.isActive} /></td>
+                      <td className="px-2 py-2 text-center font-mono">{item.defaultModality || "-"}</td>
+                    </tr>
+                  ))}
 
-                {activeTab === "supplies" && filteredSupplies.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    onClick={() => { setSelectedId(item.id); setMode("view"); setErrorMessage(""); }}
-                    className={`cursor-pointer select-none border-l-2 transition-colors ${
-                      selectedId === item.id && mode === "view"
-                        ? "border-l-vin-accent bg-vin-tableSelected text-white"
-                        : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
-                    }`}
-                  >
-                    <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
-                    <td className="px-2 py-2 font-mono text-white">{item.code}</td>
-                    <td className="px-2 py-2">
-                      <div className="font-semibold text-white">{item.name}</div>
-                      <div className="text-[10px] text-vin-muted">ĐVT: {item.unit || "-"}</div>
-                    </td>
-                    <td className="px-2 py-2 text-center"><StatusBadge active={item.isActive} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  {activeTab === "procedures" && filteredProcedures.map((item, index) => (
+                    <tr
+                      key={item.id}
+                      onClick={() => { setSelectedId(item.id); setMode("view"); setErrorMessage(""); }}
+                      className={`cursor-pointer select-none border-l-2 transition-colors ${
+                        selectedId === item.id && mode === "view"
+                          ? "border-l-vin-accent bg-vin-tableSelected text-white"
+                          : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
+                      }`}
+                    >
+                      <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
+                      <td className="px-2 py-2 font-mono text-white">{item.code}</td>
+                      <td className="px-2 py-2">
+                        <div className="font-semibold text-white">{item.name}</div>
+                        <div className="text-[10px] text-vin-muted">{item.hisCode ? `HIS: ${item.hisCode}` : ""}</div>
+                      </td>
+                      <td className="px-2 py-2 text-center"><StatusBadge active={item.isActive} /></td>
+                      <td className="px-2 py-2">{item.serviceType?.name || "-"}</td>
+                    </tr>
+                  ))}
+
+                  {activeTab === "icds" && filteredIcds.map((item, index) => (
+                    <tr
+                      key={item.id}
+                      onClick={() => { setSelectedId(item.id); setMode("view"); setErrorMessage(""); }}
+                      className={`cursor-pointer select-none border-l-2 transition-colors ${
+                        selectedId === item.id && mode === "view"
+                          ? "border-l-vin-accent bg-vin-tableSelected text-white"
+                          : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
+                      }`}
+                    >
+                      <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
+                      <td className="px-2 py-2 font-mono text-white">{item.code}</td>
+                      <td className="px-2 py-2 font-semibold text-white">{item.name}</td>
+                      <td className="px-2 py-2 text-center"><StatusBadge active={item.isActive} /></td>
+                    </tr>
+                  ))}
+
+                  {activeTab === "supplies" && filteredSupplies.map((item, index) => (
+                    <tr
+                      key={item.id}
+                      onClick={() => { setSelectedId(item.id); setMode("view"); setErrorMessage(""); }}
+                      className={`cursor-pointer select-none border-l-2 transition-colors ${
+                        selectedId === item.id && mode === "view"
+                          ? "border-l-vin-accent bg-vin-tableSelected text-white"
+                          : "border-l-transparent odd:bg-vin-table even:bg-vin-tableAlt text-vin-text2 hover:bg-vin-tableHover"
+                      }`}
+                    >
+                      <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
+                      <td className="px-2 py-2 font-mono text-white">{item.code}</td>
+                      <td className="px-2 py-2">
+                        <div className="font-semibold text-white">{item.name}</div>
+                        <div className="text-[10px] text-vin-muted">ĐVT: {item.unit || "-"}</div>
+                      </td>
+                      <td className="px-2 py-2 text-center"><StatusBadge active={item.isActive} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )
           )}
         </div>
       </section>
@@ -352,13 +385,13 @@ export default function CatalogsPage() {
                 </button>
               </div>
             </div>
-            <form 
+            <form
               key={`${activeTab}-${mode}-${selectedId || 'new'}`}
-              onSubmit={mode === "create" ? handleCreateSubmit : handleUpdateSubmit} 
+              onSubmit={mode === "create" ? handleCreateSubmit : handleUpdateSubmit}
               className="min-h-0 flex-1 space-y-4 overflow-auto p-4 scr-dark"
             >
               {(() => {
-                const item = mode === "view" && selectedId 
+                const item = mode === "view" && selectedId
                   ? (activeTab === "services" ? services.find(x => x.id === selectedId) :
                      activeTab === "procedures" ? procedures.find(x => x.id === selectedId) :
                      activeTab === "icds" ? icds.find(x => x.id === selectedId) :

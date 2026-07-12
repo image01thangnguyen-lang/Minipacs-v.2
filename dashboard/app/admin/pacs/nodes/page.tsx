@@ -27,6 +27,7 @@ import {
   getNodeReferencesAction
 } from "./actions";
 import { dicomNodeSchema, type DicomNodeInput } from "./schema";
+import { NodesDataGrid } from "./AdminNodesGrid";
 
 type DicomNodeView = {
   id: string;
@@ -107,6 +108,8 @@ export default function DicomNodesPage() {
     document.title = "Quản lý Máy Chụp (DICOM Nodes)";
     loadNodes();
   }, []);
+
+  const enableSharedUI = process.env.NEXT_PUBLIC_ENABLE_ADMIN_NODES_SHARED_UI === "true";
 
   const handleEdit = (node: DicomNodeView) => {
     setEditingNode(node);
@@ -254,127 +257,139 @@ export default function DicomNodesPage() {
         </div>
 
         <div className="min-h-0 flex-1 overflow-auto scr-dark">
-          <table className="w-full text-left">
-            <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
-              <tr>
-                <th className="px-4 py-3">Tên & Alias</th>
-                <th className="px-3 py-3">Mạng (IP:Port)</th>
-                <th className="px-3 py-3 text-center">AE Title</th>
-                <th className="px-3 py-3 text-center">Kết nối</th>
-                <th className="px-4 py-3 text-right">Tác vụ</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-vin-border/45 text-[11px]">
-              {isLoading ? (
+          {enableSharedUI ? (
+            <NodesDataGrid
+              rows={nodes}
+              isLoading={isLoading}
+              busyNodeId={busyNodeId}
+              editingNodeId={editingNode?.id}
+              onPing={runPing}
+              onEdit={handleEdit}
+              onDelete={runDelete}
+            />
+          ) : (
+            <table className="w-full text-left">
+              <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-vin-muted">
-                    <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
-                    Đang tải danh sách thiết bị...
-                  </td>
+                  <th className="px-4 py-3">Tên & Alias</th>
+                  <th className="px-3 py-3">Mạng (IP:Port)</th>
+                  <th className="px-3 py-3 text-center">AE Title</th>
+                  <th className="px-3 py-3 text-center">Kết nối</th>
+                  <th className="px-4 py-3 text-right">Tác vụ</th>
                 </tr>
-              ) : nodes.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-12 text-center text-vin-muted">Chưa có máy chụp nào được khai báo.</td>
-                </tr>
-              ) : (
-                nodes.map((node) => {
-                  const isBusy = busyNodeId === node.id;
-                  return (
-                    <tr 
-                      key={node.id} 
-                      className={`transition ${editingNode?.id === node.id ? 'bg-vin-accentSoft/10 border-l-2 border-l-vin-accent' : 'odd:bg-vin-table even:bg-vin-tableAlt hover:bg-vin-tableHover'}`}
-                    >
-                      <td className="px-4 py-3">
-                        <div className="font-semibold text-white">{node.name}</div>
-                        <div className="mt-1 flex items-center gap-1.5 font-mono text-[10px] text-vin-muted">
-                          <span className="rounded bg-vin-panel px-1.5 py-0.5 border border-vin-border">{node.modality}</span>
-                          {!node.isNonDicom && <span>{node.orthancAlias}</span>}
-                          {!node.isActive && (
-                            <span className="rounded bg-red-500/20 px-1 text-red-300">Tắt</span>
+              </thead>
+              <tbody className="divide-y divide-vin-border/45 text-[11px]">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-vin-muted">
+                      <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin text-vin-accent" />
+                      Đang tải danh sách thiết bị...
+                    </td>
+                  </tr>
+                ) : nodes.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-vin-muted">Chưa có máy chụp nào được khai báo.</td>
+                  </tr>
+                ) : (
+                  nodes.map((node) => {
+                    const isBusy = busyNodeId === node.id;
+                    return (
+                      <tr
+                        key={node.id}
+                        className={`transition ${editingNode?.id === node.id ? 'bg-vin-accentSoft/10 border-l-2 border-l-vin-accent' : 'odd:bg-vin-table even:bg-vin-tableAlt hover:bg-vin-tableHover'}`}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-white">{node.name}</div>
+                          <div className="mt-1 flex items-center gap-1.5 font-mono text-[10px] text-vin-muted">
+                            <span className="rounded bg-vin-panel px-1.5 py-0.5 border border-vin-border">{node.modality}</span>
+                            {!node.isNonDicom && <span>{node.orthancAlias}</span>}
+                            {!node.isActive && (
+                              <span className="rounded bg-red-500/20 px-1 text-red-300">Tắt</span>
+                            )}
+                            {node.isNonDicom && (
+                              <span className="rounded bg-orange-500/20 px-1 text-orange-300">Non-DICOM</span>
+                            )}
+                          </div>
+                          {node.facility && (
+                            <div className="mt-1 text-[10px] text-vin-muted flex items-center gap-1">
+                              <span className="font-semibold">{node.facility.name}</span>
+                            </div>
                           )}
-                          {node.isNonDicom && (
-                            <span className="rounded bg-orange-500/20 px-1 text-orange-300">Non-DICOM</span>
+                        </td>
+                        <td className="px-3 py-3 font-mono text-vin-text2">
+                          {node.isNonDicom ? (
+                            <span className="italic text-vin-faint">Không áp dụng</span>
+                          ) : (
+                            <>{node.ipAddress}:{node.port}</>
                           )}
-                        </div>
-                        {node.facility && (
-                          <div className="mt-1 text-[10px] text-vin-muted flex items-center gap-1">
-                            <span className="font-semibold">{node.facility.name}</span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-3 py-3 font-mono text-vin-text2">
-                        {node.isNonDicom ? (
-                          <span className="italic text-vin-faint">Không áp dụng</span>
-                        ) : (
-                          <>{node.ipAddress}:{node.port}</>
-                        )}
-                        <div className="mt-0.5 font-sans text-[10px] text-vin-muted">{node.room || "-"}</div>
-                      </td>
-                      <td className="px-3 py-3 text-center">
-                        {node.isNonDicom ? (
-                          <span className="text-[10px] italic text-vin-faint">-</span>
-                        ) : (
-                          <span className="font-mono font-bold text-vin-accent">{node.aeTitle}</span>
-                        )}
-                      </td>
-                      <td className="px-3 py-3 text-center">
-                        {node.isNonDicom ? (
-                          <span className="text-[10px] italic text-vin-faint">-</span>
-                        ) : node.lastEchoStatus === "OK" ? (
-                          <div className="flex flex-col items-center justify-center">
-                            <span className="flex items-center gap-1 rounded bg-vin-status-approved-bg/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
-                              <Wifi className="h-3 w-3" /> OK
-                            </span>
-                            <span className="mt-1 text-[9px] text-vin-faint">
-                              {node.lastEchoAt ? new Date(node.lastEchoAt).toLocaleString('vi-VN') : ""}
-                            </span>
-                          </div>
-                        ) : node.lastEchoStatus === "FAILED" ? (
-                          <div className="flex flex-col items-center justify-center">
-                            <span className="flex items-center gap-1 rounded bg-vin-status-danger-bg/20 px-2 py-0.5 text-[10px] font-bold text-red-400">
-                              <AlertCircle className="h-3 w-3" /> FAILED
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-vin-muted">Chưa test</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex justify-end gap-1.5">
-                          {!node.isNonDicom && (
+                          <div className="mt-0.5 font-sans text-[10px] text-vin-muted">{node.room || "-"}</div>
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          {node.isNonDicom ? (
+                            <span className="text-[10px] italic text-vin-faint">-</span>
+                          ) : (
+                            <span className="font-mono font-bold text-vin-accent">{node.aeTitle}</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          {node.isNonDicom ? (
+                            <span className="text-[10px] italic text-vin-faint">-</span>
+                          ) : node.lastEchoStatus === "OK" ? (
+                            <div className="flex flex-col items-center justify-center">
+                              <span className="flex items-center gap-1 rounded bg-vin-status-approved-bg/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                                <Wifi className="h-3 w-3" /> OK
+                              </span>
+                              <span className="mt-1 text-[9px] text-vin-faint">
+                                {node.lastEchoAt ? new Date(node.lastEchoAt).toLocaleString('vi-VN') : ""}
+                              </span>
+                            </div>
+                          ) : node.lastEchoStatus === "FAILED" ? (
+                            <div className="flex flex-col items-center justify-center">
+                              <span className="flex items-center gap-1 rounded bg-vin-status-danger-bg/20 px-2 py-0.5 text-[10px] font-bold text-red-400">
+                                <AlertCircle className="h-3 w-3" /> FAILED
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-vin-muted">Chưa test</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex justify-end gap-1.5">
+                            {!node.isNonDicom && (
+                              <button
+                                title="Kiểm tra kết nối (C-Echo)"
+                                disabled={isBusy}
+                                onClick={() => runPing(node.id)}
+                                className="flex h-7 w-7 items-center justify-center rounded border border-vin-border bg-vin-panel text-vin-accent transition hover:border-vin-accent hover:bg-vin-accent/10 disabled:opacity-40"
+                              >
+                                {isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Network className="h-3.5 w-3.5" />}
+                              </button>
+                            )}
                             <button
-                              title="Kiểm tra kết nối (C-Echo)"
+                              title="Sửa cấu hình"
                               disabled={isBusy}
-                              onClick={() => runPing(node.id)}
-                              className="flex h-7 w-7 items-center justify-center rounded border border-vin-border bg-vin-panel text-vin-accent transition hover:border-vin-accent hover:bg-vin-accent/10 disabled:opacity-40"
+                              onClick={() => handleEdit(node)}
+                              className="flex h-7 w-7 items-center justify-center rounded border border-vin-border bg-vin-panel text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
                             >
-                              {isBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Network className="h-3.5 w-3.5" />}
+                              Sửa
                             </button>
-                          )}
-                          <button
-                            title="Sửa cấu hình"
-                            disabled={isBusy}
-                            onClick={() => handleEdit(node)}
-                            className="flex h-7 w-7 items-center justify-center rounded border border-vin-border bg-vin-panel text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
-                          >
-                            Sửa
-                          </button>
-                          <button
-                            title="Xóa máy chụp"
-                            disabled={isBusy}
-                            onClick={() => runDelete(node.id)}
-                            className="flex h-7 w-7 items-center justify-center rounded border border-vin-status-danger-bg/50 bg-vin-status-danger-bg/10 text-red-300 transition hover:bg-vin-status-danger-bg/30 disabled:opacity-40"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                            <button
+                              title="Xóa máy chụp"
+                              disabled={isBusy}
+                              onClick={() => runDelete(node.id)}
+                              className="flex h-7 w-7 items-center justify-center rounded border border-vin-status-danger-bg/50 bg-vin-status-danger-bg/10 text-red-300 transition hover:bg-vin-status-danger-bg/30 disabled:opacity-40"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </section>
 
