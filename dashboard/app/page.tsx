@@ -909,11 +909,11 @@ function DashboardPageContent() {
     />
   );
 
-  // The seven-region doctor workspace is now the production UI.  Keeping it
-  // behind an opt-in flag caused deployments with a missing environment value
-  // to silently fall back to the old two-pane screen.  It can still be
-  // explicitly disabled for emergency rollback only.
-  const isPhase4 = process.env.NEXT_PUBLIC_PHASE4_WORKSPACE !== 'false';
+  // The seven-region doctor workspace is the only production doctor screen.
+  // Do not gate this render path with a NEXT_PUBLIC build-time flag: stale
+  // Docker args previously baked `false` into the client bundle and silently
+  // brought the retired two-pane UI back after every rebuild.
+  const isPhase4 = true;
   const isReportPanelEnabled = process.env.NEXT_PUBLIC_ENABLE_REPORT_PANEL === 'true';
 
   if (isPhase4) {

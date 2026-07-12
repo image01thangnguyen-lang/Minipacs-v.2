@@ -55,7 +55,7 @@ services:
     build:
       context: ./dashboard
       args:
-        NEXT_PUBLIC_PHASE4_WORKSPACE: ${NEXT_PUBLIC_PHASE4_WORKSPACE:-false}
+        NEXT_PUBLIC_PHASE4_WORKSPACE: "true"
         NEXT_PUBLIC_ENABLE_REPORT_PANEL: ${NEXT_PUBLIC_ENABLE_REPORT_PANEL:-false}
     restart: always
     command: sh -c "./node_modules/.bin/prisma db push --accept-data-loss && node prisma/seed.js && npm start"
@@ -63,7 +63,7 @@ services:
       - NEXT_PUBLIC_OHIF_URL=/viewer
       # Also expose the selected values for diagnostics. The effective client
       # flags are baked by the matching build.args above.
-      - NEXT_PUBLIC_PHASE4_WORKSPACE=${NEXT_PUBLIC_PHASE4_WORKSPACE:-false}
+      - NEXT_PUBLIC_PHASE4_WORKSPACE=true
       - NEXT_PUBLIC_ENABLE_REPORT_PANEL=${NEXT_PUBLIC_ENABLE_REPORT_PANEL:-false}
       - AUTH_SECRET=${AUTH_SECRET}
       - AUTH_TRUST_HOST=true
