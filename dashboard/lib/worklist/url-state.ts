@@ -8,7 +8,7 @@ export type DatePreset = z.infer<typeof DatePresetSchema>;
 
 export const WorklistUrlStateSchema = z.object({
   q: z.string().trim().max(200).optional(),
-  datePreset: DatePresetSchema.default("TODAY"),
+  datePreset: DatePresetSchema.default("ALL"),
   modality: z.string().trim().min(1).max(128).default("ALL"),
   workflowStatus: z.string().trim().min(1).max(128).default("ALL"),
   stationAe: z.string().trim().min(1).max(128).default("ALL"),
@@ -21,7 +21,10 @@ export type WorklistUrlState = z.infer<typeof WorklistUrlStateSchema>;
 
 export const DEFAULT_URL_STATE: WorklistUrlState = {
   q: "",
-  datePreset: "TODAY",
+  // A diagnostic workstation must show existing studies on first open. Users
+  // can still narrow to Today from Region 2; defaulting to TODAY made valid
+  // older Orthanc studies look like a broken/empty PACS.
+  datePreset: "ALL",
   modality: "ALL",
   workflowStatus: "ALL",
   stationAe: "ALL",

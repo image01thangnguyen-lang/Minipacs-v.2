@@ -945,7 +945,7 @@ function DashboardPageContent() {
     return (
       <AppShell contentClassName="flex w-full overflow-hidden bg-vin-root font-sans text-vin-text" contentOverflow="hidden">
         <DoctorWorkspace
-          switcher={<WorkspaceSwitcher />}
+          switcher={<WorkspaceSwitcher role={userRole} permissions={permissions} />}
           searchBar={<WorkspaceSearchBar value={localSearchQuery} datePreset={state.datePreset} pending={isPending} onChange={value => { setLocalSearchQuery(value); setCurrentPage(1); }} onCommit={commitSearchNow} onDateChange={datePreset => { setFilters({ datePreset }); setCurrentPage(1); }} />}
           facets={<WorkQueueFacets status={state.workflowStatus} modality={state.modality} statuses={workspaceStatuses} modalities={workspaceModalities} onStatusChange={workflowStatus => { setFilters({ workflowStatus }); setCurrentPage(1); }} onModalityChange={modality => { setFilters({ modality }); setCurrentPage(1); }} onClear={() => setFilters({ workflowStatus: "ALL", modality: "ALL" })} />}
           scopeTree={<FacilityScopeTree facilities={workspaceFacilities} value={state.facilityUnitId} onChange={facilityUnitId => { setFilters({ facilityUnitId }); setCurrentPage(1); }} />}
