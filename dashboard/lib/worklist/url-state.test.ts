@@ -82,9 +82,15 @@ async function runTests() {
   const query = mapUrlStateToQuery({ ...DEFAULT_URL_STATE, q: " Alice ", modality: "CT" });
   assert.strictEqual(query.q, "Alice");
   assert.deepStrictEqual(query.modality, ["CT"]);
+
+  const facilityState = parseWorklistUrlState(new URLSearchParams("facilityUnitId=dept-radiology&datePreset=TODAY"));
+  assert.equal(facilityState.facilityUnitId, "dept-radiology");
+  const facilityQuery = mapUrlStateToQuery(facilityState, "Asia/Ho_Chi_Minh");
+  assert.deepEqual(facilityQuery.facilityUnitIds, ["dept-radiology"]);
 }
 
 runTests().catch((error) => {
   console.error(error);
   process.exit(1);
 });
+

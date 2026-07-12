@@ -14,6 +14,7 @@ export const WorklistUrlStateSchema = z.object({
   stationAe: z.string().trim().min(1).max(128).default("ALL"),
   assignedDoctor: z.string().trim().min(1).max(128).default("ALL"),
   hisStatus: z.string().trim().min(1).max(128).default("ALL"),
+  facilityUnitId: z.string().trim().min(1).max(128).default("ALL"),
 }).strict();
 
 export type WorklistUrlState = z.infer<typeof WorklistUrlStateSchema>;
@@ -26,6 +27,7 @@ export const DEFAULT_URL_STATE: WorklistUrlState = {
   stationAe: "ALL",
   assignedDoctor: "ALL",
   hisStatus: "ALL",
+  facilityUnitId: "ALL",
 };
 
 /**
@@ -127,6 +129,7 @@ export function parseWorklistUrlState(params: Pick<URLSearchParams, "get">): Wor
     stationAe: parseField(z.string().trim().min(1).max(128), "stationAe", "ALL"),
     assignedDoctor: parseField(z.string().trim().min(1).max(128), "assignedDoctor", "ALL"),
     hisStatus: parseField(z.string().trim().min(1).max(128), "hisStatus", "ALL"),
+    facilityUnitId: parseField(z.string().trim().min(1).max(128), "facilityUnitId", "ALL"),
   };
 }
 
@@ -156,6 +159,9 @@ export function mapUrlStateToQuery(state: WorklistUrlState, timezone: string = "
 
   if (state.hisStatus && state.hisStatus !== "ALL") {
     query.hisStatuses = [state.hisStatus];
+  }
+  if (state.facilityUnitId && state.facilityUnitId !== "ALL") {
+    query.facilityUnitIds = [state.facilityUnitId];
   }
 
   return WorklistQueryRequestSchema.parse(query);

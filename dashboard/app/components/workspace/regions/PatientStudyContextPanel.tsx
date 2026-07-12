@@ -57,7 +57,7 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
   return (
     <div className="flex h-full flex-col bg-vin-panel">
       <div className="flex h-12 flex-none items-center border-b border-vin-border px-4">
-        <h2 className="text-sm font-bold text-vin-text2">Patient &amp; Study Context</h2>
+        <h2 className="text-sm font-bold text-vin-text2">Thông tin bệnh nhân &amp; ca chụp</h2>
       </div>
 
       {state.kind === "idle" && (

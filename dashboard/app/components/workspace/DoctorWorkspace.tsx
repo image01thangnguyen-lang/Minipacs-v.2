@@ -31,7 +31,7 @@ export function DoctorWorkspace({
   return (
     <main className="h-full min-h-0 w-full overflow-auto bg-vin-root font-sans text-vin-text" aria-label="Doctor workspace">
       <div 
-        className="doctor-workspace-grid h-full min-h-[640px] min-w-[1024px] w-full"
+        className="doctor-workspace-grid h-full min-h-[640px] min-w-[1180px] w-full"
         style={layoutPrefs ? {
           ...(layoutPrefs.leftWidth !== undefined && { "--workspace-left-width": `${layoutPrefs.leftWidth}px` }),
           ...(layoutPrefs.rightWidth !== undefined && { "--workspace-right-width": `${layoutPrefs.rightWidth}px` }),

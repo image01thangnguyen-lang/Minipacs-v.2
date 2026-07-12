@@ -293,6 +293,8 @@ function DashboardPageContent() {
           AssignedDoctorName: row.assignedDoctorName,
           hisSyncStatus: row.hisSyncStatus,
           stationAeTitle: row.stationAeTitle,
+          performingUnitId: row.performingUnitId,
+          facilityName: row.facilityName,
           machineName: row.machineName,
           isNonDicom: row.isNonDicom,
           nonDicomExamId: row.nonDicomExamId,
@@ -509,6 +511,10 @@ function DashboardPageContent() {
       list = list.filter(study => !study.hisSyncStatus && !study.hisResultStatus);
     } else if (state.hisStatus && state.hisStatus !== "ALL") {
       list = list.filter(study => study.hisSyncStatus === state.hisStatus || study.hisResultStatus === state.hisStatus);
+    }
+
+    if (state.facilityUnitId && state.facilityUnitId !== "ALL") {
+      list = list.filter(study => (study.performingUnitId || study.facilityUnitId || study.facilityId) === state.facilityUnitId);
     }
 
     if (state.datePreset !== "ALL") {
@@ -903,29 +909,59 @@ function DashboardPageContent() {
     />
   );
 
-  const isPhase4 = process.env.NEXT_PUBLIC_PHASE4_WORKSPACE === 'true';
+  // The seven-region doctor workspace is now the production UI.  Keeping it
+  // behind an opt-in flag caused deployments with a missing environment value
+  // to silently fall back to the old two-pane screen.  It can still be
+  // explicitly disabled for emergency rollback only.
+  const isPhase4 = process.env.NEXT_PUBLIC_PHASE4_WORKSPACE !== 'false';
   const isReportPanelEnabled = process.env.NEXT_PUBLIC_ENABLE_REPORT_PANEL === 'true';
 
   if (isPhase4) {
-    const selectedStudyData = studyUid ? filteredStudies.find(s => s.id === studyUid) : null;
+    const statusCounts = new Map<string, number>();
+    const modalityCounts = new Map<string, number>();
+    const facilityCounts = new Map<string, { name: string; count: number }>();
+    studies.forEach((study: any) => {
+      const status = study.WorkflowStatus || "READY_TO_READ";
+      statusCounts.set(status, (statusCounts.get(status) || 0) + 1);
+      const modality = study.EnrichedModality || study.MainDicomTags?.Modality;
+      if (modality) modalityCounts.set(modality, (modalityCounts.get(modality) || 0) + 1);
+      const id = study.performingUnitId || study.facilityUnitId || study.facilityId;
+      if (id) { const old = facilityCounts.get(id); facilityCounts.set(id, { name: study.facilityName || id, count: (old?.count || 0) + 1 }); }
+    });
+    const workspaceStatuses = [{ value: "ALL", label: "Tất cả", count: studies.length }, ...workflowStatusSelectOptions.filter(o => o.value !== "ALL").map(o => ({ ...o, count: statusCounts.get(o.value) || 0 })).filter(o => o.count > 0)];
+    const workspaceModalities = [{ value: "ALL", label: "Tất cả" }, ...Array.from(modalityCounts.keys()).sort().map(value => ({ value, label: value, count: modalityCounts.get(value) }))];
+    const workspaceFacilities = Array.from(facilityCounts.entries()).map(([id, item]) => ({ id, ...item })).sort((a, b) => a.name.localeCompare(b.name, "vi"));
+    const selectedStudyData = selectedStudy;
     const studyContext = selectedStudyData ? {
-      patientName: selectedStudyData.patientName,
-      patientId: selectedStudyData.patientId,
-      studyDate: selectedStudyData.studyDate,
-      studyDescription: selectedStudyData.studyDescription,
-      modality: selectedStudyData.modality,
-      status: selectedStudyData.status,
-      accessionNumber: selectedStudyData.accessionNumber,
+      patientName: fmtName(selectedStudyData.PatientMainDicomTags?.PatientName),
+      patientId: fmtText(selectedStudyData.PatientMainDicomTags?.PatientID),
+      studyDate: fmtDateTime(selectedStudyData.MainDicomTags?.StudyDate, selectedStudyData.MainDicomTags?.StudyTime),
+      studyDescription: fmtText(selectedStudyData.MainDicomTags?.StudyDescription),
+      modality: selectedStudyData.EnrichedModality || selectedStudyData.MainDicomTags?.Modality,
+      status: selectedStudyData.WorkflowStatus,
+      accessionNumber: selectedStudyData.MainDicomTags?.AccessionNumber,
     } : null;
 
     return (
       <AppShell contentClassName="flex w-full overflow-hidden bg-vin-root font-sans text-vin-text" contentOverflow="hidden">
         <DoctorWorkspace
           switcher={<WorkspaceSwitcher />}
-          searchBar={<WorkspaceSearchBar />}
-          facets={<WorkQueueFacets />}
-          scopeTree={<FacilityScopeTree />}
-          grid={sharedGrid}
+          searchBar={<WorkspaceSearchBar value={localSearchQuery} datePreset={state.datePreset} pending={isPending} onChange={value => { setLocalSearchQuery(value); setCurrentPage(1); }} onCommit={commitSearchNow} onDateChange={datePreset => { setFilters({ datePreset }); setCurrentPage(1); }} />}
+          facets={<WorkQueueFacets status={state.workflowStatus} modality={state.modality} statuses={workspaceStatuses} modalities={workspaceModalities} onStatusChange={workflowStatus => { setFilters({ workflowStatus }); setCurrentPage(1); }} onModalityChange={modality => { setFilters({ modality }); setCurrentPage(1); }} onClear={() => setFilters({ workflowStatus: "ALL", modality: "ALL" })} />}
+          scopeTree={<FacilityScopeTree facilities={workspaceFacilities} value={state.facilityUnitId} onChange={facilityUnitId => { setFilters({ facilityUnitId }); setCurrentPage(1); }} />}
+          grid={<>
+            <div className="flex h-10 flex-none items-center justify-between border-b border-vin-border bg-vin-panel2 px-3">
+              <div>
+                <h2 className="text-[11px] font-bold uppercase tracking-wider text-vin-text2">Danh sách ca chụp</h2>
+                <p className="text-[9px] text-vin-muted">{filteredStudies.length} ca · Trang {currentPage}/{totalPages}</p>
+              </div>
+              <div className="flex items-center gap-1" aria-label="Phân trang">
+                <button type="button" aria-label="Trang trước" onClick={() => setCurrentPage(page => Math.max(1, page - 1))} disabled={currentPage === 1} className="rounded border border-vin-border p-1 text-vin-muted hover:border-vin-accent hover:text-white disabled:opacity-30"><ChevronLeft className="h-3.5 w-3.5" /></button>
+                <button type="button" aria-label="Trang sau" onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))} disabled={currentPage >= totalPages} className="rounded border border-vin-border p-1 text-vin-muted hover:border-vin-accent hover:text-white disabled:opacity-30"><ChevronRight className="h-3.5 w-3.5" /></button>
+              </div>
+            </div>
+            <div className="min-h-0 flex-1">{sharedGrid}</div>
+          </>}
           relatedPanel={<RelatedStudiesPanel anchorStudyUid={studyUid} selectedUid={studyUid} onSelect={handleSelect} onDoubleClick={openViewer} />}
           contextPanel={<PatientStudyContextPanel studyUid={studyUid} />}
           reportPanel={isReportPanelEnabled && studyUid ? <ReportWorkspacePanel studyUid={studyUid} studyContext={studyContext} /> : undefined}
