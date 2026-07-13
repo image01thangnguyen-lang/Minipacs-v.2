@@ -4,6 +4,12 @@ export const CAPABILITIES = [
   "shared-list-ui",
   "doctor-workspace",
   "observability",
+  "command-center-write",
+  "quality-workflows",
+  "evaluator-workers",
+  "admin-policy-editors",
+  "clinical-governance",
+  "enterprise-interop",
 ] as const;
 export type ReleaseCapability = (typeof CAPABILITIES)[number];
 

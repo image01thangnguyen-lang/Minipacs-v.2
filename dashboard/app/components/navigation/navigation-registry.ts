@@ -19,7 +19,18 @@ export const navigationRegistry: NavigationNode[] = [
     label: "Báo cáo & điều hành",
     children: [
       { type: "item", id: "command-center", label: "Trung tâm điều hành", href: "/command-center", iconKey: "Activity", permission: "commandCenter.read" },
-      { type: "item", id: "statistics", label: "Thống kê", href: "/statistics", iconKey: "BarChart3", permission: "statistics.read" },
+      {
+        type: "group",
+        id: "statistics-group",
+        label: "Thống kê & Phân tích",
+        children: [
+          { type: "item", id: "statistics", label: "Tổng quan", href: "/statistics", iconKey: "BarChart3", permission: "statistics.read", match: "exact" },
+          { type: "item", id: "statistics-sla", label: "SLA & Thời gian (TAT)", href: "/statistics/sla", iconKey: "Timer", permission: "analytics.read" },
+          { type: "item", id: "statistics-workload", label: "Khối lượng công việc", href: "/statistics/workload", iconKey: "UserCog", permission: "analytics.doctor" },
+          { type: "item", id: "statistics-modalities", label: "Công suất thiết bị", href: "/statistics/modalities", iconKey: "ActivitySquare", permission: "analytics.read" },
+        ]
+      },
+      { type: "item", id: "quality", label: "Trung tâm chất lượng", href: "/quality", iconKey: "Award", permission: "quality.read" },
       { type: "item", id: "report-templates", label: "Mẫu nội dung báo cáo", href: "/settings/report-templates", iconKey: "FileText", permission: "templates.manage" },
       { type: "item", id: "print-templates", label: "Mẫu phiếu in", href: "/admin/templates", iconKey: "Printer", permission: "admin.catalogs" },
     ]
@@ -35,6 +46,9 @@ export const navigationRegistry: NavigationNode[] = [
       { type: "item", id: "pacs-nodes", label: "Máy chụp & PACS", href: "/admin/pacs/nodes", iconKey: "Settings", permission: "pacs.manage" },
       { type: "item", id: "his", label: "Tích hợp HIS", href: "/admin/his", iconKey: "Network", permission: "his.manage" },
       { type: "item", id: "permission-matrix", label: "Ma trận quyền theo máy", href: "/admin/permissions/matrix", iconKey: "ShieldAlert", permission: "admin.permissions" },
+      { type: "item", id: "sla-policies", label: "Chính sách SLA/TAT", href: "/admin/sla-policies", iconKey: "TimerReset", permission: "thresholds.read" },
+      { type: "item", id: "control-thresholds", label: "Ngưỡng kiểm soát", href: "/admin/control-thresholds", iconKey: "Sliders", permission: "thresholds.read" },
+      { type: "item", id: "alerts", label: "Quy tắc cảnh báo", href: "/admin/alerts", iconKey: "BellRing", permission: "alerts.read" },
     ]
   },
   {

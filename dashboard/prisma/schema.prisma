@@ -55,7 +55,7 @@ model Report {
   recommendation String? @db.Text
 
   // OCC (Optimistic Concurrency Control)
-  revision       Int     @default(0)
+  revision Int @default(0)
 
   // Phase 1: additional clinical fields
   technique       String? @db.Text
@@ -89,6 +89,8 @@ model Report {
 
   // Phase 11
   criticalResults CriticalResult[]
+  peerReviews     PeerReview[]
+  qualityEvents   QualityEvent[]
 
   @@map("reports")
 }
@@ -124,17 +126,17 @@ model User {
   viewerAuditLogs               ViewerAuditLog[]            @relation("ViewerAuditLogActor")
 
   // Phase 7
-  shareLinksCreated             ShareLink[]               @relation("ShareLinksCreated")
-  shareLinksRevoked             ShareLink[]               @relation("ShareLinksRevoked")
-  consultationsCreated          Consultation[]            @relation("ConsultationsCreated")
-  consultationsHosted           Consultation[]            @relation("ConsultationsHosted")
-  consultationsAssigned         Consultation[]            @relation("ConsultationsAssigned")
-  consultationParticipants      ConsultationParticipant[] @relation("ConsultationParticipants")
-  consultationInvitations       ConsultationParticipant[] @relation("ConsultationInvitations")
-  consultationMessages          ConsultationMessage[]     @relation("ConsultationMessages")
+  shareLinksCreated        ShareLink[]               @relation("ShareLinksCreated")
+  shareLinksRevoked        ShareLink[]               @relation("ShareLinksRevoked")
+  consultationsCreated     Consultation[]            @relation("ConsultationsCreated")
+  consultationsHosted      Consultation[]            @relation("ConsultationsHosted")
+  consultationsAssigned    Consultation[]            @relation("ConsultationsAssigned")
+  consultationParticipants ConsultationParticipant[] @relation("ConsultationParticipants")
+  consultationInvitations  ConsultationParticipant[] @relation("ConsultationInvitations")
+  consultationMessages     ConsultationMessage[]     @relation("ConsultationMessages")
 
-  secondReadsRequested          SecondRead[]              @relation("SecondReadsRequested")
-  secondReadsAssigned           SecondRead[]              @relation("SecondReadsAssigned")
+  secondReadsRequested          SecondRead[]           @relation("SecondReadsRequested")
+  secondReadsAssigned           SecondRead[]           @relation("SecondReadsAssigned")
   // Phase 9
   systemHealthCheckRuns         SystemHealthCheckRun[]
   securityAuditRuns             SecurityAuditRun[]
@@ -170,6 +172,17 @@ model User {
   resolvedAlertEvents         AlertEvent[]             @relation("AlertEventResolvedBy")
   slaPoliciesAsDoctor         SlaPolicy[]              @relation("SlaPolicyDoctor")
   createdThresholdPolicies    ControlThresholdPolicy[] @relation("ControlThresholdPolicyCreator")
+
+  // Phase 11 relations
+  peerReviewsAsReviewer       PeerReview[]       @relation("PeerReviewReviewer")
+  peerReviewsAsOriginalDoctor PeerReview[]       @relation("PeerReviewOriginalDoctor")
+  createdQualityEvents        QualityEvent[]     @relation("QualityEventCreator")
+  assignedQualityEvents       QualityEvent[]     @relation("QualityEventAssignee")
+  acknowledgedQualityEvents   QualityEvent[]     @relation("QualityEventAcknowledger")
+  resolvedQualityEvents       QualityEvent[]     @relation("QualityEventResolver")
+  createdQcIssues             QcIssue[]          @relation("QcIssueCreator")
+  resolvedQcIssues            QcIssue[]          @relation("QcIssueResolver")
+  resolvedDataQualityIssues   DataQualityIssue[] @relation("DataQualityIssueResolver")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -348,6 +361,9 @@ model WorklistOrder {
   hisLastError      String?
   hisPayloadJson    String?   @db.Text
 
+  // Phase 11
+  qualityEvents QualityEvent[]
+
   @@index([scheduledDate])
   @@index([patientId])
   @@index([orderStatus])
@@ -445,6 +461,9 @@ model ImagingStudy {
   shareLinks    ShareLink[]
   consultations Consultation[]
   secondReads   SecondRead[]
+
+  // Phase 11
+  qualityEvents QualityEvent[]
 
   @@index([status])
   @@index([patientId])
@@ -793,6 +812,9 @@ model DicomNode {
   slaPolicies            SlaPolicy[]                      @relation("SlaPolicyMachine")
 
   accessScopeGrants AccessScopeGrant[]
+
+  // Phase 11
+  qcIssues QcIssue[]
 
   @@index([facilityId])
   @@index([defaultFolderId])
@@ -1249,6 +1271,10 @@ model NonDicomExam {
   shareLinks      ShareLink[]
   consultations   Consultation[]
 
+  // Phase 11
+  qualityEvents QualityEvent[]
+  qcIssues      QcIssue[]
+
   @@index([status])
   @@index([machineId])
   @@index([assignedDoctorId])
@@ -1288,6 +1314,10 @@ model NonDicomMedia {
   voidReason        String?      @db.Text
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
+
+  // Phase 11
+  qualityEvents QualityEvent[]
+  qcIssues      QcIssue[]
 
   @@index([examId])
   @@index([mediaType])
@@ -1482,21 +1512,21 @@ model ConsultationMessage {
 }
 
 model SecondRead {
-  id                   String        @id @default(uuid())
-  studyInstanceUid     String
-  imagingStudyId       String?
-  imagingStudy         ImagingStudy? @relation(fields: [imagingStudyId], references: [id])
-  status               String        @default("REQUESTED") // REQUESTED | IN_PROGRESS | COMPLETED | CANCELLED
-  requestedByUserId    String
-  requestedByUser      User          @relation("SecondReadsRequested", fields: [requestedByUserId], references: [id])
-  assignedToUserId     String?
-  assignedToUser       User?         @relation("SecondReadsAssigned", fields: [assignedToUserId], references: [id])
-  reason               String?       @db.Text
-  notes                String?       @db.Text
-  completedAt          DateTime?
-  cancelledAt          DateTime?
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
+  id                String        @id @default(uuid())
+  studyInstanceUid  String
+  imagingStudyId    String?
+  imagingStudy      ImagingStudy? @relation(fields: [imagingStudyId], references: [id])
+  status            String        @default("REQUESTED") // REQUESTED | IN_PROGRESS | COMPLETED | CANCELLED
+  requestedByUserId String
+  requestedByUser   User          @relation("SecondReadsRequested", fields: [requestedByUserId], references: [id])
+  assignedToUserId  String?
+  assignedToUser    User?         @relation("SecondReadsAssigned", fields: [assignedToUserId], references: [id])
+  reason            String?       @db.Text
+  notes             String?       @db.Text
+  completedAt       DateTime?
+  cancelledAt       DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   @@index([studyInstanceUid])
   @@index([imagingStudyId])
@@ -2569,13 +2599,383 @@ model AccessScopeGrant {
 }
 
 model WorkspaceUserPreference {
-  id                   String   @id @default(uuid())
-  userId               String   @unique
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  schemaVersion        Int      @default(1)
-  preferencesJson      String   @db.Text
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  schemaVersion   Int      @default(1)
+  preferencesJson String   @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@map("workspace_user_preferences")
+}
+
+model ThresholdEvaluationResult {
+  id               String   @id @default(uuid())
+  policyId         String?
+  metricKey        String
+  groupKey         String
+  status           String
+  actualValue      Float?
+  thresholdValue   Float?
+  unit             String?
+  entityType       String?
+  entityId         String?
+  studyInstanceUid String?
+  message          String?  @db.Text
+  metadataJson     String?  @db.Text
+  evaluatedAt      DateTime @default(now())
+
+  @@index([policyId])
+  @@index([metricKey])
+  @@index([status])
+  @@index([evaluatedAt])
+  @@map("threshold_evaluation_results")
+}
+
+model QualityEvent {
+  id                   String         @id @default(uuid())
+  eventType            String
+  status               String
+  severity             String
+  studyInstanceUid     String?
+  imagingStudy         ImagingStudy?  @relation(fields: [studyInstanceUid], references: [studyInstanceUid])
+  reportId             String?
+  report               Report?        @relation(fields: [reportId], references: [id])
+  worklistOrderId      String?
+  worklistOrder        WorklistOrder? @relation(fields: [worklistOrderId], references: [id])
+  nonDicomExamId       String?
+  nonDicomExam         NonDicomExam?  @relation(fields: [nonDicomExamId], references: [id])
+  mediaId              String?
+  media                NonDicomMedia? @relation(fields: [mediaId], references: [id])
+  assignedToUserId     String?
+  assignedToUser       User?          @relation("QualityEventAssignee", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  createdByUserId      String?
+  createdByUser        User?          @relation("QualityEventCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  acknowledgedByUserId String?
+  acknowledgedByUser   User?          @relation("QualityEventAcknowledger", fields: [acknowledgedByUserId], references: [id], onDelete: SetNull)
+  resolvedByUserId     String?
+  resolvedByUser       User?          @relation("QualityEventResolver", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+  reasonCode           String?
+  description          String?        @db.Text
+  metadataJson         String?        @db.Text
+  dueAt                DateTime?
+  acknowledgedAt       DateTime?
+  resolvedAt           DateTime?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([studyInstanceUid])
+  @@index([reportId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("quality_events")
+}
+
+model PeerReview {
+  id               String    @id @default(uuid())
+  reportId         String
+  studyInstanceUid String
+  reviewerUserId   String
+  originalDoctorId String?
+  programId        String?
+  program          PeerReviewProgram? @relation(fields: [programId], references: [id])
+  dueDate          DateTime?
+  status           String
+  result           String?
+  comment          String?   @db.Text
+  reviewedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  report         Report @relation(fields: [reportId], references: [id])
+  reviewer       User   @relation("PeerReviewReviewer", fields: [reviewerUserId], references: [id])
+  originalDoctor User?  @relation("PeerReviewOriginalDoctor", fields: [originalDoctorId], references: [id])
+
+  capaCases      CapaCase[]
+
+  @@index([reportId])
+  @@index([status])
+  @@index([programId])
+  @@map("peer_reviews")
+}
+
+model QcIssue {
+  id               String         @id @default(uuid())
+  studyInstanceUid String?
+  nonDicomExamId   String?
+  nonDicomExam     NonDicomExam?  @relation(fields: [nonDicomExamId], references: [id])
+  mediaId          String?
+  media            NonDicomMedia? @relation(fields: [mediaId], references: [id])
+  dicomNodeId      String?
+  dicomNode        DicomNode?     @relation(fields: [dicomNodeId], references: [id])
+  status           String
+  reasonCode       String
+  description      String?        @db.Text
+  requiresRescan   Boolean        @default(false)
+  createdByUserId  String?
+  createdByUser    User?          @relation("QcIssueCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  resolvedByUserId String?
+  resolvedByUser   User?          @relation("QcIssueResolver", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+  resolvedAt       DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([studyInstanceUid])
+  @@index([status])
+  @@index([createdAt])
+  @@map("qc_issues")
+}
+
+model DataQualityIssue {
+  id               String    @id @default(uuid())
+  issueKey         String
+  status           String
+  severity         String
+  entityType       String
+  entityId         String
+  studyInstanceUid String?
+  title            String
+  description      String?   @db.Text
+  detectedAt       DateTime  @default(now())
+  resolvedByUserId String?
+  resolvedByUser   User?     @relation("DataQualityIssueResolver", fields: [resolvedByUserId], references: [id], onDelete: SetNull)
+  resolvedAt       DateTime?
+  suppressedUntil  DateTime?
+  metadataJson     String?   @db.Text
+
+  @@index([status])
+  @@index([entityType, entityId])
+  @@index([issueKey])
+  @@map("data_quality_issues")
+}
+
+model MetricSnapshot {
+  id          String   @id @default(uuid())
+  metricKey   String
+  scope       String
+  scopeId     String?
+  periodStart DateTime
+  periodEnd   DateTime
+  valueJson   String   @db.Text
+  createdAt   DateTime @default(now())
+
+  @@index([metricKey])
+  @@index([scope, scopeId])
+  @@index([periodStart, periodEnd])
+  @@map("metric_snapshots")
+}
+
+// ==========================================
+// Phase 12: Data Platform & Metric Integrity
+// ==========================================
+
+model OutboxMessage {
+  id             String   @id @default(uuid())
+  eventType      String
+  eventVersion   Int      @default(1)
+  payloadJson    String   @db.Text
+  idempotencyKey String   @unique
+  status         String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  retryCount     Int      @default(0)
+  lastError      String?  @db.Text
+  occurredAt     DateTime @default(now())
+  processedAt    DateTime?
+
+  @@index([status, occurredAt])
+  @@map("outbox_messages")
+}
+
+model DomainEvent {
+  id             String   @id @default(uuid())
+  eventId        String   @unique
+  eventType      String
+  eventVersion   Int      @default(1)
+  payloadJson    String   @db.Text
+  
+  // Tracing
+  correlationId  String?
+  causationId    String?
+  
+  // Scope
+  actorUserId    String?
+  organizationId String?
+  facilityId     String?
+  
+  phiClass       String   @default("NONE")
+
+  occurredAt     DateTime
+  recordedAt     DateTime @default(now())
+
+  @@index([eventType, occurredAt])
+  @@index([facilityId, eventType])
+  @@map("domain_events")
+}
+
+model WorkerLease {
+  id          String   @id // usually the partition or worker name (e.g., "outbox_processor")
+  ownerId     String   // UUID of the worker holding the lease
+  expiresAt   DateTime
+  version     Int      @default(0) // OCC for fencing
+  updatedAt   DateTime @updatedAt
+
+  @@map("worker_leases")
+}
+
+// ==========================================
+// Phase 13: Clinical Governance & CAPA
+// ==========================================
+
+model PeerReviewProgram {
+  id               String   @id @default(uuid())
+  facilityId       String?
+  modality         String?
+  specialty        String?
+  samplePercentage Float
+  version          Int      @default(1)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  reviews          PeerReview[]
+  exclusionRules   PeerReviewExclusionRule[]
+
+  @@index([facilityId, modality, specialty])
+  @@map("peer_review_programs")
+}
+
+model PeerReviewExclusionRule {
+  id               String   @id @default(uuid())
+  programId        String
+  program          PeerReviewProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  excludeDoctorId  String?
+  excludeProcedure String?
+  reason           String?
+  createdAt        DateTime @default(now())
+
+  @@index([programId])
+  @@map("peer_review_exclusion_rules")
+}
+
+model QualityCommittee {
+  id          String   @id @default(uuid())
+  name        String
+  facilityId  String?
+  description String?  @db.Text
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     QualityCommitteeMember[]
+  capaCases   CapaCase[]
+
+  @@index([facilityId])
+  @@map("quality_committees")
+}
+
+model QualityCommitteeMember {
+  id          String   @id @default(uuid())
+  committeeId String
+  committee   QualityCommittee @relation(fields: [committeeId], references: [id], onDelete: Cascade)
+  userId      String
+  role        String   @default("MEMBER") // CHAIR, MEMBER, SECRETARY
+  joinedAt    DateTime @default(now())
+
+  @@unique([committeeId, userId])
+  @@map("quality_committee_members")
+}
+
+model CapaCase {
+  id               String   @id @default(uuid())
+  committeeId      String
+  committee        QualityCommittee @relation(fields: [committeeId], references: [id])
+  status           String   @default("OPEN") // OPEN, INVESTIGATING, CLOSED
+  title            String
+  description      String?  @db.Text
+  evidenceJson     String?  @db.Text
+  
+  // Link to source event without mutating it
+  peerReviewId     String?
+  peerReview       PeerReview? @relation(fields: [peerReviewId], references: [id])
+  
+  closedAt         DateTime?
+  closedByUserId   String?
+  closureReason    String?  @db.Text
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  actions          CapaAction[]
+
+  @@index([committeeId])
+  @@index([status])
+  @@map("capa_cases")
+}
+
+model CapaAction {
+  id          String   @id @default(uuid())
+  caseId      String
+  capaCase    CapaCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  ownerUserId String
+  description String   @db.Text
+  status      String   @default("PENDING") // PENDING, COMPLETED, CANCELLED
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([caseId])
+  @@index([ownerUserId])
+  @@map("capa_actions")
+}
+
+// ==========================================
+// Phase 14: Enterprise Interoperability
+// ==========================================
+
+model IntegrationEndpoint {
+  id              String   @id @default(uuid())
+  name            String
+  facilityId      String?
+  protocol        String   // e.g. "REST", "HL7_V2", "FHIR", "DICOMWEB"
+  url             String
+  secretReference String?  // Reference to vault/secret manager. NEVER plaintext.
+  version         String   @default("1.0")
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  mappings        IntegrationMapping[]
+
+  @@index([facilityId, protocol])
+  @@map("integration_endpoints")
+}
+
+model IntegrationMapping {
+  id              String   @id @default(uuid())
+  endpointId      String
+  endpoint        IntegrationEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  messageType     String   // e.g. "STUDY_CREATED", "REPORT_FINALIZED"
+  schemaVersion   String   @default("1.0")
+  mappingConfig   String   @db.Text // JSON logic for mapping payload
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([endpointId, messageType])
+  @@map("integration_mappings")
+}
+
+model InboxMessage {
+  id              String   @id @default(uuid())
+  sourceEndpointId String?
+  payloadJson     String   @db.Text
+  idempotencyKey  String   @unique
+  status          String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  retryCount      Int      @default(0)
+  lastError       String?  @db.Text
+  receivedAt      DateTime @default(now())
+  processedAt     DateTime?
+
+  @@index([status, receivedAt])
+  @@map("inbox_messages")
 }

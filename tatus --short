@@ -1,0 +1,30 @@
+[33mf62991b[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Add new UI remediation files for dashboard components and permissions matrix
+[33m66ac2c7[m feat: Enhance useSelectionUrlState for improved state management and responsiveness
+[33m8b8346e[m fix: Change RelatedStudiesRequestSchema export to const for internal usage
+[33m0628b92[m feat: Normalize studyInstanceUid across actions and components for consistency and error handling
+[33mb03470c[m feat: Refactor WorkspaceSwitcher to utilize navigation registry and role-based permissions
+[33m3b145f3[m feat: Enhance WorkspaceSwitcher with improved UI and navigation functionality
+[33m9b56ff0[m feat: Update doctor workspace to be the only production UI and remove build-time flag
+[33m4909359[m feat: Enhance Doctor Workspace with Vietnamese localization and new features
+[33m885b207[m feat: implement phase 7 infrastructure including telemetry scrubbing, feature flags, and administrative catalog management modules.
+[33mec988b3[m feat: Phase 6 PR2 implement comprehensive doctor workspace architecture with context management, autosave, and shared UI contracts
+[33m5f1f3db[m feat:Done Phase 5 PR4 implement workspace orchestration system with autosave, related studies filtering, and report editing capabilities
+[33ma5a6533[m feat: update Phase 2 closure evidence with testing enhancements and formal sign-off details
+[33m8a43e5e[m feat phase 3 PR123 implement scoped worklist query service with keyset pagination, authorization, and SLA tracking
+[33md6906e4[m feat: implement scope-based authorization matrix and document phase 2-7 project infrastructure plans
+[33m0e31698[m feat: phase 2 PR8 implement granular authorization scopes and secure API endpoints for viewer study management
+[33m069849e[m feat: phase2 - PR7: implement authorization scope migration and integrate scoped data filtering across dashboard modules
+[33mc71215a[m Revert unrelated package-lock.json changes
+[33m5b30ff7[m Fix global grants db schema and type strictness
+[33m9262e60[m Revert phase 2 migration edit
+[33m3c2fe00[m Fix test helper trailing whitespace and relations
+[33m4ee5415[m Fix authorization scope vulnerabilities and trailing whitespace
+[33m43b8496[m feat: implement scope-based authorization system with capability registry and grant evaluation logic
+[33m6d67c65[m feat: implement full dashboard architecture including admin catalogs, operational tools, and user management modules
+[33m37ffb8c[m phase 2, Pr1 - 3
+[33m2e84e8e[m feat: implement modular navigation system and app shell structure with permission-aware routing
+[33m80bcd5f[m feat: implement command center module with SLA tracking, role-based permissions, and database initialization seeding
+[33mf0540ee[m phase 10.8, 10.9
+[33m23df2da[m phase 10.1 - 10.7
+[33mb41a6a8[m phase 9
+[33m401765e[m fix

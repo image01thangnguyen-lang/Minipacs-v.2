@@ -69,7 +69,7 @@ async function runTests() {
   // Invalid fields fall back independently; valid fields and unknown fields are preserved/ignored.
   const parsedUrl = parseWorklistUrlState(new URLSearchParams("q=%20Alice%20&datePreset=BAD&modality=CT&unknown=x"));
   assert.strictEqual(parsedUrl.q, "Alice");
-  assert.strictEqual(parsedUrl.datePreset, "TODAY");
+  assert.strictEqual(parsedUrl.datePreset, DEFAULT_URL_STATE.datePreset);
   assert.strictEqual(parsedUrl.modality, "CT");
 
   // DST boundaries use the offset at each boundary (US spring-forward day is 23 hours).
