@@ -1,20 +1,13 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# MiniPACS v2
 
-# Run and deploy your AI Studio app
+MiniPACS is deployed as a Docker Compose stack. The user-facing applications
+are the Next.js dashboard in `dashboard/` and the OHIF viewer in
+`ohif-viewer/`; Nginx routes `/` to the dashboard and `/viewer/` to OHIF.
 
-This contains everything you need to run your app locally.
+The former root Vite demonstration app has been retired. Do not use
+`npm run dev` from the repository root. See `README.md` files in the relevant
+application directories and the deployment scripts (`deploy.sh`, `update.sh`)
+for environment-specific startup instructions.
 
-View your app in AI Studio: https://ai.studio/apps/07833977-f29c-432d-8b42-8fc06e6c84fa
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Phase 7 disposition evidence is recorded under
+`docs/antd-migration/evidence/phase-7/`.

@@ -1,35 +1,82 @@
-/* OHIF v3 Native CSS Variable Overrides for Global Themeing */
+/* OHIF v3 deployment-boundary theme overrides.
+ *
+ * OHIF 3.7 in this repository compiles its palette into Tailwind utility
+ * classes; it does not expose the --ui-* variables below as a public runtime
+ * theme API. Keep the custom properties as local tokens and map the compiled
+ * utility classes explicitly so this file has an observable effect without
+ * forking OHIF.
+ */
 
 :root {
-  /* Match Hospital System: Dark Teal Backgrounds */
-  --custom-bg-dark: #102126; /* Slightly darker for deepest backgrounds like sidebars */
-  --custom-bg-main: #152A30; /* Primary background */
-  --custom-bg-light: #1A323A; /* Hover states or panels */
+  /* Match Hospital System: Clinical Tokens */
+  --custom-bg-dark: #141414; /* Deepest backgrounds like sidebars */
+  --custom-bg-main: #1F1F1F; /* Primary background */
+  --custom-bg-light: #262626; /* Hover states or panels */
 
   /* Primary/Active Color: Cyan */
-  --custom-primary: #00B5B8;
-  --custom-primary-hover: #00ced1;
-  --custom-primary-active: #008b8b;
+  --custom-primary: #13C2C2;
+  --custom-primary-hover: #36CFC9;
+  --custom-primary-active: #08979C;
 
-  /* Overriding OHIF v3 Tailwind/CSS Variables */
-  --ui-background-dark: var(--custom-bg-dark) !important;
-  --ui-background-main: var(--custom-bg-main) !important;
-  --ui-primary-main: var(--custom-primary) !important;
-  --ui-primary-active: var(--custom-primary-active) !important;
-  --ui-primary-light: var(--custom-primary-hover) !important;
-  --active-color: var(--custom-primary) !important;
-  --primary-main: var(--custom-primary) !important;
-  
-  /* Fallbacks for older OHIF variable names */
-  --background-dark: var(--custom-bg-dark) !important;
-  --background-main: var(--custom-bg-main) !important;
+  /* Text and Border Colors */
+  --custom-text-primary: #E0E0E0;
+  --custom-border-color: #303030;
+
+}
+
+/* OHIF 3.7 compiled Tailwind palette mappings. These class names are used by
+ * Header, SidePanel, PanelSection, toolbar, modal and measurement components.
+ */
+.bg-primary-dark,
+.bg-secondary-dark {
+  background-color: var(--custom-bg-dark) !important;
+}
+
+.bg-primary-main,
+.bg-secondary-main {
+  background-color: var(--custom-bg-main) !important;
+}
+
+.hover\:bg-primary-dark:hover,
+.hover\:bg-secondary-dark:hover,
+.hover\:bg-secondary-main:hover,
+.group:hover .group-hover\:bg-secondary-main {
+  background-color: var(--custom-bg-light) !important;
+}
+
+.text-primary-light,
+.text-primary-active,
+.text-primary-main {
+  color: var(--custom-primary) !important;
+}
+
+.border-primary-light,
+.border-primary-active,
+.border-primary-main {
+  border-color: var(--custom-primary) !important;
+}
+
+.border-secondary-light,
+.border-secondary-main,
+.border-secondary-dark {
+  border-color: var(--custom-border-color) !important;
 }
 
 /* Force Viewport to remain pure black */
 .viewport-element,
+.cornerstone-viewport-element,
 [data-cy="viewport-grid"],
 .viewport-wrapper {
   background-color: #000000 !important;
+}
+
+/* Standard and MiniPACS overlay items carry their own Tailwind text color, so
+ * set the clinical overlay token on both the container and descendants.
+ */
+[data-cy^="viewport-overlay-"] ,
+[data-cy^="viewport-overlay-"] .overlay-item,
+.viewport-overlay .overlay-item {
+  color: var(--custom-primary) !important;
 }
 
 /* Task 1: border-radius: 6px for toolbar buttons and UI elements */
