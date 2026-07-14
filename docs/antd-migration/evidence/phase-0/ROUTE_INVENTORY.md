@@ -1,0 +1,66 @@
+# ROUTE_INVENTORY.md
+
+| Route | Entry File | Type | Table/Grid | Form/Action | Modal/Overlay | Authz | Criticality | Disposition | Owner |
+|---|---|---|---|---|---|---|---|---|---|
+| `/admin/alerts` | `admin/alerts/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/backup` | `admin/backup/page.tsx` | Client | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/catalogs` | `admin/catalogs/page.tsx` | Client | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/changes/new` | `admin/changes/new/page.tsx` | Server | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/changes` | `admin/changes/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/changes/[id]` | `admin/changes/[id]/page.tsx` | Server | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/control-thresholds` | `admin/control-thresholds/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/destructive` | `admin/destructive/page.tsx` | Client | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/facilities` | `admin/facilities/page.tsx` | Client | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/his` | `admin/his/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/native` | `admin/native/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/ops/deployment` | `admin/ops/deployment/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/ops/dicom` | `admin/ops/dicom/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/ops/health` | `admin/ops/health/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/ops` | `admin/ops/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/ops/performance` | `admin/ops/performance/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/ops/security` | `admin/ops/security/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/pacs/nodes` | `admin/pacs/nodes/page.tsx` | Client | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/permissions/matrix` | `admin/permissions/matrix/page.tsx` | Client | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/release/go-live/new` | `admin/release/go-live/new/page.tsx` | Server | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/release/go-live` | `admin/release/go-live/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/release/go-live/[id]/handoff` | `admin/release/go-live/[id]/handoff/page.tsx` | Server | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/release/go-live/[id]` | `admin/release/go-live/[id]/page.tsx` | Server | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/release` | `admin/release/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/release/uat` | `admin/release/uat/page.tsx` | Server | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/release/uat/runs/[runId]` | `admin/release/uat/runs/[runId]/page.tsx` | Server | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/retention` | `admin/retention/page.tsx` | Client | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/runbooks/new` | `admin/runbooks/new/page.tsx` | Server | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/runbooks` | `admin/runbooks/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/runbooks/[id]` | `admin/runbooks/[id]/page.tsx` | Server | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/sla-policies` | `admin/sla-policies/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/admin/storage` | `admin/storage/page.tsx` | Client | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/templates` | `admin/templates/page.tsx` | Client | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/training` | `admin/training/page.tsx` | Server | No | Yes | No | No | **L** | Migrated | TBD |
+| `/admin/users` | `admin/users/page.tsx` | Client | No | Yes | No | No | **L** | Migrated | TBD |
+| `/archive` | `archive/page.tsx` | Client | No | Yes | No | No | **S** | Migrated | TBD |
+| `/command-center` | `command-center/page.tsx` | Client | No | Yes | No | No | **S** | Migrated | TBD |
+| `/consultations` | `consultations/page.tsx` | Client | No | No | No | No | **S** | Migrated | TBD |
+| `/consultations/[id]` | `consultations/[id]/page.tsx` | Client | No | Yes | No | No | **S** | Migrated | TBD |
+| `/login` | `login/page.tsx` | Client | No | Yes | No | No | **S** | Migrated | TBD |
+| `/non-dicom` | `non-dicom/page.tsx` | Client | No | No | No | No | **S** | Migrated | TBD |
+| `/non-dicom/[id]` | `non-dicom/[id]/page.tsx` | Server | No | No | No | No | **S** | Migrated | TBD |
+| `/ (Home)` | `page.tsx` | Client | No | No | No | No | **S** | Migrated | TBD |
+| `/quality/critical-results` | `quality/critical-results/page.tsx` | Server | No | No | No | No | **S** | Migrated | TBD |
+| `/quality/data-quality` | `quality/data-quality/page.tsx` | Server | No | No | No | No | **S** | Migrated | TBD |
+| `/quality` | `quality/page.tsx` | Server | No | No | No | No | **S** | Migrated | TBD |
+| `/quality/peer-review` | `quality/peer-review/page.tsx` | Server | No | No | No | No | **S** | Migrated | TBD |
+| `/quality/qc-rejects` | `quality/qc-rejects/page.tsx` | Server | No | No | No | No | **S** | Migrated | TBD |
+| `/report/[studyInstanceUid]` | `report/[studyInstanceUid]/page.tsx` | Client | No | No | No | No | **XL** | Migrated | TBD |
+| `/settings/account` | `settings/account/page.tsx` | Server | No | No | No | No | **L** | Migrated | TBD |
+| `/settings/clinic-profile` | `settings/clinic-profile/page.tsx` | Client | No | Yes | No | No | **L** | Migrated | TBD |
+| `/settings/report-templates` | `settings/report-templates/page.tsx` | Client | No | Yes | Yes | No | **XL** | Migrated | TBD |
+| `/share/[token]` | `share/[token]/page.tsx` | Client | No | Yes | No | No | **S** | Migrated | TBD |
+| `/statistics/modalities` | `statistics/modalities/page.tsx` | Server | No | No | No | No | **S** | Migrated | TBD |
+| `/statistics` | `statistics/page.tsx` | Client | No | Yes | No | No | **S** | Migrated | TBD |
+| `/statistics/sla` | `statistics/sla/page.tsx` | Server | No | No | No | No | **S** | Migrated | TBD |
+| `/statistics/workload` | `statistics/workload/page.tsx` | Server | No | No | No | No | **S** | Migrated | TBD |
+| `/support/incidents/new` | `support/incidents/new/page.tsx` | Server | No | Yes | No | No | **S** | Migrated | TBD |
+| `/support/incidents` | `support/incidents/page.tsx` | Server | No | No | No | No | **S** | Migrated | TBD |
+| `/support/incidents/[id]` | `support/incidents/[id]/page.tsx` | Server | No | Yes | No | No | **S** | Migrated | TBD |
+| `/worklist/new` | `worklist/new/page.tsx` | Server | No | No | No | No | **XL** | Migrated | TBD |
+| `/worklist` | `worklist/page.tsx` | Client | No | Yes | No | No | **XL** | Migrated | TBD |

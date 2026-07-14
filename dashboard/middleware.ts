@@ -10,6 +10,14 @@ const { auth } = NextAuth(authConfig);
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const isLoginPage = req.nextUrl.pathname.startsWith('/login');
+  const isDevelopmentPlayground =
+    process.env.NODE_ENV !== "production" && req.nextUrl.pathname.startsWith("/playground");
+
+  // Keep the component playground directly accessible for local visual review only.
+  // The page itself also returns 404 in production.
+  if (isDevelopmentPlayground) {
+    return NextResponse.next();
+  }
 
   if (!isLoggedIn && !isLoginPage) {
     return NextResponse.redirect(new URL('/login', req.url));

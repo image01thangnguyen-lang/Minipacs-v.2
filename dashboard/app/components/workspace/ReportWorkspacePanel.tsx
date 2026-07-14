@@ -9,10 +9,10 @@ import type {
   ReportWorkspaceError,
 } from "../../../lib/workspace/report-workspace";
 import {
-  ReportEditorSection,
+  ReportEditorSectionAntd,
   type ReportEditorState,
-} from "./regions/ReportEditorSection";
-import { ReportActionsBar, type PrintTemplate } from "./regions/ReportActionsBar";
+} from "./regions/ReportEditorSectionAntd";
+import { ReportActionsBarAntd, type PrintTemplate } from "./regions/ReportActionsBarAntd";
 import type { PrintContext } from "@/app/report/[studyInstanceUid]/components/PrintTemplateViewer";
 import type { ReportTemplateOption } from "@/app/components/ReportTemplatePicker";
 import { getReportTemplateSuggestions } from "@/app/settings/report-templates/actions";
@@ -424,7 +424,7 @@ export function ReportWorkspacePanel({
       <div className="flex-1 overflow-y-auto p-4">
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 xl:grid-cols-[1fr_280px]">
           {/* Editor section */}
-          <ReportEditorSection
+          <ReportEditorSectionAntd
             state={editorState}
             onChange={handleEditorChange}
             readOnly={readOnly}
@@ -433,7 +433,7 @@ export function ReportWorkspacePanel({
           />
 
           {/* Actions bar */}
-          <ReportActionsBar
+          <ReportActionsBarAntd
             studyUid={studyUid!}
             reportId={reportId}
             allowedActions={data.allowedActions}

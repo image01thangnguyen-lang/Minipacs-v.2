@@ -4,34 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/app/db";
 import { hasPermission, type PermissionKey } from "@/lib/permissions";
 import { revalidatePath } from "next/cache";
-
-const SEVERITIES = new Set(["SEV1", "SEV2", "SEV3", "SEV4"]);
-const STATUSES = new Set(["OPEN", "INVESTIGATING", "RESOLVED", "CLOSED"]);
-const MODULES = new Set([
-  "GENERAL",
-  "VIEWER",
-  "HIS_GATEWAY",
-  "REPORTING",
-  "STORAGE",
-  "WORKLIST",
-  "NON_DICOM",
-  "SHARING",
-  "OPS",
-]);
-const CONTEXT_TYPES = new Set(["", "STUDY", "REPORT", "ORDER", "DICOM_NODE", "EXPORT_JOB", "HIS_LOG", "URL"]);
-
-function cleanText(value: FormDataEntryValue | string | null, maxLength = 4000) {
-  return String(value || "").trim().slice(0, maxLength);
-}
-
-function cleanInternalPath(value: FormDataEntryValue | string | null) {
-  const path = cleanText(value, 1000);
-  if (!path) return null;
-  if (!path.startsWith("/") || path.startsWith("//")) {
-    throw new Error("Context URL must be an internal application path");
-  }
-  return path;
-}
+import { cleanIncidentText, looksLikePhi, parseCreateIncidentInput, parseIncidentStatus } from "./incident-validation";
 
 async function requireAnyPermission(permissions: PermissionKey[]) {
   const session = await auth();
@@ -44,45 +17,19 @@ async function requireAnyPermission(permissions: PermissionKey[]) {
   return user;
 }
 
-function looksLikePhi(value: string) {
-  const patterns = [
-    /\bMRN\s*[:#-]?\s*\w+/i,
-    /\bAccession\s*[:#-]?\s*\w+/i,
-    /\bPatient\s*(Name|ID)\s*[:#-]?\s*[\w\s-]+/i,
-    /\b\d{8,}\b/,
-  ];
-  return patterns.some(pattern => pattern.test(value));
-}
-
 export async function createIncidentTicket(formData: FormData) {
   const user = await requireAnyPermission(["incident.report", "incident.manage"]);
-
-  const shortDesc = cleanText(formData.get("shortDesc"));
-  const severity = cleanText(formData.get("severity")) || "SEV4";
-  const module = cleanText(formData.get("module")) || "GENERAL";
-  const contextType = cleanText(formData.get("contextType")).toUpperCase();
-  const contextId = cleanText(formData.get("contextId"), 500);
-  const contextUrl = cleanInternalPath(formData.get("contextUrl"));
-  const containsPhiRisk = formData.get("containsPhiRisk") === "on";
-
-  if (!shortDesc) throw new Error("Description is required");
-  if (!SEVERITIES.has(severity)) throw new Error("Invalid incident severity");
-  if (!MODULES.has(module)) throw new Error("Invalid incident module");
-  if (!CONTEXT_TYPES.has(contextType)) throw new Error("Invalid context type");
-  if (containsPhiRisk) throw new Error("Incidents containing PHI cannot be saved. Please scrub the data first.");
-  if (looksLikePhi(`${shortDesc} ${contextId}`)) {
-    throw new Error("Potential PHI detected. Please scrub patient names, MRN, accession, and identifiers before saving.");
-  }
+  const input = parseCreateIncidentInput(formData);
 
   const ticket = await prisma.incidentTicket.create({
     data: {
-      shortDesc,
-      severity: severity || "SEV4",
+      shortDesc: input.shortDesc,
+      severity: input.severity,
       status: "OPEN",
-      module: module || "GENERAL",
-      contextType: contextType || null,
-      contextId: contextId || null,
-      contextUrl,
+      module: input.module,
+      contextType: input.contextType,
+      contextId: input.contextId,
+      contextUrl: input.contextUrl,
       reportedByUserId: user.id
     }
   });
@@ -94,10 +41,7 @@ export async function createIncidentTicket(formData: FormData) {
 export async function updateIncidentStatus(ticketId: string, status: string) {
   await requireAnyPermission(["incident.manage"]);
 
-  const nextStatus = cleanText(status);
-  if (!STATUSES.has(nextStatus)) {
-    throw new Error("Invalid incident status");
-  }
+  const nextStatus = parseIncidentStatus(status);
 
   await prisma.incidentTicket.update({
     where: { id: ticketId },
@@ -114,7 +58,7 @@ export async function updateIncidentStatus(ticketId: string, status: string) {
 export async function assignIncident(ticketId: string, assigneeUserId: string | null) {
   await requireAnyPermission(["incident.manage"]);
 
-  const normalizedAssigneeId = cleanText(assigneeUserId, 100) || null;
+  const normalizedAssigneeId = cleanIncidentText(assigneeUserId, 100) || null;
   if (normalizedAssigneeId) {
     const assignee = await prisma.user.findFirst({
       where: { id: normalizedAssigneeId, isActive: true },
@@ -135,7 +79,7 @@ export async function assignIncident(ticketId: string, assigneeUserId: string | 
 export async function addIncidentComment(ticketId: string, content: string, isScrubbed: boolean) {
   const user = await requireAnyPermission(["incident.report", "incident.manage"]);
 
-  const body = cleanText(content);
+  const body = cleanIncidentText(content);
   if (!body) throw new Error("Comment is required");
   if (!isScrubbed) throw new Error("Comments containing PHI cannot be saved. Please scrub the data first.");
   if (looksLikePhi(body)) {

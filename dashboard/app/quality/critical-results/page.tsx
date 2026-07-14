@@ -1,25 +1,35 @@
-﻿import { PageCanvas, PagePanel } from "@/app/components/ui/PagePrimitives";
+import { auth } from "@/auth";
 import { requirePermission } from "@/lib/authz";
 import { getCriticalResults } from "@/lib/qualityService";
+import { evaluateScopedCapability, loadPhase7FlagConfig } from "@/lib/release-control/server-flags";
+import { CriticalResultsClient } from "./CriticalResultsClient";
+import { CriticalResultsAntd } from "./CriticalResultsAntd";
 
 export default async function CriticalResultsPage() {
   await requirePermission("quality.criticalResult");
   const results = await getCriticalResults();
 
-  return (
-    <PageCanvas className="space-y-6 overflow-auto p-6">
-      <h1 className="text-2xl font-bold tracking-tight">Critical Results</h1>
-      <p className="text-vin-muted">Quản lý các kết quả nguy hiểm cần thông báo lâm sàng khẩn cấp.</p>
-      
-      <PagePanel className="p-4">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold">Kết quả nguy hiểm đang theo dõi</h2>
-        </div>
-        <div>
-          {results.length === 0 ? <div className="rounded-md border border-vin-border p-4 text-center text-sm text-vin-muted">Không có kết quả nguy hiểm nào cần xử lý.</div> : <div className="space-y-2">{results.map(result => <div key={result.id} className="rounded border border-vin-border p-3 text-sm"><strong>{result.imagingStudyId}</strong><span className="ml-3 text-vin-muted">{result.communicationStatus}</span></div>)}</div>}
-        </div>
-      </PagePanel>
-    </PageCanvas>
-  );
-}
+  const session = await auth();
+  const user = session?.user;
 
+  let useAntd = false;
+  if (user?.id) {
+    try {
+      const deps = {
+        authenticate: async () => ({ userId: user.id }),
+        reauthorizeResource: async () => ({ facilityId: (user as any).activeFacilityId || "" }),
+        loadConfig: loadPhase7FlagConfig,
+        audit: () => {},
+      };
+      const decision = await evaluateScopedCapability({ capability: "antd-quality", resourceId: (user as any).activeFacilityId || "global" }, deps);
+      useAntd = decision.enabled;
+    } catch (err) {
+      console.error("Flag evaluation failed:", err);
+    }
+  }
+
+  if (useAntd) {
+    return <CriticalResultsAntd results={results} />;
+  }
+  return <CriticalResultsClient results={results} />;
+}

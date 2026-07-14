@@ -1,61 +1,28 @@
-"use client";
-import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+import { evaluateScopedCapability, loadPhase7FlagConfig } from "@/lib/release-control/server-flags";
+import { requirePermission } from "@/lib/authz";
+import FacilitiesClient from "./FacilitiesClient";
 
+export default async function FacilitiesPage() {
+  const session = await requirePermission("admin.facilities");
 
-import { useState } from "react";
-import { TreeEditor } from "./components/TreeEditor";
-import { MachineMapping } from "./components/MachineMapping";
-import { DataQualityPanel } from "./components/DataQualityPanel";
+  let useAntd = false;
+  try {
+    const deps = {
+      authenticate: async () => ({ userId: session.user.id }),
+      reauthorizeResource: async () => ({ facilityId: session.user.activeFacilityId }),
+      loadConfig: loadPhase7FlagConfig,
+      audit: () => {},
+    };
 
-export default function FacilitiesPage() {
-  const [activeTab, setActiveTab] = useState<"tree" | "machines" | "quality">("tree");
+    const decision = await evaluateScopedCapability({
+      capability: "antd-admin-facilities",
+      resourceId: session.user.activeFacilityId
+    }, deps);
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <ScreenHeader />
-      </div>
+    useAntd = decision.enabled;
+  } catch (err) {
+    console.error("Flag evaluation failed:", err);
+  }
 
-      <div className="border-b border-vin-border">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab("tree")}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-              activeTab === "tree"
-                ? "border-vin-accent text-vin-accent"
-                : "border-transparent text-vin-muted hover:text-white hover:border-vin-border"
-            }`}
-          >
-            Cây tổ chức
-          </button>
-          <button
-            onClick={() => setActiveTab("machines")}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-              activeTab === "machines"
-                ? "border-vin-accent text-vin-accent"
-                : "border-transparent text-vin-muted hover:text-white hover:border-vin-border"
-            }`}
-          >
-            Máy chụp
-          </button>
-          <button
-            onClick={() => setActiveTab("quality")}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-              activeTab === "quality"
-                ? "border-vin-accent text-vin-accent"
-                : "border-transparent text-vin-muted hover:text-white hover:border-vin-border"
-            }`}
-          >
-            Chất lượng dữ liệu
-          </button>
-        </nav>
-      </div>
-
-      <div className="mt-4">
-        {activeTab === "tree" && <TreeEditor />}
-        {activeTab === "machines" && <MachineMapping />}
-        {activeTab === "quality" && <DataQualityPanel />}
-      </div>
-    </div>
-  );
+  return <FacilitiesClient useAntd={useAntd} />;
 }

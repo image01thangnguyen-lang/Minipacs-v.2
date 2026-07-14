@@ -1,173 +1,33 @@
-"use client";
-import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
+import { auth } from "@/auth";
+import { evaluateScopedCapability, loadPhase7FlagConfig } from "@/lib/release-control/server-flags";
+import { NonDicomClient } from "./NonDicomClient";
+import { NonDicomAntd } from "./NonDicomAntd";
+import { requirePermission } from "@/lib/authz";
 
+export default async function NonDicomPage() {
+  await requirePermission("nonDicom.read");
 
-import { useEffect, useState } from "react";
-import { getNonDicomExams } from "./actions";
-import { Loader2, RefreshCcw, Camera } from "lucide-react";
-import Link from "next/link";
-import { CustomSelect } from "@/app/components/CustomSelect";
-import { NonDicomDataGrid } from "./NonDicomDataGrid";
+  const session = await auth();
+  const user = session?.user;
 
-function formatDistanceToNow(date: Date) {
-  const diff = Date.now() - date.getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 60) return `${minutes} phút trước`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} giờ trước`;
-  return `${Math.floor(hours / 24)} ngày trước`;
-}
-
-export default function NonDicomQueuePage() {
-  const [exams, setExams] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("ALL");
-  const [search, setSearch] = useState("");
-
-  const loadExams = async () => {
-    setLoading(true);
+  let useAntd = false;
+  if (user?.id) {
     try {
-      const data = await getNonDicomExams({ status: statusFilter, search });
-      setExams(data);
+      const deps = {
+        authenticate: async () => ({ userId: user.id }),
+        reauthorizeResource: async () => ({ facilityId: (user as any).activeFacilityId || "" }),
+        loadConfig: loadPhase7FlagConfig,
+        audit: () => {},
+      };
+      const decision = await evaluateScopedCapability({ capability: "antd-non-dicom", resourceId: (user as any).activeFacilityId || "global" }, deps);
+      useAntd = decision.enabled;
     } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+      console.error("Flag evaluation failed:", err);
     }
-  };
+  }
 
-  useEffect(() => {
-    loadExams();
-  }, [statusFilter]);
-
-  const enableSharedUI = process.env.NEXT_PUBLIC_ENABLE_NONDICOM_SHARED_UI === "true";
-
-  return (
-    <div className="h-full min-h-0 bg-vin-root text-vin-text font-sans selection:bg-vin-accent/30 flex">
-      <main className="flex-1 flex flex-col min-w-0">
-        <div className="flex-none p-4 pb-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <ScreenHeader />
-            <p className="text-sm text-vin-muted mt-1">Quản lý các ca siêu âm, nội soi, chụp ảnh ngoài DICOM</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <CustomSelect
-              options={[
-                { value: "ALL", label: "Tất cả trạng thái" },
-                { value: "REQUESTED", label: "Chờ thực hiện (REQUESTED)" },
-                { value: "CAPTURING", label: "Đang chụp (CAPTURING)" },
-                { value: "COMPLETED", label: "Hoàn tất (COMPLETED)" },
-              ]}
-              value={statusFilter}
-              onChange={setStatusFilter}
-              placeholder="Lọc trạng thái"
-              className="w-48"
-            />
-            <input
-              type="text"
-              placeholder="Tìm tên, mã BN..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && loadExams()}
-              className="bg-vin-panel border border-vin-border rounded-md px-3 py-2 text-sm text-white placeholder-vin-muted focus:outline-none focus:border-vin-accent transition-colors w-48"
-            />
-            <button
-              onClick={loadExams}
-              className="px-3 py-2 bg-vin-panel hover:bg-vin-tableHover text-vin-text2 rounded-md transition-colors border border-vin-border flex items-center justify-center disabled:opacity-50"
-              disabled={loading}
-              title="Làm mới"
-            >
-              <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </div>
-
-        <div className="flex-1 p-4 overflow-hidden flex flex-col">
-          {enableSharedUI ? (
-            <NonDicomDataGrid rows={exams} isLoading={loading} />
-          ) : (
-            <div className="flex-1 bg-vin-panel/50 rounded-lg border border-vin-border/50 overflow-hidden flex flex-col">
-              <div className="overflow-x-auto flex-1">
-                <table className="w-full text-left text-sm whitespace-nowrap">
-                  <thead className="bg-vin-panel2/80 text-vin-muted sticky top-0 z-10">
-                    <tr>
-                      <th className="px-4 py-3 font-medium">Trạng thái</th>
-                      <th className="px-4 py-3 font-medium">Case Code / Bệnh nhân</th>
-                      <th className="px-4 py-3 font-medium">Giới tính / NS</th>
-                      <th className="px-4 py-3 font-medium">Chỉ định</th>
-                      <th className="px-4 py-3 font-medium">Ngày tạo</th>
-                      <th className="px-4 py-3 font-medium">Media</th>
-                      <th className="px-4 py-3 font-medium text-right">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-700/50">
-                    {exams.map((exam) => (
-                      <tr key={exam.id} className="hover:bg-vin-panel/80 transition-colors group">
-                        <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
-                            exam.status === 'REQUESTED' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                            exam.status === 'CAPTURING' ? 'bg-vin-accent/10 text-vin-accent border-vin-accent/20' :
-                            exam.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                            'bg-vin-muted/10 text-vin-muted border-vin-border'
-                          }`}>
-                            {exam.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-vin-text">{exam.patientName || "Không tên"}</div>
-                          <div className="text-xs text-vin-muted">{exam.patientId} • {exam.caseCode}</div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="text-vin-text2">{exam.patientSex === 'M' ? 'Nam' : exam.patientSex === 'F' ? 'Nữ' : 'Khác'}</div>
-                          <div className="text-xs text-vin-muted">{exam.patientBirthDate ? new Date(exam.patientBirthDate).getFullYear() : '-'}</div>
-                        </td>
-                        <td className="px-4 py-3 text-vin-text2">
-                          {exam.indication || "-"}
-                        </td>
-                        <td className="px-4 py-3 text-vin-text2">
-                          {new Date(exam.createdAt).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" })}
-                        </td>
-                        <td className="px-4 py-3 text-vin-text2">
-                          {exam._count?.media || 0} files
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <Link
-                            href={`/non-dicom/${exam.id}`}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-vin-accent/20 text-vin-accent hover:bg-vin-accent/30 hover:text-vin-accent rounded-md transition-colors text-xs font-medium"
-                          >
-                            <Camera className="w-3.5 h-3.5" />
-                            Capture
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                    {exams.length === 0 && !loading && (
-                      <tr>
-                        <td colSpan={7} className="px-4 py-12 text-center text-vin-faint">
-                          <div className="flex flex-col items-center justify-center">
-                            <Camera className="w-10 h-10 text-vin-faint mb-3" />
-                            <p>Không có ca Non-DICOM nào</p>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                    {loading && exams.length === 0 && (
-                      <tr>
-                        <td colSpan={7} className="px-4 py-12 text-center text-vin-faint">
-                          <div className="flex flex-col items-center justify-center">
-                            <Loader2 className="w-8 h-8 animate-spin text-vin-accent mb-3" />
-                            <p>Đang tải danh sách...</p>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
-  );
+  if (useAntd) {
+    return <NonDicomAntd />;
+  }
+  return <NonDicomClient />;
 }

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import type { StatusBadgeDomain } from "../../app/components/ui/shared-contracts";
 import {
   SHARED_UI_CONTRACT_VERSION,
   STATUS_BADGE_DOMAINS,
@@ -6,8 +7,11 @@ import {
 import { resolveStatusBadge } from "./status-badge-registry";
 
 assert.equal(SHARED_UI_CONTRACT_VERSION, 1);
-assert.equal(new Set(STATUS_BADGE_DOMAINS).size, STATUS_BADGE_DOMAINS.length);
-assert.deepEqual(STATUS_BADGE_DOMAINS, [
+assert.equal(
+  new Set<string>(STATUS_BADGE_DOMAINS).size,
+  STATUS_BADGE_DOMAINS.length,
+);
+const expectedStatusBadgeDomains: StatusBadgeDomain[] = [
   "study",
   "report",
   "consultation",
@@ -17,7 +21,8 @@ assert.deepEqual(STATUS_BADGE_DOMAINS, [
   "destructive",
   "storage",
   "catalog",
-]);
+];
+assert.deepEqual([...STATUS_BADGE_DOMAINS], expectedStatusBadgeDomains);
 assert.equal(resolveStatusBadge("study", " finalized ").label, "Đã ký");
 assert.equal(resolveStatusBadge("study", "ARCHIVED").label, "Lưu trữ");
 assert.equal(resolveStatusBadge("report", "FINALIZED").label, "FINALIZED");
