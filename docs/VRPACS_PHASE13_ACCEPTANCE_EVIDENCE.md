@@ -1,7 +1,7 @@
 # VRPACS Phase 13 Acceptance Evidence
 
-Updated: 2026-07-13  
-Status: **TEMPLATE - NOT IMPLEMENTED / NOT ACCEPTED**
+Updated: 2026-07-14
+Status: **BLOCKED - MANDATORY CAPABILITIES MISSING**
 
 ## 1. Release And Clinical Baseline
 
@@ -18,12 +18,12 @@ Status: **TEMPLATE - NOT IMPLEMENTED / NOT ACCEPTED**
 
 | ID | Criterion | Status | Code/test | Clinical/UAT evidence | Owner |
 | --- | --- | --- | --- | --- | --- |
-| P13-AC-01 | Reproducible/conflict-aware sampling | Pending | TBD | TBD | Clinical Quality |
+| P13-AC-01 | Reproducible/conflict-aware sampling | PARTIAL | `peer-review-service.ts`; Phase 13 migration; service unit test | Not run | Clinical Quality |
 | P13-AC-02 | Reviewer confidentiality/scope | Pending | TBD | TBD | Security/Quality |
-| P13-AC-03 | CAPA evidence/approval closure | Pending | TBD | TBD | Quality |
+| P13-AC-03 | CAPA evidence/approval closure | PARTIAL | `capa-service.ts`; transition schema; service unit test | Not run | Quality |
 | P13-AC-04 | Critical-result fallback/escalation | Pending | TBD | TBD | Clinical Safety |
 | P13-AC-05 | Dose source/unit/provenance | Pending | TBD | TBD | Medical Physics |
-| P13-AC-06 | Immutable report revision binding | Pending | TBD | TBD | Clinical/Backend |
+| P13-AC-06 | Immutable report revision binding | PARTIAL | Peer-review `reportRevision`/`samplingKey` schema foundation | Not run | Clinical/Backend |
 | P13-AC-07 | Correction/addendum output versioning | Pending | TBD | TBD | Integration |
 | P13-AC-08 | SR/FHIR conformance | Pending | TBD | TBD | Integration |
 | P13-AC-09 | No autonomous diagnostic mutation | Pending | TBD | TBD | Clinical Safety |
@@ -53,9 +53,11 @@ Status: **TEMPLATE - NOT IMPLEMENTED / NOT ACCEPTED**
 
 | Role | Decision | Name/date | Conditions |
 | --- | --- | --- | --- |
-| Clinical Safety | Pending | TBD | |
-| Clinical Quality | Pending | TBD | |
-| Medical Physics (if dose enabled) | Pending | TBD | |
-| Security/Privacy | Pending | TBD | |
-| Integration | Pending | TBD | |
-| QA/Release | Pending | TBD | |
+| Clinical Safety | BLOCKED | TBD | Pending critical-result fallback, no autonomous mutation tests |
+| Clinical Quality | BLOCKED | TBD | Pending CAPA closure tests, sampling determinism |
+| Medical Physics (if dose enabled) | BLOCKED | TBD | Pending dose parser fixtures and unit conversions |
+| Security/Privacy | BLOCKED | TBD | Pending reviewer confidentiality and negative tests |
+| Integration | BLOCKED | TBD | Pending SR conformance, duplicate/retry tests |
+| QA/Release | BLOCKED | TBD | Pending pilot, rollback and reconciliation evidence |
+
+The passing service tests are narrow mock-based unit tests. They do not constitute database concurrency, authorization/confidentiality, clinical safety, conformance, UAT, pilot, or rollback evidence.

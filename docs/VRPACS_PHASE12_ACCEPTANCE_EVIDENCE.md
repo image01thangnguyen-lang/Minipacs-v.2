@@ -1,7 +1,7 @@
 # VRPACS Phase 12 Acceptance Evidence
 
-Updated: 2026-07-13  
-Status: **TEMPLATE - NOT IMPLEMENTED / NOT ACCEPTED**
+Updated: 2026-07-14
+Status: **BLOCKED - MANDATORY CAPABILITIES MISSING**
 
 ## 1. Release Identity
 
@@ -18,12 +18,12 @@ Status: **TEMPLATE - NOT IMPLEMENTED / NOT ACCEPTED**
 
 | ID | Criterion | Status | Code/migration | Automated evidence | QA/ops evidence | Owner |
 | --- | --- | --- | --- | --- | --- | --- |
-| P12-AC-01 | Metric reproducibility and lineage | Pending | TBD | TBD | TBD | Data Owner |
-| P12-AC-02 | Event/outbox atomicity | Pending | TBD | TBD | TBD | Backend |
-| P12-AC-03 | Idempotent replay/no double count | Pending | TBD | TBD | TBD | Backend/QA |
+| P12-AC-01 | Metric reproducibility and lineage | PARTIAL | `lib/data-platform/metric-registry.ts` | Registry unit tests pass | Not run | Data Owner |
+| P12-AC-02 | Event/outbox atomicity | PARTIAL | `outbox-producer.ts`; Phase 12 migration | Contract tests pass; no database transaction integration test | Not run | Backend |
+| P12-AC-03 | Idempotent replay/no double count | PARTIAL | `worker-runtime.ts`; unique event/idempotency keys | Helper/unit tests only | Not run | Backend/QA |
 | P12-AC-04 | Late-data correction | Pending | TBD | TBD | TBD | Analytics |
 | P12-AC-05 | Snapshot/drilldown reconciliation | Pending | TBD | TBD | TBD | Analytics/QA |
-| P12-AC-06 | Worker failure/recovery | Pending | TBD | TBD | TBD | SRE |
+| P12-AC-06 | Worker failure/recovery | PARTIAL | Lease/claim/retry implementation in `worker-runtime.ts` | Retry helper tests pass; competing-worker/database tests not run | Not run | SRE |
 | P12-AC-07 | Scoped UI/export/jobs | Pending | TBD | TBD | TBD | Security |
 | P12-AC-08 | Backfill performance isolation | Pending | TBD | TBD | TBD | DBA/SRE |
 | P12-AC-09 | Retention/hold correctness | Pending | TBD | TBD | TBD | Privacy/DBA |
@@ -59,8 +59,10 @@ Record every open risk with severity, owner, mitigation, expiry and approval. Ph
 
 | Role | Decision | Name/date | Conditions |
 | --- | --- | --- | --- |
-| Product | Pending | TBD | |
-| Data/Analytics | Pending | TBD | |
-| Security/Privacy | Pending | TBD | |
-| DBA/SRE | Pending | TBD | |
-| QA/Release | Pending | TBD | |
+| Product | BLOCKED | TBD | Pending worker reliability, event atomicity, and reproducibility |
+| Data/Analytics | BLOCKED | TBD | Pending metric lineage and drilldown reconciliation |
+| Security/Privacy | BLOCKED | TBD | Pending scoped export, legal hold recovery |
+| DBA/SRE | BLOCKED | TBD | Pending backfill isolation, failure recovery tests |
+| QA/Release | BLOCKED | TBD | Pending late-event tests, shadow cutover, and duplicate replay tests |
+
+Repository unit tests prove only the listed deterministic helpers/contracts. They do not prove transaction atomicity, database concurrency, worker recovery, replay safety, performance, or operational acceptance.

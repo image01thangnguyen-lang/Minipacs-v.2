@@ -2673,28 +2673,32 @@ model QualityEvent {
 }
 
 model PeerReview {
-  id               String    @id @default(uuid())
+  id               String             @id @default(uuid())
   reportId         String
   studyInstanceUid String
   reviewerUserId   String
   originalDoctorId String?
   programId        String?
   program          PeerReviewProgram? @relation(fields: [programId], references: [id])
+  programVersion   Int?
+  reportRevision   Int?
+  samplingKey      String?            @unique
   dueDate          DateTime?
   status           String
   result           String?
-  comment          String?   @db.Text
+  comment          String?            @db.Text
   reviewedAt       DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
   report         Report @relation(fields: [reportId], references: [id])
   reviewer       User   @relation("PeerReviewReviewer", fields: [reviewerUserId], references: [id])
   originalDoctor User?  @relation("PeerReviewOriginalDoctor", fields: [originalDoctorId], references: [id])
 
-  capaCases      CapaCase[]
+  capaCases CapaCase[]
 
   @@index([reportId])
+  @@index([studyInstanceUid])
   @@index([status])
   @@index([programId])
   @@map("peer_reviews")
@@ -2771,53 +2775,65 @@ model MetricSnapshot {
 // ==========================================
 
 model OutboxMessage {
-  id             String   @id @default(uuid())
+  id             String    @id @default(uuid())
+  eventId        String    @unique
   eventType      String
-  eventVersion   Int      @default(1)
-  payloadJson    String   @db.Text
-  idempotencyKey String   @unique
-  status         String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
-  retryCount     Int      @default(0)
-  lastError      String?  @db.Text
-  occurredAt     DateTime @default(now())
+  eventVersion   Int       @default(1)
+  payload        Json
+  idempotencyKey String    @unique
+  status         String    @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  retryCount     Int       @default(0)
+  availableAt    DateTime  @default(now())
+  claimToken     String?
+  lockedUntil    DateTime?
+  lastErrorCode  String?
+  occurredAt     DateTime
+  createdAt      DateTime  @default(now())
   processedAt    DateTime?
 
-  @@index([status, occurredAt])
+  @@index([status, availableAt, occurredAt])
+  @@index([claimToken])
   @@map("outbox_messages")
 }
 
 model DomainEvent {
-  id             String   @id @default(uuid())
-  eventId        String   @unique
+  id             String @id @default(uuid())
+  eventId        String @unique
   eventType      String
-  eventVersion   Int      @default(1)
-  payloadJson    String   @db.Text
-  
+  eventVersion   Int    @default(1)
+  idempotencyKey String @unique
+  payload        Json
+
   // Tracing
-  correlationId  String?
-  causationId    String?
-  
+  correlationId String?
+  causationId   String?
+
   // Scope
-  actorUserId    String?
+  actorType      String?
+  actorId        String?
   organizationId String?
   facilityId     String?
-  
-  phiClass       String   @default("NONE")
+  entityType     String
+  entityId       String
+  reportRevision Int?
 
-  occurredAt     DateTime
-  recordedAt     DateTime @default(now())
+  phiClass String @default("NONE")
+
+  occurredAt DateTime
+  recordedAt DateTime @default(now())
 
   @@index([eventType, occurredAt])
   @@index([facilityId, eventType])
+  @@index([entityType, entityId])
   @@map("domain_events")
 }
 
 model WorkerLease {
-  id          String   @id // usually the partition or worker name (e.g., "outbox_processor")
-  ownerId     String   // UUID of the worker holding the lease
-  expiresAt   DateTime
-  version     Int      @default(0) // OCC for fencing
-  updatedAt   DateTime @updatedAt
+  id        String   @id // usually the partition or worker name (e.g., "outbox_processor")
+  ownerId   String // UUID of the worker holding the lease
+  expiresAt DateTime
+  version   Int      @default(0) // OCC for fencing
+  updatedAt DateTime @updatedAt
 
   @@map("worker_leases")
 }
@@ -2837,21 +2853,21 @@ model PeerReviewProgram {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  reviews          PeerReview[]
-  exclusionRules   PeerReviewExclusionRule[]
+  reviews        PeerReview[]
+  exclusionRules PeerReviewExclusionRule[]
 
   @@index([facilityId, modality, specialty])
   @@map("peer_review_programs")
 }
 
 model PeerReviewExclusionRule {
-  id               String   @id @default(uuid())
+  id               String            @id @default(uuid())
   programId        String
   program          PeerReviewProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
   excludeDoctorId  String?
   excludeProcedure String?
   reason           String?
-  createdAt        DateTime @default(now())
+  createdAt        DateTime          @default(now())
 
   @@index([programId])
   @@map("peer_review_exclusion_rules")
@@ -2866,46 +2882,48 @@ model QualityCommittee {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members     QualityCommitteeMember[]
-  capaCases   CapaCase[]
+  members   QualityCommitteeMember[]
+  capaCases CapaCase[]
 
   @@index([facilityId])
   @@map("quality_committees")
 }
 
 model QualityCommitteeMember {
-  id          String   @id @default(uuid())
+  id          String           @id @default(uuid())
   committeeId String
   committee   QualityCommittee @relation(fields: [committeeId], references: [id], onDelete: Cascade)
   userId      String
-  role        String   @default("MEMBER") // CHAIR, MEMBER, SECRETARY
-  joinedAt    DateTime @default(now())
+  role        String           @default("MEMBER") // CHAIR, MEMBER, SECRETARY
+  isActive    Boolean          @default(true)
+  joinedAt    DateTime         @default(now())
 
   @@unique([committeeId, userId])
   @@map("quality_committee_members")
 }
 
 model CapaCase {
-  id               String   @id @default(uuid())
-  committeeId      String
-  committee        QualityCommittee @relation(fields: [committeeId], references: [id])
-  status           String   @default("OPEN") // OPEN, INVESTIGATING, CLOSED
-  title            String
-  description      String?  @db.Text
-  evidenceJson     String?  @db.Text
-  
+  id           String           @id @default(uuid())
+  committeeId  String
+  committee    QualityCommittee @relation(fields: [committeeId], references: [id])
+  status       String           @default("OPEN") // OPEN, INVESTIGATING, CLOSED
+  title        String
+  description  String?          @db.Text
+  evidenceJson String?          @db.Text
+
   // Link to source event without mutating it
-  peerReviewId     String?
-  peerReview       PeerReview? @relation(fields: [peerReviewId], references: [id])
-  
-  closedAt         DateTime?
-  closedByUserId   String?
-  closureReason    String?  @db.Text
+  peerReviewId String?
+  peerReview   PeerReview? @relation(fields: [peerReviewId], references: [id])
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  closedAt       DateTime?
+  closedByUserId String?
+  closureReason  String?   @db.Text
 
-  actions          CapaAction[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  actions     CapaAction[]
+  transitions CapaTransition[]
 
   @@index([committeeId])
   @@index([status])
@@ -2913,20 +2931,34 @@ model CapaCase {
 }
 
 model CapaAction {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   caseId      String
-  capaCase    CapaCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  capaCase    CapaCase  @relation(fields: [caseId], references: [id], onDelete: Cascade)
   ownerUserId String
-  description String   @db.Text
-  status      String   @default("PENDING") // PENDING, COMPLETED, CANCELLED
+  description String    @db.Text
+  status      String    @default("PENDING") // PENDING, COMPLETED, CANCELLED
   dueDate     DateTime?
   completedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([caseId])
   @@index([ownerUserId])
   @@map("capa_actions")
+}
+
+model CapaTransition {
+  id          String   @id @default(uuid())
+  caseId      String
+  capaCase    CapaCase @relation(fields: [caseId], references: [id], onDelete: Restrict)
+  fromStatus  String
+  toStatus    String
+  actorUserId String
+  evidence    String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  @@index([caseId, createdAt])
+  @@map("capa_transitions")
 }
 
 // ==========================================
@@ -2937,44 +2969,44 @@ model IntegrationEndpoint {
   id              String   @id @default(uuid())
   name            String
   facilityId      String?
-  protocol        String   // e.g. "REST", "HL7_V2", "FHIR", "DICOMWEB"
+  protocol        String // e.g. "REST", "HL7_V2", "FHIR", "DICOMWEB"
   url             String
-  secretReference String?  // Reference to vault/secret manager. NEVER plaintext.
+  secretReference String? // Reference to vault/secret manager. NEVER plaintext.
   version         String   @default("1.0")
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  mappings        IntegrationMapping[]
+  mappings IntegrationMapping[]
 
   @@index([facilityId, protocol])
   @@map("integration_endpoints")
 }
 
 model IntegrationMapping {
-  id              String   @id @default(uuid())
-  endpointId      String
-  endpoint        IntegrationEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
-  messageType     String   // e.g. "STUDY_CREATED", "REPORT_FINALIZED"
-  schemaVersion   String   @default("1.0")
-  mappingConfig   String   @db.Text // JSON logic for mapping payload
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String              @id @default(uuid())
+  endpointId    String
+  endpoint      IntegrationEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  messageType   String // e.g. "STUDY_CREATED", "REPORT_FINALIZED"
+  schemaVersion String              @default("1.0")
+  mappingConfig String              @db.Text // JSON logic for mapping payload
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 
   @@index([endpointId, messageType])
   @@map("integration_mappings")
 }
 
 model InboxMessage {
-  id              String   @id @default(uuid())
+  id               String    @id @default(uuid())
   sourceEndpointId String?
-  payloadJson     String   @db.Text
-  idempotencyKey  String   @unique
-  status          String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
-  retryCount      Int      @default(0)
-  lastError       String?  @db.Text
-  receivedAt      DateTime @default(now())
-  processedAt     DateTime?
+  payloadJson      String    @db.Text
+  idempotencyKey   String    @unique
+  status           String    @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  retryCount       Int       @default(0)
+  lastError        String?   @db.Text
+  receivedAt       DateTime  @default(now())
+  processedAt      DateTime?
 
   @@index([status, receivedAt])
   @@map("inbox_messages")

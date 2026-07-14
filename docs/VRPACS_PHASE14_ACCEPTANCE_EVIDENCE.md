@@ -1,7 +1,7 @@
 # VRPACS Phase 14 Acceptance Evidence
 
-Updated: 2026-07-13  
-Status: **TEMPLATE - NOT IMPLEMENTED / NOT ACCEPTED**
+Updated: 2026-07-14
+Status: **BLOCKED - MANDATORY CAPABILITIES MISSING**
 
 ## 1. Release And Topology
 
@@ -19,8 +19,8 @@ Status: **TEMPLATE - NOT IMPLEMENTED / NOT ACCEPTED**
 
 | ID | Criterion | Status | Automated/conformance evidence | Drill/manual evidence | Owner |
 | --- | --- | --- | --- | --- | --- |
-| P14-AC-01 | Message idempotency/correlation | Pending | TBD | TBD | Integration |
-| P14-AC-02 | Mapping version/rollback | Pending | TBD | TBD | Integration |
+| P14-AC-01 | Message idempotency/correlation | PARTIAL | Integration gateway/inbox implementation and unit tests | No deployed-endpoint or database replay drill | Integration |
+| P14-AC-02 | Mapping version/rollback | PARTIAL | Phase 14 mapping schema and gateway tests | No rollback rehearsal | Integration |
 | P14-AC-03 | Organization/facility isolation | Pending | TBD | TBD | Security |
 | P14-AC-04 | Federation/privileged access | Pending | TBD | TBD | IAM/Security |
 | P14-AC-05 | Backup integrity/isolated restore | Pending | TBD | TBD | DBA/SRE |
@@ -56,9 +56,11 @@ Status: **TEMPLATE - NOT IMPLEMENTED / NOT ACCEPTED**
 
 | Role | Decision | Name/date | Conditions |
 | --- | --- | --- | --- |
-| Integration Owner | Pending | TBD | |
-| Security/IAM/Privacy | Pending | TBD | |
-| DBA/SRE | Pending | TBD | |
-| Clinical Operations | Pending | TBD | |
-| Business Continuity | Pending | TBD | |
-| QA/Release | Pending | TBD | |
+| Integration Owner | BLOCKED | TBD | Pending idempotency, retry, and out-of-order tests |
+| Security/IAM/Privacy | BLOCKED | TBD | Pending cross-facility negative matrix, federation tests |
+| DBA/SRE | BLOCKED | TBD | Pending backup restoration, DR failover/failback tests |
+| Clinical Operations | BLOCKED | TBD | Pending capacity qualification and runbook review |
+| Business Continuity | BLOCKED | TBD | Pending RPO/RTO validation |
+| QA/Release | BLOCKED | TBD | Pending data/message/object reconciliation evidence |
+
+The repository integration suites are mock/unit-level evidence only; enabled-profile conformance, real endpoint behavior, HA, backup/restore and DR remain `NOT RUN`.

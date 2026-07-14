@@ -1,7 +1,7 @@
 # VRPACS Phase 11 Completion Evidence
 
-Updated: 2026-07-13  
-Status: **OPEN - NOT YET ACCEPTED**  
+Updated: 2026-07-14
+Status: **BLOCKED - MANDATORY CAPABILITIES MISSING**
 Controlling plans:
 
 - `VRPACS_PHASE11_QUALITY_ANALYTICS_CLINICAL_GOVERNANCE_PLAN.md`
@@ -19,10 +19,10 @@ Controlling plans:
 | Command Center UI | `dashboard/app/command-center/page.tsx`, `CommandCenterGrids.tsx`, `actions.ts` | Partial |
 | SLA resolver | Existing resolver and unit tests | Partial |
 | Statistics QC indicator | `dashboard/app/statistics/*` | Partial; not first-class QC workflow |
-| Quality Center | No complete `/quality` module verified | Missing |
-| Policy administration | No complete SLA/control-threshold admin UI verified | Missing |
-| Peer review | No complete implementation verified | Missing |
-| Data quality center | No complete persisted lifecycle verified | Missing |
+| Quality Center | `/quality` routes and Phase 11 services are present; end-to-end qualification is absent | Partial |
+| Policy administration | SLA/control-threshold routes and services are present; CRUD/authz/UAT evidence is absent | Partial |
+| Peer review | Legacy UI/service plus Phase 13 sampling foundation are present; confidentiality, scope and clinical UAT remain unproven | Partial |
+| Data quality center | Route/service foundation is present; deduplication, persisted lifecycle and reconciliation remain unproven | Partial |
 | Phase acceptance | No signed UAT/load/security/migration evidence | Missing |
 
 ## 2. Reconciliation Register
@@ -33,13 +33,13 @@ Use status: `NOT_STARTED`, `PARTIAL`, `PASS`, `FAIL`, `DEFERRED_APPROVED`.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P11-AC-01 | Coordinator Command Center | PARTIAL | Command Center files above | TBD | TBD | Operations | Scale/read-side effects must be reviewed |
 | P11-AC-02 | Scoped queue and drilldown | PARTIAL | TBD | TBD | TBD | Operations/Security | Prove aggregate scope |
-| P11-AC-03 | SLA policy CRUD/resolution | PARTIAL | Schema/resolver | TBD | TBD | Product/Admin | Admin UI missing |
+| P11-AC-03 | SLA policy CRUD/resolution | PARTIAL | Schema/resolver/admin route | Existing resolver tests | TBD | Product/Admin | CRUD/authz/UAT not evidenced |
 | P11-AC-04 | TAT percentiles/completeness | NOT_STARTED | TBD | TBD | TBD | Analytics | Missing timestamps must be explicit |
 | P11-AC-05 | Workload/throughput/utilization | PARTIAL | Statistics/Command Center | TBD | TBD | Operations | Utilization may be estimated |
 | P11-AC-06 | Critical-result lifecycle | PARTIAL | CriticalResult schema/basic action | TBD | TBD | Clinical Safety | Full queue/escalation absent |
-| P11-AC-07 | Peer review/discrepancy | NOT_STARTED | TBD | TBD | TBD | Clinical Quality | Immutable report revision required |
-| P11-AC-08 | QC reject/re-scan | NOT_STARTED | TBD | TBD | TBD | Clinical Quality | Do not erase source images/history |
-| P11-AC-09 | Data Quality Center | NOT_STARTED | TBD | TBD | TBD | Data Owner | Dedup and persisted lifecycle required |
+| P11-AC-07 | Peer review/discrepancy | PARTIAL | `app/quality/peer-review`, `lib/qualityService.ts`, Phase 13 sampling foundation | Phase 13 service unit tests | TBD | Clinical Quality | Immutable revision/confidentiality/UAT required |
+| P11-AC-08 | QC reject/re-scan | PARTIAL | `app/quality/qc-rejects`, `lib/qualityService.ts` | TBD | TBD | Clinical Quality | Provenance and source-image/history safeguards unproven |
+| P11-AC-09 | Data Quality Center | PARTIAL | `app/quality/data-quality`, `lib/dataQualityService.ts` | TBD | TBD | Data Owner | Dedup, persisted lifecycle and reconciliation required |
 | P11-AC-10 | Alert rules/evaluator/center | PARTIAL | Alert schema and current signals | TBD | TBD | Operations | Durable worker required |
 | P11-AC-11 | Control thresholds | PARTIAL | Schema | TBD | TBD | Operations | Registry/admin/preview missing |
 | P11-AC-12 | Permission/scope enforcement | PARTIAL | Current authz infrastructure | TBD | TBD | Security | Test sensitive paths |
@@ -91,10 +91,10 @@ Add phase-specific migration, authorization regression, load, accessibility, wor
 
 | Role | Name | Decision | Date | Conditions |
 | --- | --- | --- | --- | --- |
-| Product Owner | TBD | Pending | TBD | |
-| Clinical Quality/Safety | TBD | Pending | TBD | |
-| Security/Privacy | TBD | Pending | TBD | |
-| Operations/SRE | TBD | Pending | TBD | |
-| QA/Release | TBD | Pending | TBD | |
+| Product Owner | TBD | BLOCKED | TBD | Admin/data-quality qualification and performance testing incomplete |
+| Clinical Quality/Safety | TBD | BLOCKED | TBD | Peer review, critical-result escalation and QC workflows lack required clinical evidence |
+| Security/Privacy | TBD | BLOCKED | TBD | Scope/queue drilldown and sensitive-path regressions missing |
+| Operations/SRE | TBD | BLOCKED | TBD | Worker reliability, load budgets, and alerts not fully implemented |
+| QA/Release | TBD | BLOCKED | TBD | Test automation suites, UAT, and rollout/rollback drills missing |
 
 Phase 11 may be changed to `ACCEPTED` only when all mandatory evidence is complete, no critical/high unaccepted defect remains, and all required owners sign.
