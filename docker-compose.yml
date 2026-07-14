@@ -53,7 +53,11 @@ services:
 
   dashboard:
     build:
-      context: ./dashboard
+      # Use the repository root so dashboard/Dockerfile can embed the release
+      # flags. The runtime bind mount below remains the operator override and
+      # rollback mechanism.
+      context: .
+      dockerfile: dashboard/Dockerfile
       args:
         NEXT_PUBLIC_PHASE4_WORKSPACE: "true"
         NEXT_PUBLIC_ENABLE_REPORT_PANEL: ${NEXT_PUBLIC_ENABLE_REPORT_PANEL:-false}

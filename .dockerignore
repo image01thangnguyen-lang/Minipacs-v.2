@@ -1,0 +1,6 @@
+**
+!dashboard/
+!dashboard/**
+!config/
+!config/release/
+!config/release/**
