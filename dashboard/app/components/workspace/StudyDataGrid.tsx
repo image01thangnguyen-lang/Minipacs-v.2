@@ -82,6 +82,14 @@ export function StudyDataGrid({
       });
     }
 
+    if (isVis("hisVisitId")) {
+      cols.push({
+        id: "hisVisitId",
+        header: "Mã LK",
+        cell: (study) => <div className="font-mono text-vin-text2">{fmtText(study.hisVisitId)}</div>
+      });
+    }
+
     if (isVis("patientSex")) {
       cols.push({
         id: "patientSex",
@@ -191,11 +199,58 @@ export function StudyDataGrid({
               <div className={`max-w-[150px] truncate font-semibold ${assignedName ? "text-vin-text2" : "text-amber-200"}`}>
                 {assignedName || "Chưa gán bác sĩ"}
               </div>
-              <div className="mt-0.5 max-w-[150px] truncate text-[10px] text-vin-muted">
-                {study.ReportDoctorName ? `Report: ${study.ReportDoctorName}` : `SLA: ${fmtDuration(study.waitingMinutes) || study.slaStatus}`}
+              <div className="mt-0.5 flex max-w-[150px] items-center gap-1 truncate text-[10px] text-vin-muted">
+                <span>{study.ReportDoctorName ? `Report: ${study.ReportDoctorName}` : `SLA: ${fmtDuration(study.waitingMinutes) || "-"}`}</span>
+                {study.slaStatus && <SlaStatusBadge status={study.slaStatus} />}
               </div>
             </>
           );
+        }
+      });
+    }
+
+    if (isVis("reviewerName")) {
+      cols.push({
+        id: "reviewerName",
+        header: "BS Duyệt",
+        cell: (study) => <div className="max-w-[150px] truncate text-vin-text2">{fmtText(study.reviewerName)}</div>
+      });
+    }
+
+    if (isVis("reportConclusion")) {
+      cols.push({
+        id: "reportConclusion",
+        header: "Kết luận",
+        cell: (study) => (
+          <div className="max-w-[250px] truncate text-[11px] text-vin-text2" title={study.reportConclusion || ""}>
+            {fmtText(study.reportConclusion)}
+          </div>
+        )
+      });
+    }
+
+    if (isVis("aiStatus")) {
+      cols.push({
+        id: "aiStatus",
+        header: "AI",
+        align: "center",
+        cell: (study) => {
+          if (!study.aiStatus || study.aiStatus === "NOT_RUN") {
+            return <span className="text-[10px] text-vin-muted">-</span>;
+          }
+          if (study.aiStatus === "RUNNING") {
+            return <span className="text-[10px] text-blue-400">Đang chạy</span>;
+          }
+          if (study.aiStatus === "NORMAL") {
+            return <span className="rounded bg-emerald-900/40 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-400">Bình thường</span>;
+          }
+          if (study.aiStatus === "ABNORMAL") {
+            return <span className="rounded bg-red-900/40 px-1.5 py-0.5 text-[10px] font-bold text-red-400" title={`Số lượng bất thường: ${study.aiFindingCount || 0}`}>Bất thường</span>;
+          }
+          if (study.aiStatus === "FAILED") {
+            return <span className="text-[10px] text-red-500">Lỗi</span>;
+          }
+          return <span className="text-[10px] text-vin-muted">{study.aiStatus}</span>;
         }
       });
     }
@@ -292,4 +347,16 @@ export function StudyDataGrid({
       virtualizationThreshold={150}
     />
   );
+}
+
+function SlaStatusBadge({ status }: { status: string }) {
+  const classes = status === "VIOLATED"
+    ? "bg-red-900/40 text-red-300"
+    : status === "WARNING"
+      ? "bg-amber-900/40 text-amber-300"
+      : status === "NORMAL"
+        ? "bg-emerald-900/40 text-emerald-300"
+        : "bg-vin-sidebar text-vin-muted";
+  const label = status === "VIOLATED" ? "Quá hạn" : status === "WARNING" ? "Sắp hạn" : status === "NORMAL" ? "Đúng hạn" : status;
+  return <span className={`rounded px-1 py-0.5 font-semibold ${classes}`}>{label}</span>;
 }

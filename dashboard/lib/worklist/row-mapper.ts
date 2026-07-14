@@ -38,7 +38,8 @@ function calculateAgeAtStudy(dob?: Date | null, studyDate?: Date | null): number
 export function mapStudyToWorklistRow(
   study: PopulatedStudy,
   allowedActions: Record<string, boolean>,
-  usersMap: UserDictionary
+  usersMap: UserDictionary,
+  reviewerUserId?: string | null
 ): WorklistRow {
   const allowedActionsList = Object.entries(allowedActions || {})
     .filter(([_, allowed]) => allowed)
@@ -92,10 +93,27 @@ export function mapStudyToWorklistRow(
     referringDepartment: study.order?.referringDepartment || undefined,
     referringPhysician: study.order?.referringPhysician || undefined,
 
+    // Report info
+    reportStatus: latestReport?.status || null,
+    reportRevision: latestReport?.revision ?? null,
+    reportUpdatedAt: latestReport?.updatedAt?.toISOString() || null,
+    assignedDoctorName: study.assignedDoctorId ? usersMap[study.assignedDoctorId] || null : null,
+    reportConclusion: (allowedActions['readReport'] && latestReport?.conclusion) ? latestReport.conclusion : null,
+    reviewerName: reviewerUserId ? usersMap[reviewerUserId] || null : null,
+
+    // Integrations & non-dicom
+    sourceType: study.sourceType === "NON_DICOM" ? "NON_DICOM" : "DICOM",
+    mediaCount: study.mediaCount || 0,
+    hisVisitId: study.order?.hisVisitId || null,
+
+    // AI Analysis
+    aiStatus: null,
+    aiFindingCount: null,
+    aiSeverity: null,
+
     // People
     assignedDoctorId: study.assignedDoctorId || undefined,
-    assignedDoctorName: study.assignedDoctorId ? usersMap[study.assignedDoctorId] : undefined,
-    technologistName: study.technologistId ? usersMap[study.technologistId] : undefined,
+    technologistName: study.technologistId ? usersMap[study.technologistId] || undefined : undefined,
 
     // Integration
     hisSyncStatus: study.hisSyncStatus || undefined,

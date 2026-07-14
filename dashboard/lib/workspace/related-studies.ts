@@ -154,8 +154,22 @@ export async function queryRelatedStudies(
       stationAeTitle: study.stationAeTitle || undefined,
       
       assignedDoctorId: study.assignedDoctorId || undefined,
-      assignedDoctorName: undefined,
+      assignedDoctorName: null,
       
+      reportStatus: latestReport?.status || null,
+      reportRevision: null,
+      reportUpdatedAt: null,
+      reportConclusion: null,
+      reviewerName: null,
+
+      sourceType: study.sourceType === "NON_DICOM" ? "NON_DICOM" : "DICOM",
+      mediaCount: study.mediaCount || 0,
+      hisVisitId: null,
+
+      aiStatus: null,
+      aiFindingCount: null,
+      aiSeverity: null,
+
       hisSyncStatus: study.hisSyncStatus || undefined,
       
       allowedActions: allowedActionsList,

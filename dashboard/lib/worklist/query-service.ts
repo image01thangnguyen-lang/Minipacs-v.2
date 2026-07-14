@@ -115,9 +115,29 @@ export async function queryWorklist(
   itemsToMap.forEach(study => {
     if (study.assignedDoctorId) userIdsToFetch.add(study.assignedDoctorId);
     if (study.technologistId) userIdsToFetch.add(study.technologistId);
+    if (study.reports?.[0]?.doctorId) userIdsToFetch.add(study.reports[0].doctorId);
   });
 
   const usersMap: Record<string, string> = {};
+  const reportIds = itemsToMap.flatMap(study => study.reports?.[0]?.id ? [study.reports[0].id] : []);
+  const reviewerByReportId: Record<string, string> = {};
+  if (reportIds.length > 0) {
+    const reviewEvents = await prisma.auditLog.findMany({
+      where: {
+        entityType: "Report",
+        entityId: { in: reportIds },
+        action: { in: ["REPORT_APPROVED", "REPORT_FINALIZED"] },
+      },
+      select: { entityId: true, actorUserId: true },
+      orderBy: { createdAt: "desc" },
+    });
+    for (const event of reviewEvents) {
+      if (event.entityId && event.actorUserId && !reviewerByReportId[event.entityId]) {
+        reviewerByReportId[event.entityId] = event.actorUserId;
+        userIdsToFetch.add(event.actorUserId);
+      }
+    }
+  }
   if (userIdsToFetch.size > 0) {
     const users = await prisma.user.findMany({
       where: { id: { in: Array.from(userIdsToFetch) } },
@@ -129,7 +149,8 @@ export async function queryWorklist(
   // 6. Map to Contract
   const rows: WorklistRow[] = itemsToMap.map(study => {
     const actions = allowedActionsMap[study.id] || {};
-    return mapStudyToWorklistRow(study, actions, usersMap);
+    const reportId = study.reports?.[0]?.id;
+    return mapStudyToWorklistRow(study, actions, usersMap, reportId ? reviewerByReportId[reportId] : null);
   });
 
   return {

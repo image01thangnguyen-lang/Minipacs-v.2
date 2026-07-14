@@ -7,10 +7,21 @@ import {
 
 console.log("--- Workspace Preferences Tests ---");
 
-assert.equal(defaultWorkspacePreferences.version, 3);
+assert.equal(defaultWorkspacePreferences.version, 5);
 assert.equal(defaultWorkspacePreferences.columns.visible.length, 10);
-assert.equal(WorkspacePreferencesSchema.parse({ version: 1 }).version, 3);
-assert.equal(WorkspacePreferencesSchema.parse({ version: 2 }).version, 3);
+assert.equal(WorkspacePreferencesSchema.parse({ version: 1 }).version, 5);
+assert.equal(WorkspacePreferencesSchema.parse({ version: 2 }).version, 5);
+const legacy = WorkspacePreferencesSchema.parse({
+  version: 3,
+  columns: {
+    visible: ["patient"],
+    order: ["patient", "patientBirthDate", "patientSex", "ageAtStudy", "description", "procedureDescription", "modality", "bodyPart", "status", "assigned", "referringPhysician", "referringDepartment", "technologist", "date", "machine", "images"],
+  },
+});
+assert.equal(new Set(legacy.columns.order).size, legacy.columns.order.length);
+assert.ok(legacy.columns.order.includes("hisVisitId"));
+assert.ok(legacy.columns.order.includes("reviewerName"));
+assert.ok(legacy.columns.order.includes("reportConclusion"));
 console.log("✅ PASS: stable versioned defaults");
 
 assert.equal(WorkspacePreferencesSchema.safeParse({ density: "tiny" }).success, false);

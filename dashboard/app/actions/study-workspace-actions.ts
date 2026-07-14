@@ -49,15 +49,19 @@ export async function getStudyWorkspaceAction(
             procedureDescription: true,
             referringDepartment: true,
             referringPhysician: true,
+            hisVisitId: true,
           },
         },
         reports: {
           orderBy: { updatedAt: "desc" },
           take: 1,
           select: {
+            id: true,
             status: true,
             updatedAt: true,
             cancelledAt: true,
+            conclusion: true,
+            doctorId: true,
           },
         },
       },
@@ -111,14 +115,33 @@ export async function getStudyWorkspaceAction(
   const reportUpdatedAt = canReadReport
     ? (report?.updatedAt ? report.updatedAt.toISOString() : null)
     : null;
+  const reportConclusion = (canReadReport && report?.conclusion) ? report.conclusion : null;
 
   // 7. Resolve user names
   let assignedDoctorName: string | null = null;
   let technologistName: string | null = null;
+  let reviewerName: string | null = null;
 
   const userIdsToFetch: string[] = [];
   if (study.assignedDoctorId) userIdsToFetch.push(study.assignedDoctorId);
   if (study.technologistId) userIdsToFetch.push(study.technologistId);
+  let reviewEvent: { actorUserId: string | null } | null = null;
+  if (canReadReport && report) {
+    try {
+      reviewEvent = await prisma.auditLog.findFirst({
+        where: {
+          entityType: "Report",
+          entityId: report.id,
+          action: { in: ["REPORT_APPROVED", "REPORT_FINALIZED"] },
+        },
+        select: { actorUserId: true },
+        orderBy: { createdAt: "desc" },
+      });
+    } catch {
+      reviewEvent = null;
+    }
+  }
+  if (reviewEvent?.actorUserId) userIdsToFetch.push(reviewEvent.actorUserId);
 
   if (userIdsToFetch.length > 0) {
     try {
@@ -128,12 +151,15 @@ export async function getStudyWorkspaceAction(
       });
       const doctor = users.find(u => u.id === study.assignedDoctorId);
       const tech = users.find(u => u.id === study.technologistId);
+      const reviewer = users.find(u => u.id === reviewEvent?.actorUserId);
 
       assignedDoctorName = doctor?.fullName || doctor?.username || null;
       technologistName = tech?.fullName || tech?.username || null;
+      reviewerName = reviewer?.fullName || reviewer?.username || null;
     } catch {
       assignedDoctorName = null;
       technologistName = null;
+      reviewerName = null;
     }
   }
 
@@ -161,6 +187,15 @@ export async function getStudyWorkspaceAction(
     reportStatus,
     reportRevision,
     reportUpdatedAt,
+    reportConclusion,
+    reviewerName,
+    hisVisitId: study.order?.hisVisitId || null,
+    aiStatus: null,
+    aiFindingCount: null,
+    aiSeverity: null,
+    aiModelName: null,
+    aiModelVersion: null,
+    aiUpdatedAt: null,
     assignedDoctorName,
     facilityName,
     allowedActions,

@@ -8,15 +8,20 @@ export const AllowedStudyActionsSchema = z.object({
   share: z.boolean(), export: z.boolean(), editViewerArtifacts: z.boolean(),
 }).strict();
 
+export const AiStudyStatusSchema = z.enum([
+  "NOT_RUN", "RUNNING", "NORMAL", "ABNORMAL", "FAILED",
+]);
+
 // ─── Response schema ────────────────────────────────────────────────────────────
 
 /**
  * Typed workspace detail for Region 7 (PatientStudyContextPanel).
  *
  * Design invariants:
- * - Field minimization: no report text/findings/conclusion/recommendation.
+ * - Field minimization: no report text/findings/recommendation; conclusion is
+ *   permission-gated and null unless allowedActions.readReport is true.
  * - Report permission split: if allowedActions.readReport is false,
- *   report-specific fields (reportStatus, reportRevision, reportUpdatedAt) are null.
+ *   report-specific fields (including reportConclusion) are null.
  * - No PHI beyond the minimum needed for the study header display.
  */
 export const StudyWorkspaceDetailSchema = z.object({
@@ -39,6 +44,15 @@ export const StudyWorkspaceDetailSchema = z.object({
   reportStatus: z.string().nullable(),
   reportRevision: z.number().int().nullable(),
   reportUpdatedAt: z.string().nullable(),
+  reportConclusion: z.string().nullable(),
+  reviewerName: z.string().nullable(),
+  hisVisitId: z.string().nullable(),
+  aiStatus: AiStudyStatusSchema.nullable(),
+  aiFindingCount: z.number().int().nonnegative().nullable(),
+  aiSeverity: z.string().nullable(),
+  aiModelName: z.string().nullable().default(null),
+  aiModelVersion: z.string().nullable().default(null),
+  aiUpdatedAt: z.string().nullable().default(null),
   assignedDoctorName: z.string().nullable(),
   facilityName: z.string().nullable(),
   allowedActions: AllowedStudyActionsSchema,

@@ -91,6 +91,7 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
             <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Bệnh nhân</h3>
             <InfoRow label="Họ tên" value={fmtName(state.data.patientName || undefined)} />
             <InfoRow label="Mã BN" value={state.data.patientId} mono />
+            <InfoRow label="Mã LK" value={state.data.hisVisitId} mono />
             <InfoRow label="Giới tính" value={fmtSex(state.data.patientSex || undefined)} />
             <InfoRow label="Ngày sinh" value={state.data.patientBirthDate} />
           </section>
@@ -125,6 +126,7 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
           <section aria-label="Study status">
             <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Báo cáo</h3>
             <InfoRow label="BS Đọc" value={state.data.assignedDoctorName} />
+            <InfoRow label="BS Duyệt" value={state.data.reviewerName} />
             <div className="flex flex-wrap gap-2 py-1">
               <RisStatusBadge status={state.data.status} />
               {state.data.reportStatus && (
@@ -135,6 +137,46 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
             </div>
             {state.data.reportUpdatedAt && (
               <InfoRow label="Cập nhật" value={fmtDateTimeIso(state.data.reportUpdatedAt)} />
+            )}
+
+            {/* Conclusion if authorized */}
+            {state.data.reportConclusion && (
+              <div className="mt-2 text-[11px]">
+                <span className="font-medium text-vin-muted mr-1">Kết luận:</span>
+                <span className="text-vin-text2">{state.data.reportConclusion}</span>
+              </div>
+            )}
+          </section>
+
+          <hr className="my-3 border-vin-border" />
+
+          {/* AI Analysis */}
+          <section aria-label="AI Analysis">
+            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Phân tích AI</h3>
+            {(!state.data.aiStatus || state.data.aiStatus === "NOT_RUN") ? (
+              <div className="text-[11px] text-vin-muted italic">Chưa chạy AI</div>
+            ) : (
+              <>
+                <div className="flex flex-wrap gap-2 py-1">
+                  {state.data.aiStatus === "RUNNING" && <span className="text-[10px] text-blue-400">Đang chạy</span>}
+                  {state.data.aiStatus === "NORMAL" && <span className="rounded bg-emerald-900/40 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-400">Bình thường</span>}
+                  {state.data.aiStatus === "ABNORMAL" && <span className="rounded bg-red-900/40 px-1.5 py-0.5 text-[10px] font-bold text-red-400">Bất thường</span>}
+                  {state.data.aiStatus === "FAILED" && <span className="text-[10px] text-red-500">Lỗi</span>}
+                </div>
+                {state.data.aiStatus === "ABNORMAL" && state.data.aiFindingCount != null && (
+                  <InfoRow label="Số lượng" value={`${state.data.aiFindingCount} điểm`} />
+                )}
+                {state.data.aiSeverity && (
+                  <InfoRow label="Mức độ" value={state.data.aiSeverity} />
+                )}
+                {(state.data.aiModelName || state.data.aiModelVersion) && (
+                  <InfoRow label="Nguồn AI" value={[state.data.aiModelName, state.data.aiModelVersion].filter(Boolean).join(" · ")} />
+                )}
+                {state.data.aiUpdatedAt && (
+                  <InfoRow label="Cập nhật" value={fmtDateTimeIso(state.data.aiUpdatedAt)} />
+                )}
+                <div className="mt-1 text-[10px] italic text-vin-muted">Thông tin hỗ trợ, không thay thế kết luận của bác sĩ.</div>
+              </>
             )}
           </section>
 

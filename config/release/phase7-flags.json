@@ -18,5 +18,5 @@
   { "version": 1, "capability": "antd-consultations", "enabled": false, "percentage": 0, "allowFacilityIds": [], "denyFacilityIds": [], "dependencies": [] },
   { "version": 1, "capability": "antd-archive", "enabled": false, "percentage": 0, "allowFacilityIds": [], "denyFacilityIds": [], "dependencies": [] },
   { "version": 1, "capability": "antd-worklist", "enabled": false, "percentage": 0, "allowFacilityIds": [], "denyFacilityIds": [], "dependencies": [] },
-  { "version": 1, "capability": "antd-workspace", "enabled": false, "percentage": 0, "allowFacilityIds": [], "denyFacilityIds": [], "dependencies": ["observability"] }
+  { "version": 1, "capability": "antd-workspace", "enabled": true, "percentage": 100, "allowFacilityIds": [], "denyFacilityIds": [], "dependencies": ["observability"] }
 ]

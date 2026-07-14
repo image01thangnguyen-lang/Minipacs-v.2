@@ -27,6 +27,12 @@ const valid = StudyWorkspaceDetailSchema.safeParse({
   reportStatus: null,
   reportRevision: null,
   reportUpdatedAt: null,
+  reportConclusion: null,
+  reviewerName: null,
+  hisVisitId: "VISIT-001",
+  aiStatus: null,
+  aiFindingCount: null,
+  aiSeverity: null,
   assignedDoctorName: null,
   facilityName: "Hospital A",
   allowedActions: {
@@ -50,6 +56,8 @@ assert.equal(
     bodyPart: null, referringPhysician: null, referringDepartment: null,
     technologistName: null, machineName: null, status: "READY_TO_READ",
     reportStatus: null, reportRevision: null, reportUpdatedAt: null,
+    reportConclusion: null, reviewerName: null, hisVisitId: null,
+    aiStatus: null, aiFindingCount: null, aiSeverity: null,
     assignedDoctorName: null, facilityName: null, allowedActions: valid.data!.allowedActions,
     reportText: "LEAKED",  // forged field
   }).success,
@@ -67,6 +75,8 @@ assert.equal(
     bodyPart: null, referringPhysician: null, referringDepartment: null,
     technologistName: null, machineName: null, status: "READY_TO_READ",
     reportStatus: null, reportRevision: null, reportUpdatedAt: null,
+    reportConclusion: null, reviewerName: null, hisVisitId: null,
+    aiStatus: null, aiFindingCount: null, aiSeverity: null,
     assignedDoctorName: null, facilityName: null, allowedActions: valid.data!.allowedActions,
   }).success,
   false

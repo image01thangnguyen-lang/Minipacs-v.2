@@ -17,6 +17,10 @@ export const WORKSPACE_COLUMN_IDS = [
   "date",
   "machine",
   "images",
+  "hisVisitId",
+  "reviewerName",
+  "reportConclusion",
+  "aiStatus",
 ] as const;
 
 export const WorkspaceColumnIdSchema = z.enum(WORKSPACE_COLUMN_IDS);
@@ -52,15 +56,35 @@ export const WorkspaceLayoutSchema = z.object({
   relatedHeight: z.number().int().min(150).max(600).default(250),
 }).strict();
 
-export const WorkspacePreferencesSchema = z.object({
-  // Migrate legacy versions up to version 3
-  version: z.preprocess(value => (value === 1 || value === 2) ? 3 : value, z.literal(3).default(3)),
+export const WorkspacePreferencesSchemaInner = z.object({
+  // Version 5 adds P2 columns; preprocessing preserves and extends legacy order.
+  version: z.literal(5).default(5),
   density: z.enum(["compact", "comfortable"]).default("comfortable"),
   columns: WorkspaceColumnsSchema.default({}),
   layout: WorkspaceLayoutSchema.default({}),
 }).strict();
 
-export const WorkspacePreferencesUpdateSchema = WorkspacePreferencesSchema.partial()
+export const WorkspacePreferencesSchema = z.preprocess((value) => {
+  if (!value || typeof value !== "object") return value;
+  const input = value as Record<string, unknown>;
+  const columns = input.columns && typeof input.columns === "object"
+    ? input.columns as Record<string, unknown>
+    : undefined;
+  const legacyOrder = Array.isArray(columns?.order) ? columns.order : [];
+  const migratedOrder = [
+    ...legacyOrder.filter((id): id is typeof WORKSPACE_COLUMN_IDS[number] =>
+      WORKSPACE_COLUMN_IDS.includes(id as typeof WORKSPACE_COLUMN_IDS[number])
+    ),
+    ...WORKSPACE_COLUMN_IDS.filter(id => !legacyOrder.includes(id as any)),
+  ];
+  return {
+    ...input,
+    version: 5,
+    ...(columns ? { columns: { ...columns, order: migratedOrder } } : {}),
+  };
+}, WorkspacePreferencesSchemaInner);
+
+export const WorkspacePreferencesUpdateSchema = WorkspacePreferencesSchemaInner.partial()
   .extend({ 
     columns: WorkspaceColumnsSchema.partial().optional(),
     layout: WorkspaceLayoutSchema.partial().optional(),

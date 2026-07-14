@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // --- Validations & Enums ---
 
-export const WORKLIST_CONTRACT_VERSION = 2 as const;
+export const WORKLIST_CONTRACT_VERSION = 4 as const;
 
 const IsoDateTimeSchema = z.string().datetime({ offset: true });
 const IanaTimezoneSchema = z.string().min(1).max(100).refine((timezone) => {
@@ -123,9 +123,26 @@ export interface WorklistRow {
   referringDepartment?: string;
   referringPhysician?: string;
 
+  // Report info
+  reportStatus: string | null;
+  reportRevision: number | null; // For optimistic concurrency
+  reportUpdatedAt: string | null; // ISO datetime of last report update
+  assignedDoctorName: string | null;
+  reportConclusion: string | null;
+  reviewerName: string | null;
+
+  // Integrations & non-dicom
+  sourceType: "DICOM" | "NON_DICOM";
+  mediaCount: number;
+  hisVisitId: string | null;
+
+  // AI Analysis
+  aiStatus: "NOT_RUN" | "RUNNING" | "NORMAL" | "ABNORMAL" | "FAILED" | null;
+  aiFindingCount: number | null;
+  aiSeverity: string | null;
+
   // People
   assignedDoctorId?: string;
-  assignedDoctorName?: string;
   technologistName?: string;
 
   // Integration

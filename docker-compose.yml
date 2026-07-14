@@ -75,9 +75,10 @@ services:
       - WORKER_SECRET=${WORKER_SECRET:-}
       - DATABASE_URL=postgresql://orthanc:${POSTGRES_PASSWORD}@db:5432/orthanc_db?schema=dashboard
     volumes:
-      - ./dashboard:/app
-      - /app/node_modules
-      - /app/.next
+      # Server-side rollout flags live outside the dashboard Docker build
+      # context. Mount them explicitly so the route does not silently fall
+      # back to the legacy workspace when the config file cannot be read.
+      - ./config/release:/config/release:ro
       - pacs_report_images:/app/pacs_data/report_images
       - pacs_worklists:/app/pacs_data/worklists
       - pacs_exports:/app/pacs_data/exports
