@@ -15,7 +15,7 @@ export default async function CommandCenterPage() {
     try {
       const deps = {
         authenticate: async () => ({ userId: user.id }),
-        reauthorizeResource: async () => ({ facilityId: (user as any).activeFacilityId || "" }),
+        reauthorizeResource: async () => ({ facilityId: (user as any).activeFacilityId || "global" }),
         loadConfig: loadPhase7FlagConfig,
         audit: () => {},
       };

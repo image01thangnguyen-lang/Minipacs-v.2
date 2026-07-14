@@ -11,7 +11,7 @@ export default async function UsersPage() {
   try {
     const deps = {
       authenticate: async () => ({ userId: session.user.id }),
-      reauthorizeResource: async () => ({ facilityId: session.user.activeFacilityId }),
+      reauthorizeResource: async () => ({ facilityId: session.user.activeFacilityId || "global" }),
       loadConfig: loadPhase7FlagConfig,
       audit: () => {},
     };
@@ -19,7 +19,7 @@ export default async function UsersPage() {
     // Pass mock request payload to match schema
     const decision = await evaluateScopedCapability({
       capability: "antd-admin-users",
-      resourceId: session.user.activeFacilityId
+      resourceId: session.user.activeFacilityId || "global"
     }, deps);
 
     useAntd = decision.enabled;

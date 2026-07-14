@@ -9,14 +9,14 @@ export default async function FacilitiesPage() {
   try {
     const deps = {
       authenticate: async () => ({ userId: session.user.id }),
-      reauthorizeResource: async () => ({ facilityId: session.user.activeFacilityId }),
+      reauthorizeResource: async () => ({ facilityId: session.user.activeFacilityId || "global" }),
       loadConfig: loadPhase7FlagConfig,
       audit: () => {},
     };
 
     const decision = await evaluateScopedCapability({
       capability: "antd-admin-facilities",
-      resourceId: session.user.activeFacilityId
+      resourceId: session.user.activeFacilityId || "global"
     }, deps);
 
     useAntd = decision.enabled;

@@ -13,14 +13,14 @@ export default async function AccountSettingsPage() {
   try {
     const deps = {
       authenticate: async () => ({ userId: session?.user?.id || "" }),
-      reauthorizeResource: async () => ({ facilityId: (session?.user as any)?.activeFacilityId || "" }),
+      reauthorizeResource: async () => ({ facilityId: (session?.user as any)?.activeFacilityId || "global" }),
       loadConfig: loadPhase7FlagConfig,
       audit: () => {},
     };
 
     const decision = await evaluateScopedCapability({
       capability: "antd-admin-settings",
-      resourceId: (session?.user as any)?.activeFacilityId || ""
+      resourceId: (session?.user as any)?.activeFacilityId || "global"
     }, deps);
 
     useAntd = decision.enabled;
