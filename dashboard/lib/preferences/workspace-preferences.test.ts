@@ -7,9 +7,10 @@ import {
 
 console.log("--- Workspace Preferences Tests ---");
 
-assert.equal(defaultWorkspacePreferences.version, 2);
-assert.equal(defaultWorkspacePreferences.columns.visible.length, 7);
-assert.equal(WorkspacePreferencesSchema.parse({ version: 1 }).version, 2);
+assert.equal(defaultWorkspacePreferences.version, 3);
+assert.equal(defaultWorkspacePreferences.columns.visible.length, 10);
+assert.equal(WorkspacePreferencesSchema.parse({ version: 1 }).version, 3);
+assert.equal(WorkspacePreferencesSchema.parse({ version: 2 }).version, 3);
 console.log("✅ PASS: stable versioned defaults");
 
 assert.equal(WorkspacePreferencesSchema.safeParse({ density: "tiny" }).success, false);

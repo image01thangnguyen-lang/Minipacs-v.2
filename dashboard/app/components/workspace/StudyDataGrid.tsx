@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { SharedDataGrid } from "../ui/data-grid/DataGrid";
 import { ColumnDef } from "../ui/shared-contracts";
-import { fmtName, fmtText, fmtSex, fmtAge, fmtDateTime, fmtDuration } from "./formatters";
+import { fmtName, fmtText, fmtSex, fmtAge, fmtDateTime, fmtDateTimeIso, fmtDuration } from "./formatters";
 import { ModBadge, RisStatusBadge } from "./badges";
 import { WorkspaceColumnIdSchema, WorkspacePreferences } from "../../../lib/preferences/workspace-preferences";
 
@@ -28,10 +28,12 @@ export function StudyDataGrid({
   renderActions,
   preferences,
 }: StudyDataGridProps) {
-  const isVis = (colId: typeof WorkspaceColumnIdSchema._type) =>
-    !preferences || preferences.columns.visible.includes(colId);
+  const visibleColumns = preferences?.columns.visible;
 
   const columns = useMemo<ColumnDef<any>[]>(() => {
+    const isVis = (colId: typeof WorkspaceColumnIdSchema._type) =>
+      !visibleColumns || visibleColumns.includes(colId);
+
     const cols: ColumnDef<any>[] = [
       {
         id: "index",
@@ -51,17 +53,50 @@ export function StudyDataGrid({
         pinnedOffset: 36,
         minWidth: 200,
         cell: (study) => {
-          const patient = study.PatientMainDicomTags || {};
+          const patientName = study.patientName || study.PatientMainDicomTags?.PatientName;
+          const patientId = study.patientId || study.PatientMainDicomTags?.PatientID;
+          const sex = study.patientSex || study.PatientMainDicomTags?.PatientSex;
+          const age = study.ageAtStudy ?? study.PatientMainDicomTags?.PatientAge;
+
           return (
             <>
               <div className="max-w-[210px] truncate font-semibold uppercase tracking-[0.01em] text-white">
-                {fmtName(patient.PatientName)}
+                {fmtName(patientName)}
               </div>
               <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
-                {fmtText(patient.PatientID)} &bull; {fmtSex(patient.PatientSex)} &bull; {fmtAge(patient.PatientAge)}T
+                {fmtText(patientId)} &bull; {fmtSex(sex)} &bull; {age != null ? `${fmtAge(age)}T` : "-"}
               </div>
             </>
           );
+        }
+      });
+    }
+
+    if (isVis("patientBirthDate")) {
+      cols.push({
+        id: "patientBirthDate",
+        header: "Ngày sinh",
+        cell: (study) => {
+          return <div className="font-mono text-vin-text2">{study.patientBirthDate ? fmtDateTimeIso(study.patientBirthDate).split(" ")[0] : "-"}</div>;
+        }
+      });
+    }
+
+    if (isVis("patientSex")) {
+      cols.push({
+        id: "patientSex",
+        header: "Giới tính",
+        cell: (study) => <div className="text-vin-text2">{fmtSex(study.patientSex || study.PatientMainDicomTags?.PatientSex)}</div>
+      });
+    }
+
+    if (isVis("ageAtStudy")) {
+      cols.push({
+        id: "ageAtStudy",
+        header: "Tuổi",
+        cell: (study) => {
+          const age = study.ageAtStudy ?? study.PatientMainDicomTags?.PatientAge;
+          return <div className="text-vin-text2">{age != null ? `${fmtAge(age)}` : "-"}</div>;
         }
       });
     }
@@ -72,17 +107,35 @@ export function StudyDataGrid({
         header: "Mô tả",
         cell: (study) => {
           const main = study.MainDicomTags || {};
+          const procDesc = study.procedureDescription || main.StudyDescription;
+          const accNumber = study.accessionNumber || main.AccessionNumber;
           return (
             <>
-              <div className="max-w-[260px] truncate font-medium text-vin-text2" title={study.procedureDescription || main.StudyDescription || ""}>
-                {fmtText(study.procedureName || study.procedureDescription || main.StudyDescription)}
+              <div className="max-w-[260px] truncate font-medium text-vin-text2" title={procDesc || ""}>
+                {fmtText(study.procedureName || procDesc)}
               </div>
               <div className="mt-0.5 max-w-[260px] truncate font-mono text-[10px] text-vin-muted">
-                {fmtText(study.procedureCode || main.AccessionNumber)}{study.serviceTypeName ? ` · ${study.serviceTypeName}` : ""}
+                {fmtText(study.procedureCode || accNumber)}{study.serviceTypeName ? ` · ${study.serviceTypeName}` : ""}
               </div>
             </>
           );
         }
+      });
+    }
+
+    if (isVis("procedureDescription")) {
+      cols.push({
+        id: "procedureDescription",
+        header: "Chỉ định",
+        cell: (study) => <div className="max-w-[200px] truncate">{fmtText(study.procedureDescription)}</div>
+      });
+    }
+
+    if (isVis("bodyPart")) {
+      cols.push({
+        id: "bodyPart",
+        header: "Bộ phận",
+        cell: (study) => <div className="text-vin-text2">{fmtText(study.bodyPart)}</div>
       });
     }
 
@@ -106,7 +159,7 @@ export function StudyDataGrid({
         cell: (study) => {
           return (
             <>
-              <RisStatusBadge status={study.WorkflowStatus} />
+              <RisStatusBadge status={study.status || study.WorkflowStatus} />
               {(study.hisSyncStatus || study.hisResultStatus) && (
                 <div className="mt-1 flex flex-col gap-0.5 text-[9px] font-semibold">
                   {study.hisSyncStatus && (
@@ -132,17 +185,42 @@ export function StudyDataGrid({
         id: "assigned",
         header: "Phụ trách",
         cell: (study) => {
+          const assignedName = study.assignedDoctorName || study.AssignedDoctorName;
           return (
             <>
-              <div className={`max-w-[150px] truncate font-semibold ${study.AssignedDoctorName ? "text-vin-text2" : "text-amber-200"}`}>
-                {study.AssignedDoctorName || "Chua gan bac si"}
+              <div className={`max-w-[150px] truncate font-semibold ${assignedName ? "text-vin-text2" : "text-amber-200"}`}>
+                {assignedName || "Chưa gán bác sĩ"}
               </div>
               <div className="mt-0.5 max-w-[150px] truncate text-[10px] text-vin-muted">
-                {study.ReportDoctorName ? `Report: ${study.ReportDoctorName}` : `SLA: ${fmtDuration(study.waitingMinutes)}`}
+                {study.ReportDoctorName ? `Report: ${study.ReportDoctorName}` : `SLA: ${fmtDuration(study.waitingMinutes) || study.slaStatus}`}
               </div>
             </>
           );
         }
+      });
+    }
+
+    if (isVis("referringDepartment")) {
+      cols.push({
+        id: "referringDepartment",
+        header: "Khoa CĐ",
+        cell: (study) => <div className="text-vin-text2">{fmtText(study.referringDepartment)}</div>
+      });
+    }
+
+    if (isVis("referringPhysician")) {
+      cols.push({
+        id: "referringPhysician",
+        header: "BS CĐ",
+        cell: (study) => <div className="text-vin-text2">{fmtText(study.referringPhysician)}</div>
+      });
+    }
+
+    if (isVis("technologist")) {
+      cols.push({
+        id: "technologist",
+        header: "KTV",
+        cell: (study) => <div className="text-vin-text2">{fmtText(study.technologistName)}</div>
       });
     }
 
@@ -154,13 +232,21 @@ export function StudyDataGrid({
           const main = study.MainDicomTags || {};
           return (
             <div className="whitespace-nowrap font-mono text-vin-text2">
-              {fmtDateTime(main.StudyDate, main.StudyTime)}
+              {study.studyDate ? fmtDateTimeIso(study.studyDate) : fmtDateTime(main.StudyDate, main.StudyTime)}
               <div className="mt-0.5 max-w-[140px] truncate font-sans text-[10px] text-vin-muted">
                 {study.machineName || study.stationAeTitle || "-"}{study.facilityName ? ` · ${study.facilityName}` : ""}
               </div>
             </div>
           );
         }
+      });
+    }
+
+    if (isVis("machine")) {
+      cols.push({
+        id: "machine",
+        header: "Máy",
+        cell: (study) => <div className="font-mono text-vin-text2">{study.machineName || study.stationAeTitle || "-"}</div>
       });
     }
 
@@ -187,7 +273,7 @@ export function StudyDataGrid({
     });
 
     return cols;
-  }, [preferences?.columns.visible, startIndex, renderActions, isVis]);
+  }, [visibleColumns, startIndex, renderActions]);
 
   const selectedIds = selectedUid ? [selectedUid] : [];
 
@@ -196,7 +282,7 @@ export function StudyDataGrid({
       aria-label="Danh sách ca chụp"
       data={studies}
       columns={columns}
-      getRowId={(study) => study.ID || study.MainDicomTags?.StudyInstanceUID}
+      getRowId={(study) => study.ID || study.id || study.MainDicomTags?.StudyInstanceUID}
       isLoading={isLoading}
       emptyState={errorMessage ? <span className="text-red-300">{errorMessage}</span> : undefined}
       onRowClick={onSelect}

@@ -3,12 +3,14 @@ import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { WorklistQueryRequest, WorklistQueryRequestSchema } from "./contract";
 
-export const DatePresetSchema = z.enum(["TODAY", "YESTERDAY", "3DAYS", "7DAYS", "ALL"]);
+export const DatePresetSchema = z.enum(["TODAY", "YESTERDAY", "3DAYS", "7DAYS", "30DAYS", "CUSTOM", "ALL"]);
 export type DatePreset = z.infer<typeof DatePresetSchema>;
 
 export const WorklistUrlStateSchema = z.object({
   q: z.string().trim().max(200).optional(),
   datePreset: DatePresetSchema.default("ALL"),
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
   modality: z.string().trim().min(1).max(128).default("ALL"),
   workflowStatus: z.string().trim().min(1).max(128).default("ALL"),
   stationAe: z.string().trim().min(1).max(128).default("ALL"),
@@ -21,10 +23,9 @@ export type WorklistUrlState = z.infer<typeof WorklistUrlStateSchema>;
 
 export const DEFAULT_URL_STATE: WorklistUrlState = {
   q: "",
-  // A diagnostic workstation must show existing studies on first open. Users
-  // can still narrow to Today from Region 2; defaulting to TODAY made valid
-  // older Orthanc studies look like a broken/empty PACS.
   datePreset: "ALL",
+  dateFrom: undefined,
+  dateTo: undefined,
   modality: "ALL",
   workflowStatus: "ALL",
   stationAe: "ALL",
@@ -70,8 +71,21 @@ function getOffsetMs(timezone: string, date: Date) {
 export function resolveDatePreset(
   preset: DatePreset,
   timezone: string = "Asia/Ho_Chi_Minh",
-  now: Date = new Date()
+  now: Date = new Date(),
+  customFrom?: string,
+  customTo?: string
 ) {
+  if (preset === "CUSTOM") {
+    return z.object({
+      from: z.string().datetime({ offset: true }),
+      to: z.string().datetime({ offset: true }),
+    }).superRefine((range, ctx) => {
+      if (Date.parse(range.from) >= Date.parse(range.to)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["to"], message: "to must be after from" });
+      }
+    }).parse({ from: customFrom, to: customTo });
+  }
+
   // Validate eagerly so callers receive a predictable error for forged zones.
   new Intl.DateTimeFormat("en-US", { timeZone: timezone }).format(now);
   const offsetMs = getOffsetMs(timezone, now);
@@ -103,6 +117,9 @@ export function resolveDatePreset(
   } else if (preset === "7DAYS") {
     fromDate = getBoundary(-6);
     toDate = getBoundary(1);
+  } else if (preset === "30DAYS") {
+    fromDate = getBoundary(-29);
+    toDate = getBoundary(1);
   } else {
     // ALL - essentially the last year up to tomorrow midnight
     fromDate = getBoundary(-365);
@@ -127,6 +144,8 @@ export function parseWorklistUrlState(params: Pick<URLSearchParams, "get">): Wor
   return {
     q: parseField(z.string().trim().max(200), "q", ""),
     datePreset: parseField(DatePresetSchema, "datePreset", DEFAULT_URL_STATE.datePreset),
+    dateFrom: parseField(z.string().optional(), "dateFrom", undefined),
+    dateTo: parseField(z.string().optional(), "dateTo", undefined),
     modality: parseField(z.string().trim().min(1).max(128), "modality", "ALL"),
     workflowStatus: parseField(z.string().trim().min(1).max(128), "workflowStatus", "ALL"),
     stationAe: parseField(z.string().trim().min(1).max(128), "stationAe", "ALL"),
@@ -140,9 +159,9 @@ export function parseWorklistUrlState(params: Pick<URLSearchParams, "get">): Wor
  * Maps the flat URL state into the structured WorklistQueryRequest expected by the backend
  */
 export function mapUrlStateToQuery(state: WorklistUrlState, timezone: string = "Asia/Ho_Chi_Minh"): WorklistQueryRequest {
-  const { from, to } = resolveDatePreset(state.datePreset, timezone);
+  const { from, to } = resolveDatePreset(state.datePreset, timezone, new Date(), state.dateFrom, state.dateTo);
 
-  const query: any = {
+  const query: Record<string, unknown> = {
     from,
     to,
     timezone,
@@ -190,15 +209,6 @@ export function useWorklistUrlState() {
     setLocalSearchQuery(state.q || "");
   }, [state.q]);
 
-  // Debounce logic for the text search
-  useEffect(() => {
-    if (localSearchQuery === (state.q || "")) return;
-    const handler = setTimeout(() => {
-      setFilters({ q: localSearchQuery });
-    }, 400);
-    return () => clearTimeout(handler);
-  }, [localSearchQuery, state.q]);
-
   const setFilters = useCallback(
     (updates: Partial<WorklistUrlState>) => {
       const current = new URLSearchParams(Array.from(searchParams.entries()));
@@ -228,6 +238,15 @@ export function useWorklistUrlState() {
     },
     [searchParams, pathname, router]
   );
+
+  // Debounce logic for the text search
+  useEffect(() => {
+    if (localSearchQuery === (state.q || "")) return;
+    const handler = setTimeout(() => {
+      setFilters({ q: localSearchQuery });
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [localSearchQuery, state.q, setFilters]);
 
   const commitSearchNow = useCallback(() => {
     setFilters({ q: localSearchQuery });

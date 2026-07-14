@@ -10,7 +10,7 @@ async function runTests() {
   };
 
   const req: WorklistQueryRequest = {
-    version: 1,
+    version: 2,
     from: "2023-01-01T00:00:00.000Z",
     to: "2023-01-02T00:00:00.000Z",
     timezone: "UTC",

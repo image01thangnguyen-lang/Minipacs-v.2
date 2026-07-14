@@ -286,6 +286,9 @@ function DashboardPageContent() {
           PatientMainDicomTags: {
             PatientName: row.patientName,
             PatientID: row.patientId,
+            PatientBirthDate: row.patientBirthDate,
+            PatientSex: row.patientSex,
+            PatientAge: row.ageAtStudy,
           },
           EnrichedModality: row.modality,
           WorkflowStatus: row.status,

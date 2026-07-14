@@ -87,6 +87,15 @@ async function runTests() {
   assert.equal(facilityState.facilityUnitId, "dept-radiology");
   const facilityQuery = mapUrlStateToQuery(facilityState, "Asia/Ho_Chi_Minh");
   assert.deepEqual(facilityQuery.facilityUnitIds, ["dept-radiology"]);
+
+  const thirtyDays = resolveDatePreset("30DAYS", "Asia/Ho_Chi_Minh", new Date("2026-07-11T02:00:00.000Z"));
+  assert.equal(Date.parse(thirtyDays.to) - Date.parse(thirtyDays.from), 30 * 24 * 60 * 60 * 1000);
+  assert.throws(() => resolveDatePreset("CUSTOM", "Asia/Ho_Chi_Minh"));
+  assert.throws(() => resolveDatePreset("CUSTOM", "Asia/Ho_Chi_Minh", new Date(), "2026-07-12T00:00:00Z", "2026-07-11T00:00:00Z"));
+  assert.deepEqual(
+    resolveDatePreset("CUSTOM", "Asia/Ho_Chi_Minh", new Date(), "2026-07-01T00:00:00Z", "2026-07-02T00:00:00Z"),
+    { from: "2026-07-01T00:00:00Z", to: "2026-07-02T00:00:00Z" },
+  );
 }
 
 runTests().catch((error) => {

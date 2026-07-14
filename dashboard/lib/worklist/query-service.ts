@@ -14,22 +14,11 @@ import { decodeWorklistCursor, encodeWorklistCursor } from "./cursor";
 
 export { decodeWorklistCursor, encodeWorklistCursor } from "./cursor";
 import { buildBaseWhere } from "./query-builder";
-
-/**
- * Calculates the SLA status for a study (just for UI).
- */
-function calculateSlaStatus(study: { status: string; createdAt: Date }) {
-  if (study.status === "FINALIZED" || study.status === "DELIVERED") return "COMPLETED";
-  if (!study.createdAt) return "NORMAL";
-  const hoursSince = (Date.now() - study.createdAt.getTime()) / (1000 * 60 * 60);
-  if (hoursSince > 24) return "VIOLATED";
-  if (hoursSince > 12) return "WARNING";
-  return "NORMAL";
-}
+import { mapStudyToWorklistRow } from "./row-mapper";
 
 /**
  * Executes a scoped worklist query against the database.
- * 
+ *
  * Safety properties:
  * - Scoped to user's ALLOW grants via READ_STUDY capability.
  * - Keyset paginated using unique stable tie-breaker `id`.
@@ -67,7 +56,7 @@ export async function queryWorklist(
 
   // 3. Pagination & Cursor Setup
   const limit = request.limit ?? 50;
-  
+
   const orderDir = request.sort?.direction || "desc";
   const orderKey = request.sort?.key || "createdAt";
   const decodedCursor = request.cursor ? decodeWorklistCursor(request.cursor, request.sort) : undefined;
@@ -121,51 +110,26 @@ export async function queryWorklist(
   }));
   const allowedActionsMap = await getAllowedActionsForStudies(userId, actionInputs, ctx);
 
+  // 5.1 Batch Fetch Users for Doctors & Technologists
+  const userIdsToFetch = new Set<string>();
+  itemsToMap.forEach(study => {
+    if (study.assignedDoctorId) userIdsToFetch.add(study.assignedDoctorId);
+    if (study.technologistId) userIdsToFetch.add(study.technologistId);
+  });
+
+  const usersMap: Record<string, string> = {};
+  if (userIdsToFetch.size > 0) {
+    const users = await prisma.user.findMany({
+      where: { id: { in: Array.from(userIdsToFetch) } },
+      select: { id: true, fullName: true }
+    });
+    users.forEach(u => usersMap[u.id] = u.fullName);
+  }
+
   // 6. Map to Contract
   const rows: WorklistRow[] = itemsToMap.map(study => {
-    const actions = allowedActionsMap[study.id];
-    const allowedActionsList = Object.entries(actions || {})
-      .filter(([_, allowed]) => allowed)
-      .map(([key]) => key);
-    
-    const latestReport = study.reports?.[0];
-
-    const row: WorklistRow = {
-      id: study.id,
-      studyInstanceUid: study.studyInstanceUid,
-      orderId: study.orderId || undefined,
-      
-      patientName: study.patientName || "Unknown",
-      patientId: study.patientId || "Unknown",
-      accessionNumber: study.accessionNumber || "Unknown",
-      modality: study.modality || "Unknown",
-      bodyPart: study.order?.procedureDescription || undefined,
-      priority: study.priority || "NORMAL",
-      status: study.status,
-      
-      createdAt: study.createdAt.toISOString(),
-      scheduledAt: study.scheduledAt?.toISOString(),
-      receivedAt: study.createdAt.toISOString(), // Mapping receivedAt for now
-      finalizedAt: latestReport?.finalizedAt?.toISOString(),
-      
-      performingUnitId: study.performingUnitId || undefined,
-      facilityName: study.performingUnit?.name || undefined,
-      machineName: undefined, // legacy compat
-      stationAeTitle: study.stationAeTitle || undefined,
-      
-      assignedDoctorId: study.assignedDoctorId || undefined,
-      assignedDoctorName: undefined, // legacy compat, need to map if needed
-      
-      hisSyncStatus: study.hisSyncStatus || undefined,
-      
-      allowedActions: allowedActionsList,
-      
-      // Extension for UI convenience
-      isNonDicom: !!study.nonDicomExam,
-      nonDicomExamId: study.nonDicomExam?.id,
-      slaStatus: calculateSlaStatus(study)
-    };
-    return row;
+    const actions = allowedActionsMap[study.id] || {};
+    return mapStudyToWorklistRow(study, actions, usersMap);
   });
 
   return {

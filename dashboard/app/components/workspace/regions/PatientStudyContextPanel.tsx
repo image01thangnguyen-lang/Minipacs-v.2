@@ -97,22 +97,34 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
 
           <hr className="my-3 border-vin-border" />
 
-          {/* Study metadata */}
-          <section aria-label="Study information">
-            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Ca chụp</h3>
-            <InfoRow label="Ngày chụp" value={fmtDateTime(state.data.studyDate || undefined)} />
-            <InfoRow label="Mô tả" value={state.data.studyDescription} />
-            <InfoRow label="Modality" value={state.data.modality} />
+          {/* Clinical info / Indications */}
+          <section aria-label="Clinical information">
+            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Chỉ định</h3>
             <InfoRow label="Accession" value={state.data.accessionNumber} mono />
-            <InfoRow label="Cơ sở" value={state.data.facilityName} />
-            <InfoRow label="BS đọc" value={state.data.assignedDoctorName} />
+            <InfoRow label="Chỉ định" value={state.data.procedureDescription || state.data.studyDescription} />
+            <InfoRow label="Bộ phận" value={state.data.bodyPart} />
+            <InfoRow label="Khoa CĐ" value={state.data.referringDepartment} />
+            <InfoRow label="BS Chỉ định" value={state.data.referringPhysician} />
           </section>
 
           <hr className="my-3 border-vin-border" />
 
-          {/* Status badges */}
+          {/* Execution metadata */}
+          <section aria-label="Execution information">
+            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Thực hiện</h3>
+            <InfoRow label="Ngày chụp" value={fmtDateTime(state.data.studyDate || undefined)} />
+            <InfoRow label="Modality" value={state.data.modality} />
+            <InfoRow label="Máy chụp" value={state.data.machineName} />
+            <InfoRow label="Cơ sở" value={state.data.facilityName} />
+            <InfoRow label="KTV" value={state.data.technologistName} />
+          </section>
+
+          <hr className="my-3 border-vin-border" />
+
+          {/* Report & Status */}
           <section aria-label="Study status">
-            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Trạng thái</h3>
+            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Báo cáo</h3>
+            <InfoRow label="BS Đọc" value={state.data.assignedDoctorName} />
             <div className="flex flex-wrap gap-2 py-1">
               <RisStatusBadge status={state.data.status} />
               {state.data.reportStatus && (

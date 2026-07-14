@@ -1,7 +1,10 @@
 export const fmtName = (name?: string) => (name ? name.replace(/\^/g, " ") : "Unknown Patient");
 export const fmtText = (value?: string) => value || "-";
 export const fmtSex = (sex?: string) => (sex === "M" ? "Nam" : sex === "F" ? "Nữ" : sex || "?");
-export const fmtAge = (age?: string) => (age ? age.replace(/\D/g, "") : "?");
+export const fmtAge = (age?: string | number | null) => {
+  if (typeof age === "number") return Number.isFinite(age) ? String(Math.trunc(age)) : "?";
+  return age ? age.replace(/\D/g, "") : "?";
+};
 
 export const fmtDateTime = (date?: string, time?: string) => {
   if (!date) return "-";

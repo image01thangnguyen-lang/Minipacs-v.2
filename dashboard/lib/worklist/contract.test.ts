@@ -93,7 +93,7 @@ async function runTests() {
     ["unsupported sort key", { ...baseInput, sort: { key: "updatedAt", direction: "desc" } }],
     ["empty cursor", { ...baseInput, cursor: "" }],
     ["duplicate filter values", { ...baseInput, statuses: ["READY", "READY"] }],
-    ["unsupported contract version", { ...baseInput, version: 2 }],
+    ["unsupported contract version", { ...baseInput, version: 1 }],
   ];
 
   for (const [name, input] of rejectionCases) {

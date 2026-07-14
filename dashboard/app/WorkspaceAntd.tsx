@@ -286,6 +286,9 @@ function DashboardPageContent() {
           PatientMainDicomTags: {
             PatientName: row.patientName,
             PatientID: row.patientId,
+            PatientBirthDate: row.patientBirthDate,
+            PatientSex: row.patientSex,
+            PatientAge: row.ageAtStudy,
           },
           EnrichedModality: row.modality,
           WorkflowStatus: row.status,
@@ -470,6 +473,7 @@ function DashboardPageContent() {
     { value: "YESTERDAY", label: "Hôm qua" },
     { value: "3DAYS", label: "3 ngày gần đây" },
     { value: "7DAYS", label: "7 ngày gần đây" },
+    { value: "30DAYS", label: "30 ngày gần đây" },
   ], []);
 
   const filteredStudies = useMemo(() => {

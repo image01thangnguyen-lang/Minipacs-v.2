@@ -46,6 +46,9 @@ export async function getStudyWorkspaceAction(
             sourceFacility: true,
             gender: true,
             dob: true,
+            procedureDescription: true,
+            referringDepartment: true,
+            referringPhysician: true,
           },
         },
         reports: {
@@ -109,17 +112,28 @@ export async function getStudyWorkspaceAction(
     ? (report?.updatedAt ? report.updatedAt.toISOString() : null)
     : null;
 
-  // 7. Resolve assigned doctor name (batch user lookup avoided: single field)
+  // 7. Resolve user names
   let assignedDoctorName: string | null = null;
-  if (study.assignedDoctorId) {
+  let technologistName: string | null = null;
+
+  const userIdsToFetch: string[] = [];
+  if (study.assignedDoctorId) userIdsToFetch.push(study.assignedDoctorId);
+  if (study.technologistId) userIdsToFetch.push(study.technologistId);
+
+  if (userIdsToFetch.length > 0) {
     try {
-      const doctor = await prisma.user.findUnique({
-        where: { id: study.assignedDoctorId },
-        select: { fullName: true, username: true },
+      const users = await prisma.user.findMany({
+        where: { id: { in: userIdsToFetch } },
+        select: { id: true, fullName: true, username: true },
       });
+      const doctor = users.find(u => u.id === study.assignedDoctorId);
+      const tech = users.find(u => u.id === study.technologistId);
+
       assignedDoctorName = doctor?.fullName || doctor?.username || null;
+      technologistName = tech?.fullName || tech?.username || null;
     } catch {
       assignedDoctorName = null;
+      technologistName = null;
     }
   }
 
@@ -137,6 +151,12 @@ export async function getStudyWorkspaceAction(
     studyDescription: study.studyDescription || null,
     modality: study.modality || null,
     accessionNumber: study.accessionNumber || null,
+    procedureDescription: study.procedureDescription || study.order?.procedureDescription || null,
+    bodyPart: study.bodyPart || null,
+    referringPhysician: study.order?.referringPhysician || null,
+    referringDepartment: study.order?.referringDepartment || null,
+    technologistName,
+    machineName: study.stationAeTitle || null,
     status: study.status || "READY_TO_READ",
     reportStatus,
     reportRevision,

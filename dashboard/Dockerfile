@@ -16,7 +16,9 @@ WORKDIR /app
 
 # Copy dependencies
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+# Use the committed lockfile for deterministic builds. cssinjs is an explicit
+# dependency because @ant-design/nextjs-registry imports it at build/runtime.
+RUN npm ci --legacy-peer-deps
 
 # Copy application code
 COPY . .

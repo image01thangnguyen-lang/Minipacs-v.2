@@ -17,10 +17,10 @@ export function WorkspaceSearchBar({ value, datePreset, pending, onChange, onCom
         {value && <button type="button" onClick={() => onChange("")} aria-label="Xóa tìm kiếm" className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1 text-vin-muted hover:text-white">×</button>}
       </label>
       <div className="flex gap-1" aria-label="Khoảng ngày">
-        {(["TODAY", "YESTERDAY", "3DAYS", "7DAYS", "ALL"] as DatePreset[]).map((preset) => (
+        {(["TODAY", "YESTERDAY", "3DAYS", "7DAYS", "30DAYS", "ALL"] as DatePreset[]).map((preset) => (
           <button key={preset} type="button" onClick={() => onDateChange(preset)} aria-pressed={datePreset === preset}
             className={`min-w-0 flex-1 rounded border px-1 py-1.5 text-[9px] font-semibold ${datePreset === preset ? "border-vin-accent bg-vin-accent/20 text-vin-accent" : "border-vin-border text-vin-muted hover:text-vin-text"}`}>
-            {{ TODAY: "Hôm nay", YESTERDAY: "Hôm qua", "3DAYS": "3 ngày", "7DAYS": "7 ngày", ALL: "Tất cả" }[preset]}
+            {{ TODAY: "Hôm nay", YESTERDAY: "Hôm qua", "3DAYS": "3 ngày", "7DAYS": "7 ngày", "30DAYS": "30 ngày", ALL: "Tất cả" }[preset]}
           </button>
         ))}
       </div>

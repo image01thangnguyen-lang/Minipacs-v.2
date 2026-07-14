@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // --- Validations & Enums ---
 
-export const WORKLIST_CONTRACT_VERSION = 1 as const;
+export const WORKLIST_CONTRACT_VERSION = 2 as const;
 
 const IsoDateTimeSchema = z.string().datetime({ offset: true });
 const IanaTimezoneSchema = z.string().min(1).max(100).refine((timezone) => {
@@ -39,12 +39,12 @@ const LimitedStringArraySchema = z.array(FilterValueSchema)
 export const WorklistQueryRequestSchema = z.object({
   version: z.literal(WORKLIST_CONTRACT_VERSION).default(WORKLIST_CONTRACT_VERSION),
   q: z.string().trim().min(1).max(200).optional(),
-  
+
   // Date boundaries
   from: IsoDateTimeSchema,
   to: IsoDateTimeSchema,
   timezone: IanaTimezoneSchema,
-  
+
   // Facets
   statuses: LimitedStringArraySchema,
   facilityUnitIds: LimitedStringArraySchema,
@@ -54,13 +54,13 @@ export const WorklistQueryRequestSchema = z.object({
   modality: LimitedStringArraySchema,
   assignedDoctorIds: LimitedStringArraySchema,
   hisStatuses: LimitedStringArraySchema,
-  
+
   // Pagination & Sorting
   sort: z.object({
     key: WorklistSortKeySchema,
     direction: SortDirectionSchema
   }).default({ key: "createdAt", direction: "desc" }),
-  
+
   // Opaque, signed/versioned cursor contents are implemented by the PR2 boundary.
   cursor: z.string().min(1).max(2048).optional(),
   limit: z.number().int().min(1).max(100).default(50)
@@ -91,35 +91,46 @@ export interface WorklistRow {
   id: string;
   studyInstanceUid: string;
   orderId?: string;
-  
+
   // Display fields
   patientName: string;
   patientId: string;
   accessionNumber: string;
   modality: string;
   bodyPart?: string;
+  procedureDescription?: string;
+  diagnosis?: string;
   priority: string;
   status: string;
-  
+
+  // Patient details
+  patientBirthDate?: string;
+  patientSex?: string;
+  ageAtStudy?: number;
+
   // Time fields
   createdAt: string;
+  studyDate?: string;
   scheduledAt?: string;
   receivedAt?: string;
   finalizedAt?: string;
-  
+
   // Facility / Equipment
   performingUnitId?: string;
   facilityName?: string;
   machineName?: string;
   stationAeTitle?: string;
-  
+  referringDepartment?: string;
+  referringPhysician?: string;
+
   // People
   assignedDoctorId?: string;
   assignedDoctorName?: string;
-  
+  technologistName?: string;
+
   // Integration
   hisSyncStatus?: string;
-  
+
   // Authorization
   allowedActions: string[];
 
