@@ -36,7 +36,7 @@ export function FilterBar({
             type="text"
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="block w-full rounded-md border border-vin-border bg-vin-root py-1.5 pl-9 pr-8 text-sm text-vin-text placeholder:text-vin-muted focus:border-vin-accent focus:outline-none focus:ring-1 focus:ring-vin-accent"
+            className="block h-9 w-full rounded-md border border-vin-border bg-vin-root py-1.5 pl-9 pr-8 text-sm text-vin-text placeholder:text-vin-muted focus:border-vin-accent focus:outline-none focus:ring-1 focus:ring-vin-accent"
             placeholder={searchPlaceholder}
             aria-label={searchLabel}
           />

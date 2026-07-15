@@ -93,7 +93,7 @@ export function IncidentDetailAntd({
     <div style={{ padding: "24px", maxWidth: 1000, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
       <div>
         <Link href="/support/incidents">
-          <Button size="small" type="link" icon={<ArrowLeftOutlined />} style={{ padding: 0, marginBottom: 16 }}>
+          <Button size="middle" type="link" icon={<ArrowLeftOutlined />} style={{ padding: 0, marginBottom: 16 }}>
             Quay lại danh sách
           </Button>
         </Link>
@@ -120,13 +120,13 @@ export function IncidentDetailAntd({
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 24, alignItems: "start" }}>
         <Space direction="vertical" size={8} style={{ width: "100%" }}>
-          <Card size="small" title={<span style={{ textTransform: "uppercase", fontSize: 12, color: "gray" }}>Mô tả chi tiết</span>}>
+          <Card title={<span style={{ textTransform: "uppercase", fontSize: 12, color: "gray" }}>Mô tả chi tiết</span>}>
             <Paragraph style={{ whiteSpace: "pre-wrap", margin: 0, fontSize: 14 }}>
               {ticket.shortDesc}
             </Paragraph>
           </Card>
 
-          <Card size="small" title={<Space><MessageOutlined style={{ color: "var(--vin-accent)" }} /> Bình luận & Cập nhật</Space>} bodyStyle={{ padding: 0 }}>
+          <Card title={<Space><MessageOutlined style={{ color: "var(--vin-accent)" }} /> Bình luận & Cập nhật</Space>} bodyStyle={{ padding: 0 }}>
             <List
               itemLayout="horizontal"
               dataSource={comments}
@@ -157,7 +157,7 @@ export function IncidentDetailAntd({
                   style={{ marginBottom: 16, fontSize: 12, padding: "8px 12px" }}
                 />
                 <Form.Item name="content" rules={[{ required: true, message: "Nhập nội dung" }]} style={{ marginBottom: 12 }}>
-                  <Input.TextArea size="small" rows={3} placeholder="Nhập bình luận hoặc cập nhật mới..." />
+                  <Input.TextArea size="middle" rows={3} placeholder="Nhập bình luận hoặc cập nhật mới..." />
                 </Form.Item>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Form.Item name="isScrubbed" valuePropName="checked" style={{ marginBottom: 0 }}>
@@ -165,7 +165,7 @@ export function IncidentDetailAntd({
                       <Text style={{ fontSize: 12 }}>Tôi xác nhận không có dữ liệu PHI.</Text>
                     </Checkbox>
                   </Form.Item>
-                  <Button size="small" type="primary" htmlType="submit" loading={submittingComment} icon={<MessageOutlined />}>
+                  <Button size="middle" type="primary" htmlType="submit" loading={submittingComment} icon={<MessageOutlined />}>
                     Gửi bình luận
                   </Button>
                 </div>
@@ -175,8 +175,8 @@ export function IncidentDetailAntd({
         </Space>
 
         <Space direction="vertical" size={8} style={{ width: "100%" }}>
-          <Card size="small" title="Thông tin chi tiết">
-            <Descriptions column={1} size="small" labelStyle={{ color: token.colorTextSecondary, fontSize: 12 }} contentStyle={{ color: token.colorText, fontSize: 13, fontWeight: 500 }}>
+          <Card title="Thông tin chi tiết">
+            <Descriptions column={1} size="middle" labelStyle={{ color: token.colorTextSecondary, fontSize: 12 }} contentStyle={{ color: token.colorText, fontSize: 13, fontWeight: 500 }}>
               <Descriptions.Item label="Module">{ticket.module}</Descriptions.Item>
               <Descriptions.Item label="Loại ngữ cảnh">{ticket.contextType || "Không"}</Descriptions.Item>
               <Descriptions.Item label="ID ngữ cảnh">{ticket.contextId || "Không"}</Descriptions.Item>
@@ -192,11 +192,11 @@ export function IncidentDetailAntd({
           </Card>
 
           {isAdmin && (
-            <Card size="small" title={<Space><SettingOutlined /> Tác vụ Quản trị</Space>}>
+            <Card title={<Space><SettingOutlined /> Tác vụ Quản trị</Space>}>
               <div style={{ marginBottom: 16 }}>
                 <Text type="secondary" style={{ fontSize: 12, marginBottom: 4, display: "block" }}>Trạng thái sự cố</Text>
                 <Select
-                  size="small"
+                  size="middle"
                   value={ticket.status}
                   onChange={handleStatusChange}
                   style={{ width: "100%" }}
@@ -211,7 +211,7 @@ export function IncidentDetailAntd({
               <div>
                 <Text type="secondary" style={{ fontSize: 12, marginBottom: 4, display: "block" }}>Người phụ trách</Text>
                 <Select
-                  size="small"
+                  size="middle"
                   value={ticket.assigneeUserId || ""}
                   onChange={handleAssigneeChange}
                   style={{ width: "100%" }}

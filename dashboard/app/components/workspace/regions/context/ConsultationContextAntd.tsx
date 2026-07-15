@@ -40,7 +40,7 @@ export function ConsultationContextAntd({ studyInstanceUid, patientName, canCrea
         {canCreate && (
           <Button
             type="link"
-            size="small"
+            size="middle"
             icon={<PlusOutlined />}
             onClick={() => setShowDialog(true)}
             className="text-[10px] font-medium text-cyan-400 p-0 h-auto"
@@ -53,7 +53,7 @@ export function ConsultationContextAntd({ studyInstanceUid, patientName, canCrea
 
       <div className="p-3 flex flex-col gap-2">
         {loading ? (
-          <div className="text-[11px] text-gray-500 text-center py-2"><Spin size="small" /></div>
+          <div className="text-[11px] text-gray-500 text-center py-2"><Spin /></div>
         ) : consultations.length === 0 ? (
           <div className="text-[11px] text-gray-500 text-center py-2">Không có hội chẩn</div>
         ) : (

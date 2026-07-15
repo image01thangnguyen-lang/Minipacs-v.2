@@ -103,7 +103,7 @@ export function ClinicProfileAntd() {
         </div>
 
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Card size="small" style={{ marginBottom: '16px' }}>
+          <Card style={{ marginBottom: '16px' }}>
              <Row gutter={16}>
                 <Col span={12}>
                    <Form.Item name="name" label="Tên hiển thị" rules={[{ required: true }]}>
@@ -150,22 +150,22 @@ export function ClinicProfileAntd() {
              </Row>
           </Card>
 
-          <Card size="small" style={{ marginBottom: '16px' }}>
+          <Card style={{ marginBottom: '16px' }}>
              <Row gutter={24}>
                <Col span={12}>
                  <Form.Item label="Logo phòng khám" extra="JPG, PNG, WEBP hoặc GIF. Nếu không chọn file mới, logo hiện tại được giữ nguyên.">
                     <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                      <div style={{ width: '80px', height: '60px', border: '1px solid #434343', borderRadius: '4px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff', padding: '4px' }}>
+                      <div style={{ width: '80px', height: '60px', border: '1px solid #434343', borderRadius: '4px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5', padding: '4px' }}>
                         {profile.logoPath ? <img src={profile.logoPath} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}/> : <PictureOutlined style={{ fontSize: '24px', color: '#ccc' }}/>}
                       </div>
                       <div style={{ flex: 1 }}>
                          <Form.Item name="logo" valuePropName="fileList" getValueFromEvent={normFile} noStyle>
                            <Upload maxCount={1} beforeUpload={() => false} accept="image/jpeg,image/png,image/webp,image/gif">
-                             <Button icon={<UploadOutlined />} size="small">Chọn Logo</Button>
+                             <Button icon={<UploadOutlined />} size="middle">Chọn logo</Button>
                            </Upload>
                          </Form.Item>
                          {profile.logoPath && (
-                            <Button type="link" danger size="small" onClick={handleRemoveLogo} style={{ marginTop: '8px', padding: 0 }}>Xóa Logo</Button>
+                            <Button type="link" danger size="middle" onClick={handleRemoveLogo} style={{ marginTop: '8px', padding: 0 }}>Xóa Logo</Button>
                          )}
                       </div>
                     </div>
@@ -174,17 +174,17 @@ export function ClinicProfileAntd() {
                <Col span={12}>
                  <Form.Item label="Favicon trình duyệt" extra="Khuyên dùng ICO hoặc PNG vuông. Sẽ dùng Logo nếu để trống.">
                     <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                      <div style={{ width: '60px', height: '60px', border: '1px solid #434343', borderRadius: '4px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff', padding: '4px' }}>
+                      <div style={{ width: '60px', height: '60px', border: '1px solid #434343', borderRadius: '4px', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f5f5f5', padding: '4px' }}>
                         {profile.faviconPath ? <img src={profile.faviconPath} alt="Favicon" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}/> : profile.logoPath ? <img src={profile.logoPath} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', opacity: 0.5 }}/> : <PictureOutlined style={{ fontSize: '24px', color: '#ccc' }}/>}
                       </div>
                       <div style={{ flex: 1 }}>
                          <Form.Item name="favicon" valuePropName="fileList" getValueFromEvent={normFile} noStyle>
                            <Upload maxCount={1} beforeUpload={() => false} accept="image/jpeg,image/png,image/webp,image/gif,image/x-icon,image/vnd.microsoft.icon">
-                             <Button icon={<UploadOutlined />} size="small">Chọn Favicon</Button>
+                             <Button icon={<UploadOutlined />} size="middle">Chọn favicon</Button>
                            </Upload>
                          </Form.Item>
                          {profile.faviconPath && (
-                            <Button type="link" danger size="small" onClick={handleRemoveFavicon} style={{ marginTop: '8px', padding: 0 }}>Xóa Favicon</Button>
+                            <Button type="link" danger size="middle" onClick={handleRemoveFavicon} style={{ marginTop: '8px', padding: 0 }}>Xóa Favicon</Button>
                          )}
                       </div>
                     </div>
@@ -193,7 +193,7 @@ export function ClinicProfileAntd() {
              </Row>
           </Card>
 
-          <Card size="small" style={{ marginBottom: '16px' }}>
+          <Card style={{ marginBottom: '16px' }}>
              <Form.Item name="headerText" label="Header phụ trên phiếu">
                 <Input.TextArea rows={3} placeholder="Ví dụ: Hệ thống chẩn đoán hình ảnh" />
              </Form.Item>
@@ -211,7 +211,7 @@ export function ClinicProfileAntd() {
       </div>
 
       <div style={{ flex: '1 1 400px', maxWidth: '600px' }}>
-        <Card title="Preview header phiếu in" size="small" style={{ height: '100%', backgroundColor: '#141414' }}>
+        <Card title="Preview header phiếu in" style={{ height: '100%', backgroundColor: '#141414' }}>
            <div style={{ backgroundColor: 'white', padding: '32px', borderRadius: '4px', color: '#000' }}>
              <div style={{ display: 'flex', gap: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
                 <div style={{ width: '100px', height: '60px', border: '1px solid #e2e8f0', borderRadius: '4px', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '4px' }}>

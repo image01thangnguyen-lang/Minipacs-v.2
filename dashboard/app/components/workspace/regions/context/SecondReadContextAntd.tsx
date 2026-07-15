@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { getSecondReadsForStudyAction, createSecondReadAction } from "@/app/actions/second-read-actions";
 import { SafetyCertificateOutlined, PlusOutlined, CheckCircleOutlined } from "@ant-design/icons";
-import { Button, Tag, Typography, Spin, message } from "antd";
+import { App, Button, Tag, Typography, Spin } from "antd";
 
 const { Text } = Typography;
 
@@ -13,6 +13,7 @@ interface SecondReadContextAntdProps {
 }
 
 export function SecondReadContextAntd({ studyInstanceUid, canRequest }: SecondReadContextAntdProps) {
+  const { message } = App.useApp();
   const [secondReads, setSecondReads] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRequesting, setIsRequesting] = useState(false);
@@ -66,7 +67,7 @@ export function SecondReadContextAntd({ studyInstanceUid, canRequest }: SecondRe
         {canRequest && (
           <Button
             type="link"
-            size="small"
+            size="middle"
             icon={<PlusOutlined />}
             onClick={handleRequest}
             loading={isRequesting}
@@ -81,7 +82,7 @@ export function SecondReadContextAntd({ studyInstanceUid, canRequest }: SecondRe
 
       <div className="p-3 flex flex-col gap-2">
         {loading ? (
-          <div className="text-[11px] text-gray-500 text-center py-2"><Spin size="small" /></div>
+          <div className="text-[11px] text-gray-500 text-center py-2"><Spin /></div>
         ) : secondReads.length === 0 ? (
           <div className="text-[11px] text-gray-500 text-center py-2">Chưa có yêu cầu</div>
         ) : (

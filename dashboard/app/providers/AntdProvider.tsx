@@ -15,6 +15,7 @@ export function AntdProvider({ children }: { children: React.ReactNode }) {
   return (
     <ConfigProvider
       theme={clinicalTheme}
+      componentSize="middle"
       locale={viVN}
       getPopupContainer={getClinicalPopupContainer}
     >

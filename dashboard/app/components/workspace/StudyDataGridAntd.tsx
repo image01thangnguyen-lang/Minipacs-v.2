@@ -210,7 +210,7 @@ export function StudyDataGridAntd({
         <div className="p-4 text-center text-red-400">{errorMessage}</div>
       ) : (
         <Table
-          size="small"
+          size="middle"
           className="h-full"
           dataSource={studies}
           columns={columns}

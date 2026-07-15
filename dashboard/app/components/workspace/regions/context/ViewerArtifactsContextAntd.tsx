@@ -28,7 +28,7 @@ export function ViewerArtifactsContextAntd({ studyInstanceUid }: ViewerArtifacts
   }, [studyInstanceUid]);
 
   if (loading) {
-    return <div className="mt-4 p-3 text-[11px] text-gray-500 text-center border border-[#303030] rounded-md bg-[#1F1F1F]"><Spin size="small" /> Đang tải hình ảnh...</div>;
+    return <div className="mt-4 p-3 text-[11px] text-gray-500 text-center border border-[#303030] rounded-md bg-[#1F1F1F]"><Spin /> Đang tải hình ảnh...</div>;
   }
 
   if (artifacts.keyImages.length === 0 && artifacts.measurements.length === 0) {

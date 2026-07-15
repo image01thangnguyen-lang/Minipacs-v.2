@@ -84,7 +84,7 @@ export function ReportTemplatePickerAntd({
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <FileTextOutlined className="text-[#13C2C2]" />
         <Select
-          size="small"
+          size="middle"
           showSearch
           value={selectedId}
           onChange={val => setSelectedId(val)}
@@ -101,7 +101,7 @@ export function ReportTemplatePickerAntd({
       </div>
 
       <Button
-        size="small"
+        size="middle"
         type="default"
         icon={<PlusCircleOutlined />}
         onClick={() => selectedTemplate && onApply(selectedTemplate, "append")}
@@ -111,7 +111,7 @@ export function ReportTemplatePickerAntd({
         Chèn
       </Button>
       <Button
-        size="small"
+        size="middle"
         type="default"
         icon={<SwapOutlined />}
         onClick={() => selectedTemplate && onApply(selectedTemplate, "replace")}

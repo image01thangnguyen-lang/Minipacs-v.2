@@ -11,7 +11,7 @@ export function WorkspaceSearchBarAntd({ value, datePreset, pending, onChange, o
   return (
     <div className="flex-none space-y-2 border-b border-[#303030] px-3 py-3" role="search" aria-label="Tìm kiếm worklist">
       <Input
-        size="small"
+        size="middle"
         placeholder="Tên, mã BN, accession..."
         value={value}
         onChange={e => onChange(e.target.value)}
@@ -33,7 +33,7 @@ export function WorkspaceSearchBarAntd({ value, datePreset, pending, onChange, o
           return (
             <Button
               key={preset}
-              size="small"
+              size="middle"
               type={isActive ? "primary" : "default"}
               ghost={isActive}
               onClick={() => onDateChange(preset)}

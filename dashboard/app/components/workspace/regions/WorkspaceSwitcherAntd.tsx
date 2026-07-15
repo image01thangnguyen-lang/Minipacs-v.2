@@ -48,7 +48,7 @@ export function WorkspaceSwitcherAntd({
         <span className="text-[10px] text-gray-400">Chuyển đổi màn hình</span>
       </div>
       <Select
-        size="small"
+        size="middle"
         className="w-full"
         showSearch
         placeholder="Chọn màn hình..."

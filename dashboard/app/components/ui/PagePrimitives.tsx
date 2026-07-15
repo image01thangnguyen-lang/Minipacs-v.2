@@ -12,11 +12,11 @@ export function PagePanel({ className, ...props }: HTMLAttributes<HTMLElement>) 
 
 export function KpiCard({ label, value, tone = "default" }: { label: ReactNode; value: ReactNode; tone?: "default" | "warning" | "danger" }) {
   const toneClass = tone === "danger" ? "border-l-vin-status-danger-bg" : tone === "warning" ? "border-l-vin-status-warning-bg" : "border-l-vin-accent";
-  return <PagePanel className={cx("min-w-0 border-l-4 p-4", toneClass)}><div className="text-xs font-semibold uppercase tracking-wide text-vin-muted">{label}</div><div className="mt-1 truncate text-2xl font-bold text-vin-text">{value}</div></PagePanel>;
+  return <PagePanel className={cx("min-w-0 border-l-4 p-4", toneClass)}><div className="text-sm font-semibold uppercase tracking-wide text-vin-muted">{label}</div><div className="mt-1 truncate text-2xl font-bold text-vin-text">{value}</div></PagePanel>;
 }
 
 export function FormLabel({ className, ...props }: HTMLAttributes<HTMLLabelElement>) {
-  return <label className={cx("mb-1 block text-xs font-semibold text-vin-text2", className)} {...props} />;
+  return <label className={cx("mb-1 block text-sm font-semibold text-vin-text2", className)} {...props} />;
 }
 
 export function FormInput(props: InputHTMLAttributes<HTMLInputElement>) {

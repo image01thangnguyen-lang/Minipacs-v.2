@@ -89,7 +89,7 @@ export default function CatalogsAntd({
             </div>
             <Space>
               <Input
-                size="small"
+                size="middle"
                 placeholder="Tìm kiếm..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -99,7 +99,7 @@ export default function CatalogsAntd({
               />
               <Button
                 type="primary"
-                size="small"
+                size="middle"
                 icon={<Plus className="h-3.5 w-3.5" />}
                 onClick={() => {
                   setErrorMessage("");
@@ -212,7 +212,7 @@ export default function CatalogsAntd({
         <Form
           form={form}
           layout="vertical"
-          size="small"
+          size="middle"
           onFinish={(values) => {
             const formData = buildCatalogFormData(values, mode === "create" ? null : selectedId);
             if (mode === "create") {
@@ -224,20 +224,20 @@ export default function CatalogsAntd({
         >
           <div className="grid grid-cols-2 gap-4">
             <Form.Item label="Mã (Code)" name="code" rules={[{ required: true, message: "Bắt buộc" }]}>
-              <Input size="small" disabled={mode === "view" && !!selectedId} />
+              <Input size="middle" disabled={mode === "view" && !!selectedId} />
             </Form.Item>
             <Form.Item label="Tên / Diễn giải" name="name" rules={[{ required: true, message: "Bắt buộc" }]}>
-              <Input size="small" />
+              <Input size="middle" />
             </Form.Item>
           </div>
 
           {activeTab === "services" && (
             <div className="grid grid-cols-2 gap-4">
               <Form.Item label="Modality mặc định" name="defaultModality">
-                <Input size="small" />
+                <Input size="middle" />
               </Form.Item>
               <Form.Item label="Thứ tự hiển thị" name="sortOrder">
-                <Input size="small" type="number" />
+                <Input size="middle" type="number" />
               </Form.Item>
             </div>
           )}
@@ -247,29 +247,29 @@ export default function CatalogsAntd({
               <div className="grid grid-cols-2 gap-4">
                 <Form.Item label="Nhóm dịch vụ" name="serviceTypeId">
                   <Select
-                    size="small"
+                    size="middle"
                     options={services.map((s: any) => ({ label: s.name, value: s.id }))}
                     allowClear
                   />
                 </Form.Item>
                 <Form.Item label="Mã HIS mapping" name="hisCode">
-                  <Input size="small" />
+                  <Input size="middle" />
                 </Form.Item>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <Form.Item label="Modality" name="modality">
-                  <Input size="small" />
+                  <Input size="middle" />
                 </Form.Item>
                 <Form.Item label="Bộ phận cơ thể" name="bodyPart">
-                  <Input size="small" />
+                  <Input size="middle" />
                 </Form.Item>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <Form.Item label="Đơn giá mặc định" name="defaultPrice">
-                  <Input size="small" type="number" />
+                  <Input size="middle" type="number" />
                 </Form.Item>
                 <Form.Item label="Mã bảo hiểm" name="insuranceCode">
-                  <Input size="small" />
+                  <Input size="middle" />
                 </Form.Item>
               </div>
               <div className="mb-4 flex gap-4">
@@ -286,10 +286,10 @@ export default function CatalogsAntd({
           {activeTab === "icds" && (
             <div className="grid grid-cols-2 gap-4">
               <Form.Item label="Chương (Chapter)" name="chapter">
-                <Input size="small" />
+                <Input size="middle" />
               </Form.Item>
               <Form.Item label="Mã nhóm" name="groupCode">
-                <Input size="small" />
+                <Input size="middle" />
               </Form.Item>
             </div>
           )}
@@ -297,16 +297,16 @@ export default function CatalogsAntd({
           {activeTab === "supplies" && (
             <div className="grid grid-cols-2 gap-4">
               <Form.Item label="Đơn vị tính" name="unit">
-                <Input size="small" />
+                <Input size="middle" />
               </Form.Item>
               <Form.Item label="Đơn giá mặc định" name="defaultPrice">
-                <Input size="small" type="number" />
+                <Input size="middle" type="number" />
               </Form.Item>
             </div>
           )}
 
           <Form.Item label="Ghi chú / Mô tả thêm" name="description">
-            <Input.TextArea size="small" rows={3} />
+            <Input.TextArea size="middle" rows={3} />
           </Form.Item>
 
           <Form.Item name="isActive" valuePropName="checked">

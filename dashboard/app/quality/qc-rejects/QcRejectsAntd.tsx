@@ -82,7 +82,7 @@ export function QcRejectsAntd({ issues }: { issues: any[] }) {
           <Text strong style={{ fontSize: 14 }}>Danh sách ca bị từ chối QC</Text>
         </div>
         <Table
-          size="small"
+          size="middle"
           columns={columns}
           dataSource={issues}
           rowKey="id"

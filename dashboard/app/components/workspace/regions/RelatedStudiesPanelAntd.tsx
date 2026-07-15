@@ -131,7 +131,7 @@ export function RelatedStudiesPanelAntd({
             <Tooltip title={canReadStudy ? "Mở Viewer" : "Bạn không có quyền xem ca này"}>
               <Button
                 type="text"
-                size="small"
+                size="middle"
                 disabled={!canReadStudy}
                 icon={<EyeOutlined />}
                 onClick={() => {
@@ -143,7 +143,7 @@ export function RelatedStudiesPanelAntd({
             <Tooltip title={!canReadStudy ? "Bạn không có quyền xem ca này" : onCompare ? "So sánh ca này" : "Chức năng so sánh chưa khả dụng"}>
               <Button
                 type="text"
-                size="small"
+                size="middle"
                 disabled={!canReadStudy || !onCompare}
                 icon={<CompressOutlined />}
                 onClick={() => {
@@ -173,7 +173,7 @@ export function RelatedStudiesPanelAntd({
 
         {anchorStudyUid && (
           <Radio.Group
-            size="small"
+            size="middle"
             value={range}
             onChange={(e) => setRange(e.target.value)}
             className="flex"
@@ -203,10 +203,10 @@ export function RelatedStudiesPanelAntd({
         ) : (
           <Table
             className="flex-1"
-            size="small"
+            size="middle"
             loading={{
               spinning: isLoading,
-              indicator: <Spin size="small" />
+              indicator: <Spin />
             }}
             dataSource={history}
             columns={columns}

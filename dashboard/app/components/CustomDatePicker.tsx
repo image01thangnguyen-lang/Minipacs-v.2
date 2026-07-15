@@ -36,7 +36,7 @@ export const CustomDatePicker = forwardRef<ComponentRef<typeof DatePicker>, Cust
         {name ? <input type="hidden" name={name} value={value ?? ""} /> : null}
         <DatePicker
           ref={ref}
-          size="small"
+          size="middle"
           value={parseDateOnly(value)}
           format="DD/MM/YYYY"
           placeholder={placeholder}

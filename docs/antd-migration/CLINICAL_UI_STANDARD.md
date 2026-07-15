@@ -6,7 +6,7 @@
 import { theme, type ThemeConfig } from "antd";
 
 export const clinicalTheme: ThemeConfig = {
-  algorithm: [theme.darkAlgorithm, theme.compactAlgorithm],
+  algorithm: theme.darkAlgorithm,
   token: {
     colorPrimary: "#13C2C2",
     colorInfo: "#13C2C2",
@@ -20,22 +20,14 @@ export const clinicalTheme: ThemeConfig = {
     colorTextSecondary: "#8C8C8C",
     colorBorder: "#303030",
     borderRadius: 2,
-    controlHeight: 24,
-    fontSize: 12,
-    marginXXS: 2,
-    marginXS: 4,
-    marginSM: 8,
-    paddingXXS: 2,
-    paddingXS: 4,
-    paddingSM: 8,
+    controlHeight: 32,
+    fontSize: 14,
   },
   components: {
     Table: {
       headerBg: "#1F1F1F",
       headerColor: "#E0E0E0",
       borderColor: "#303030",
-      cellPaddingBlockSM: 2,
-      cellPaddingInlineSM: 4,
     },
   },
 };
@@ -48,10 +40,10 @@ Không tự ý thay giá trị. Token bổ sung phải qua UI ADR, có contrast 
 ### Table
 
 ```tsx
-<Table size="small" pagination={false} columns={columns} dataSource={rows} />
+<Table size="middle" pagination={false} columns={columns} dataSource={rows} />
 ```
 
-- Header `#1F1F1F`; row/cell padding 2–4px.
+- Header `#1F1F1F`; row/cell dùng padding mặc định của cỡ `middle`.
 - Dữ liệu lớn dùng server pagination hoặc virtualization; không render vô hạn.
 - `rowKey` ổn định; sort/filter state lấy URL/server làm source of truth.
 - Truncate bằng ellipsis + Tooltip; không tăng row height tùy tiện.
@@ -59,16 +51,17 @@ Không tự ý thay giá trị. Token bổ sung phải qua UI ADR, có contrast 
 
 ### Controls
 
-- `Button`, `Input`, `InputNumber`, `Select`, `DatePicker`, `Tag` và control trong `Form`: `size="small"`.
-- `Form` dùng compact vertical/horizontal layout; label ngắn, không tạo khoảng trắng 24px.
+- `ConfigProvider` bắt buộc đặt `componentSize="middle"`; component chỉ khai báo `size="middle"` khi cần tường minh.
+- Không dùng `size="small"` cho `Button`, `Input`, `InputNumber`, `Select`, `DatePicker`, `Table` và control trong `Form`.
+- `Form` dùng vertical/horizontal layout phù hợp; label ngắn và giữ nhịp khoảng cách chuẩn Ant Design.
 - Date boundary là chuỗi ISO/date-only; không đưa Day.js object vào DB/URL.
 - RHF/Zod được giữ; dùng `Controller` cho AntD controlled components.
 
 ### Toolbar
 
 ```tsx
-<Space size="small">
-  <Button type="text" size="small" icon={<ToolOutlined />} aria-pressed={active} />
+<Space size="middle">
+  <Button type="text" size="middle" icon={<ToolOutlined />} aria-pressed={active} />
 </Space>
 ```
 
@@ -78,7 +71,7 @@ Không tự ý thay giá trị. Token bổ sung phải qua UI ADR, có contrast 
 
 ### Layout
 
-- Spacing scale chỉ 2/4/8px mặc định.
+- Spacing theo token mặc định của Ant Design; ưu tiên 8/12/16px cho nội dung thông thường.
 - Panel ghép sát; border 1px `#303030`; radius 2px.
 - Sidebar có collapse/resize và lưu preference.
 - Một vùng = một scroll owner; header/toolbar có thể sticky.
@@ -97,7 +90,7 @@ Không tự ý thay giá trị. Token bổ sung phải qua UI ADR, có contrast 
 - Không dùng `#FFFFFF`, nền sáng, flash trắng khi loading hoặc in-app navigation.
 - Focus ring phải nhìn thấy nhưng không quá chói.
 - Trạng thái không truyền đạt chỉ bằng màu; dùng icon/label/pattern.
-- Font 12px là chuẩn UI; dữ liệu ảnh/overlay phải được kiểm tra trên màn hình chẩn đoán thực tế.
+- Font 14px là chuẩn UI; dữ liệu ảnh/overlay phải được kiểm tra trên màn hình chẩn đoán thực tế.
 - Giảm animation; tôn trọng `prefers-reduced-motion`.
 
 ## 5. Popup và layer
@@ -110,9 +103,8 @@ Không tự ý thay giá trị. Token bổ sung phải qua UI ADR, có contrast 
 
 Mở rộng `check-ui-style.cjs` hoặc ESLint để chặn:
 
-- AntD Table thiếu `size="small"`;
-- control thiếu `size="small"` khi wrapper không ép được;
-- `Space` có size `middle/large`;
+- AntD Table hoặc control còn `size="small"`;
+- `Space` còn dùng spacing `small`;
 - literal `#FFFFFF`/`#fff` trong UI runtime;
 - spacing 16/24/32px không có allowlist;
 - DICOM viewport khác `#000000` hoặc overlay chuẩn khác `#13C2C2`;

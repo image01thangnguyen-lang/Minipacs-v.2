@@ -18,7 +18,7 @@ const literalWhiteAllowlist = new Map([
   ])],
 ]);
 const violations = [];
-const compactControls = ["Button", "Input", "InputNumber", "Select", "DatePicker"];
+const mediumControls = ["Button", "Input", "InputNumber", "Select", "DatePicker", "Table"];
 
 function openingTags(text, component) {
   return text.match(new RegExp(`<${component}\\b(?:(?!>).)*>`, "gs")) ?? [];
@@ -51,23 +51,17 @@ function inspect(file) {
     }
   }
 
-  for (const tag of openingTags(text, "Table")) {
-    if (!/\bsize\s*=\s*["']small["']/.test(tag)) {
-      violations.push(`${relative}: AntD Table must explicitly declare size="small"`);
-    }
-  }
-
-  for (const component of compactControls) {
+  for (const component of mediumControls) {
     for (const tag of openingTags(text, component)) {
-      if (!/\bsize\s*=\s*["']small["']/.test(tag)) {
-        violations.push(`${relative}: AntD ${component} must explicitly declare size="small"`);
+      if (/\bsize\s*=\s*["']small["']/.test(tag)) {
+        violations.push(`${relative}: AntD ${component} must use the provider default or size="middle", not size="small"`);
       }
     }
   }
 
   for (const tag of openingTags(text, "Space")) {
-    if (/\bsize\s*=\s*["'](?:middle|large)["']/.test(tag)) {
-      violations.push(`${relative}: AntD Space must not use middle/large spacing`);
+    if (/\bsize\s*=\s*["']small["']/.test(tag)) {
+      violations.push(`${relative}: AntD Space must not use small spacing`);
     }
   }
 

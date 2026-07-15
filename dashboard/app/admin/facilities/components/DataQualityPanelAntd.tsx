@@ -40,7 +40,6 @@ export function DataQualityPanelAntd() {
         {/* Unmapped Nodes */}
         <Col xs={24} sm={12} lg={6}>
           <Card 
-            size="small" 
             style={{ 
               borderColor: metrics.unmappedNodesCount > 0 ? token.colorWarning : token.colorBorder,
               backgroundColor: metrics.unmappedNodesCount > 0 ? token.colorWarningBg : token.colorBgContainer 
@@ -63,7 +62,6 @@ export function DataQualityPanelAntd() {
         {/* Duplicate AEs */}
         <Col xs={24} sm={12} lg={6}>
           <Card 
-            size="small" 
             style={{ 
               borderColor: metrics.duplicateAeTitlesCount > 0 ? token.colorError : token.colorBorder,
               backgroundColor: metrics.duplicateAeTitlesCount > 0 ? token.colorErrorBg : token.colorBgContainer 
@@ -86,7 +84,6 @@ export function DataQualityPanelAntd() {
         {/* Missing AEs */}
         <Col xs={24} sm={12} lg={6}>
           <Card 
-            size="small" 
             style={{ 
               borderColor: metrics.missingAeTitleNodesCount > 0 ? token.colorWarning : token.colorBorder,
               backgroundColor: metrics.missingAeTitleNodesCount > 0 ? token.colorWarningBg : token.colorBgContainer 
@@ -108,7 +105,7 @@ export function DataQualityPanelAntd() {
 
         {/* Unclassified Orders */}
         <Col xs={24} sm={12} lg={6}>
-          <Card size="small">
+          <Card>
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-full bg-vin-shell text-vin-muted">
                 <Info className="h-5 w-5" />
@@ -124,7 +121,7 @@ export function DataQualityPanelAntd() {
         </Col>
       </Row>
 
-      <Card title="Hướng dẫn xử lý" size="small">
+      <Card title="Hướng dẫn xử lý">
         <ul className="list-disc list-inside text-sm text-vin-muted space-y-1">
           <li><strong>Máy chưa ánh xạ:</strong> Chuyển sang tab "Máy chụp" và gắn đơn vị tổ chức cho các máy này. Ca chụp mới sẽ tự động thuộc về đơn vị đó.</li>
           <li><strong>Trùng/Thiếu AE Title:</strong> Kiểm tra cấu hình kết nối DICOM. Mỗi máy cần một AE Title duy nhất để đảm bảo phân quyền chính xác.</li>

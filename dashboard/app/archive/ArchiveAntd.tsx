@@ -262,16 +262,16 @@ export function ArchiveAntd() {
           />
         )}
 
-        <Card size="small" style={{ marginTop: 12 }} bodyStyle={{ padding: 8 }}>
+        <Card style={{ marginTop: 12 }} bodyStyle={{ padding: 8 }}>
           <Space wrap size={4}>
-            <Input size="small" placeholder="Tên BN" style={{ width: 130 }} value={filters.patientName} onChange={e => setFilters(f => ({ ...f, patientName: e.target.value }))} />
-            <Input size="small" placeholder="PID" style={{ width: 100, fontFamily: "monospace" }} value={filters.patientId} onChange={e => setFilters(f => ({ ...f, patientId: e.target.value }))} />
-            <Input size="small" placeholder="Accession" style={{ width: 130, fontFamily: "monospace" }} value={filters.accessionNumber} onChange={e => setFilters(f => ({ ...f, accessionNumber: e.target.value }))} />
-            <Select size="small" style={{ width: 100 }} value={filters.modality} onChange={val => setFilters(f => ({ ...f, modality: val }))} options={modalityOptions} />
-            <Select size="small" style={{ width: 150 }} value={filters.doctorId} onChange={val => setFilters(f => ({ ...f, doctorId: val }))} options={[{ value: "ALL", label: "Bác sĩ" }, ...doctors.map(d => ({ value: d.id, label: d.name }))]} />
-            <Select size="small" style={{ width: 130 }} value={filters.status} onChange={val => setFilters(f => ({ ...f, status: val }))} options={statusOptions} />
-            <Button size="small" type="primary" icon={<SearchOutlined />} onClick={() => runSearch(filters)} loading={isLoading}>Tìm</Button>
-            <Button size="small" icon={<ReloadOutlined />} onClick={() => runSearch(filters, true)} loading={isLoading} />
+            <Input size="middle" placeholder="Tên BN" style={{ width: 130 }} value={filters.patientName} onChange={e => setFilters(f => ({ ...f, patientName: e.target.value }))} />
+            <Input size="middle" placeholder="PID" style={{ width: 100, fontFamily: "monospace" }} value={filters.patientId} onChange={e => setFilters(f => ({ ...f, patientId: e.target.value }))} />
+            <Input size="middle" placeholder="Accession" style={{ width: 130, fontFamily: "monospace" }} value={filters.accessionNumber} onChange={e => setFilters(f => ({ ...f, accessionNumber: e.target.value }))} />
+            <Select size="middle" style={{ width: 100 }} value={filters.modality} onChange={val => setFilters(f => ({ ...f, modality: val }))} options={modalityOptions} />
+            <Select size="middle" style={{ width: 150 }} value={filters.doctorId} onChange={val => setFilters(f => ({ ...f, doctorId: val }))} options={[{ value: "ALL", label: "Bác sĩ" }, ...doctors.map(d => ({ value: d.id, label: d.name }))]} />
+            <Select size="middle" style={{ width: 130 }} value={filters.status} onChange={val => setFilters(f => ({ ...f, status: val }))} options={statusOptions} />
+            <Button size="middle" type="primary" icon={<SearchOutlined />} onClick={() => runSearch(filters)} loading={isLoading}>Tìm</Button>
+            <Button size="middle" icon={<ReloadOutlined />} onClick={() => runSearch(filters, true)} loading={isLoading} />
           </Space>
         </Card>
       </div>
@@ -279,7 +279,7 @@ export function ArchiveAntd() {
       <div style={{ flex: 1, display: "grid", gridTemplateColumns: "minmax(680px, 1fr) 420px", overflow: "hidden" }}>
         <div style={{ overflow: "auto" }}>
           <Table
-            size="small"
+            size="middle"
             dataSource={rows}
             columns={columns}
             rowKey="id"
@@ -313,7 +313,7 @@ export function ArchiveAntd() {
                 </Space>
               </div>
 
-              <Descriptions size="small" column={2} bordered>
+              <Descriptions size="middle" column={2} bordered>
                 <Descriptions.Item label="Ngày chụp">{formatDateTime(detail.studyDate)}</Descriptions.Item>
                 <Descriptions.Item label="Accession"><Text code>{detail.accessionNumber}</Text></Descriptions.Item>
                 <Descriptions.Item label="Modality"><Tag color="cyan">{detail.modality}</Tag></Descriptions.Item>
@@ -323,33 +323,33 @@ export function ArchiveAntd() {
 
               <Space wrap size={4}>
                 <Link href={`/report/${encodeURIComponent(detail.studyInstanceUid)}`}>
-                  <Button size="small">Mở report</Button>
+                  <Button size="middle">Mở report</Button>
                 </Link>
-                <Button size="small" icon={<PrinterOutlined />} onClick={() => runPrintAction("PRINT")} disabled={isActionBusy}>In lại</Button>
-                <Button size="small" icon={<FilePdfOutlined />} onClick={() => runPrintAction("PDF")} disabled={isActionBusy}>PDF</Button>
+                <Button size="middle" icon={<PrinterOutlined />} onClick={() => runPrintAction("PRINT")} disabled={isActionBusy}>In lại</Button>
+                <Button size="middle" icon={<FilePdfOutlined />} onClick={() => runPrintAction("PDF")} disabled={isActionBusy}>PDF</Button>
                 {detail.allowedActions?.share && (
-                  <Button size="small" icon={<LinkOutlined />} onClick={() => setShareDialogOpen(true)}>Chia sẻ</Button>
+                  <Button size="middle" icon={<LinkOutlined />} onClick={() => setShareDialogOpen(true)}>Chia sẻ</Button>
                 )}
                 {detail.allowedActions?.createConsultation && (
-                  <Button size="small" icon={<TeamOutlined />} onClick={() => setConsultDialogOpen(true)}>Hội chẩn</Button>
+                  <Button size="middle" icon={<TeamOutlined />} onClick={() => setConsultDialogOpen(true)}>Hội chẩn</Button>
                 )}
                 {detail.allowedActions?.syncHis && detail.canSyncHisMatrix && (
-                  <Button size="small" icon={<SyncOutlined />} onClick={runHisRetry} disabled={isActionBusy} danger={detail.hisResultStatus === "FAILED"}>
+                  <Button size="middle" icon={<SyncOutlined />} onClick={runHisRetry} disabled={isActionBusy} danger={detail.hisResultStatus === "FAILED"}>
                     {detail.hisResultStatus === "FAILED" ? "Retry HIS" : "Gửi HIS"}
                   </Button>
                 )}
               </Space>
 
               {detail.studyStatus === "FINALIZED" && (
-                <Button size="small" type="primary" icon={<CheckCircleOutlined />} onClick={markDelivered} disabled={isActionBusy} block style={{ background: "#52c41a", borderColor: "#52c41a" }}>
+                <Button size="middle" type="primary" icon={<CheckCircleOutlined />} onClick={markDelivered} disabled={isActionBusy} block style={{ background: "#52c41a", borderColor: "#52c41a" }}>
                   Ghi nhận đã trả kết quả
                 </Button>
               )}
 
-              <Card size="small" title="Kết luận">
+              <Card title="Kết luận">
                 <Text>{detail.conclusion || "-"}</Text>
               </Card>
-              <Card size="small" title="Mô tả">
+              <Card title="Mô tả">
                 <div dangerouslySetInnerHTML={{ __html: detail.findings || "<span>-</span>" }} style={{ fontSize: 12 }} />
               </Card>
             </Space>

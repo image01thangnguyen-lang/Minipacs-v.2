@@ -316,17 +316,17 @@ export function WorklistAntd(props: { searchParams?: { orderId?: string } }) {
           <Space size={4}>
             {canOpenViewer(order) && (
               <Tooltip title="Mở viewer">
-                <Button size="small" type="text" icon={<EyeOutlined />} onClick={() => openViewer(order)} />
+                <Button size="middle" type="text" icon={<EyeOutlined />} onClick={() => openViewer(order)} />
               </Tooltip>
             )}
             {canLockForReading(order) && (
               <Tooltip title="Mở & Đọc">
-                <Button size="small" type="primary" icon={<PlayCircleOutlined />} onClick={() => runViewToDictate(order)} loading={busy} />
+                <Button size="middle" type="primary" icon={<PlayCircleOutlined />} onClick={() => runViewToDictate(order)} loading={busy} />
               </Tooltip>
             )}
             {items.length > 0 && (
               <Dropdown menu={{ items }} trigger={["click"]}>
-                <Button size="small" type="text" icon={<MoreOutlined />} loading={busy} />
+                <Button size="middle" type="text" icon={<MoreOutlined />} loading={busy} />
               </Dropdown>
             )}
           </Space>
@@ -344,7 +344,7 @@ export function WorklistAntd(props: { searchParams?: { orderId?: string } }) {
               <ScreenHeader />
               <Text type="secondary" style={{ fontSize: 11 }}>{orders.length} order trong ngày</Text>
             </div>
-            <Button size="small" icon={<ReloadOutlined />} onClick={loadOrders} loading={isLoading}>Làm mới</Button>
+            <Button size="middle" icon={<ReloadOutlined />} onClick={loadOrders} loading={isLoading}>Làm mới</Button>
           </div>
 
           {(message || error) && (
@@ -359,13 +359,13 @@ export function WorklistAntd(props: { searchParams?: { orderId?: string } }) {
 
           <Space wrap size={4}>
             <DatePicker
-              size="small"
+              size="middle"
               value={dayjs(selectedDate)}
               onChange={(d) => d && setSelectedDate(d.format("YYYY-MM-DD"))}
               allowClear={false}
             />
             <Select
-              size="small"
+              size="middle"
               style={{ width: 130 }}
               value={statusFilter}
               onChange={setStatusFilter}
@@ -379,7 +379,7 @@ export function WorklistAntd(props: { searchParams?: { orderId?: string } }) {
               ]}
             />
             <Input.Search
-              size="small"
+              size="middle"
               placeholder="Tìm tên, PID, accession..."
               allowClear
               value={searchQuery}
@@ -392,7 +392,7 @@ export function WorklistAntd(props: { searchParams?: { orderId?: string } }) {
 
         <div style={{ flex: 1, overflow: "auto" }}>
           <Table
-            size="small"
+            size="middle"
             dataSource={orders}
             columns={columns}
             rowKey="id"

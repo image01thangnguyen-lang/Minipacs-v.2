@@ -125,7 +125,7 @@ export function MachineMappingAntd() {
       render: (_, record) => (
         <Select
           style={{ width: "100%" }}
-          size="small"
+          size="middle"
           placeholder="-- Chưa gắn vào đơn vị nào --"
           value={record.facilityId || undefined}
           onChange={(val) => handleAssign(record.id, val || null)}
@@ -143,12 +143,12 @@ export function MachineMappingAntd() {
       width: 100,
       align: "center",
       render: (_, record) => {
-        if (saving === record.id) return <Spin size="small" />;
+        if (saving === record.id) return <Spin />;
         if (!record.isActive) {
           return (
             <Button
               type="link"
-              size="small"
+              size="middle"
               onClick={() => handleReactivate(record.id)}
               style={{ color: "#52c41a", fontSize: "10px", padding: 0 }}
             >
@@ -161,7 +161,7 @@ export function MachineMappingAntd() {
             <Tooltip title="Gỡ gắn kết">
               <Button
                 type="text"
-                size="small"
+                size="middle"
                 danger
                 icon={<DisconnectOutlined />}
                 onClick={() => handleAssign(record.id, null)}
@@ -171,7 +171,7 @@ export function MachineMappingAntd() {
         }
         return (
           <Tooltip title="Chưa gắn kết">
-            <Button type="text" size="small" disabled icon={<LinkOutlined />} />
+            <Button type="text" size="middle" disabled icon={<LinkOutlined />} />
           </Tooltip>
         );
       }
@@ -196,7 +196,7 @@ export function MachineMappingAntd() {
       {error && <Alert message={error} type="error" showIcon className="mb-4" />}
 
       <Table
-        size="small"
+        size="middle"
         dataSource={nodes}
         columns={columns}
         rowKey="id"

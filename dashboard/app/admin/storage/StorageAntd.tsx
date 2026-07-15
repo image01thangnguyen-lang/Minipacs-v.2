@@ -134,7 +134,6 @@ export function StorageAntd() {
           {folders.map(folder => (
             <Col xs={24} md={12} lg={8} key={folder.id}>
               <Card 
-                size="small" 
                 style={{ opacity: folder.isActive ? 1 : 0.6 }}
                 title={
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -143,10 +142,10 @@ export function StorageAntd() {
                   </div>
                 }
                 extra={
-                  <Space size="small">
-                    <Button type="text" size="small" icon={<ReloadOutlined />} onClick={() => handleCheck(folder.id)} title="Kiểm tra kết nối" />
-                    <Button type="text" size="small" icon={<EditOutlined style={{color:"#13C2C2"}}/>} onClick={() => handleOpenForm(folder)} title="Sửa" />
-                    <Button type="text" danger size="small" icon={<DeleteOutlined />} onClick={() => handleDelete(folder.id)} title="Xóa" />
+                  <Space size="middle">
+                    <Button type="text" size="middle" icon={<ReloadOutlined />} onClick={() => handleCheck(folder.id)} title="Kiểm tra kết nối" />
+                    <Button type="text" size="middle" icon={<EditOutlined style={{color:"#13C2C2"}}/>} onClick={() => handleOpenForm(folder)} title="Sửa" />
+                    <Button type="text" danger size="middle" icon={<DeleteOutlined />} onClick={() => handleDelete(folder.id)} title="Xóa" />
                   </Space>
                 }
               >

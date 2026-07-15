@@ -23,14 +23,14 @@ DataGridRoot.displayName = 'DataGridRoot';
 
 export const DataGridHeader = ({ children, className = '', sticky = true }: { children: React.ReactNode; className?: string; sticky?: boolean }) => {
   return (
-    <thead className={`${sticky ? 'sticky top-0 z-20' : ''} bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2 ${className}`}>
+    <thead className={`${sticky ? 'sticky top-0 z-20' : ''} bg-vin-panel2 text-sm font-semibold uppercase tracking-wider text-vin-text2 ${className}`}>
       {children}
     </thead>
   );
 };
 
 export const DataGridBody = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => {
-  return <tbody className={`text-[11px] ${className}`}>{children}</tbody>;
+  return <tbody className={`text-sm ${className}`}>{children}</tbody>;
 };
 
 export interface DataGridRowProps extends React.HTMLAttributes<HTMLTableRowElement> {
@@ -68,7 +68,7 @@ export interface DataGridCellProps extends React.TdHTMLAttributes<HTMLTableCellE
 export const DataGridCell = ({ children, pinned, pinnedOffset = 0, isHeader, shadow, compact, className = '', style, ...props }: DataGridCellProps) => {
   const Component = isHeader ? 'th' : 'td';
 
-  const py = compact ? 'py-1' : 'py-2';
+  const py = compact ? 'py-2' : 'py-2.5';
   const baseClasses = isHeader ? `${py} px-2 border-b border-white/10` : `${py} px-2`;
 
   let pinnedClasses = '';

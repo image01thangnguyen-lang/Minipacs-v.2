@@ -151,7 +151,7 @@ export function NodesAntd() {
       render: (text: string, record: any) => (
         <div>
           <div style={{ fontWeight: 600, color: "white" }}>{text}</div>
-          <Space size="small" style={{ marginTop: 4 }}>
+          <Space size="middle" style={{ marginTop: 4 }}>
             <Tag color="blue">{record.modality}</Tag>
             {!record.isNonDicom && <Text type="secondary" style={{ fontSize: 10 }}>{record.orthancAlias}</Text>}
             {!record.isActive && <Tag color="error">Tắt</Tag>}
@@ -223,22 +223,22 @@ export function NodesAntd() {
           <Space>
             {!record.isNonDicom && (
               <Button
-                size="small"
-                icon={isBusy ? <Spin size="small" /> : <ApiOutlined />}
+                size="middle"
+                icon={isBusy ? <Spin /> : <ApiOutlined />}
                 onClick={() => runPing(record.id)}
                 title="Kiểm tra kết nối (C-Echo)"
                 disabled={isBusy}
               />
             )}
             <Button
-              size="small"
+              size="middle"
               icon={<EditOutlined />}
               onClick={() => handleEdit(record)}
               title="Sửa cấu hình"
               disabled={isBusy}
             />
             <Button
-              size="small"
+              size="middle"
               danger
               icon={<DeleteOutlined />}
               onClick={() => runDelete(record.id)}
@@ -273,7 +273,7 @@ export function NodesAntd() {
       </div>
 
       <Table
-        size="small"
+        size="middle"
         dataSource={nodes}
         columns={columns}
         rowKey="id"

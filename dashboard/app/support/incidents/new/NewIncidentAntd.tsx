@@ -53,7 +53,7 @@ export function NewIncidentAntd({
       <Space direction="vertical" size={8} style={{ width: "100%" }}>
         <div>
           <Link href="/support/incidents">
-            <Button size="small" type="link" icon={<ArrowLeftOutlined />} style={{ padding: 0, marginBottom: 16 }}>
+            <Button size="middle" type="link" icon={<ArrowLeftOutlined />} style={{ padding: 0, marginBottom: 16 }}>
               Quay lại danh sách
             </Button>
           </Link>
@@ -74,7 +74,7 @@ export function NewIncidentAntd({
           description="Không được phép bao gồm Thông tin Y tế Được bảo vệ (PHI) trong mô tả sự cố. Bao gồm: Tên bệnh nhân, Mã PID, Accession Number, hoặc bệnh án thô. Mọi dữ liệu định danh phải được xóa hoặc mã hóa (scrubbed) trước khi gửi."
         />
 
-        <Card size="small">
+        <Card>
           <Form
             form={form}
             layout="vertical"
@@ -93,7 +93,7 @@ export function NewIncidentAntd({
               rules={[{ required: true, message: "Vui lòng nhập mô tả sự cố" }]}
             >
               <Input.TextArea
-                size="small"
+                size="middle"
                 rows={5}
                 placeholder="Mô tả chi tiết lỗi (ví dụ: Không thể lưu kết quả cho ca X-quang)"
               />
@@ -102,7 +102,7 @@ export function NewIncidentAntd({
             <Space size={8} style={{ width: "100%", display: "flex", flexWrap: "wrap" }}>
               <Form.Item name="severity" label="Mức độ nghiêm trọng" style={{ flex: 1, minWidth: 200 }}>
                 <Select
-                  size="small"
+                  size="middle"
                   options={[
                     { value: "SEV4", label: "SEV4 - Lỗi nhỏ / Giao diện" },
                     { value: "SEV3", label: "SEV3 - Lỗi lớn có cách xử lý tạm (Workaround)" },
@@ -113,7 +113,7 @@ export function NewIncidentAntd({
               </Form.Item>
               <Form.Item name="module" label="Module bị lỗi" style={{ flex: 1, minWidth: 200 }}>
                 <Select
-                  size="small"
+                  size="middle"
                   options={[
                     { value: "GENERAL", label: "Hệ thống chung" },
                     { value: "VIEWER", label: "DICOM Viewer" },
@@ -132,7 +132,7 @@ export function NewIncidentAntd({
             <Space size={8} style={{ width: "100%", display: "flex", flexWrap: "wrap" }}>
               <Form.Item name="contextType" label="Loại ngữ cảnh (Không bắt buộc)" style={{ flex: 1, minWidth: 200 }}>
                 <Select
-                  size="small"
+                  size="middle"
                   options={[
                     { value: "", label: "Không có" },
                     { value: "STUDY", label: "Ca chụp (Study)" },
@@ -146,7 +146,7 @@ export function NewIncidentAntd({
                 />
               </Form.Item>
               <Form.Item name="contextId" label="ID ngữ cảnh (ID hệ thống, không dùng Accession)" style={{ flex: 1, minWidth: 200 }}>
-                <Input size="small" placeholder="Nhập UUID hoặc ID hệ thống" />
+                <Input size="middle" placeholder="Nhập UUID hoặc ID hệ thống" />
               </Form.Item>
             </Space>
 
@@ -169,7 +169,7 @@ export function NewIncidentAntd({
               </Text>
             </div>
 
-            <Button size="small" type="primary" htmlType="submit" loading={saving} block>
+            <Button size="middle" type="primary" htmlType="submit" loading={saving} block>
               Gửi báo cáo sự cố
             </Button>
           </Form>

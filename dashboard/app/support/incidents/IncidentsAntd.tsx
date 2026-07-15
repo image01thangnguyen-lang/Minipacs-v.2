@@ -111,7 +111,7 @@ export function IncidentsAntd({
       align: "right" as const,
       render: (_: any, record: any) => (
         <Link href={`/support/incidents/${record.id}`}>
-          <Button size="small" type="link" icon={<EyeOutlined />}>
+          <Button size="middle" type="link" icon={<EyeOutlined />}>
             Xem chi tiết
           </Button>
         </Link>
@@ -130,17 +130,17 @@ export function IncidentsAntd({
         </div>
         {(canReport || isAdmin) && (
           <Link href="/support/incidents/new">
-            <Button size="small" type="primary" icon={<PlusOutlined />}>
+            <Button size="middle" type="primary" icon={<PlusOutlined />}>
               Báo cáo sự cố
             </Button>
           </Link>
         )}
       </div>
 
-      <Card size="small" style={{ flex: 1, display: "flex", flexDirection: "column" }} bodyStyle={{ flex: 1, display: "flex", flexDirection: "column", padding: 0 }}>
+      <Card style={{ flex: 1, display: "flex", flexDirection: "column" }} bodyStyle={{ flex: 1, display: "flex", flexDirection: "column", padding: 0 }}>
         <div style={{ padding: 16, borderBottom: "1px solid var(--vin-border)", display: "flex", gap: 12 }}>
           <Input
-            size="small"
+            size="middle"
             prefix={<SearchOutlined style={{ color: "rgba(255,255,255,0.2)" }} />}
             placeholder="Tìm theo mô tả, module..."
             value={searchQuery}
@@ -149,7 +149,7 @@ export function IncidentsAntd({
             allowClear
           />
           <Select
-            size="small"
+            size="middle"
             value={statusFilter}
             onChange={setStatusFilter}
             style={{ width: 150 }}
@@ -163,7 +163,7 @@ export function IncidentsAntd({
           />
         </div>
         <Table
-          size="small"
+          size="middle"
           columns={columns}
           dataSource={filteredIncidents}
           rowKey="id"

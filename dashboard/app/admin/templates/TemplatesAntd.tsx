@@ -151,9 +151,9 @@ export function TemplatesAntd() {
       key: "actions",
       align: "right" as const,
       render: (_: any, record: any) => (
-        <Space size="small">
-          <Button size="small" icon={<EditOutlined />} onClick={() => handleOpenForm(record)} />
-          <Button size="small" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)} />
+        <Space size="middle">
+          <Button size="middle" icon={<EditOutlined />} onClick={() => handleOpenForm(record)} />
+          <Button size="middle" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.id)} />
         </Space>
       )
     }
@@ -181,7 +181,7 @@ export function TemplatesAntd() {
       </div>
 
       <Table
-        size="small"
+        size="middle"
         dataSource={templates}
         columns={columns}
         rowKey="id"

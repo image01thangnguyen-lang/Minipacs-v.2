@@ -30,7 +30,7 @@ export const CustomSelect = forwardRef<BaseSelectRef, CustomSelectProps>(
         {name ? <input type="hidden" name={name} value={value ?? ""} /> : null}
         <Select
           ref={ref}
-          size="small"
+          size="middle"
           value={value}
           options={options}
           placeholder={placeholder}

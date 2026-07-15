@@ -131,7 +131,7 @@ export function ReportActionsBarAntd({
           <div className="mb-4 flex flex-col gap-1">
             <Text className="text-xs font-semibold text-gray-400">Mẫu in</Text>
             <Select
-              size="small"
+              size="middle"
               value={selectedPrintTemplateId}
               onChange={onPrintTemplateChange}
               options={printTemplates.map(t => ({ value: t.id, label: t.name }))}
@@ -142,7 +142,7 @@ export function ReportActionsBarAntd({
           <div className="mb-4 flex flex-col gap-1">
             <Text className="text-xs font-semibold text-gray-400">Mẫu in</Text>
             <Select
-              size="small"
+              size="middle"
               disabled
               value=""
               options={[{ value: "", label: "Mặc định (System)" }]}

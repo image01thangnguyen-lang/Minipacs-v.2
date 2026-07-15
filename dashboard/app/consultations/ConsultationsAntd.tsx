@@ -76,7 +76,7 @@ export function ConsultationsAntd() {
       align: "right" as const,
       render: (_: any, record: ConsultationView) => (
         <Link href={`/consultations/${record.id}`}>
-          <Button type="primary" size="small" icon={<VideoCameraOutlined />}>Vào phòng</Button>
+          <Button type="primary" size="middle" icon={<VideoCameraOutlined />}>Vào phòng</Button>
         </Link>
       )
     }
@@ -87,10 +87,10 @@ export function ConsultationsAntd() {
       <ScreenHeader />
       <Text type="secondary" style={{ marginBottom: 16, display: "block" }}>{consultations.length} cuộc hội chẩn</Text>
 
-      <Card size="small" style={{ marginBottom: 16 }}>
+      <Card style={{ marginBottom: 16 }}>
         <Space>
           <Select
-            size="small"
+            size="middle"
             value={statusFilter}
             onChange={setStatusFilter}
             style={{ width: 180 }}
@@ -102,12 +102,12 @@ export function ConsultationsAntd() {
               { value: "CANCELLED", label: "Đã hủy" },
             ]}
           />
-          <Button size="small" icon={<ReloadOutlined />} onClick={loadConsultations} loading={isLoading} />
+          <Button size="middle" icon={<ReloadOutlined />} onClick={loadConsultations} loading={isLoading} />
         </Space>
       </Card>
 
       <Table
-        size="small"
+        size="middle"
         dataSource={consultations}
         rowKey="id"
         columns={columns}

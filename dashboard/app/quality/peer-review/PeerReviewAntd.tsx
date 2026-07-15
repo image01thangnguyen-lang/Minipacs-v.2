@@ -79,7 +79,7 @@ export function PeerReviewAntd({ reviews }: { reviews: any[] }) {
           <Text strong style={{ fontSize: 14 }}>Danh sách ca chờ đánh giá</Text>
         </div>
         <Table
-          size="small"
+          size="middle"
           columns={columns}
           dataSource={reviews}
           rowKey="id"

@@ -84,7 +84,7 @@ export function NonDicomAntd() {
       align: "right" as const,
       render: (_: any, record: any) => (
         <Link href={`/non-dicom/${record.id}`}>
-          <Button type="primary" size="small" icon={<CameraOutlined />}>Capture</Button>
+          <Button type="primary" size="middle" icon={<CameraOutlined />}>Capture</Button>
         </Link>
       )
     }
@@ -95,10 +95,10 @@ export function NonDicomAntd() {
       <ScreenHeader />
       <Text type="secondary" style={{ marginBottom: 16, display: "block" }}>Quản lý các ca siêu âm, nội soi, chụp ảnh ngoài DICOM</Text>
 
-      <Card size="small" style={{ marginBottom: 16 }}>
+      <Card style={{ marginBottom: 16 }}>
         <Space wrap>
           <Select
-            size="small"
+            size="middle"
             value={statusFilter}
             onChange={setStatusFilter}
             style={{ width: 220 }}
@@ -110,7 +110,7 @@ export function NonDicomAntd() {
             ]}
           />
           <Input.Search
-            size="small"
+            size="middle"
             placeholder="Tìm tên, mã BN..."
             allowClear
             value={search}
@@ -118,12 +118,12 @@ export function NonDicomAntd() {
             onSearch={loadExams}
             style={{ width: 250 }}
           />
-          <Button size="small" icon={<ReloadOutlined />} onClick={loadExams} loading={loading} />
+          <Button size="middle" icon={<ReloadOutlined />} onClick={loadExams} loading={loading} />
         </Space>
       </Card>
 
       <Table
-        size="small"
+        size="middle"
         dataSource={exams}
         rowKey="id"
         columns={columns}

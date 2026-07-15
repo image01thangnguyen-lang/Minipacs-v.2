@@ -12,7 +12,7 @@ export function WorkQueueFacetsAntd({ status, modality, statuses, modalities, on
     <section className="max-h-[42%] overflow-auto border-b border-[#303030] p-3" aria-labelledby="work-queue-heading">
       <div className="mb-2 flex items-center justify-between">
         <h3 id="work-queue-heading" className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Hàng đợi</h3>
-        {active && <Button type="link" size="small" onClick={onClear} className="text-[10px] h-auto p-0">Xóa lọc</Button>}
+        {active && <Button type="link" size="middle" onClick={onClear} className="text-[10px] h-auto p-0">Xóa lọc</Button>}
       </div>
       <fieldset className="mb-3">
         <legend className="mb-1 text-[10px] font-semibold text-gray-500">Trạng thái</legend>
@@ -22,7 +22,7 @@ export function WorkQueueFacetsAntd({ status, modality, statuses, modalities, on
               key={o.value}
               type={status === o.value ? "primary" : "text"}
               ghost={status === o.value}
-              size="small"
+              size="middle"
               onClick={() => onStatusChange(o.value)}
               className="w-full flex justify-between items-center text-left text-[11px] h-auto py-1"
             >
@@ -47,7 +47,7 @@ export function WorkQueueFacetsAntd({ status, modality, statuses, modalities, on
               key={o.value}
               type={modality === o.value ? "primary" : "default"}
               ghost={modality === o.value}
-              size="small"
+              size="middle"
               onClick={() => onModalityChange(o.value)}
               className="text-[10px]"
             >

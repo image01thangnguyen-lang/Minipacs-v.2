@@ -74,7 +74,7 @@ export function SlaPoliciesAntd({ policies }: { policies: any[] }) {
           <Text strong style={{ fontSize: 14 }}>Danh sách chính sách SLA</Text>
         </div>
         <Table
-          size="small"
+          size="middle"
           columns={columns}
           dataSource={policies}
           rowKey="id"

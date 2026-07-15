@@ -33,7 +33,6 @@ export function ChangePasswordAntd() {
 
   return (
     <Card 
-      size="small" 
       title={<div style={{ color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}><KeyOutlined /> Đổi mật khẩu</div>}
       style={{ maxWidth: '400px' }}
     >

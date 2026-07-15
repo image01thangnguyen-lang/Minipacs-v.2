@@ -184,13 +184,13 @@ export function CommandCenterAntd() {
     <div style={{ padding: "24px", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <ScreenHeader />
       
-      <Card size="small" style={{ marginBottom: 16 }}>
+      <Card style={{ marginBottom: 16 }}>
         <Space wrap align="end">
           <Space direction="vertical" size={2}>
             <Text style={{ fontSize: 12 }}>Modality</Text>
             <Select
               style={{ width: 120 }}
-              size="small"
+              size="middle"
               allowClear
               placeholder="Tất cả"
               value={filterDraft.modality}
@@ -208,7 +208,7 @@ export function CommandCenterAntd() {
             <Text style={{ fontSize: 12 }}>Độ ưu tiên</Text>
             <Select
               style={{ width: 120 }}
-              size="small"
+              size="middle"
               allowClear
               placeholder="Tất cả"
               value={filterDraft.priority}
@@ -220,44 +220,44 @@ export function CommandCenterAntd() {
               ]}
             />
           </Space>
-          <Button type="primary" size="small" onClick={handleApplyFilters}>Áp dụng</Button>
+          <Button type="primary" size="middle" onClick={handleApplyFilters}>Áp dụng</Button>
         </Space>
       </Card>
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col span={4}>
-          <Card size="small" style={{ background: "var(--vin-shell)" }}>
+          <Card style={{ background: "var(--vin-shell)" }}>
             <Text type="secondary" style={{ fontSize: 12 }}>Chờ chụp</Text>
             <div style={{ fontSize: 24, fontWeight: "bold" }}>{summary?.WAITING_SCAN || 0}</div>
           </Card>
         </Col>
         <Col span={4}>
-          <Card size="small" style={{ background: "var(--vin-shell)" }}>
+          <Card style={{ background: "var(--vin-shell)" }}>
             <Text type="secondary" style={{ fontSize: 12 }}>Chờ đọc</Text>
             <div style={{ fontSize: 24, fontWeight: "bold" }}>{summary?.WAITING_READ || 0}</div>
           </Card>
         </Col>
         <Col span={4}>
-          <Card size="small" style={{ background: "rgba(255, 77, 79, 0.1)", borderColor: "#ff4d4f" }}>
+          <Card style={{ background: "rgba(255, 77, 79, 0.1)", borderColor: "#ff4d4f" }}>
             <Text type="danger" style={{ fontSize: 12 }}>Quá hạn SLA</Text>
             <div style={{ fontSize: 24, fontWeight: "bold", color: "#ff4d4f" }}>{slaPrimed && breaches ? breaches.total : "--"}</div>
           </Card>
         </Col>
         <Col span={4}>
-          <Card size="small" style={{ background: "rgba(250, 173, 20, 0.1)", borderColor: "#faad14" }}>
+          <Card style={{ background: "rgba(250, 173, 20, 0.1)", borderColor: "#faad14" }}>
             <Text type="warning" style={{ fontSize: 12 }}>Lỗi HIS</Text>
             <div style={{ fontSize: 24, fontWeight: "bold", color: "#faad14" }}>{summary?.HIS_FAILED || 0}</div>
           </Card>
         </Col>
         <Col span={4}>
-          <Card size="small" style={{ background: "rgba(250, 173, 20, 0.1)", borderColor: "#faad14" }}>
+          <Card style={{ background: "rgba(250, 173, 20, 0.1)", borderColor: "#faad14" }}>
             <Text type="warning" style={{ fontSize: 12 }}>Alerts Open</Text>
             <div style={{ fontSize: 24, fontWeight: "bold", color: "#faad14" }}>{summary?.ACTIVE_ALERTS || 0}</div>
           </Card>
         </Col>
       </Row>
 
-      <Card size="small" style={{ flex: 1 }} bodyStyle={{ padding: 0 }}>
+      <Card style={{ flex: 1 }} bodyStyle={{ padding: 0 }}>
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
@@ -268,7 +268,7 @@ export function CommandCenterAntd() {
               label: "Live Queue",
               children: (
                 <Table
-                  size="small"
+                  size="middle"
                   dataSource={queue?.data || []}
                   columns={queueColumns}
                   rowKey="id"
@@ -289,7 +289,7 @@ export function CommandCenterAntd() {
               label: "SLA Breaches",
               children: (
                 <Table
-                  size="small"
+                  size="middle"
                   dataSource={breaches?.data || []}
                   columns={slaColumns}
                   rowKey={(r) => r.id || `${r.studyInstanceUid || "unknown"}:${r.stage}:${r.policyCode}`}
@@ -310,7 +310,7 @@ export function CommandCenterAntd() {
               label: "Stuck Workflow",
               children: (
                 <Table
-                  size="small"
+                  size="middle"
                   dataSource={stuck?.data || []}
                   columns={stuckColumns}
                   rowKey="id"
@@ -336,7 +336,7 @@ export function CommandCenterAntd() {
                     {isLoadingBacklog ? <div>Đang tải...</div> : (
                       <Space direction="vertical" style={{ width: "100%" }}>
                         {backlog?.doctorBacklog?.map((d: any, idx: number) => (
-                          <Card size="small" key={idx} bodyStyle={{ padding: "8px 12px", display: "flex", justifyContent: "space-between" }}>
+                          <Card key={idx} bodyStyle={{ padding: "8px 12px", display: "flex", justifyContent: "space-between" }}>
                             <Text strong>{d.doctorName}</Text>
                             <Badge count={d.count} color="cyan" />
                           </Card>
@@ -349,7 +349,7 @@ export function CommandCenterAntd() {
                     {isLoadingBacklog ? <div>Đang tải...</div> : (
                       <Space direction="vertical" style={{ width: "100%" }}>
                         {backlog?.machineBacklog?.map((m: any, idx: number) => (
-                          <Card size="small" key={idx} bodyStyle={{ padding: "8px 12px", display: "flex", justifyContent: "space-between" }}>
+                          <Card key={idx} bodyStyle={{ padding: "8px 12px", display: "flex", justifyContent: "space-between" }}>
                             <Text strong>{m.machineName}</Text>
                             <Badge count={m.count} color="orange" />
                           </Card>
@@ -369,7 +369,7 @@ export function CommandCenterAntd() {
                     <Alert style={{ margin: "16px 16px 0" }} message="Có hơn 1000 Alerts đang chờ xử lý. Vui lòng sử dụng bộ lọc để thu hẹp phạm vi." type="warning" showIcon />
                   )}
                   <Table
-                    size="small"
+                    size="middle"
                     dataSource={alerts?.data || []}
                     columns={alertColumns}
                     rowKey="id"

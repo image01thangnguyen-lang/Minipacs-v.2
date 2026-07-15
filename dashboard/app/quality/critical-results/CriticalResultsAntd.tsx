@@ -83,7 +83,7 @@ export function CriticalResultsAntd({ results }: { results: any[] }) {
           <Text strong style={{ fontSize: 14 }}>Kết quả nguy hiểm đang theo dõi</Text>
         </div>
         <Table
-          size="small"
+          size="middle"
           columns={columns}
           dataSource={results}
           rowKey="id"

@@ -36,12 +36,12 @@ export function StatisticsAntd() {
     <div style={{ padding: "24px", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <ScreenHeader />
       
-      <Card size="small" style={{ marginBottom: 16 }}>
+      <Card style={{ marginBottom: 16 }}>
         <Space wrap align="end">
           <Space direction="vertical" size={2}>
             <Text style={{ fontSize: 12 }}>Ngày thống kê</Text>
             <DatePicker.RangePicker
-              size="small"
+              size="middle"
               value={[dayjs(filters.dateFrom), dayjs(filters.dateTo)]}
               onChange={(dates) => {
                 if (dates && dates[0] && dates[1]) {
@@ -50,7 +50,7 @@ export function StatisticsAntd() {
               }}
             />
           </Space>
-          <Button type="primary" size="small" onClick={() => loadData(filters)} loading={isLoading}>
+          <Button type="primary" size="middle" onClick={() => loadData(filters)} loading={isLoading}>
             Cập nhật
           </Button>
         </Space>
@@ -62,34 +62,34 @@ export function StatisticsAntd() {
         <>
           <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
             <Col span={4}>
-              <Card size="small" style={{ background: "var(--vin-shell)" }}>
+              <Card style={{ background: "var(--vin-shell)" }}>
                 <Text type="secondary" style={{ fontSize: 12 }}>Ca trong kỳ</Text>
                 <div style={{ fontSize: 24, fontWeight: "bold" }}>{data.kpis.studiesInPeriod}</div>
               </Card>
             </Col>
             <Col span={4}>
-              <Card size="small" style={{ background: "var(--vin-shell)" }}>
+              <Card style={{ background: "var(--vin-shell)" }}>
                 <Text type="secondary" style={{ fontSize: 12 }}>Đã ký</Text>
                 <div style={{ fontSize: 24, fontWeight: "bold", color: "#52c41a" }}>{data.kpis.finalizedInPeriod}</div>
               </Card>
             </Col>
             <Col span={4}>
-              <Card size="small" style={{ background: "var(--vin-shell)" }}>
+              <Card style={{ background: "var(--vin-shell)" }}>
                 <Text type="secondary" style={{ fontSize: 12 }}>Chờ đọc</Text>
                 <div style={{ fontSize: 24, fontWeight: "bold", color: "#faad14" }}>{data.kpis.readyToRead}</div>
               </Card>
             </Col>
             <Col span={4}>
-              <Card size="small" style={{ background: "var(--vin-shell)" }}>
+              <Card style={{ background: "var(--vin-shell)" }}>
                 <Text type="secondary" style={{ fontSize: 12 }}>QC Issues</Text>
                 <div style={{ fontSize: 24, fontWeight: "bold", color: "#ff4d4f" }}>{data.kpis.qcIssues}</div>
               </Card>
             </Col>
           </Row>
           
-          <Card size="small" title="Số ca theo bác sĩ" style={{ marginBottom: 24 }}>
+          <Card title="Số ca theo bác sĩ" style={{ marginBottom: 24 }}>
             <Table
-              size="small"
+              size="middle"
               dataSource={data.doctorRows}
               rowKey="doctorId"
               pagination={false}
@@ -104,9 +104,9 @@ export function StatisticsAntd() {
           
           <Row gutter={[16, 16]}>
             <Col span={12}>
-              <Card size="small" title="PACS Storage">
+              <Card title="PACS Storage">
                 <Table
-                  size="small"
+                  size="middle"
                   dataSource={[
                     { key: "1", label: "Patients", value: data.storage.patients },
                     { key: "2", label: "Studies", value: data.storage.studies },
@@ -122,9 +122,9 @@ export function StatisticsAntd() {
               </Card>
             </Col>
             <Col span={12}>
-              <Card size="small" title="Outliers SLA">
+              <Card title="Outliers SLA">
                 <Table
-                  size="small"
+                  size="middle"
                   dataSource={data.performance.outliers}
                   rowKey="studyInstanceUid"
                   pagination={{ pageSize: 5 }}

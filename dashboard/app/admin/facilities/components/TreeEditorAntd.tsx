@@ -223,14 +223,14 @@ export function TreeEditorAntd() {
             <Space onClick={e => e.stopPropagation()}>
               {u.isActive ? (
                 <>
-                  <Tooltip title="Lên"><Button size="small" type="text" icon={<ArrowUpOutlined />} onClick={() => handleReorder(u, 'UP')} /></Tooltip>
-                  <Tooltip title="Xuống"><Button size="small" type="text" icon={<ArrowDownOutlined />} onClick={() => handleReorder(u, 'DOWN')} /></Tooltip>
-                  <Tooltip title="Thêm nút con"><Button size="small" type="text" icon={<PlusOutlined />} onClick={() => { setModal({ type: "ADD", targetNode: u }); formAdd.resetFields(); formAdd.setFieldsValue({ type: "HOSPITAL" }); }} /></Tooltip>
-                  <Tooltip title="Chuyển (Move)"><Button size="small" type="text" icon={<SwapOutlined />} onClick={() => openMoveModal(u)} /></Tooltip>
-                  <Tooltip title="Hủy kích hoạt"><Button size="small" type="text" danger icon={<DeleteOutlined />} onClick={() => openDeactivateModal(u)} /></Tooltip>
+                  <Tooltip title="Lên"><Button size="middle" type="text" icon={<ArrowUpOutlined />} onClick={() => handleReorder(u, 'UP')} /></Tooltip>
+                  <Tooltip title="Xuống"><Button size="middle" type="text" icon={<ArrowDownOutlined />} onClick={() => handleReorder(u, 'DOWN')} /></Tooltip>
+                  <Tooltip title="Thêm nút con"><Button size="middle" type="text" icon={<PlusOutlined />} onClick={() => { setModal({ type: "ADD", targetNode: u }); formAdd.resetFields(); formAdd.setFieldsValue({ type: "HOSPITAL" }); }} /></Tooltip>
+                  <Tooltip title="Chuyển (Move)"><Button size="middle" type="text" icon={<SwapOutlined />} onClick={() => openMoveModal(u)} /></Tooltip>
+                  <Tooltip title="Hủy kích hoạt"><Button size="middle" type="text" danger icon={<DeleteOutlined />} onClick={() => openDeactivateModal(u)} /></Tooltip>
                 </>
               ) : (
-                <Tooltip title="Khôi phục"><Button size="small" type="text" icon={<ReloadOutlined style={{color:"#52c41a"}}/>} onClick={() => handleReactivate(u.id)} /></Tooltip>
+                <Tooltip title="Khôi phục"><Button size="middle" type="text" icon={<ReloadOutlined style={{color:"#52c41a"}}/>} onClick={() => handleReactivate(u.id)} /></Tooltip>
               )}
             </Space>
           </div>

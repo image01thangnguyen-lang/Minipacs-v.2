@@ -67,7 +67,7 @@ export function DataQualityAntd({ issues }: { issues: any[] }) {
           <Text strong style={{ fontSize: 14 }}>Cảnh báo dữ liệu</Text>
         </div>
         <Table
-          size="small"
+          size="middle"
           columns={columns}
           dataSource={issues}
           rowKey="id"
