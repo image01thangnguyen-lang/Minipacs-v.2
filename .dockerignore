@@ -1,6 +1,15 @@
 **
+
+# Dashboard build context
 !dashboard/
 !dashboard/**
+
+# OHIF is copied by docker/ohif-v3.7/Dockerfile. Without these exceptions,
+# `COPY ohif-viewer app` receives an empty build context and fails.
+!ohif-viewer/
+!ohif-viewer/**
+
+# Runtime/release configuration embedded by the dashboard image.
 !config/
 !config/release/
 !config/release/**
