@@ -1,21 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Loader2, Lock, FileText, Image as ImageIcon, ExternalLink, Calendar, User, FileImage } from "lucide-react";
 
 export default function PublicSharePage({ params }: { params: { token: string } }) {
-  const [password, setPassword] = useState("");
   const [context, setContext] = useState<any>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [inputPwd, setInputPwd] = useState("");
 
-  const fetchContext = async (pwd?: string) => {
+  const fetchContext = useCallback(async (pwd?: string) => {
     setLoading(true);
     setError("");
     try {
       const res = await fetch(`/api/share/${params.token}/context`, {
-        headers: { "x-share-password": pwd || password }
+        headers: { "x-share-password": pwd || "" }
       });
       const data = await res.json();
       if (!res.ok) {
@@ -29,18 +28,17 @@ export default function PublicSharePage({ params }: { params: { token: string } 
         }
       } else {
         setContext(data);
-        if (pwd) setPassword(pwd);
       }
     } catch (e) {
       setError("Lỗi kết nối đến máy chủ.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.token]);
 
   useEffect(() => {
     fetchContext();
-  }, [params.token]);
+  }, [fetchContext]);
 
   if (loading) {
     return (

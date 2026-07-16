@@ -2,7 +2,7 @@
 import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -170,7 +170,7 @@ export function StatisticsClient() {
   const [busyActionId, setBusyActionId] = useState("");
   const [presetName, setPresetName] = useState("");
 
-  const loadData = async (nextFilters = filters, options: { silent?: boolean } = {}) => {
+  const loadData = useCallback(async (nextFilters: StatisticsFilters, options: { silent?: boolean } = {}) => {
     if (options.silent) {
       setIsRefreshing(true);
     } else {
@@ -190,12 +190,13 @@ export function StatisticsClient() {
         setIsLoading(false);
       }
     }
-  };
+  }, []);
 
   useEffect(() => {
     document.title = "Dashboard thống kê RIS/PACS";
-    loadData();
-  }, []);
+    const today = todayInput();
+    loadData({ dateFrom: today, dateTo: today });
+  }, [loadData]);
 
   useEffect(() => {
     if (!data?.operations.autoRefreshSeconds) return undefined;
@@ -205,7 +206,7 @@ export function StatisticsClient() {
     }, data.operations.autoRefreshSeconds * 1000);
 
     return () => window.clearInterval(timer);
-  }, [data?.operations.autoRefreshSeconds, filters.dateFrom, filters.dateTo]);
+  }, [data?.operations.autoRefreshSeconds, filters, loadData]);
 
   const runDashboardAction = async (actionId: string, action: () => Promise<unknown>) => {
     setBusyActionId(actionId);

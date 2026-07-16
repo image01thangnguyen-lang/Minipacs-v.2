@@ -128,7 +128,7 @@ export function WorklistAntd(props: { searchParams?: { orderId?: string } }) {
     }).catch(console.error);
   }, []);
 
-  useEffect(() => { loadOrders(); }, [selectedDate, statusFilter]);
+  useEffect(() => { loadOrders(); }, [loadOrders]);
 
   const runOrderAction = async (orderId: string, action: "checkin" | "cancel" | "regen") => {
     setBusyOrderId(orderId);

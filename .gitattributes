@@ -1,0 +1,19 @@
+* text=auto eol=lf
+
+# Keep Windows command scripts in their native line-ending format.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Do not perform line-ending conversion on binary files.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.dcm binary

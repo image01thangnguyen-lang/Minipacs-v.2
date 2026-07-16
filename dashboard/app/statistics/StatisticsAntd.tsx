@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Card, Row, Col, Typography, DatePicker, Button, Table, Space, Tag, Tabs, Badge } from "antd";
 import { ScreenHeader } from "@/app/components/navigation/ScreenHeader";
 import { getStatisticsDashboardAction } from "./actions";
@@ -16,7 +16,7 @@ export function StatisticsAntd() {
   const [data, setData] = useState<StatisticsPayload | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadData = async (nextFilters = filters) => {
+  const loadData = useCallback(async (nextFilters: typeof filters) => {
     setIsLoading(true);
     try {
       const result = await getStatisticsDashboardAction(nextFilters);
@@ -26,11 +26,14 @@ export function StatisticsAntd() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData({
+      dateFrom: dayjs().format("YYYY-MM-DD"),
+      dateTo: dayjs().format("YYYY-MM-DD"),
+    });
+  }, [loadData]);
 
   return (
     <div style={{ padding: "24px", display: "flex", flexDirection: "column", minHeight: "100vh" }}>

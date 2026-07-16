@@ -24,7 +24,7 @@ import {
   PlusCircle,
   Camera,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ClinicalInfoModal } from "@/app/components/ClinicalInfoModal";
@@ -165,6 +165,8 @@ export function WorklistClient(props: { searchParams?: { orderId?: string } }) {
     { id: string; name: string }[]
   >([]);
   const [canSyncHis, setCanSyncHis] = useState(false);
+  const searchQueryRef = useRef(searchQuery);
+  searchQueryRef.current = searchQuery;
 
   const enableSharedUI = process.env.NEXT_PUBLIC_ENABLE_WORKLIST_SHARED_UI === "true";
 
@@ -201,14 +203,14 @@ export function WorklistClient(props: { searchParams?: { orderId?: string } }) {
     defaultValues,
   });
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     try {
       setIsLoading(true);
       setError("");
       const data = await getWorklistOrdersAction({
         date: selectedDate,
         status: statusFilter === "ALL" ? undefined : statusFilter,
-        search: searchQuery,
+        search: searchQueryRef.current,
       });
       setOrders(data || []);
     } catch (err: any) {
@@ -217,7 +219,7 @@ export function WorklistClient(props: { searchParams?: { orderId?: string } }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedDate, statusFilter]);
 
   useEffect(() => {
     document.title = "Mini PACS - Tiếp đón / Worklist";
@@ -235,7 +237,7 @@ export function WorklistClient(props: { searchParams?: { orderId?: string } }) {
 
   useEffect(() => {
     loadOrders();
-  }, [selectedDate, statusFilter]);
+  }, [loadOrders]);
 
   const handleSearchSubmit = (event: React.FormEvent) => {
     event.preventDefault();

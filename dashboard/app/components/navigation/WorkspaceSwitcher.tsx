@@ -79,7 +79,7 @@ export function WorkspaceSwitcher({
         options={options}
         optionFilterProp="searchText"
         filterOption={(input, option) =>
-          String(option?.searchText ?? option?.label ?? "")
+          String(option && "searchText" in option ? option.searchText : option?.label ?? "")
             .toLocaleLowerCase("vi")
             .includes(input.toLocaleLowerCase("vi"))
         }

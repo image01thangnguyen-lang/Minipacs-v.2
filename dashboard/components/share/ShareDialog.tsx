@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   X,
   Link as LinkIcon,
@@ -27,11 +27,20 @@ export function ShareDialog({ isOpen, onClose, scope, resourceId }: ShareDialogP
   const [expiresInDays, setExpiresInDays] = useState(7);
   const [hidePatientInfo, setHidePatientInfo] = useState(true);
 
+  const loadLinks = useCallback(async () => {
+    setIsLoading(true);
+    const res = await getShareLinksAction(scope, resourceId);
+    if (res.success && res.links) {
+      setLinks(res.links);
+    }
+    setIsLoading(false);
+  }, [resourceId, scope]);
+
   useEffect(() => {
     if (isOpen) {
       loadLinks();
     }
-  }, [isOpen]);
+  }, [isOpen, loadLinks]);
 
   if (!isOpen) return null;
 
@@ -50,15 +59,6 @@ export function ShareDialog({ isOpen, onClose, scope, resourceId }: ShareDialogP
         </div>
       </div>
     );
-  }
-
-  async function loadLinks() {
-    setIsLoading(true);
-    const res = await getShareLinksAction(scope, resourceId);
-    if (res.success && res.links) {
-      setLinks(res.links);
-    }
-    setIsLoading(false);
   }
 
   async function handleCreate() {

@@ -183,6 +183,7 @@ export async function getStudyWorkspaceAction(
     referringDepartment: study.order?.referringDepartment || null,
     technologistName,
     machineName: study.stationAeTitle || null,
+    stationAeTitle: study.stationAeTitle || undefined,
     status: study.status || "READY_TO_READ",
     reportStatus,
     reportRevision,

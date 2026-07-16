@@ -99,6 +99,7 @@ export function PatientStudyContextPanelAntd({ studyUid }: PatientStudyContextPa
             <InfoRow label="Mã BN" value={state.data.patientId} mono />
             <InfoRow label="Giới tính" value={fmtSex(state.data.patientSex || undefined)} />
             <InfoRow label="Ngày sinh" value={state.data.patientBirthDate} />
+            <InfoRow label="Tuổi" value={state.data.ageAtStudy != null ? `${state.data.ageAtStudy}` : undefined} />
           </section>
 
           <Divider className="my-3 border-[#303030]" />
@@ -107,10 +108,18 @@ export function PatientStudyContextPanelAntd({ studyUid }: PatientStudyContextPa
             <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-[#13C2C2]">Ca chụp</h3>
             <InfoRow label="Ngày chụp" value={fmtDateTime(state.data.studyDate || undefined)} />
             <InfoRow label="Mô tả" value={state.data.studyDescription} />
+            <InfoRow label="Chỉ định" value={state.data.procedureDescription} />
+            <InfoRow label="Bộ phận" value={state.data.bodyPart} />
             <InfoRow label="Modality" value={state.data.modality} />
             <InfoRow label="Accession" value={state.data.accessionNumber} mono />
             <InfoRow label="Cơ sở" value={state.data.facilityName} />
+            <InfoRow label="Máy" value={state.data.machineName || state.data.stationAeTitle} mono />
+            <InfoRow label="Khoa CĐ" value={state.data.referringDepartment} />
+            <InfoRow label="BS CĐ" value={state.data.referringPhysician} />
+            <InfoRow label="KTV" value={state.data.technologistName} />
             <InfoRow label="BS đọc" value={state.data.assignedDoctorName} />
+            <InfoRow label="BS duyệt" value={state.data.reviewerName} />
+            <InfoRow label="Mã LK" value={state.data.hisVisitId} mono />
           </section>
 
           <Divider className="my-3 border-[#303030]" />
@@ -128,6 +137,8 @@ export function PatientStudyContextPanelAntd({ studyUid }: PatientStudyContextPa
             {state.data.reportUpdatedAt && (
               <InfoRow label="Cập nhật" value={fmtDateTimeIso(state.data.reportUpdatedAt)} />
             )}
+            {state.data.reportConclusion && <InfoRow label="Kết luận" value={state.data.reportConclusion} />}
+            {state.data.aiStatus && <InfoRow label="AI" value={`${state.data.aiStatus}${state.data.aiFindingCount != null ? ` · ${state.data.aiFindingCount} phát hiện` : ""}${state.data.aiSeverity ? ` · ${state.data.aiSeverity}` : ""}`} />}
           </section>
 
           <Divider className="my-3 border-[#303030]" />

@@ -46,7 +46,7 @@ import { ShareDialog } from "@/components/share/ShareDialog";
 import { ConsultationDialog } from "@/components/consultation/ConsultationDialog";
 import { useWorklistUrlState, mapUrlStateToQuery } from "../lib/worklist/url-state";
 import { useSelectionUrlState } from "../lib/workspace/selection-state";
-import { getWorkspacePreferencesAction, updateWorkspacePreferencesAction } from "./actions/workspace-preferences-actions";
+import { getWorkspacePreferencesAction, resetWorkspacePreferencesAction, updateWorkspacePreferencesAction } from "./actions/workspace-preferences-actions";
 import { WorkspacePreferences, defaultWorkspacePreferences } from "../lib/preferences/workspace-preferences";
 import { logShadowRunTelemetry } from "../lib/telemetry";
 import { DoctorWorkspace } from "./components/workspace/DoctorWorkspace";
@@ -129,6 +129,12 @@ function DashboardPageContent() {
   const [preferences, setPreferences] = useState<WorkspacePreferences>(defaultWorkspacePreferences);
   const layoutDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const pendingLayoutRef = useRef<Partial<WorkspacePreferences["layout"]>>({});
+
+  const handlePreferencesChange = useCallback((updates: Partial<WorkspacePreferences>) => {
+    setPreferences(current => ({ ...current, ...updates, columns: updates.columns ? { ...current.columns, ...updates.columns } : current.columns, layout: updates.layout ? { ...current.layout, ...updates.layout } : current.layout }));
+    updateWorkspacePreferencesAction(updates).then(setPreferences).catch(console.error);
+  }, []);
+  const handleResetPreferences = useCallback(() => { resetWorkspacePreferencesAction().then(setPreferences).catch(console.error); }, []);
 
   const handleLayoutChange = useCallback((updates: Partial<WorkspacePreferences['layout']>) => {
     setPreferences(prev => ({
@@ -274,11 +280,12 @@ function DashboardPageContent() {
 
         const mapScopedRow = (row: any) => ({
           ...row,
+          ID: row.studyInstanceUid,
           MainDicomTags: {
             StudyInstanceUID: row.studyInstanceUid,
-            StudyDate: row.createdAt.substring(0, 10).replace(/-/g, ''),
-            StudyTime: row.createdAt.substring(11, 16).replace(/:/g, '') + '00',
-            StudyDescription: row.bodyPart || "",
+            StudyDate: (row.studyDate || row.createdAt).substring(0, 10).replace(/-/g, ''),
+            StudyTime: (row.studyDate || row.createdAt).substring(11, 19).replace(/:/g, ''),
+            StudyDescription: row.procedureDescription || row.bodyPart || "",
             AccessionNumber: row.accessionNumber,
             Modality: row.modality,
             StationName: row.stationAeTitle
@@ -301,7 +308,8 @@ function DashboardPageContent() {
           machineName: row.machineName,
           isNonDicom: row.isNonDicom,
           nonDicomExamId: row.nonDicomExamId,
-          procedureName: row.bodyPart,
+          procedureName: row.procedureDescription || row.bodyPart,
+          TechnologistName: row.technologistName,
           ReportStatus: row.reportStatus,
           Revision: row.revision,
           allowedActions: row.allowedActions,
@@ -864,6 +872,8 @@ function DashboardPageContent() {
       onSelect={handleSelect}
       onDoubleClick={openViewer}
       preferences={preferences}
+      onPreferencesChange={handlePreferencesChange}
+      onResetPreferences={handleResetPreferences}
       renderActions={(study) => {
         const uid = study.MainDicomTags?.StudyInstanceUID;
         const patient = study.PatientMainDicomTags || {};

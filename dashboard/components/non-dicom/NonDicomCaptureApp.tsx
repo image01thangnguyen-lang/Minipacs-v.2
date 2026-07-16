@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import { Camera, Upload, CheckCircle2, Image as ImageIcon, Video, Trash2, X, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -23,13 +24,14 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
   const [hasCamera, setHasCamera] = useState<boolean | null>(null);
   const [cameraError, setCameraError] = useState<string>("");
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
 
   // Upload state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const loadMedia = async () => {
+  const loadMedia = useCallback(async () => {
     setIsRefreshing(true);
     try {
       const res = await fetch(`/api/non-dicom/${examId}/media`);
@@ -42,28 +44,29 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
     } finally {
       setIsRefreshing(false);
     }
-  };
-
-  useEffect(() => {
-    loadMedia();
   }, [examId]);
 
   useEffect(() => {
-    if (activeTab === "camera" && !isCompleted && canCapture) {
-      startCamera();
-    } else {
-      stopCamera();
-    }
-    return () => stopCamera();
-  }, [activeTab, isCompleted, canCapture]);
+    loadMedia();
+  }, [loadMedia]);
 
-  const startCamera = async () => {
+  const stopCamera = useCallback(() => {
+    streamRef.current?.getTracks().forEach(track => track.stop());
+    streamRef.current = null;
+    setStream(null);
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }, []);
+
+  const startCamera = useCallback(async () => {
     setCameraError("");
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
         audio: false
       });
+      streamRef.current = mediaStream;
       setStream(mediaStream);
       setHasCamera(true);
       if (videoRef.current) {
@@ -74,17 +77,16 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
       setHasCamera(false);
       setCameraError(err.message || "Không thể truy cập camera. Vui lòng cấp quyền.");
     }
-  };
+  }, []);
 
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
+  useEffect(() => {
+    if (activeTab === "camera" && !isCompleted && canCapture) {
+      startCamera();
+    } else {
+      stopCamera();
     }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-  };
+    return () => stopCamera();
+  }, [activeTab, isCompleted, canCapture, startCamera, stopCamera]);
 
   const captureImage = async () => {
     if (!videoRef.current || !stream) return;
@@ -310,10 +312,13 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
               <div key={item.id} className="group relative flex flex-col rounded-lg border border-white/10 bg-vin-panel overflow-hidden">
                 <div className="relative aspect-video bg-black flex items-center justify-center">
                   {item.type === "IMAGE" ? (
-                    <img
+                    <Image
                       src={`/api/non-dicom/${examId}/media/${item.id}`}
                       alt={item.originalFilename}
-                      className="w-full h-full object-cover"
+                      fill
+                      unoptimized
+                      sizes="320px"
+                      className="object-cover"
                     />
                   ) : item.type === "VIDEO" ? (
                     <div className="flex flex-col items-center text-vin-muted">

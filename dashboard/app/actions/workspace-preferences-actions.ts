@@ -75,7 +75,7 @@ export async function updateWorkspacePreferencesAction(
           ...validatedUpdates,
           columns: { ...current.columns, ...validatedUpdates.columns },
           layout: { ...current.layout, ...validatedUpdates.layout },
-          version: 3,
+          version: 5,
         });
 
         await tx.workspaceUserPreference.upsert({
