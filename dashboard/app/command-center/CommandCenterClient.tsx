@@ -53,9 +53,8 @@ export function CommandCenterClient() {
   const fetchStuck = useCallback(() => fetchStuckWorkflow(filters, { page: stuckPage, pageSize: 50 }), [filters, stuckPage]);
   const handleSlaSuccess = useCallback(() => setSlaPrimed(true), []);
 
-  const { data: summary, isLoading: isLoadingSummary } = useCommandCenterPolling({
+  const { data: summary, lastUpdated: summaryLastUpdated, refetch: refreshSummary } = useCommandCenterPolling({
     fetchFn: fetchSummary,
-    intervalMs: 60000,
   });
 
   const { data: queue, isLoading: isLoadingQueue } = useCommandCenterPolling({
@@ -71,7 +70,6 @@ export function CommandCenterClient() {
   const { data: breaches, isLoading: isLoadingBreaches } = useCommandCenterPolling({
     fetchFn: fetchBreaches,
     enabled: activeTab === "sla" || !slaPrimed,
-    intervalMs: 60000,
     onSuccess: handleSlaSuccess,
   });
 
@@ -114,6 +112,23 @@ export function CommandCenterClient() {
   return (
     <PageCanvas className="min-h-0 overflow-y-auto p-4 sm:p-6">
       <ScreenHeader />
+
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded border border-vin-border bg-vin-panel px-4 py-3 text-sm">
+        <div>
+          <div className="font-semibold text-vin-text">Bảng điều hành trực tiếp</div>
+          <div className="text-vin-muted">
+            Tự động cập nhật mỗi 30 giây
+            {summaryLastUpdated ? ` · Cập nhật lúc ${summaryLastUpdated.toLocaleTimeString("vi-VN")}` : ""}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={refreshSummary}
+          className="h-9 rounded border border-vin-border bg-vin-shell px-4 font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-vin-accent"
+        >
+          Cập nhật ngay
+        </button>
+      </div>
 
       {/* Filters */}
       <PagePanel className="mb-6 flex flex-wrap items-end gap-4 p-4">

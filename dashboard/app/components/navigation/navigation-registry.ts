@@ -19,18 +19,6 @@ export const navigationRegistry: NavigationNode[] = [
     label: "Báo cáo & điều hành",
     children: [
       { type: "item", id: "command-center", label: "Trung tâm điều hành", href: "/command-center", iconKey: "Activity", permission: "commandCenter.read" },
-      {
-        type: "group",
-        id: "statistics-group",
-        label: "Thống kê & Phân tích",
-        children: [
-          { type: "item", id: "statistics", label: "Tổng quan", href: "/statistics", iconKey: "BarChart3", permission: "statistics.read", match: "exact" },
-          { type: "item", id: "statistics-sla", label: "SLA & Thời gian (TAT)", href: "/statistics/sla", iconKey: "Timer", permission: "analytics.read" },
-          { type: "item", id: "statistics-workload", label: "Khối lượng công việc", href: "/statistics/workload", iconKey: "UserCog", permission: "analytics.doctor" },
-          { type: "item", id: "statistics-modalities", label: "Công suất thiết bị", href: "/statistics/modalities", iconKey: "ActivitySquare", permission: "analytics.read" },
-        ]
-      },
-      { type: "item", id: "quality", label: "Trung tâm chất lượng", href: "/quality", iconKey: "Award", permission: "quality.read" },
       { type: "item", id: "report-templates", label: "Mẫu nội dung báo cáo", href: "/settings/report-templates", iconKey: "FileText", permission: "templates.manage" },
       { type: "item", id: "print-templates", label: "Mẫu phiếu in", href: "/admin/templates", iconKey: "Printer", permission: "admin.catalogs" },
     ]
