@@ -4,7 +4,7 @@ import { ColumnDef } from "@/app/components/ui/shared-contracts";
 
 export function StatusBadge({ active }: { active: boolean }) {
   return (
-    <span className={`inline-flex rounded px-2 py-0.5 text-[9px] font-bold ${
+    <span className={`inline-flex rounded px-2 py-0.5 text-sm font-bold ${
       active ? "bg-vin-status-approved-bg text-white" : "bg-vin-status-danger-bg text-white"
     }`}>
       {active ? "Đang dùng" : "Đã khóa"}
@@ -42,7 +42,7 @@ export function ProceduresDataGrid({ rows, isLoading, selectedId, onSelect }: an
     { id: "name", header: "Tên / Mô tả", width: 250, cell: (item) => (
       <>
         <div className="font-semibold text-white">{item.name}</div>
-        <div className="text-[10px] text-vin-muted">{item.hisCode ? `HIS: ${item.hisCode}` : ""}</div>
+        <div className="text-sm text-vin-muted">{item.hisCode ? `HIS: ${item.hisCode}` : ""}</div>
       </>
     ) },
     { id: "status", header: "Trạng thái", width: 120, align: "center", cell: (item) => <StatusBadge active={item.isActive} /> },
@@ -92,7 +92,7 @@ export function SuppliesDataGrid({ rows, isLoading, selectedId, onSelect }: any)
     { id: "name", header: "Tên / Mô tả", width: 250, cell: (item) => (
       <>
         <div className="font-semibold text-white">{item.name}</div>
-        <div className="text-[10px] text-vin-muted">ĐVT: {item.unit || "-"}</div>
+        <div className="text-sm text-vin-muted">ĐVT: {item.unit || "-"}</div>
       </>
     ) },
     { id: "status", header: "Trạng thái", width: 120, align: "center", cell: (item) => <StatusBadge active={item.isActive} /> },

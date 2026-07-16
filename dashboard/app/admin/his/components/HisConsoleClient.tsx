@@ -210,11 +210,11 @@ function LogsTab({ logs, permissions }: any) {
               <tr key={l.id}>
                 <td className="px-4 py-2">{new Date(l.createdAt).toLocaleString()}</td>
                 <td className="px-4 py-2">
-                  <span className={`px-2 py-1 rounded text-[10px] font-bold ${l.direction === 'INBOUND' ? 'bg-blue-900/30 text-blue-300' : 'bg-purple-900/30 text-purple-300'}`}>{l.direction}</span>
+                  <span className={`px-2 py-1 rounded text-sm font-bold ${l.direction === 'INBOUND' ? 'bg-blue-900/30 text-blue-300' : 'bg-purple-900/30 text-purple-300'}`}>{l.direction}</span>
                 </td>
-                <td className="px-4 py-2 font-mono text-xs">{l.path}</td>
+                <td className="px-4 py-2 font-mono text-sm">{l.path}</td>
                 <td className="px-4 py-2">
-                  <span className={`px-2 py-1 rounded text-[10px] font-bold ${l.success ? 'bg-emerald-900/30 text-emerald-300' : 'bg-red-900/30 text-red-300'}`}>{l.success ? 'OK' : 'FAILED'}</span>
+                  <span className={`px-2 py-1 rounded text-sm font-bold ${l.success ? 'bg-emerald-900/30 text-emerald-300' : 'bg-red-900/30 text-red-300'}`}>{l.success ? 'OK' : 'FAILED'}</span>
                 </td>
                 <td className="px-4 py-2">{l.accessionNumber || '-'}</td>
               </tr>
@@ -248,8 +248,8 @@ function MappingTab({ mappings, permissions }: any) {
               <tr key={m.id}>
                 <td className="px-4 py-2">{m.direction}</td>
                 <td className="px-4 py-2">{m.name}</td>
-                <td className="px-4 py-2 font-mono text-xs">{m.sourceField}</td>
-                <td className="px-4 py-2 font-mono text-xs text-blue-300">{m.targetField}</td>
+                <td className="px-4 py-2 font-mono text-sm">{m.sourceField}</td>
+                <td className="px-4 py-2 font-mono text-sm text-blue-300">{m.targetField}</td>
               </tr>
             ))}
             {mappings.length === 0 && (
@@ -282,15 +282,15 @@ function ConflictsTab({ conflicts, permissions }: any) {
               <div>
                 <span className="font-semibold text-red-400">Conflict</span> on <span className="font-mono bg-vin-panel border border-vin-border rounded px-1">{c.entityType}</span> field <span className="font-mono bg-vin-panel border border-vin-border rounded px-1">{c.fieldName}</span>
               </div>
-              <div className="text-xs text-vin-muted">{new Date(c.createdAt).toLocaleString()}</div>
+              <div className="text-sm text-vin-muted">{new Date(c.createdAt).toLocaleString()}</div>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="bg-vin-panel p-2 border border-vin-border rounded">
-                <div className="text-xs text-vin-muted uppercase tracking-wider mb-1">Current Value</div>
+                <div className="text-sm text-vin-muted uppercase tracking-wider mb-1">Current Value</div>
                 <div className="font-mono text-sm text-white">{c.currentValue || "null"}</div>
               </div>
               <div className="bg-blue-900/20 p-2 border border-blue-900/50 rounded">
-                <div className="text-xs text-blue-400 uppercase tracking-wider mb-1">Incoming Value</div>
+                <div className="text-sm text-blue-400 uppercase tracking-wider mb-1">Incoming Value</div>
                 <div className="font-mono text-sm text-blue-100">{c.incomingValue || "null"}</div>
               </div>
             </div>

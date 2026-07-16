@@ -107,7 +107,7 @@ export function ScreenHeader({
             <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-vin-shell border border-vin-border">
               <User className="h-3.5 w-3.5 text-vin-muted" />
             </div>
-            <span className="hidden md:inline truncate text-xs font-semibold text-white max-w-[120px]">
+            <span className="hidden md:inline truncate text-sm font-semibold text-white max-w-[120px]">
               {sessionState.userInfo.fullName || sessionState.userInfo.username}
             </span>
           </div>
@@ -116,7 +116,7 @@ export function ScreenHeader({
           onClick={handleLogout}
           disabled={loggingOut}
           title="Đăng xuất"
-          className="flex h-7 items-center justify-center gap-1.5 rounded px-2 text-[11px] font-semibold text-red-400 transition hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-7 items-center justify-center gap-1.5 rounded px-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <LogOut className={`h-3.5 w-3.5 flex-shrink-0 ${loggingOut ? "animate-pulse" : ""}`} />
           <span className="hidden md:inline">{loggingOut ? "Đang thoát..." : "Thoát"}</span>

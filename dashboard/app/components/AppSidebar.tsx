@@ -102,7 +102,7 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
           <div className="flex h-[34px] items-center justify-between pl-2">
             <div>
               <div className="text-sm font-bold leading-tight text-white">Mini PACS</div>
-              <div className="text-[10px] uppercase tracking-wide text-vin-muted">RIS Dashboard</div>
+              <div className="text-sm uppercase tracking-wide text-vin-muted">RIS Dashboard</div>
             </div>
             <button
               onClick={() => setCollapsed(true)}
@@ -126,7 +126,7 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
               key={item.key}
               href={item.href}
               title={item.label}
-              className={`flex items-center gap-2 rounded px-3 py-2 text-[12px] font-semibold transition ${
+              className={`flex items-center gap-2 rounded px-3 py-2 text-sm font-semibold transition ${
                 isActive
                   ? "bg-vin-tableSelected text-white"
                   : "text-vin-text2 hover:bg-vin-panel hover:text-white"
@@ -139,7 +139,7 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
         })}
 
         {!collapsed && (
-          <div className="px-3 pb-1 pt-4 text-[9px] font-bold uppercase tracking-wider text-vin-faint">
+          <div className="px-3 pb-1 pt-4 text-sm font-bold uppercase tracking-wider text-vin-faint">
             Sắp triển khai
           </div>
         )}
@@ -152,7 +152,7 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
           return (
             <div
               key={item.key}
-              className={`flex cursor-not-allowed items-center gap-2 rounded px-3 py-2 text-[12px] font-semibold text-vin-faint opacity-70 ${
+              className={`flex cursor-not-allowed items-center gap-2 rounded px-3 py-2 text-sm font-semibold text-vin-faint opacity-70 ${
                 collapsed ? "justify-center px-0" : ""
               }`}
               title={item.label + " — Sẽ mở ở các phần tiếp theo"}
@@ -171,7 +171,7 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
             onClick={handleLogout}
             disabled={loggingOut}
             title="Đăng xuất"
-            className="flex w-full items-center justify-center rounded py-2 text-[12px] font-semibold text-red-400 transition hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center rounded py-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <LogOut className={`h-4 w-4 flex-shrink-0 ${loggingOut ? "animate-pulse" : ""}`} />
           </button>
@@ -181,9 +181,9 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
               <User className="h-4 w-4 text-vin-muted" />
             </div>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[11px] font-bold text-white">{userInfo.fullName || userInfo.username}</div>
+              <div className="truncate text-sm font-bold text-white">{userInfo.fullName || userInfo.username}</div>
               {userInfo.fullName && userInfo.username && (
-                <div className="truncate text-[9px] text-vin-muted">@{userInfo.username}</div>
+                <div className="truncate text-sm text-vin-muted">@{userInfo.username}</div>
               )}
             </div>
             <button
@@ -200,7 +200,7 @@ export function AppSidebar({ active }: { active: ActiveMenu }) {
             onClick={handleLogout}
             disabled={loggingOut}
             title="Đăng xuất"
-            className="flex w-full items-center gap-2 rounded px-3 py-2 text-[12px] font-semibold text-red-400 transition hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/10 hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <LogOut className={`h-4 w-4 flex-shrink-0 ${loggingOut ? "animate-pulse" : ""}`} />
             <span className="truncate">{loggingOut ? "Đang xuất..." : "Đăng xuất"}</span>

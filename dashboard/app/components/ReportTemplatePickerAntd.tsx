@@ -106,7 +106,7 @@ export function ReportTemplatePickerAntd({
         icon={<PlusCircleOutlined />}
         onClick={() => selectedTemplate && onApply(selectedTemplate, "append")}
         disabled={disabled || !selectedTemplate}
-        className="text-[11px] font-semibold"
+        className="text-sm font-semibold"
       >
         Chèn
       </Button>
@@ -116,7 +116,7 @@ export function ReportTemplatePickerAntd({
         icon={<SwapOutlined />}
         onClick={() => selectedTemplate && onApply(selectedTemplate, "replace")}
         disabled={disabled || !selectedTemplate}
-        className="text-[11px] font-semibold"
+        className="text-sm font-semibold"
       >
         Thay
       </Button>

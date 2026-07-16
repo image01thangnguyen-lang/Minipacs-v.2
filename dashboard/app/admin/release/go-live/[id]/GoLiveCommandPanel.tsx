@@ -49,18 +49,18 @@ export default function GoLiveCommandPanel({ releaseId, version, roles, signOffs
           const signoff = signOffs[role];
           return (
             <div key={role} className={`rounded-md border p-4 ${signoff.status === "APPROVED" ? "border-emerald-800 bg-emerald-950/20" : signoff.status === "REJECTED" ? "border-red-800 bg-red-950/20" : "border-slate-700"}`}>
-              <div className="flex items-center justify-between"><h3 className="text-sm font-semibold">{role}</h3><span className="rounded bg-slate-800 px-2 py-0.5 text-xs">{signoff.status}</span></div>
-              {signoff.signedByName && <p className="mt-2 text-xs text-slate-400">{signoff.signedByName}{signoff.signedAt ? ` - ${new Date(signoff.signedAt).toLocaleString("vi-VN")}` : ""}</p>}
-              {signoff.notes && <p className="mt-2 whitespace-pre-wrap text-xs text-slate-300">{signoff.notes}</p>}
-              {signoff.evidenceUrl && <a href={signoff.evidenceUrl} className="mt-2 block text-xs text-cyan-400 hover:text-cyan-300">Mở evidence</a>}
+              <div className="flex items-center justify-between"><h3 className="text-sm font-semibold">{role}</h3><span className="rounded bg-slate-800 px-2 py-0.5 text-sm">{signoff.status}</span></div>
+              {signoff.signedByName && <p className="mt-2 text-sm text-slate-400">{signoff.signedByName}{signoff.signedAt ? ` - ${new Date(signoff.signedAt).toLocaleString("vi-VN")}` : ""}</p>}
+              {signoff.notes && <p className="mt-2 whitespace-pre-wrap text-sm text-slate-300">{signoff.notes}</p>}
+              {signoff.evidenceUrl && <a href={signoff.evidenceUrl} className="mt-2 block text-sm text-cyan-400 hover:text-cyan-300">Mở evidence</a>}
               {canSignOff && currentStatus === "READY_FOR_SIGNOFF" && (activeRole === role ? (
                 <div className="mt-3 space-y-2">
                   <textarea value={notes} onChange={event => setNotes(event.target.value)} maxLength={3000} rows={3} placeholder="Nhận xét bắt buộc" className="w-full rounded-md border border-slate-600 bg-slate-950 p-2 text-sm" />
                   <input value={evidenceUrl} onChange={event => setEvidenceUrl(event.target.value)} maxLength={500} placeholder="Evidence URL nội bộ hoặc HTTPS" className="h-9 w-full rounded-md border border-slate-600 bg-slate-950 px-2 text-sm" />
-                  <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={attested} onChange={event => setAttested(event.target.checked)} className="mt-0.5" /><span>Tôi đã kiểm tra evidence, readiness và hiểu trách nhiệm ký.</span></label>
-                  <div className="flex gap-2"><button type="button" onClick={() => submitSignOff("APPROVED")} disabled={submitting || !attested || notes.trim().length < 1} className="h-8 rounded-md bg-emerald-700 px-3 text-xs font-semibold text-white disabled:opacity-50">Duyệt</button><button type="button" onClick={() => submitSignOff("REJECTED")} disabled={submitting || !attested || notes.trim().length < 1} className="h-8 rounded-md bg-red-700 px-3 text-xs font-semibold text-white disabled:opacity-50">Từ chối</button><button type="button" onClick={() => setActiveRole(null)} className="h-8 px-2 text-xs">Hủy</button></div>
+                  <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={attested} onChange={event => setAttested(event.target.checked)} className="mt-0.5" /><span>Tôi đã kiểm tra evidence, readiness và hiểu trách nhiệm ký.</span></label>
+                  <div className="flex gap-2"><button type="button" onClick={() => submitSignOff("APPROVED")} disabled={submitting || !attested || notes.trim().length < 1} className="h-8 rounded-md bg-emerald-700 px-3 text-sm font-semibold text-white disabled:opacity-50">Duyệt</button><button type="button" onClick={() => submitSignOff("REJECTED")} disabled={submitting || !attested || notes.trim().length < 1} className="h-8 rounded-md bg-red-700 px-3 text-sm font-semibold text-white disabled:opacity-50">Từ chối</button><button type="button" onClick={() => setActiveRole(null)} className="h-8 px-2 text-sm">Hủy</button></div>
                 </div>
-              ) : <button type="button" onClick={() => { setActiveRole(role); setNotes(signoff.notes || ""); setEvidenceUrl(signoff.evidenceUrl || ""); }} className="mt-3 h-8 w-full rounded-md border border-slate-600 text-xs hover:bg-slate-800">Ký vai trò này</button>)}
+              ) : <button type="button" onClick={() => { setActiveRole(role); setNotes(signoff.notes || ""); setEvidenceUrl(signoff.evidenceUrl || ""); }} className="mt-3 h-8 w-full rounded-md border border-slate-600 text-sm hover:bg-slate-800">Ký vai trò này</button>)}
             </div>
           );
         })}

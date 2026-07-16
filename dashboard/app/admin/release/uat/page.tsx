@@ -63,12 +63,12 @@ export default async function UatCenterPage() {
                   <h3 className="font-semibold">{suite.name} (v{suite.version})</h3>
                   <p className="text-sm text-muted-foreground">{suite.description}</p>
                 </div>
-                <div className="text-xs bg-muted px-2 py-1 rounded">
+                <div className="text-sm bg-muted px-2 py-1 rounded">
                   {suite.cases.length} cases
                 </div>
               </div>
               {suite.runs[0] && (
-                <div className="text-xs text-muted-foreground">
+                <div className="text-sm text-muted-foreground">
                   Last run: {new Date(suite.runs[0].startedAt).toLocaleDateString()} by {suite.runs[0].testedByUser?.fullName || "Unknown"}
                   {" - "}<span className="font-medium">{suite.runs[0].status}</span>
                 </div>
@@ -82,7 +82,7 @@ export default async function UatCenterPage() {
                   }}>
                     <button
                       type="submit"
-                      className="rounded bg-vin-accent px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-vin-accent/80"
+                      className="rounded bg-vin-accent px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-vin-accent/80"
                     >
                       Start New Run
                     </button>
@@ -119,10 +119,10 @@ export default async function UatCenterPage() {
                     <tr key={run.id} className="hover:bg-muted/50">
                       <td className="p-3">
                         <div className="font-medium">{run.suite.name}</div>
-                        <div className="text-xs text-muted-foreground">{run.testedByUser?.fullName}</div>
+                        <div className="text-sm text-muted-foreground">{run.testedByUser?.fullName}</div>
                       </td>
                       <td className="p-3">
-                        <span className={`px-2 py-1 rounded text-xs ${
+                        <span className={`px-2 py-1 rounded text-sm ${
                           run.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
                           run.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-700' :
                           'bg-red-100 text-red-700'
@@ -134,14 +134,14 @@ export default async function UatCenterPage() {
                         <div className="w-full bg-secondary h-2 rounded overflow-hidden">
                           <div className="bg-primary h-full" style={{ width: `${progress}%` }} />
                         </div>
-                        <div className="text-xs text-muted-foreground mt-1">{completed}/{total}</div>
+                        <div className="text-sm text-muted-foreground mt-1">{completed}/{total}</div>
                       </td>
                       <td className="p-3 text-muted-foreground">
                         {new Date(run.startedAt).toLocaleDateString()}
                       </td>
                       <td className="p-3 text-right">
                         <Link href={`/admin/release/uat/runs/${run.id}`}>
-                          <span className="inline-flex rounded px-2 py-1 text-xs font-semibold text-vin-accent hover:bg-vin-panel">
+                          <span className="inline-flex rounded px-2 py-1 text-sm font-semibold text-vin-accent hover:bg-vin-panel">
                             {run.status === 'IN_PROGRESS' ? 'Resume' : 'View'}
                           </span>
                         </Link>

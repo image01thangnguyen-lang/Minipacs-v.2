@@ -45,7 +45,7 @@ export function WorkspaceSwitcherAntd({
   return (
     <div className="relative z-40 flex-none border-b border-[#303030] px-2 py-1.5 bg-[#1F1F1F]">
       <div className="flex flex-col mb-1">
-        <span className="text-[10px] text-gray-400">Chuyển đổi màn hình</span>
+        <span className="text-sm text-gray-400">Chuyển đổi màn hình</span>
       </div>
       <Select
         size="middle"

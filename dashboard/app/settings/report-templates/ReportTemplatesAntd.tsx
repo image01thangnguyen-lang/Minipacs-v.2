@@ -157,7 +157,7 @@ export function ReportTemplatesAntd() {
       render: (text: string, record: any) => (
         <div>
           <Text strong style={{ color: "white" }}>{text}</Text>
-          <div style={{ color: "gray", fontSize: "12px", marginTop: "4px" }}>
+          <div style={{ color: "gray", fontSize: "14px", marginTop: "4px" }}>
             {record.bodyPart || "Không chọn body part"} · {record.scope === "GLOBAL" ? "Dùng chung" : (record.owner?.fullName || "Cá nhân")}
           </div>
         </div>
@@ -210,7 +210,7 @@ export function ReportTemplatesAntd() {
           <h2 style={{ margin: 0, color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <FileTextOutlined /> Mẫu báo cáo
           </h2>
-          <Text type="secondary" style={{ fontSize: '12px' }}>
+          <Text type="secondary" style={{ fontSize: '14px' }}>
             Quản lý {filteredTemplates.length} mẫu báo cáo.
           </Text>
         </div>

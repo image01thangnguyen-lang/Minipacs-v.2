@@ -49,12 +49,12 @@ export function IncidentsClient({
                 <td className="p-3 max-w-xs">
                   <div className="font-medium line-clamp-2" title={inc.shortDesc}>{inc.shortDesc}</div>
                   {inc.contextType && (
-                    <div className="text-xs text-muted-foreground mt-1">Context: {inc.contextType} {inc.contextId && `(${inc.contextId})`}</div>
+                    <div className="text-sm text-muted-foreground mt-1">Context: {inc.contextType} {inc.contextId && `(${inc.contextId})`}</div>
                   )}
                 </td>
                 <td className="p-3">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    <span className={`px-2 py-0.5 rounded text-sm font-medium ${
                       inc.status === 'RESOLVED' ? 'bg-green-100 text-green-700' :
                       inc.status === 'CLOSED' ? 'bg-vin-shell text-vin-text2' :
                       inc.status === 'INVESTIGATING' ? 'bg-vin-accent/15 text-vin-accent' :
@@ -63,7 +63,7 @@ export function IncidentsClient({
                       {inc.status}
                     </span>
                   </div>
-                  <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                  <span className={`px-2 py-0.5 rounded text-sm font-bold ${
                     inc.severity === 'SEV1' ? 'bg-red-600 text-white' :
                     inc.severity === 'SEV2' ? 'bg-red-100 text-red-800' :
                     inc.severity === 'SEV3' ? 'bg-yellow-100 text-yellow-800' :
@@ -73,15 +73,15 @@ export function IncidentsClient({
                   </span>
                 </td>
                 <td className="p-3">
-                  <span className="text-xs bg-muted px-2 py-1 rounded font-medium">{inc.module}</span>
+                  <span className="text-sm bg-muted px-2 py-1 rounded font-medium">{inc.module}</span>
                 </td>
                 <td className="p-3 text-muted-foreground">
                   <div>{inc.reportedByUser?.fullName || "System"}</div>
-                  <div className="text-xs">{new Date(inc.createdAt).toLocaleDateString()}</div>
+                  <div className="text-sm">{new Date(inc.createdAt).toLocaleDateString()}</div>
                 </td>
                 <td className="p-3 text-right">
                   <Link href={`/support/incidents/${inc.id}`}>
-                    <span className="inline-flex items-center rounded px-2 py-1 text-xs font-semibold text-vin-accent hover:bg-vin-panel">
+                    <span className="inline-flex items-center rounded px-2 py-1 text-sm font-semibold text-vin-accent hover:bg-vin-panel">
                       View <ArrowRight className="ml-2 h-4 w-4" />
                     </span>
                   </Link>

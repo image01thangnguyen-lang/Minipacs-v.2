@@ -1,17 +1,18 @@
 const fs = require("fs");
 const path = require("path");
 
-const root = path.join(__dirname, "..", "app");
+const dashboardRoot = path.join(__dirname, "..");
+const roots = [path.join(dashboardRoot, "app"), path.join(dashboardRoot, "components")];
 const allowFullViewport = new Set([
-  "login/page.tsx",
-  "share/[token]/page.tsx",
-  "report/[studyInstanceUid]/page.tsx",
-  "non-dicom/page.tsx",
+  "app/login/page.tsx",
+  "app/share/[token]/page.tsx",
+  "app/report/[studyInstanceUid]/page.tsx",
+  "app/non-dicom/page.tsx",
 ]);
 // Temporary, exact legacy debt. Never allowlist a whole file.
 // ADR: Phase-0 Tailwind coexistence; review: 2026-10-01; owner: UI platform.
 const literalWhiteAllowlist = new Map([
-  ["globals.css", new Set([
+  ["app/globals.css", new Set([
     "--vin-text-primary: #ffffff;",
     "--vin-status-new-text: #ffffff;",
     "--vin-status-approved-text: #ffffff;",
@@ -33,7 +34,7 @@ function walk(dir) {
 }
 
 function inspect(file) {
-  const relative = path.relative(root, file).replace(/\\/g, "/");
+  const relative = path.relative(dashboardRoot, file).replace(/\\/g, "/");
   const text = fs.readFileSync(file, "utf8");
   const rules = [
     [/(?:bg|text|border)-vin-(?:bg|background)(?:\b|-)/g, "legacy/undefined vin background token"],
@@ -59,6 +60,12 @@ function inspect(file) {
     }
   }
 
+  if (/\btext-\[(?:[0-9]|1[0-3])px\]|\btext-xs\b/.test(text)) {
+    violations.push(`${relative}: text below the 14px middle-size baseline is forbidden`);
+  }
+  if (/fontSize\s*:\s*["'](?:[0-9]|1[0-3])px["']|font-size\s*:\s*(?:[0-9]|1[0-3])px\b/.test(text)) {
+    violations.push(`${relative}: inline/CSS font size below the 14px middle-size baseline is forbidden`);
+  }
   for (const tag of openingTags(text, "Space")) {
     if (/\bsize\s*=\s*["']small["']/.test(tag)) {
       violations.push(`${relative}: AntD Space must not use small spacing`);
@@ -74,7 +81,9 @@ function inspect(file) {
   }
 }
 
-walk(root);
+for (const root of roots) {
+  if (fs.existsSync(root)) walk(root);
+}
 if (violations.length) {
   console.error("UI style guard failed:\n" + violations.map(v => `- ${v}`).join("\n"));
   process.exit(1);

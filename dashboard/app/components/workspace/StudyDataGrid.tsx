@@ -63,7 +63,7 @@ export function StudyDataGrid({
               <div className="max-w-[210px] truncate font-semibold uppercase tracking-[0.01em] text-white">
                 {fmtName(patientName)}
               </div>
-              <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
+              <div className="mt-0.5 truncate font-mono text-sm text-vin-muted">
                 {fmtText(patientId)} &bull; {fmtSex(sex)} &bull; {age != null ? `${fmtAge(age)}T` : "-"}
               </div>
             </>
@@ -122,7 +122,7 @@ export function StudyDataGrid({
               <div className="max-w-[260px] truncate font-medium text-vin-text2" title={procDesc || ""}>
                 {fmtText(study.procedureName || procDesc)}
               </div>
-              <div className="mt-0.5 max-w-[260px] truncate font-mono text-[10px] text-vin-muted">
+              <div className="mt-0.5 max-w-[260px] truncate font-mono text-sm text-vin-muted">
                 {fmtText(study.procedureCode || accNumber)}{study.serviceTypeName ? ` · ${study.serviceTypeName}` : ""}
               </div>
             </>
@@ -169,7 +169,7 @@ export function StudyDataGrid({
             <>
               <RisStatusBadge status={study.status || study.WorkflowStatus} />
               {(study.hisSyncStatus || study.hisResultStatus) && (
-                <div className="mt-1 flex flex-col gap-0.5 text-[9px] font-semibold">
+                <div className="mt-1 flex flex-col gap-0.5 text-sm font-semibold">
                   {study.hisSyncStatus && (
                     <span className={study.hisSyncStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}>
                       HIS Sync: {study.hisSyncStatus}
@@ -199,7 +199,7 @@ export function StudyDataGrid({
               <div className={`max-w-[150px] truncate font-semibold ${assignedName ? "text-vin-text2" : "text-amber-200"}`}>
                 {assignedName || "Chưa gán bác sĩ"}
               </div>
-              <div className="mt-0.5 flex max-w-[150px] items-center gap-1 truncate text-[10px] text-vin-muted">
+              <div className="mt-0.5 flex max-w-[150px] items-center gap-1 truncate text-sm text-vin-muted">
                 <span>{study.ReportDoctorName ? `Report: ${study.ReportDoctorName}` : `SLA: ${fmtDuration(study.waitingMinutes) || "-"}`}</span>
                 {study.slaStatus && <SlaStatusBadge status={study.slaStatus} />}
               </div>
@@ -222,7 +222,7 @@ export function StudyDataGrid({
         id: "reportConclusion",
         header: "Kết luận",
         cell: (study) => (
-          <div className="max-w-[250px] truncate text-[11px] text-vin-text2" title={study.reportConclusion || ""}>
+          <div className="max-w-[250px] truncate text-sm text-vin-text2" title={study.reportConclusion || ""}>
             {fmtText(study.reportConclusion)}
           </div>
         )
@@ -236,21 +236,21 @@ export function StudyDataGrid({
         align: "center",
         cell: (study) => {
           if (!study.aiStatus || study.aiStatus === "NOT_RUN") {
-            return <span className="text-[10px] text-vin-muted">-</span>;
+            return <span className="text-sm text-vin-muted">-</span>;
           }
           if (study.aiStatus === "RUNNING") {
-            return <span className="text-[10px] text-blue-400">Đang chạy</span>;
+            return <span className="text-sm text-blue-400">Đang chạy</span>;
           }
           if (study.aiStatus === "NORMAL") {
-            return <span className="rounded bg-emerald-900/40 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-400">Bình thường</span>;
+            return <span className="rounded bg-emerald-900/40 px-1.5 py-0.5 text-sm font-semibold text-emerald-400">Bình thường</span>;
           }
           if (study.aiStatus === "ABNORMAL") {
-            return <span className="rounded bg-red-900/40 px-1.5 py-0.5 text-[10px] font-bold text-red-400" title={`Số lượng bất thường: ${study.aiFindingCount || 0}`}>Bất thường</span>;
+            return <span className="rounded bg-red-900/40 px-1.5 py-0.5 text-sm font-bold text-red-400" title={`Số lượng bất thường: ${study.aiFindingCount || 0}`}>Bất thường</span>;
           }
           if (study.aiStatus === "FAILED") {
-            return <span className="text-[10px] text-red-500">Lỗi</span>;
+            return <span className="text-sm text-red-500">Lỗi</span>;
           }
-          return <span className="text-[10px] text-vin-muted">{study.aiStatus}</span>;
+          return <span className="text-sm text-vin-muted">{study.aiStatus}</span>;
         }
       });
     }
@@ -288,7 +288,7 @@ export function StudyDataGrid({
           return (
             <div className="whitespace-nowrap font-mono text-vin-text2">
               {study.studyDate ? fmtDateTimeIso(study.studyDate) : fmtDateTime(main.StudyDate, main.StudyTime)}
-              <div className="mt-0.5 max-w-[140px] truncate font-sans text-[10px] text-vin-muted">
+              <div className="mt-0.5 max-w-[140px] truncate font-sans text-sm text-vin-muted">
                 {study.machineName || study.stationAeTitle || "-"}{study.facilityName ? ` · ${study.facilityName}` : ""}
               </div>
             </div>

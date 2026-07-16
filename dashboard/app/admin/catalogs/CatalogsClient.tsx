@@ -169,7 +169,7 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
             key={tab.id}
             type="button"
             onClick={() => handleTabSwitch(tab.id as ActiveTab)}
-            className={`flex h-7 items-center gap-1.5 rounded px-2.5 text-[11px] font-semibold transition ${
+            className={`flex h-7 items-center gap-1.5 rounded px-2.5 text-sm font-semibold transition ${
               activeTab === tab.id
                 ? "bg-vin-tableSelected text-white"
                 : "text-vin-muted hover:text-white"
@@ -235,7 +235,7 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
             <div className="flex min-w-0 items-center gap-3">
               <div className="min-w-[132px]">
                 <ScreenHeader />
-                <p className="mt-0.5 text-[10px] text-vin-muted">Quản lý các danh mục cấu hình</p>
+                <p className="mt-0.5 text-sm text-vin-muted">Quản lý các danh mục cấu hình</p>
               </div>
               {renderTabs()}
             </div>
@@ -245,7 +245,7 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
                 setMode("create");
                 setSelectedId(null);
               }}
-              className="flex items-center gap-1.5 rounded border-0 bg-vin-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-vin-accentHover"
+              className="flex items-center gap-1.5 rounded border-0 bg-vin-accent px-2.5 py-1 text-sm font-semibold text-white transition hover:bg-vin-accentHover"
             >
               <Plus className="h-3.5 w-3.5" />
               Tạo mới
@@ -257,7 +257,7 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded border border-vin-border bg-vin-panel py-1.5 pl-7 pr-7 text-[11px] text-vin-text placeholder:text-vin-faint outline-none transition focus:border-vin-accent"
+              className="w-full rounded border border-vin-border bg-vin-panel py-1.5 pl-7 pr-7 text-sm text-vin-text placeholder:text-vin-faint outline-none transition focus:border-vin-accent"
               placeholder="Tìm kiếm mã, tên..."
             />
             {searchQuery && (
@@ -316,7 +316,7 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
               </>
             ) : (
               <table className="w-full text-left">
-                <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
+                <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-sm font-semibold uppercase tracking-wider text-vin-text2">
                   <tr>
                     <th className="w-9 py-2 pl-2 pr-1 text-center">TT</th>
                     <th className="px-2 py-2">Mã</th>
@@ -326,7 +326,7 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
                     {activeTab === "services" && <th className="px-2 py-2 text-center">Modality</th>}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-vin-border/45 text-[11px]">
+                <tbody className="divide-y divide-vin-border/45 text-sm">
                   {activeTab === "services" && filteredServices.map((item, index) => (
                     <tr
                       key={item.id}
@@ -359,7 +359,7 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
                       <td className="px-2 py-2 font-mono text-white">{item.code}</td>
                       <td className="px-2 py-2">
                         <div className="font-semibold text-white">{item.name}</div>
-                        <div className="text-[10px] text-vin-muted">{item.hisCode ? `HIS: ${item.hisCode}` : ""}</div>
+                        <div className="text-sm text-vin-muted">{item.hisCode ? `HIS: ${item.hisCode}` : ""}</div>
                       </td>
                       <td className="px-2 py-2 text-center"><StatusBadge active={item.isActive} /></td>
                       <td className="px-2 py-2">{item.serviceType?.name || "-"}</td>
@@ -397,7 +397,7 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
                       <td className="px-2 py-2 font-mono text-white">{item.code}</td>
                       <td className="px-2 py-2">
                         <div className="font-semibold text-white">{item.name}</div>
-                        <div className="text-[10px] text-vin-muted">ĐVT: {item.unit || "-"}</div>
+                        <div className="text-sm text-vin-muted">ĐVT: {item.unit || "-"}</div>
                       </td>
                       <td className="px-2 py-2 text-center"><StatusBadge active={item.isActive} /></td>
                     </tr>
@@ -412,7 +412,7 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
       {/* Detail / Edit / Create Section */}
       <section className="relative flex h-full min-w-0 flex-1 flex-col bg-vin-panel text-vin-text2">
         {errorMessage && (
-          <div className="border-b border-red-400/30 bg-red-950/30 px-4 py-2 text-xs font-semibold text-red-100">
+          <div className="border-b border-red-400/30 bg-red-950/30 px-4 py-2 text-sm font-semibold text-red-100">
             {errorMessage}
           </div>
         )}
@@ -448,11 +448,11 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
                     {item && <input type="hidden" name="id" value={item.id} />}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Mã (Code)</label>
+                        <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Mã (Code)</label>
                         <input name="code" defaultValue={item?.code} disabled={!!item} required className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent disabled:opacity-50" placeholder="VD: CT001" />
                       </div>
                       <div>
-                        <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Tên / Diễn giải</label>
+                        <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Tên / Diễn giải</label>
                         <input name="name" defaultValue={item?.name} required className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent" placeholder="Chụp CT..." />
                       </div>
                     </div>
@@ -460,11 +460,11 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
                     {activeTab === "services" && (
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Modality mặc định</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Modality mặc định</label>
                           <input name="defaultModality" defaultValue={item?.defaultModality || ""} className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent" placeholder="CT, MR, CR..." />
                         </div>
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Thứ tự hiển thị</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Thứ tự hiển thị</label>
                           <input name="sortOrder" type="number" defaultValue={item?.sortOrder || 0} className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent" />
                         </div>
                       </div>
@@ -474,14 +474,14 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
                       <>
                         <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Nhóm dịch vụ</label>
+                            <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Nhóm dịch vụ</label>
                             <select name="serviceTypeId" defaultValue={item?.serviceTypeId || ""} className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent">
                               <option value="">-- Chọn nhóm --</option>
                               {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                             </select>
                           </div>
                           <div>
-                            <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Mã HIS mapping</label>
+                            <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Mã HIS mapping</label>
                             <input name="hisCode" defaultValue={item?.hisCode || ""} className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent" placeholder="Mã đồng bộ HIS" />
                           </div>
                         </div>
@@ -501,11 +501,11 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
                     {activeTab === "icds" && (
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Chương (Chapter)</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Chương (Chapter)</label>
                           <input name="chapter" defaultValue={item?.chapter || ""} className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent" placeholder="I, II, III..." />
                         </div>
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Mã nhóm</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Mã nhóm</label>
                           <input name="groupCode" defaultValue={item?.groupCode || ""} className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent" placeholder="A00-A09" />
                         </div>
                       </div>
@@ -514,18 +514,18 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
                     {activeTab === "supplies" && (
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Đơn vị tính</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Đơn vị tính</label>
                           <input name="unit" defaultValue={item?.unit || ""} className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent" placeholder="Lọ, Ống, ml..." />
                         </div>
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Đơn giá mặc định</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Đơn giá mặc định</label>
                           <input name="defaultPrice" type="number" defaultValue={item?.defaultPrice || ""} className="h-10 w-full rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent" placeholder="VNĐ" />
                         </div>
                       </div>
                     )}
 
                     <div>
-                      <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Ghi chú / Mô tả thêm</label>
+                      <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Ghi chú / Mô tả thêm</label>
                       <textarea name="description" rows={3} defaultValue={item?.description || ""} className="w-full resize-none rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-text outline-none focus:border-vin-accent" />
                     </div>
 
@@ -549,7 +549,7 @@ export default function CatalogsClient({ useAntd }: { useAntd?: boolean }) {
               <ListPlus className="h-8 w-8 opacity-50" />
             </div>
             <h3 className="mb-1 text-sm font-bold text-white">Chưa chọn mục nào</h3>
-            <p className="max-w-[250px] text-xs leading-relaxed text-vin-muted">
+            <p className="max-w-[250px] text-sm leading-relaxed text-vin-muted">
               Chọn một mục từ danh sách bên trái để xem chi tiết hoặc nhấn "Tạo mới" để thêm cấu hình.
             </p>
           </div>

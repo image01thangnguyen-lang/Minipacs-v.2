@@ -40,7 +40,7 @@ function ModalityBadge({ modality }: { modality: string }) {
           : "bg-amber-900/25 text-amber-200 border-amber-500/30";
 
   return (
-    <span className={`inline-flex min-w-10 justify-center rounded border px-1.5 py-px font-mono text-[10px] font-bold ${classes}`}>
+    <span className={`inline-flex min-w-10 justify-center rounded border px-1.5 py-px font-mono text-sm font-bold ${classes}`}>
       {modality}
     </span>
   );
@@ -48,7 +48,7 @@ function ModalityBadge({ modality }: { modality: string }) {
 
 function ScopeBadge({ scope }: { scope: string }) {
   return (
-    <span className="inline-flex max-w-[70px] justify-center truncate rounded bg-vin-panel px-2 py-0.5 text-[9px] font-bold text-vin-muted">
+    <span className="inline-flex max-w-[70px] justify-center truncate rounded bg-vin-panel px-2 py-0.5 text-sm font-bold text-vin-muted">
       {scopeLabels[scope] || scope}
     </span>
   );
@@ -57,7 +57,7 @@ function ScopeBadge({ scope }: { scope: string }) {
 function StatusBadge({ active }: { active: boolean }) {
   return (
     <span
-      className={`inline-flex max-w-[80px] justify-center truncate rounded px-2 py-0.5 text-[9px] font-bold ${
+      className={`inline-flex max-w-[80px] justify-center truncate rounded px-2 py-0.5 text-sm font-bold ${
         active ? "bg-vin-status-approved-bg text-white" : "bg-vin-status-danger-bg text-white"
       }`}
     >
@@ -185,7 +185,7 @@ export function ReportTemplatesClient() {
           <div className="mb-2 flex items-center justify-between">
             <div>
               <ScreenHeader />
-              <p className="mt-0.5 text-[10px] text-vin-muted">
+              <p className="mt-0.5 text-sm text-vin-muted">
                 {filteredTemplates.length} mẫu
               </p>
             </div>
@@ -195,7 +195,7 @@ export function ReportTemplatesClient() {
                 setSelectedTemplateId(null);
                 setCreateFormKey(key => key + 1);
               }}
-              className="flex items-center gap-1.5 rounded border-0 bg-vin-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-vin-accentHover"
+              className="flex items-center gap-1.5 rounded border-0 bg-vin-accent px-2.5 py-1 text-sm font-semibold text-white transition hover:bg-vin-accentHover"
             >
               <FilePlus2 className="h-3.5 w-3.5" />
               Tạo mẫu
@@ -203,7 +203,7 @@ export function ReportTemplatesClient() {
           </div>
 
           {error && (
-            <div className="mb-2 rounded border border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 px-3 py-2 text-[11px] font-semibold text-red-200">
+            <div className="mb-2 rounded border border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 px-3 py-2 text-sm font-semibold text-red-200">
               {error}
             </div>
           )}
@@ -214,7 +214,7 @@ export function ReportTemplatesClient() {
               <input
                 value={searchQuery}
                 onChange={event => setSearchQuery(event.target.value)}
-                className="h-[2.25rem] w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-7 text-[11px] text-vin-text placeholder:text-vin-faint outline-none transition focus:border-vin-accent focus:bg-vin-root/20"
+                className="h-[2.25rem] w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-7 text-sm text-vin-text placeholder:text-vin-faint outline-none transition focus:border-vin-accent focus:bg-vin-root/20"
                 placeholder="Tìm tên, shortcut, nội dung..."
               />
               {searchQuery && (
@@ -241,7 +241,7 @@ export function ReportTemplatesClient() {
 
         <div className="min-h-0 flex-1 overflow-auto scr-dark">
           <table className="w-full text-left">
-            <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
+            <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-sm font-semibold uppercase tracking-wider text-vin-text2">
               <tr>
                 <th className="w-9 py-2 pl-2 pr-1 text-center">TT</th>
                 <th className="px-2 py-2">Tên mẫu</th>
@@ -251,7 +251,7 @@ export function ReportTemplatesClient() {
                 <th className="px-2 py-2 text-center">TT</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-vin-border/45 text-[11px]">
+            <tbody className="divide-y divide-vin-border/45 text-sm">
               {isLoading ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-vin-muted">
@@ -288,7 +288,7 @@ export function ReportTemplatesClient() {
                           <FileText className="h-3.5 w-3.5 flex-shrink-0 text-vin-accent" />
                           <div className="min-w-0">
                             <div className="max-w-[220px] truncate font-semibold text-white">{template.name}</div>
-                            <div className="mt-0.5 truncate text-[10px] text-vin-muted">
+                            <div className="mt-0.5 truncate text-sm text-vin-muted">
                               {template.bodyPart || "Không chọn body part"} · {readOwner(template)}
                             </div>
                           </div>
@@ -346,7 +346,7 @@ export function ReportTemplatesClient() {
                     <ClipboardList className="h-4 w-4 flex-shrink-0 text-vin-accent" />
                     {selectedTemplate.name}
                   </h2>
-                  <p className="mt-1 text-[10px] text-vin-muted">
+                  <p className="mt-1 text-sm text-vin-muted">
                     {selectedTemplate.modality} · {selectedTemplate.bodyPart || "Không chọn body part"} · {readOwner(selectedTemplate)}
                   </p>
                 </div>
@@ -356,7 +356,7 @@ export function ReportTemplatesClient() {
                 <ModalityBadge modality={selectedTemplate.modality} />
                 <ScopeBadge scope={selectedTemplate.scope} />
                 {selectedTemplate.isNormal && (
-                  <span className="rounded bg-emerald-900/25 px-2 py-0.5 text-[10px] font-bold text-emerald-200">
+                  <span className="rounded bg-emerald-900/25 px-2 py-0.5 text-sm font-bold text-emerald-200">
                     Bình thường
                   </span>
                 )}
@@ -378,7 +378,7 @@ export function ReportTemplatesClient() {
               <ClipboardList className="h-7 w-7 text-vin-faint" />
             </div>
             <h3 className="mb-1 text-sm font-semibold text-vin-text2">Chưa chọn mẫu báo cáo</h3>
-            <p className="max-w-[260px] text-[11px] leading-relaxed text-vin-muted">
+            <p className="max-w-[260px] text-sm leading-relaxed text-vin-muted">
               Chọn một mẫu bên trái để chỉnh sửa, hoặc tạo mẫu mới cho bác sĩ chèn nhanh khi đọc phim.
             </p>
           </div>
@@ -413,7 +413,7 @@ function TemplateForm({
       {template && <input type="hidden" name="templateId" value={template.id} />}
 
       <div>
-        <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Tên mẫu</label>
+        <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Tên mẫu</label>
         <input
           name="name"
           required
@@ -425,7 +425,7 @@ function TemplateForm({
 
       <div className="grid grid-cols-4 gap-3">
         <div>
-          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Modality</label>
+          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Modality</label>
           <CustomSelect
             name="modality"
             options={modalityOptions.map(m => ({ value: m, label: m }))}
@@ -433,7 +433,7 @@ function TemplateForm({
           />
         </div>
         <div>
-          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Body part</label>
+          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Body part</label>
           <input
             name="bodyPart"
             defaultValue={template?.bodyPart || ""}
@@ -442,7 +442,7 @@ function TemplateForm({
           />
         </div>
         <div>
-          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Shortcut</label>
+          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Shortcut</label>
           <input
             name="shortcut"
             defaultValue={template?.shortcut || ""}
@@ -451,7 +451,7 @@ function TemplateForm({
           />
         </div>
         <div>
-          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Phạm vi</label>
+          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Phạm vi</label>
           <CustomSelect
             name="scope"
             options={[
@@ -475,7 +475,7 @@ function TemplateForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Mô tả</label>
+        <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Mô tả</label>
         <textarea
           name="findings"
           required
@@ -486,7 +486,7 @@ function TemplateForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Kết luận</label>
+        <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Kết luận</label>
         <textarea
           name="conclusion"
           required
@@ -497,7 +497,7 @@ function TemplateForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Đề nghị</label>
+        <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Đề nghị</label>
         <textarea
           name="recommendation"
           defaultValue={template?.recommendation || ""}

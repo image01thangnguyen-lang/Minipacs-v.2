@@ -171,7 +171,7 @@ export function LegacyMatrixTab() {
       </div>
 
       {(message || error) && (
-        <div className={`rounded border px-3 py-2 text-[11px] font-semibold ${
+        <div className={`rounded border px-3 py-2 text-sm font-semibold ${
           error
             ? "border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 text-red-200"
             : "border-vin-status-approved-bg/60 bg-vin-status-approved-bg/15 text-emerald-100"
@@ -204,7 +204,7 @@ export function LegacyMatrixTab() {
                 <tr key={node.id} className="transition hover:bg-vin-tableHover">
                   <td className="px-4 py-3 border-r border-vin-border sticky left-0 bg-vin-panel z-10">
                     <div className="font-semibold text-white">{node.name}</div>
-                    <div className="text-[10px] text-vin-muted mt-0.5">
+                    <div className="text-sm text-vin-muted mt-0.5">
                       {node.modality} {node.isNonDicom ? "(Non-DICOM)" : ""}
                     </div>
                   </td>
@@ -216,7 +216,7 @@ export function LegacyMatrixTab() {
                           <button
                             type="button"
                             onClick={() => handleCellChange(node.id, ak, "ALLOW")}
-                            className={`px-2 py-1 text-[10px] font-medium border border-vin-border rounded-l-md transition
+                            className={`px-2 py-1 text-sm font-medium border border-vin-border rounded-l-md transition
                               ${state === "ALLOW" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50 z-10" : "bg-transparent text-vin-muted hover:bg-vin-tableHover hover:text-white"}`}
                           >
                             Cho
@@ -224,7 +224,7 @@ export function LegacyMatrixTab() {
                           <button
                             type="button"
                             onClick={() => handleCellChange(node.id, ak, "DEFAULT")}
-                            className={`px-2 py-1 text-[10px] font-medium border-t border-b border-vin-border transition
+                            className={`px-2 py-1 text-sm font-medium border-t border-b border-vin-border transition
                               ${state === "DEFAULT" ? "bg-vin-tableSelected text-white z-10" : "bg-transparent text-vin-muted hover:bg-vin-tableHover hover:text-white"}`}
                           >
                             ---
@@ -232,7 +232,7 @@ export function LegacyMatrixTab() {
                           <button
                             type="button"
                             onClick={() => handleCellChange(node.id, ak, "DENY")}
-                            className={`px-2 py-1 text-[10px] font-medium border border-vin-border rounded-r-md transition
+                            className={`px-2 py-1 text-sm font-medium border border-vin-border rounded-r-md transition
                               ${state === "DENY" ? "bg-red-500/20 text-red-400 border-red-500/50 z-10" : "bg-transparent text-vin-muted hover:bg-vin-tableHover hover:text-white"}`}
                           >
                             Chặn

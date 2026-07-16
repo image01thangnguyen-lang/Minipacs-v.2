@@ -412,14 +412,14 @@ export function WorklistClient(props: { searchParams?: { orderId?: string } }) {
           <div className="mb-2 flex items-center justify-between gap-3">
             <div>
               <ScreenHeader />
-              <p className="mt-0.5 text-[10px] text-vin-muted">
+              <p className="mt-0.5 text-sm text-vin-muted">
                 {orders.length} order trong ngày · MWL được ghi vào PACS worklists
               </p>
             </div>
             <button
               onClick={loadOrders}
               disabled={isLoading}
-              className="flex items-center gap-1.5 rounded border border-vin-border bg-vin-panel px-2.5 py-1.5 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
+              className="flex items-center gap-1.5 rounded border border-vin-border bg-vin-panel px-2.5 py-1.5 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
             >
               <RefreshCcw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
               Làm mới
@@ -430,7 +430,7 @@ export function WorklistClient(props: { searchParams?: { orderId?: string } }) {
             <div
               role={error ? "alert" : "status"}
               aria-live="polite"
-              className={`mb-2 rounded border px-3 py-2 text-[11px] font-semibold ${
+              className={`mb-2 rounded border px-3 py-2 text-sm font-semibold ${
               error
                 ? "border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 text-red-200"
                 : "border-vin-status-approved-bg/60 bg-vin-status-approved-bg/15 text-emerald-100"
@@ -457,10 +457,10 @@ export function WorklistClient(props: { searchParams?: { orderId?: string } }) {
               <input
                 value={searchQuery}
                 onChange={event => setSearchQuery(event.target.value)}
-                className="h-[2.25rem] w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-20 text-[11px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent focus:bg-vin-root/20"
+                className="h-[2.25rem] w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-20 text-sm text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent focus:bg-vin-root/20"
                 placeholder="Tìm tên, PID, accession, chỉ định..."
               />
-              <button className="absolute right-1 top-1/2 -translate-y-1/2 rounded bg-vin-accent px-2 py-1 text-[10px] font-bold text-white">
+              <button className="absolute right-1 top-1/2 -translate-y-1/2 rounded bg-vin-accent px-2 py-1 text-sm font-bold text-white">
                 Tìm
               </button>
             </div>
@@ -484,7 +484,7 @@ export function WorklistClient(props: { searchParams?: { orderId?: string } }) {
             />
           ) : (
             <table className="w-full text-left">
-              <thead className="sticky top-0 z-10 border-b border-white/10 bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
+              <thead className="sticky top-0 z-10 border-b border-white/10 bg-vin-panel2 text-sm font-semibold uppercase tracking-wider text-vin-text2">
                 <tr>
                   <th className="w-9 py-2 pl-2 pr-1 text-center">#</th>
                   <th className="px-2 py-2">Bệnh nhân</th>
@@ -495,7 +495,7 @@ export function WorklistClient(props: { searchParams?: { orderId?: string } }) {
                   <th className="px-2 py-2 text-right">Tác vụ</th>
                 </tr>
               </thead>
-              <tbody className="text-[11px]">
+              <tbody className="text-sm">
                 {isLoading ? (
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-vin-muted">
@@ -517,7 +517,7 @@ export function WorklistClient(props: { searchParams?: { orderId?: string } }) {
                         <td className="py-2 pl-2 pr-1 text-center font-mono text-vin-text">{index + 1}</td>
                         <td className="px-2 py-2">
                           <div className="max-w-[180px] truncate font-semibold uppercase tracking-[0.01em] text-white">{order.patientName}</div>
-                          <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
+                          <div className="mt-0.5 truncate font-mono text-sm text-vin-muted">
                             {order.patientId} &bull; {order.gender || "?"} &bull; {order.phone || "-"}
                           </div>
                         </td>
@@ -526,36 +526,36 @@ export function WorklistClient(props: { searchParams?: { orderId?: string } }) {
                             {order.procedureName || order.procedureDescription || "-"}
                           </div>
                           <div className="mt-0.5 flex items-center gap-1.5">
-                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold leading-none ${priorityClass(order.priority)}`}>{order.priority}</span>
-                            <span className="truncate font-mono text-[10px] text-vin-muted">{order.procedureCode || order.accessionNumber}</span>
+                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-sm font-bold leading-none ${priorityClass(order.priority)}`}>{order.priority}</span>
+                            <span className="truncate font-mono text-sm text-vin-muted">{order.procedureCode || order.accessionNumber}</span>
                           </div>
-                          <div className="mt-0.5 max-w-[240px] truncate text-[10px] text-vin-muted">
+                          <div className="mt-0.5 max-w-[240px] truncate text-sm text-vin-muted">
                             {order.serviceTypeName || "Fallback DICOM"}{order.clinicalInfo ? " · Co lam sang" : ""}
                           </div>
                         </td>
                         <td className="px-2 py-2 text-center">
-                          <span className="inline-flex min-w-9 items-center justify-center rounded-full border border-vin-accent/40 bg-vin-accentSoft/15 px-2 py-0.5 font-mono text-[10px] font-bold leading-none text-cyan-100">
+                          <span className="inline-flex min-w-9 items-center justify-center rounded-full border border-vin-accent/40 bg-vin-accentSoft/15 px-2 py-0.5 font-mono text-sm font-bold leading-none text-cyan-100">
                             {order.modality}
                           </span>
-                          <div className="mt-1 text-[10px] text-vin-muted">{order.bodyPart || "-"}</div>
+                          <div className="mt-1 text-sm text-vin-muted">{order.bodyPart || "-"}</div>
                         </td>
                         <td className="whitespace-nowrap px-2 py-2">
                           <div className="flex items-center gap-1 text-vin-text2">
                             <Clock className="h-3 w-3 text-vin-accent" />
                             {formatDateTime(order.scheduledDate)}
                           </div>
-                          <div className="mt-0.5 font-mono text-[10px] text-vin-muted">
+                          <div className="mt-0.5 font-mono text-sm text-vin-muted">
                             AE: {order.stationAeTitle || order.scheduledStationAeTitle || "AETITLE"}
                           </div>
-                          <div className="mt-0.5 max-w-[150px] truncate text-[10px] text-vin-muted">
+                          <div className="mt-0.5 max-w-[150px] truncate text-sm text-vin-muted">
                             {order.machineName || order.scheduledStationName || "-"}{order.facilityName ? ` · ${order.facilityName}` : ""}
                           </div>
                         </td>
                         <td className="px-2 py-2 text-center">
-                          <span className={`inline-flex max-w-[110px] items-center justify-center truncate rounded-full border px-2.5 py-1 text-[9px] font-bold leading-none ${statusClass(order.orderStatus)}`}>
+                          <span className={`inline-flex max-w-[110px] items-center justify-center truncate rounded-full border px-2.5 py-1 text-sm font-bold leading-none ${statusClass(order.orderStatus)}`}>
                             {orderStatusLabels[order.orderStatus] || order.orderStatus}
                           </span>
-                          <div className="mt-1 flex items-center justify-center gap-1 text-[10px] text-vin-muted">
+                          <div className="mt-1 flex items-center justify-center gap-1 text-sm text-vin-muted">
                             {order.orthancStudyId ? studyStatusLabels[order.studyStatus || ""] || order.studyStatus : "Chưa có ảnh"}
                             {order.noDicomOverdue && (
                               <span title="Quá hạn 24h chưa có ảnh">
@@ -563,20 +563,20 @@ export function WorklistClient(props: { searchParams?: { orderId?: string } }) {
                               </span>
                             )}
                           </div>
-                          <div className="mt-1 text-[9px] text-vin-muted">
+                          <div className="mt-1 text-sm text-vin-muted">
                             {order.isDicomMatched ? "Da match DICOM" : `Cho ${formatDuration(order.waitingMinutes)}`}
                           </div>
                           {order.hisSyncStatus && (
-                            <Link href={`/admin/his`} className={`mt-1 block w-fit rounded px-1.5 py-0.5 text-[9px] font-semibold transition hover:opacity-80 ${order.hisSyncStatus === 'FAILED' ? 'bg-red-900/40 text-red-300' : 'bg-emerald-900/40 text-emerald-300'}`} title="Click to view HIS Logs">
+                            <Link href={`/admin/his`} className={`mt-1 block w-fit rounded px-1.5 py-0.5 text-sm font-semibold transition hover:opacity-80 ${order.hisSyncStatus === 'FAILED' ? 'bg-red-900/40 text-red-300' : 'bg-emerald-900/40 text-emerald-300'}`} title="Click to view HIS Logs">
                               HIS order: {order.hisSyncStatus}
                             </Link>
                           )}
                           {order.hisResultStatus && (
-                            <div className={`mt-1 text-[9px] font-semibold ${order.hisResultStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}`}>
+                            <div className={`mt-1 text-sm font-semibold ${order.hisResultStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}`}>
                               HIS result: {order.hisResultStatus}
                             </div>
                           )}
-                          <div className="mt-1 max-w-[140px] truncate text-[9px] text-vin-muted">
+                          <div className="mt-1 max-w-[140px] truncate text-sm text-vin-muted">
                             {order.assignedDoctorName ? `BS: ${order.assignedDoctorName}` : "Chua gan BS"}
                             {order.technologistName ? ` · KTV: ${order.technologistName}` : ""}
                           </div>
@@ -664,7 +664,7 @@ export function WorklistClient(props: { searchParams?: { orderId?: string } }) {
             <FilePlus2 className="h-4 w-4 text-vin-accent" />
             Tạo order mới
           </h2>
-          <p className="mt-0.5 text-[10px] text-vin-muted">Tạo DICOM Modality Worklist cho máy chụp lấy lên danh sách.</p>
+          <p className="mt-0.5 text-sm text-vin-muted">Tạo DICOM Modality Worklist cho máy chụp lấy lên danh sách.</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="min-h-0 flex-1 space-y-4 overflow-auto p-4 scr-dark">
@@ -842,13 +842,13 @@ function Field({ children, error, label }: { children: React.ReactNode; error?: 
 
   return (
     <div>
-      <label className="mb-1.5 flex items-center gap-1 text-[11px] font-semibold text-vin-text2">
+      <label className="mb-1.5 flex items-center gap-1 text-sm font-semibold text-vin-text2">
         {isRequired && <span className="text-red-300">*</span>}
         <span>{displayLabel}</span>
       </label>
       {children}
       {error && (
-        <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-red-300">
+        <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-red-300">
           <AlertCircle className="h-3 w-3" />
           {error}
         </p>

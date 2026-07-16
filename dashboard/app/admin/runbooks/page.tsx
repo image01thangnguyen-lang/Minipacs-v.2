@@ -47,9 +47,9 @@ export default async function RunbooksPage() {
                 const riskyCount = runbook.steps.filter((step) => step.isRisky).length;
                 return (
                   <Link key={runbook.id} href={`/admin/runbooks/${runbook.id}`} className={`rounded-md border bg-slate-900/40 p-4 hover:border-cyan-500 ${runbook.isActive ? "border-slate-700" : "border-slate-800 opacity-60"}`}>
-                    <div className="flex items-start justify-between gap-3"><h3 className="font-semibold">{runbook.name}</h3><span className={`rounded px-2 py-0.5 text-xs ${runbook.isActive ? "bg-emerald-950 text-emerald-300" : "bg-slate-800 text-slate-400"}`}>{runbook.isActive ? "ACTIVE" : "INACTIVE"}</span></div>
+                    <div className="flex items-start justify-between gap-3"><h3 className="font-semibold">{runbook.name}</h3><span className={`rounded px-2 py-0.5 text-sm ${runbook.isActive ? "bg-emerald-950 text-emerald-300" : "bg-slate-800 text-slate-400"}`}>{runbook.isActive ? "ACTIVE" : "INACTIVE"}</span></div>
                     <p className="mt-2 line-clamp-2 min-h-10 text-sm text-slate-400">{runbook.description || "Không có mô tả"}</p>
-                    <div className="mt-4 flex items-center justify-between border-t border-slate-800 pt-3 text-xs text-slate-400">
+                    <div className="mt-4 flex items-center justify-between border-t border-slate-800 pt-3 text-sm text-slate-400">
                       <span>{runbook.steps.length} step{riskyCount ? ` / ${riskyCount} nguy hiểm` : ""}</span>
                       <span>{lastExecution ? `Gần nhất: ${lastExecution.status}` : "Chưa chạy"}</span>
                     </div>

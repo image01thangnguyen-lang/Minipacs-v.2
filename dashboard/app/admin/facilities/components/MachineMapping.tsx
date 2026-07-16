@@ -125,7 +125,7 @@ export function MachineMapping() {
                   <td className="px-4 py-3">
                     <div className="font-semibold text-white">
                       {node.name}
-                      {!node.isActive && <span className="ml-2 text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded">Ngừng hoạt động</span>}
+                      {!node.isActive && <span className="ml-2 text-sm bg-red-500/20 text-red-400 px-2 py-0.5 rounded">Ngừng hoạt động</span>}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-vin-muted">
@@ -152,7 +152,7 @@ export function MachineMapping() {
                     ) : !node.isActive ? (
                       <button
                         onClick={() => handleReactivate(node.id)}
-                        className="text-vin-muted hover:text-green-400 text-xs flex items-center gap-1 justify-center mx-auto"
+                        className="text-vin-muted hover:text-green-400 text-sm flex items-center gap-1 justify-center mx-auto"
                       >
                         Khôi phục
                       </button>

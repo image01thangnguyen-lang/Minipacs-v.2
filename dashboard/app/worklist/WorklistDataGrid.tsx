@@ -63,7 +63,7 @@ export function WorklistDataGrid({
         cell: (order) => (
           <>
             <div className="max-w-[180px] truncate font-semibold uppercase tracking-[0.01em] text-white">{order.patientName}</div>
-            <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
+            <div className="mt-0.5 truncate font-mono text-sm text-vin-muted">
               {order.patientId} &bull; {order.gender || "?"} &bull; {order.phone || "-"}
             </div>
           </>
@@ -79,10 +79,10 @@ export function WorklistDataGrid({
               {order.procedureName || order.procedureDescription || "-"}
             </div>
             <div className="mt-0.5 flex items-center gap-1.5">
-              <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-bold leading-none ${priorityClass(order.priority)}`}>{order.priority}</span>
-              <span className="truncate font-mono text-[10px] text-vin-muted">{order.procedureCode || order.accessionNumber}</span>
+              <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-sm font-bold leading-none ${priorityClass(order.priority)}`}>{order.priority}</span>
+              <span className="truncate font-mono text-sm text-vin-muted">{order.procedureCode || order.accessionNumber}</span>
             </div>
-            <div className="mt-0.5 max-w-[240px] truncate text-[10px] text-vin-muted">
+            <div className="mt-0.5 max-w-[240px] truncate text-sm text-vin-muted">
               {order.serviceTypeName || "Fallback DICOM"}{order.clinicalInfo ? " · Co lam sang" : ""}
             </div>
           </>
@@ -95,10 +95,10 @@ export function WorklistDataGrid({
         width: 80,
         cell: (order) => (
           <>
-            <span className="inline-flex min-w-9 items-center justify-center rounded-full border border-vin-accent/40 bg-vin-accentSoft/15 px-2 py-0.5 font-mono text-[10px] font-bold leading-none text-cyan-100">
+            <span className="inline-flex min-w-9 items-center justify-center rounded-full border border-vin-accent/40 bg-vin-accentSoft/15 px-2 py-0.5 font-mono text-sm font-bold leading-none text-cyan-100">
               {order.modality}
             </span>
-            <div className="mt-1 text-[10px] text-vin-muted">{order.bodyPart || "-"}</div>
+            <div className="mt-1 text-sm text-vin-muted">{order.bodyPart || "-"}</div>
           </>
         ),
       },
@@ -112,10 +112,10 @@ export function WorklistDataGrid({
               <Clock className="h-3 w-3 text-vin-accent" />
               {formatDateTime(order.scheduledDate)}
             </div>
-            <div className="mt-0.5 font-mono text-[10px] text-vin-muted">
+            <div className="mt-0.5 font-mono text-sm text-vin-muted">
               AE: {order.stationAeTitle || order.scheduledStationAeTitle || "AETITLE"}
             </div>
-            <div className="mt-0.5 max-w-[150px] truncate text-[10px] text-vin-muted">
+            <div className="mt-0.5 max-w-[150px] truncate text-sm text-vin-muted">
               {order.machineName || order.scheduledStationName || "-"}{order.facilityName ? ` · ${order.facilityName}` : ""}
             </div>
           </>
@@ -128,10 +128,10 @@ export function WorklistDataGrid({
         width: 130,
         cell: (order) => (
           <>
-            <span className={`inline-flex max-w-[110px] items-center justify-center truncate rounded-full border px-2.5 py-1 text-[9px] font-bold leading-none ${statusClass(order.orderStatus)}`}>
+            <span className={`inline-flex max-w-[110px] items-center justify-center truncate rounded-full border px-2.5 py-1 text-sm font-bold leading-none ${statusClass(order.orderStatus)}`}>
               {orderStatusLabels[order.orderStatus] || order.orderStatus}
             </span>
-            <div className="mt-1 flex items-center justify-center gap-1 text-[10px] text-vin-muted">
+            <div className="mt-1 flex items-center justify-center gap-1 text-sm text-vin-muted">
               {order.orthancStudyId ? studyStatusLabels[order.studyStatus || ""] || order.studyStatus : "Chưa có ảnh"}
               {order.noDicomOverdue && (
                 <span title="Quá hạn 24h chưa có ảnh">
@@ -139,20 +139,20 @@ export function WorklistDataGrid({
                 </span>
               )}
             </div>
-            <div className="mt-1 text-[9px] text-vin-muted">
+            <div className="mt-1 text-sm text-vin-muted">
               {order.isDicomMatched ? "Da match DICOM" : `Cho ${formatDuration(order.waitingMinutes)}`}
             </div>
             {order.hisSyncStatus && (
-              <Link href={`/admin/his`} onClick={(e) => e.stopPropagation()} className={`mt-1 block w-fit mx-auto rounded px-1.5 py-0.5 text-[9px] font-semibold transition hover:opacity-80 ${order.hisSyncStatus === 'FAILED' ? 'bg-red-900/40 text-red-300' : 'bg-emerald-900/40 text-emerald-300'}`} title="Click to view HIS Logs">
+              <Link href={`/admin/his`} onClick={(e) => e.stopPropagation()} className={`mt-1 block w-fit mx-auto rounded px-1.5 py-0.5 text-sm font-semibold transition hover:opacity-80 ${order.hisSyncStatus === 'FAILED' ? 'bg-red-900/40 text-red-300' : 'bg-emerald-900/40 text-emerald-300'}`} title="Click to view HIS Logs">
                 HIS order: {order.hisSyncStatus}
               </Link>
             )}
             {order.hisResultStatus && (
-              <div className={`mt-1 text-[9px] font-semibold ${order.hisResultStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}`}>
+              <div className={`mt-1 text-sm font-semibold ${order.hisResultStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}`}>
                 HIS result: {order.hisResultStatus}
               </div>
             )}
-            <div className="mt-1 max-w-[140px] truncate mx-auto text-[9px] text-vin-muted">
+            <div className="mt-1 max-w-[140px] truncate mx-auto text-sm text-vin-muted">
               {order.assignedDoctorName ? `BS: ${order.assignedDoctorName}` : "Chua gan BS"}
               {order.technologistName ? ` · KTV: ${order.technologistName}` : ""}
             </div>

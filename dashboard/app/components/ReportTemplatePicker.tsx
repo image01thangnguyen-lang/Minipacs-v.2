@@ -100,7 +100,7 @@ export function ReportTemplatePicker({
         type="button"
         onClick={() => selectedTemplate && onApply(selectedTemplate, "append")}
         disabled={disabled || !selectedTemplate}
-        className="flex items-center gap-1.5 rounded border border-vin-border bg-vin-shell px-2.5 py-1.5 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex items-center gap-1.5 rounded border border-vin-border bg-vin-shell px-2.5 py-1.5 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
       >
         <PlusCircle className="h-3.5 w-3.5" />
         Chèn
@@ -109,7 +109,7 @@ export function ReportTemplatePicker({
         type="button"
         onClick={() => selectedTemplate && onApply(selectedTemplate, "replace")}
         disabled={disabled || !selectedTemplate}
-        className="flex items-center gap-1.5 rounded border border-vin-border bg-vin-shell px-2.5 py-1.5 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex items-center gap-1.5 rounded border border-vin-border bg-vin-shell px-2.5 py-1.5 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
       >
         <Replace className="h-3.5 w-3.5" />
         Thay

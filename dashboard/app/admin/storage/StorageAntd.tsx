@@ -113,7 +113,7 @@ export function StorageAntd() {
           <h2 style={{ margin: 0, color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <DatabaseOutlined /> Quản lý lưu trữ
           </h2>
-          <Text type="secondary" style={{ fontSize: '12px' }}>
+          <Text type="secondary" style={{ fontSize: '14px' }}>
             Quản lý các thư mục lưu trữ ảnh DICOM, báo cáo, và sao lưu.
           </Text>
         </div>
@@ -150,22 +150,22 @@ export function StorageAntd() {
                 }
               >
                 <div style={{ marginBottom: '8px' }}>
-                  <Text type="secondary" style={{ fontSize: '10px', fontWeight: 'bold' }}>MÃ: </Text>
+                  <Text type="secondary" style={{ fontSize: '14px', fontWeight: 'bold' }}>MÃ: </Text>
                   <Text code>{folder.code}</Text>
                 </div>
                 <div style={{ marginBottom: '8px' }}>
-                  <Text type="secondary" style={{ fontSize: '10px', fontWeight: 'bold' }}>ĐƯỜNG DẪN: </Text>
+                  <Text type="secondary" style={{ fontSize: '14px', fontWeight: 'bold' }}>ĐƯỜNG DẪN: </Text>
                   <Text code ellipsis style={{ maxWidth: '100%' }} title={folder.path}>{folder.path}</Text>
                 </div>
                 {folder.facility && (
                   <div style={{ marginBottom: '8px' }}>
-                    <Text type="secondary" style={{ fontSize: '10px', fontWeight: 'bold' }}>CƠ SỞ: </Text>
+                    <Text type="secondary" style={{ fontSize: '14px', fontWeight: 'bold' }}>CƠ SỞ: </Text>
                     <Text>{folder.facility.name}</Text>
                   </div>
                 )}
                 
                 <div style={{ marginTop: '16px', borderTop: '1px solid #434343', paddingTop: '8px' }}>
-                   <Text type="secondary" style={{ fontSize: '10px', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>TRẠNG THÁI KẾT NỐI:</Text>
+                   <Text type="secondary" style={{ fontSize: '14px', fontWeight: 'bold', display: 'block', marginBottom: '4px' }}>TRẠNG THÁI KẾT NỐI:</Text>
                    {folder.lastCheckStatus === "OK" ? (
                      <Text type="success"><CheckCircleOutlined /> {folder.lastCheckMessage || "OK"}</Text>
                    ) : folder.lastCheckStatus === "READ_ONLY" ? (
@@ -176,7 +176,7 @@ export function StorageAntd() {
                      <Text type="secondary">Chưa kiểm tra</Text>
                    )}
                    {folder.lastCheckAt && (
-                      <Text type="secondary" style={{ fontSize: '9px', display: 'block', marginTop: '4px' }}>Cập nhật: {new Date(folder.lastCheckAt).toLocaleString("vi-VN")}</Text>
+                      <Text type="secondary" style={{ fontSize: '14px', display: 'block', marginTop: '4px' }}>Cập nhật: {new Date(folder.lastCheckAt).toLocaleString("vi-VN")}</Text>
                    )}
                 </div>
               </Card>

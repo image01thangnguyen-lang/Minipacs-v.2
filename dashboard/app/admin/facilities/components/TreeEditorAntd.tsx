@@ -218,7 +218,7 @@ export function TreeEditorAntd() {
               <Text strong style={{ color: "white" }}>{u.name}</Text>
               <Text type="secondary" className="ml-2">({u.code})</Text>
               {!u.isActive && <Tag color="error" className="ml-2">Ngừng hoạt động</Tag>}
-              <div style={{ fontSize: "11px", color: "gray" }}>{u.type}</div>
+              <div style={{ fontSize: "14px", color: "gray" }}>{u.type}</div>
             </div>
             <Space onClick={e => e.stopPropagation()}>
               {u.isActive ? (
@@ -313,7 +313,7 @@ export function TreeEditorAntd() {
             {selectedNodeData ? (
               <Form form={formDetail} layout="vertical" onFinish={handleDetailSave}>
                 <div className="mb-4">
-                  <Text type="secondary" className="block text-xs uppercase tracking-wide font-bold mb-1">Trạng thái</Text>
+                  <Text type="secondary" className="block text-sm uppercase tracking-wide font-bold mb-1">Trạng thái</Text>
                   {selectedNodeData.isActive ? (
                     <Tag color="success">Đang hoạt động</Tag>
                   ) : (
@@ -321,7 +321,7 @@ export function TreeEditorAntd() {
                   )}
                 </div>
                 <div className="mb-4">
-                  <Text type="secondary" className="block text-xs uppercase tracking-wide font-bold mb-1">Loại Taxonomy</Text>
+                  <Text type="secondary" className="block text-sm uppercase tracking-wide font-bold mb-1">Loại Taxonomy</Text>
                   <Tag>{selectedNodeData.type}</Tag>
                 </div>
                 <Form.Item name="code" label="Mã đơn vị (Code)">

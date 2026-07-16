@@ -347,7 +347,7 @@ export default function UsersAntd(props: any) {
               <div className="grid grid-cols-2 gap-4">
                 {permissionOptions.map(group => (
                   <div key={group.label} className="border border-vin-border p-2 rounded">
-                    <div className="font-bold text-[10px] uppercase text-vin-muted mb-2">{group.label}</div>
+                    <div className="font-bold text-sm uppercase text-vin-muted mb-2">{group.label}</div>
                     <div className="flex flex-col gap-1">
                       {group.options.map(opt => (
                         <Checkbox key={opt.value} value={opt.value}>{opt.label}</Checkbox>
@@ -397,7 +397,7 @@ export default function UsersAntd(props: any) {
               <div className="grid grid-cols-2 gap-4">
                 {permissionOptions.map(group => (
                   <div key={group.label} className="border border-vin-border p-2 rounded">
-                    <div className="font-bold text-[10px] uppercase text-vin-muted mb-2">{group.label}</div>
+                    <div className="font-bold text-sm uppercase text-vin-muted mb-2">{group.label}</div>
                     <div className="flex flex-col gap-1">
                       {group.options.map(opt => (
                         <Checkbox key={opt.value} value={opt.value}>{opt.label}</Checkbox>
@@ -428,7 +428,7 @@ export default function UsersAntd(props: any) {
               <Button icon={<UploadOutlined />}>Chọn file</Button>
             </Upload>
           </Form.Item>
-          <div className="text-[10px] text-vin-muted mb-4">Cấu trúc: username, fullname, role (Mã hoặc Tên). Có dòng tiêu đề.</div>
+          <div className="text-sm text-vin-muted mb-4">Cấu trúc: username, fullname, role (Mã hoặc Tên). Có dòng tiêu đề.</div>
         </Form>
 
         {importResults && (

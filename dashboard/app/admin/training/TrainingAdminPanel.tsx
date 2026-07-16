@@ -24,19 +24,19 @@ export default async function TrainingAdminPanel() {
           <h3 className="font-semibold border-b pb-2">Add New Material</h3>
           <form action={createMaterial} className="space-y-3">
             <div>
-              <label className="text-xs font-medium">Title</label>
+              <label className="text-sm font-medium">Title</label>
               <input type="text" name="title" required className="w-full h-8 px-2 text-sm border rounded" />
             </div>
             <div>
-              <label className="text-xs font-medium">Description</label>
+              <label className="text-sm font-medium">Description</label>
               <textarea name="description" className="w-full p-2 text-sm border rounded" rows={3} />
             </div>
             <div>
-              <label className="text-xs font-medium">URL / Document Link</label>
+              <label className="text-sm font-medium">URL / Document Link</label>
               <input type="url" name="url" className="w-full h-8 px-2 text-sm border rounded" />
             </div>
             <div>
-              <label className="text-xs font-medium">Target Role</label>
+              <label className="text-sm font-medium">Target Role</label>
               <select name="roleTarget" className="w-full h-8 px-2 text-sm border rounded bg-transparent">
                 <option value="ALL">All Roles</option>
                 <option value="DOCTOR">Doctors</option>
@@ -47,7 +47,7 @@ export default async function TrainingAdminPanel() {
             </div>
             <div className="flex items-center gap-2 mt-2">
               <input type="checkbox" name="isRequired" id="isRequired" className="rounded border-gray-300" />
-              <label htmlFor="isRequired" className="text-xs font-medium">Mandatory Training</label>
+              <label htmlFor="isRequired" className="text-sm font-medium">Mandatory Training</label>
             </div>
             <button
               type="submit"
@@ -78,17 +78,17 @@ export default async function TrainingAdminPanel() {
                   <tr key={mat.id} className="hover:bg-muted/30">
                     <td className="p-3">
                       <div className="font-medium">{mat.title}</div>
-                      <div className="text-xs text-muted-foreground">{mat.isRequired ? 'Mandatory' : 'Optional'}</div>
+                      <div className="text-sm text-muted-foreground">{mat.isRequired ? 'Mandatory' : 'Optional'}</div>
                     </td>
                     <td className="p-3">
-                      <span className="text-xs bg-muted px-2 py-1 rounded font-medium">{mat.roleTarget || "ALL"}</span>
+                      <span className="text-sm bg-muted px-2 py-1 rounded font-medium">{mat.roleTarget || "ALL"}</span>
                     </td>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
                           <div className="h-full bg-primary" style={{ width: `${percentage}%` }}></div>
                         </div>
-                        <span className="text-xs text-muted-foreground">{completed}/{total} ({percentage}%)</span>
+                        <span className="text-sm text-muted-foreground">{completed}/{total} ({percentage}%)</span>
                       </div>
                     </td>
                     <td className="p-3 text-right">

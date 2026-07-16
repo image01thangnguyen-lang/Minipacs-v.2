@@ -97,7 +97,7 @@ export function ClinicProfileAntd() {
           <h2 style={{ margin: 0, color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <BankOutlined /> Thông tin phòng khám
           </h2>
-          <Text type="secondary" style={{ fontSize: '12px' }}>
+          <Text type="secondary" style={{ fontSize: '14px' }}>
             Logo, tên đơn vị, địa chỉ và footer dùng khi in phiếu kết quả.
           </Text>
         </div>
@@ -219,9 +219,9 @@ export function ClinicProfileAntd() {
                 </div>
                 <div style={{ flex: 1 }}>
                    <div style={{ fontWeight: 'bold', fontSize: '16px', textTransform: 'uppercase' }}>{profile.name}</div>
-                   {profile.legalName && <div style={{ fontWeight: 600, fontSize: '12px', color: '#475569' }}>{profile.legalName}</div>}
-                   {profile.headerText && <div style={{ marginTop: '4px', fontSize: '12px', color: '#475569' }}>{profile.headerText}</div>}
-                   <div style={{ marginTop: '8px', fontSize: '11px', color: '#64748b', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                   {profile.legalName && <div style={{ fontWeight: 600, fontSize: '14px', color: '#475569' }}>{profile.legalName}</div>}
+                   {profile.headerText && <div style={{ marginTop: '4px', fontSize: '14px', color: '#475569' }}>{profile.headerText}</div>}
+                   <div style={{ marginTop: '8px', fontSize: '14px', color: '#64748b', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                       {profile.address && <div>{profile.address}</div>}
                       <div>{[profile.phone, profile.email, profile.website].filter(Boolean).join(" · ") || "Chưa cấu hình liên hệ"}</div>
                       {profile.licenseNumber && <div>Giấy phép: {profile.licenseNumber}</div>}
@@ -231,10 +231,10 @@ export function ClinicProfileAntd() {
              
              <div style={{ padding: '32px 0', textAlign: 'center' }}>
                 <div style={{ fontWeight: 'bold', fontSize: '14px', textTransform: 'uppercase' }}>Kết quả chẩn đoán hình ảnh</div>
-                <div style={{ marginTop: '8px', fontSize: '12px', color: '#94a3b8' }}>Nội dung phiếu bệnh nhân sẽ hiển thị tại đây.</div>
+                <div style={{ marginTop: '8px', fontSize: '14px', color: '#94a3b8' }}>Nội dung phiếu bệnh nhân sẽ hiển thị tại đây.</div>
              </div>
              
-             <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', fontSize: '11px', color: '#64748b' }}>
+             <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '12px', fontSize: '14px', color: '#64748b' }}>
                 {profile.footerText || "Chưa cấu hình footer phiếu in."}
              </div>
            </div>

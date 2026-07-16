@@ -231,14 +231,14 @@ export function NodesClient() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <ScreenHeader />
-              <p className="mt-1 text-[11px] text-vin-muted">
+              <p className="mt-1 text-sm text-vin-muted">
                 Khai báo danh sách thiết bị để nhận/gửi ảnh DICOM tới Orthanc PACS.
               </p>
             </div>
             <button
               onClick={loadNodes}
               disabled={isLoading}
-              className="flex items-center gap-1.5 rounded border border-vin-border bg-vin-panel px-3 py-1.5 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
+              className="flex items-center gap-1.5 rounded border border-vin-border bg-vin-panel px-3 py-1.5 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
             >
               <RefreshCcw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
               Làm mới
@@ -246,7 +246,7 @@ export function NodesClient() {
           </div>
 
           {(message || error) && (
-            <div className={`mt-3 rounded border px-3 py-2 text-[11px] font-semibold ${
+            <div className={`mt-3 rounded border px-3 py-2 text-sm font-semibold ${
               error
                 ? "border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 text-red-200"
                 : "border-vin-status-approved-bg/60 bg-vin-status-approved-bg/15 text-emerald-100"
@@ -269,7 +269,7 @@ export function NodesClient() {
             />
           ) : (
             <table className="w-full text-left">
-              <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
+              <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-sm font-semibold uppercase tracking-wider text-vin-text2">
                 <tr>
                   <th className="px-4 py-3">Tên & Alias</th>
                   <th className="px-3 py-3">Mạng (IP:Port)</th>
@@ -278,7 +278,7 @@ export function NodesClient() {
                   <th className="px-4 py-3 text-right">Tác vụ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-vin-border/45 text-[11px]">
+              <tbody className="divide-y divide-vin-border/45 text-sm">
                 {isLoading ? (
                   <tr>
                     <td colSpan={5} className="py-12 text-center text-vin-muted">
@@ -300,7 +300,7 @@ export function NodesClient() {
                       >
                         <td className="px-4 py-3">
                           <div className="font-semibold text-white">{node.name}</div>
-                          <div className="mt-1 flex items-center gap-1.5 font-mono text-[10px] text-vin-muted">
+                          <div className="mt-1 flex items-center gap-1.5 font-mono text-sm text-vin-muted">
                             <span className="rounded bg-vin-panel px-1.5 py-0.5 border border-vin-border">{node.modality}</span>
                             {!node.isNonDicom && <span>{node.orthancAlias}</span>}
                             {!node.isActive && (
@@ -311,7 +311,7 @@ export function NodesClient() {
                             )}
                           </div>
                           {node.facility && (
-                            <div className="mt-1 text-[10px] text-vin-muted flex items-center gap-1">
+                            <div className="mt-1 text-sm text-vin-muted flex items-center gap-1">
                               <span className="font-semibold">{node.facility.name}</span>
                             </div>
                           )}
@@ -322,35 +322,35 @@ export function NodesClient() {
                           ) : (
                             <>{node.ipAddress}:{node.port}</>
                           )}
-                          <div className="mt-0.5 font-sans text-[10px] text-vin-muted">{node.room || "-"}</div>
+                          <div className="mt-0.5 font-sans text-sm text-vin-muted">{node.room || "-"}</div>
                         </td>
                         <td className="px-3 py-3 text-center">
                           {node.isNonDicom ? (
-                            <span className="text-[10px] italic text-vin-faint">-</span>
+                            <span className="text-sm italic text-vin-faint">-</span>
                           ) : (
                             <span className="font-mono font-bold text-vin-accent">{node.aeTitle}</span>
                           )}
                         </td>
                         <td className="px-3 py-3 text-center">
                           {node.isNonDicom ? (
-                            <span className="text-[10px] italic text-vin-faint">-</span>
+                            <span className="text-sm italic text-vin-faint">-</span>
                           ) : node.lastEchoStatus === "OK" ? (
                             <div className="flex flex-col items-center justify-center">
-                              <span className="flex items-center gap-1 rounded bg-vin-status-approved-bg/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                              <span className="flex items-center gap-1 rounded bg-vin-status-approved-bg/20 px-2 py-0.5 text-sm font-bold text-emerald-400">
                                 <Wifi className="h-3 w-3" /> OK
                               </span>
-                              <span className="mt-1 text-[9px] text-vin-faint">
+                              <span className="mt-1 text-sm text-vin-faint">
                                 {node.lastEchoAt ? new Date(node.lastEchoAt).toLocaleString('vi-VN') : ""}
                               </span>
                             </div>
                           ) : node.lastEchoStatus === "FAILED" ? (
                             <div className="flex flex-col items-center justify-center">
-                              <span className="flex items-center gap-1 rounded bg-vin-status-danger-bg/20 px-2 py-0.5 text-[10px] font-bold text-red-400">
+                              <span className="flex items-center gap-1 rounded bg-vin-status-danger-bg/20 px-2 py-0.5 text-sm font-bold text-red-400">
                                 <AlertCircle className="h-3 w-3" /> FAILED
                               </span>
                             </div>
                           ) : (
-                            <span className="text-[10px] text-vin-muted">Chưa test</span>
+                            <span className="text-sm text-vin-muted">Chưa test</span>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -409,7 +409,7 @@ export function NodesClient() {
             <button
               type="button"
               onClick={handleAddNew}
-              className="text-[11px] font-semibold text-vin-accent hover:underline"
+              className="text-sm font-semibold text-vin-accent hover:underline"
             >
               + Tạo mới
             </button>
@@ -456,7 +456,7 @@ export function NodesClient() {
 
           <Field label="DICOM AE Title *" error={errors.aeTitle?.message}>
             <input {...register("aeTitle")} className="field-input font-mono uppercase text-vin-accent" placeholder="CR_ROOM1" maxLength={16} />
-            <p className="mt-1 text-[10px] text-vin-muted">Tối đa 16 ký tự, thường viết hoa. Phải khớp với cấu hình Local AE trên máy chụp.</p>
+            <p className="mt-1 text-sm text-vin-muted">Tối đa 16 ký tự, thường viết hoa. Phải khớp với cấu hình Local AE trên máy chụp.</p>
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
@@ -491,7 +491,7 @@ export function NodesClient() {
           </div>
 
           <div className="mt-6 border-t border-vin-border pt-4">
-            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-vin-text2">Cấu hình Mở rộng (Phase 3)</h3>
+            <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-vin-text2">Cấu hình Mở rộng (Phase 3)</h3>
 
             <div className="grid grid-cols-2 gap-3 mb-3">
               <Field label="Loại thiết bị">
@@ -655,10 +655,10 @@ export function NodesClient() {
 function Field({ children, error, label }: { children: React.ReactNode; error?: string; label: string }) {
   return (
     <div>
-      <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">{label}</label>
+      <label className="mb-1.5 block text-sm font-bold uppercase tracking-wide text-vin-muted">{label}</label>
       {children}
       {error && (
-        <p className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-red-300">
+        <p className="mt-1 flex items-center gap-1 text-sm font-semibold text-red-300">
           <AlertCircle className="h-3 w-3" />
           {error}
         </p>

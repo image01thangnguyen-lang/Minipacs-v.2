@@ -103,9 +103,9 @@ export function RelatedStudiesPanel({
       <div className="flex items-center justify-between border-b border-vin-border px-3 py-1.5 bg-vin-panel2">
         <div className="flex items-center gap-2">
           <Clock className="h-3.5 w-3.5 text-vin-accent" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-vin-muted">Lịch sử chụp</span>
+          <span className="text-sm font-bold uppercase tracking-wider text-vin-muted">Lịch sử chụp</span>
           {history.length > 0 && (
-            <span className="font-mono text-[10px] text-vin-faint">
+            <span className="font-mono text-sm text-vin-faint">
               · {history.length} ca liên quan
             </span>
           )}
@@ -125,7 +125,7 @@ export function RelatedStudiesPanel({
                 type="button"
                 aria-pressed={range === opt.value}
                 onClick={() => setRange(opt.value as RelatedStudyRange)}
-                className={`px-2 py-0.5 text-[9px] font-medium rounded-sm transition-colors ${
+                className={`px-2 py-0.5 text-sm font-medium rounded-sm transition-colors ${
                   range === opt.value
                     ? "bg-vin-panel text-vin-text shadow-sm"
                     : "text-vin-muted hover:text-vin-text"
@@ -146,18 +146,18 @@ export function RelatedStudiesPanel({
         )}
 
         {!anchorStudyUid ? (
-          <div className="flex h-full items-center justify-center text-[11px] text-vin-faint">
+          <div className="flex h-full items-center justify-center text-sm text-vin-faint">
             Chọn một bệnh nhân để xem lịch sử chụp
           </div>
         ) : error ? (
-          <div className="flex h-full items-center justify-center text-[11px] text-vin-alert">
+          <div className="flex h-full items-center justify-center text-sm text-vin-alert">
             {error}
           </div>
         ) : history.length === 0 && !isLoading ? (
-          <div className="flex h-full items-center justify-center text-[11px] text-vin-faint">Không có lịch sử trong khoảng thời gian này</div>
+          <div className="flex h-full items-center justify-center text-sm text-vin-faint">Không có lịch sử trong khoảng thời gian này</div>
         ) : (
           <table className="w-full text-left" aria-label="Các ca chụp liên quan">
-            <thead className="sticky top-0 z-10 border-b border-white/10 bg-vin-panel2 text-[9px] font-semibold uppercase tracking-wider text-vin-muted">
+            <thead className="sticky top-0 z-10 border-b border-white/10 bg-vin-panel2 text-sm font-semibold uppercase tracking-wider text-vin-muted">
               <tr>
                 <th className="py-1 pl-2 pr-1">Ngày chụp</th>
                 <th className="w-10 px-1 py-1 text-center">Mod</th>
@@ -166,7 +166,7 @@ export function RelatedStudiesPanel({
                 <th className="w-16 py-1 pr-2 text-right"></th>
               </tr>
             </thead>
-            <tbody className="text-[10px]">
+            <tbody className="text-sm">
               {history.map((row, idx) => {
                 const uid = row.studyInstanceUid;
                 const isCurrent = uid === selectedUid;

@@ -274,13 +274,13 @@ export function ArchiveClient() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <ScreenHeader />
-              <div className="mt-1 text-[11px] text-vin-muted">{rows.length} ca trong danh sách</div>
+              <div className="mt-1 text-sm text-vin-muted">{rows.length} ca trong danh sách</div>
             </div>
             <button
               type="button"
               onClick={() => runSearch(filters, true)}
               disabled={isLoading}
-              className="flex items-center gap-1.5 rounded border border-vin-border bg-vin-panel px-3 py-1.5 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
+              className="flex items-center gap-1.5 rounded border border-vin-border bg-vin-panel px-3 py-1.5 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
             >
               <RefreshCcw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
               Làm mới
@@ -291,7 +291,7 @@ export function ArchiveClient() {
             <div
               role={error ? "alert" : "status"}
               aria-live="polite"
-              className={`mt-3 rounded border px-3 py-2 text-[11px] font-semibold ${
+              className={`mt-3 rounded border px-3 py-2 text-sm font-semibold ${
                 error
                   ? "border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 text-red-200"
                   : "border-vin-status-approved-bg/60 bg-vin-status-approved-bg/15 text-emerald-100"
@@ -331,7 +331,7 @@ export function ArchiveClient() {
               onChange={val => handleFilterChange("status", val)}
               compact
             />
-            <button type="submit" disabled={isLoading} className="flex h-9 items-center justify-center gap-1.5 rounded border-0 bg-vin-accent px-3 text-[11px] font-bold text-white transition hover:bg-vin-accentHover disabled:opacity-40">
+            <button type="submit" disabled={isLoading} className="flex h-9 items-center justify-center gap-1.5 rounded border-0 bg-vin-accent px-3 text-sm font-bold text-white transition hover:bg-vin-accentHover disabled:opacity-40">
               <Search className="h-3.5 w-3.5" />
               Tìm
             </button>
@@ -349,7 +349,7 @@ export function ArchiveClient() {
               />
             ) : (
               <table className="w-full text-left">
-                <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
+                <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-sm font-semibold uppercase tracking-wider text-vin-text2">
                   <tr>
                     <th className="px-4 py-3">Bệnh nhân</th>
                     <th className="px-3 py-3">Ca chụp</th>
@@ -359,7 +359,7 @@ export function ArchiveClient() {
                     <th className="px-4 py-3 text-right">Ngày</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-vin-border/45 text-[11px]">
+                <tbody className="divide-y divide-vin-border/45 text-sm">
                   {isLoading ? (
                     <tr>
                       <td colSpan={6} className="py-12 text-center text-vin-muted">
@@ -382,33 +382,33 @@ export function ArchiveClient() {
                         >
                           <td className="px-4 py-3">
                             <div className="max-w-[220px] truncate font-semibold text-white">{row.patientName}</div>
-                            <div className="mt-1 truncate font-mono text-[10px] text-vin-muted">PID: {row.patientId}</div>
+                            <div className="mt-1 truncate font-mono text-sm text-vin-muted">PID: {row.patientId}</div>
                           </td>
                           <td className="px-3 py-3">
                             <div className="max-w-[260px] truncate text-vin-text2" title={row.procedureDescription || row.studyDescription}>
                               {row.procedureName || row.procedureDescription || row.studyDescription}
                             </div>
-                            <div className="mt-1 truncate font-mono text-[10px] text-vin-muted">{row.procedureCode || row.accessionNumber}</div>
-                            <div className="mt-1 max-w-[260px] truncate text-[10px] text-vin-muted">
+                            <div className="mt-1 truncate font-mono text-sm text-vin-muted">{row.procedureCode || row.accessionNumber}</div>
+                            <div className="mt-1 max-w-[260px] truncate text-sm text-vin-muted">
                               {row.serviceTypeName || row.machineName || "Fallback DICOM"}
                             </div>
                           </td>
                           <td className="px-3 py-3 text-center">
-                            <span className="inline-flex min-w-9 justify-center rounded border border-vin-accent/40 bg-vin-accentSoft/20 px-1.5 py-px font-mono text-[10px] font-bold text-vin-accent">{row.modality}</span>
-                            <div className="mt-1 text-[10px] text-vin-muted">{row.bodyPart || "-"}</div>
+                            <span className="inline-flex min-w-9 justify-center rounded border border-vin-accent/40 bg-vin-accentSoft/20 px-1.5 py-px font-mono text-sm font-bold text-vin-accent">{row.modality}</span>
+                            <div className="mt-1 text-sm text-vin-muted">{row.bodyPart || "-"}</div>
                           </td>
                           <td className="px-3 py-3">
                             <div className="max-w-[150px] truncate text-vin-text2">{row.assignedDoctorName || "Chua gan"}</div>
-                            <div className="mt-1 max-w-[150px] truncate text-[10px] text-vin-muted">Report: {row.doctorName}</div>
-                            <div className="mt-1 font-mono text-[10px] text-vin-muted">{reportStatusLabels[row.reportStatus] || row.reportStatus}</div>
+                            <div className="mt-1 max-w-[150px] truncate text-sm text-vin-muted">Report: {row.doctorName}</div>
+                            <div className="mt-1 font-mono text-sm text-vin-muted">{reportStatusLabels[row.reportStatus] || row.reportStatus}</div>
                           </td>
                           <td className="px-3 py-3 text-center">
-                            <span className={`inline-flex rounded px-2 py-0.5 text-[9px] font-bold ${statusClass(row.studyStatus)}`}>{studyStatusLabels[row.studyStatus] || row.studyStatus}</span>
-                            {!row.canOpenViewer && <div className="mt-1 text-[10px] text-amber-200">Không mở ảnh</div>}
+                            <span className={`inline-flex rounded px-2 py-0.5 text-sm font-bold ${statusClass(row.studyStatus)}`}>{studyStatusLabels[row.studyStatus] || row.studyStatus}</span>
+                            {!row.canOpenViewer && <div className="mt-1 text-sm text-amber-200">Không mở ảnh</div>}
                             {(row.hisSyncStatus || row.hisResultStatus) && (
-                              <div className="mt-1 flex flex-col gap-0.5 text-[9px] font-semibold">
+                              <div className="mt-1 flex flex-col gap-0.5 text-sm font-semibold">
                                 {row.hisSyncStatus && (
-                                  <Link href={`/admin/his`} className={`mt-1 block w-fit rounded px-1.5 py-0.5 text-[9px] font-semibold transition hover:opacity-80 ${row.hisSyncStatus === 'FAILED' ? 'bg-red-900/40 text-red-300' : 'bg-emerald-900/40 text-emerald-300'}`} title="Click to view HIS Logs">
+                                  <Link href={`/admin/his`} className={`mt-1 block w-fit rounded px-1.5 py-0.5 text-sm font-semibold transition hover:opacity-80 ${row.hisSyncStatus === 'FAILED' ? 'bg-red-900/40 text-red-300' : 'bg-emerald-900/40 text-emerald-300'}`} title="Click to view HIS Logs">
                                     HIS Sync: {row.hisSyncStatus}
                                   </Link>
                                 )}
@@ -447,11 +447,11 @@ export function ArchiveClient() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h2 className="truncate text-base font-bold uppercase text-white">{detail.patientName}</h2>
-                      <div className="mt-1 truncate font-mono text-[11px] text-vin-muted">{detail.patientId}</div>
+                      <div className="mt-1 truncate font-mono text-sm text-vin-muted">{detail.patientId}</div>
                     </div>
-                    <span className={`inline-flex shrink-0 rounded px-2 py-0.5 text-[10px] font-bold ${statusClass(detail.studyStatus)}`}>{studyStatusLabels[detail.studyStatus] || detail.studyStatus}</span>
+                    <span className={`inline-flex shrink-0 rounded px-2 py-0.5 text-sm font-bold ${statusClass(detail.studyStatus)}`}>{studyStatusLabels[detail.studyStatus] || detail.studyStatus}</span>
                   </div>
-                  <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-vin-text2">
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-vin-text2">
                     <Info label="Ngày chụp" value={formatDateTime(detail.studyDate)} />
                     <Info label="Accession" value={detail.accessionNumber} mono />
                     <Info label="Modality" value={detail.modality} mono />
@@ -470,56 +470,56 @@ export function ArchiveClient() {
 
                 {detail.clinicalInfo && (
                   <section>
-                    <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-vin-muted">Lam sang</div>
-                    <div className="rounded border border-vin-border bg-vin-shell p-3 text-[12px] leading-relaxed text-vin-text2">{detail.clinicalInfo}</div>
+                    <div className="mb-2 text-sm font-bold uppercase tracking-wide text-vin-muted">Lam sang</div>
+                    <div className="rounded border border-vin-border bg-vin-shell p-3 text-sm leading-relaxed text-vin-text2">{detail.clinicalInfo}</div>
                   </section>
                 )}
 
                 {detail.imageWarning && (
-                  <div className="flex gap-2 rounded border border-vin-status-warning-bg/60 bg-vin-status-warning-bg/15 px-3 py-2 text-[11px] font-semibold text-amber-100">
+                  <div className="flex gap-2 rounded border border-vin-status-warning-bg/60 bg-vin-status-warning-bg/15 px-3 py-2 text-sm font-semibold text-amber-100">
                     <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                     <span>{detail.imageWarning}</span>
                   </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-2">
-                  <a href={`/report/${encodeURIComponent(detail.studyInstanceUid)}`} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white">
+                  <a href={`/report/${encodeURIComponent(detail.studyInstanceUid)}`} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white">
                     <FileText className="h-3.5 w-3.5" />
                     Mở report
                   </a>
                   {viewerLink ? (
-                    <a href={viewerLink} target="_blank" className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white">
+                    <a href={viewerLink} target="_blank" className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white">
                       <ExternalLink className="h-3.5 w-3.5" />
                       Mở OHIF
                     </a>
                   ) : (
-                    <button type="button" disabled className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px] font-semibold text-vin-faint opacity-60">
+                    <button type="button" disabled className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm font-semibold text-vin-faint opacity-60">
                       <ExternalLink className="h-3.5 w-3.5" />
                       Mở OHIF
                     </button>
                   )}
-                  <button type="button" onClick={() => runPrintAction("PRINT")} disabled={isActionBusy} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40">
+                  <button type="button" onClick={() => runPrintAction("PRINT")} disabled={isActionBusy} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40">
                     <Printer className="h-3.5 w-3.5" />
                     In lại
                   </button>
-                  <button type="button" onClick={() => runPrintAction("PDF")} disabled={isActionBusy} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40">
+                  <button type="button" onClick={() => runPrintAction("PDF")} disabled={isActionBusy} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40">
                     <FileDown className="h-3.5 w-3.5" />
                     Xuất PDF
                   </button>
                   {detail.allowedActions?.share && (
-                    <button type="button" onClick={() => setShareDialogOpen(true)} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white">
+                    <button type="button" onClick={() => setShareDialogOpen(true)} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white">
                       <LinkIcon className="h-3.5 w-3.5 text-cyan-400" />
                       Chia sẻ
                     </button>
                   )}
                   {detail.allowedActions?.createConsultation && (
-                    <button type="button" onClick={() => setConsultDialogOpen(true)} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white">
+                    <button type="button" onClick={() => setConsultDialogOpen(true)} className="flex items-center justify-center gap-1.5 rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white">
                       <Users className="h-3.5 w-3.5 text-pink-400" />
                       Hội chẩn
                     </button>
                   )}
                   {detail.allowedActions?.syncHis && detail.canSyncHisMatrix && (detail.studyStatus === "FINALIZED" || detail.studyStatus === "DELIVERED") && (
-                    <button type="button" onClick={runHisRetry} disabled={isActionBusy || detail.hisResultStatus === 'SYNCED' || detail.hisResultStatus === 'SENT'} className={`flex w-full items-center justify-center gap-1.5 rounded border px-3 py-2 text-[11px] font-semibold transition disabled:opacity-40 col-span-2 ${detail.hisResultStatus === 'FAILED' ? "border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20" : "border-vin-accent/50 bg-vin-accent/10 text-vin-accent hover:bg-vin-accent/20"}`}>
+                    <button type="button" onClick={runHisRetry} disabled={isActionBusy || detail.hisResultStatus === 'SYNCED' || detail.hisResultStatus === 'SENT'} className={`flex w-full items-center justify-center gap-1.5 rounded border px-3 py-2 text-sm font-semibold transition disabled:opacity-40 col-span-2 ${detail.hisResultStatus === 'FAILED' ? "border-red-500/50 bg-red-500/10 text-red-400 hover:bg-red-500/20" : "border-vin-accent/50 bg-vin-accent/10 text-vin-accent hover:bg-vin-accent/20"}`}>
                       {isActionBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCcw className="h-3.5 w-3.5" />}
                       {detail.hisResultStatus === 'FAILED' ? 'Retry Gửi HIS' : 'Gửi HIS'}
                     </button>
@@ -527,38 +527,38 @@ export function ArchiveClient() {
                 </div>
 
                 {detail.studyStatus === "FINALIZED" && (
-                  <button type="button" onClick={markDelivered} disabled={isActionBusy} className="flex w-full items-center justify-center gap-1.5 rounded border border-vin-status-approved-bg/60 bg-vin-status-approved-bg/20 px-3 py-2 text-[11px] font-bold text-emerald-100 transition hover:bg-vin-status-approved-bg/35 disabled:opacity-40">
+                  <button type="button" onClick={markDelivered} disabled={isActionBusy} className="flex w-full items-center justify-center gap-1.5 rounded border border-vin-status-approved-bg/60 bg-vin-status-approved-bg/20 px-3 py-2 text-sm font-bold text-emerald-100 transition hover:bg-vin-status-approved-bg/35 disabled:opacity-40">
                     {isActionBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
                     Ghi nhận đã trả kết quả
                   </button>
                 )}
 
                 <section>
-                  <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-vin-muted">Kết luận</div>
-                  <div className="rounded border border-vin-border bg-vin-shell p-3 text-[12px] leading-relaxed text-vin-text2">{detail.conclusion || "-"}</div>
+                  <div className="mb-2 text-sm font-bold uppercase tracking-wide text-vin-muted">Kết luận</div>
+                  <div className="rounded border border-vin-border bg-vin-shell p-3 text-sm leading-relaxed text-vin-text2">{detail.conclusion || "-"}</div>
                 </section>
                 <section>
-                  <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-vin-muted">Mô tả</div>
-                  <div className="max-h-56 overflow-auto rounded border border-vin-border bg-vin-shell p-3 text-[12px] leading-relaxed text-vin-text2 scr-dark" dangerouslySetInnerHTML={{ __html: detail.findings || "<span>-</span>" }} />
+                  <div className="mb-2 text-sm font-bold uppercase tracking-wide text-vin-muted">Mô tả</div>
+                  <div className="max-h-56 overflow-auto rounded border border-vin-border bg-vin-shell p-3 text-sm leading-relaxed text-vin-text2 scr-dark" dangerouslySetInnerHTML={{ __html: detail.findings || "<span>-</span>" }} />
                 </section>
 
                 <section>
-                  <div className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-vin-muted">
+                  <div className="mb-2 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-vin-muted">
                     <Clock3 className="h-3 w-3" />
                     Lịch sử trạng thái
                   </div>
                   <div className="space-y-2">
                     {detail.statusHistory.length === 0 ? (
-                      <div className="rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px] text-vin-muted">Chưa có history.</div>
+                      <div className="rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm text-vin-muted">Chưa có history.</div>
                     ) : (
                       detail.statusHistory.map(history => (
-                        <div key={history.id} className="rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px]">
+                        <div key={history.id} className="rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm">
                           <div className="flex items-center justify-between gap-2">
                             <span className="font-bold text-vin-text2">
                               {history.fromStatus ? `${studyStatusLabels[history.fromStatus] || history.fromStatus} -> ` : ""}
                               {studyStatusLabels[history.toStatus] || history.toStatus}
                             </span>
-                            <span className="whitespace-nowrap text-[10px] text-vin-muted">{formatDateTime(history.createdAt)}</span>
+                            <span className="whitespace-nowrap text-sm text-vin-muted">{formatDateTime(history.createdAt)}</span>
                           </div>
                           <div className="mt-1 text-vin-muted">{history.source}{history.reason ? ` · ${history.reason}` : ""}</div>
                         </div>
@@ -603,7 +603,7 @@ export function ArchiveClient() {
 function Info({ label, mono, value }: { label: string; mono?: boolean; value: string }) {
   return (
     <div className="min-w-0">
-      <div className="text-[10px] font-bold uppercase tracking-wide text-vin-muted">{label}</div>
+      <div className="text-sm font-bold uppercase tracking-wide text-vin-muted">{label}</div>
       <div className={`mt-0.5 truncate ${mono ? "font-mono" : ""}`}>{value || "-"}</div>
     </div>
   );

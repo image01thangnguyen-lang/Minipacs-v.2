@@ -121,7 +121,7 @@ export function TemplatesAntd() {
       render: (text: string, record: any) => (
         <div>
           <Text strong style={{ color: "white" }}>{record.code || "---"}</Text>
-          <div style={{ color: "gray", fontSize: "12px", marginTop: "4px" }}>{text}</div>
+          <div style={{ color: "gray", fontSize: "14px", marginTop: "4px" }}>{text}</div>
         </div>
       )
     },
@@ -166,7 +166,7 @@ export function TemplatesAntd() {
           <h2 style={{ margin: 0, color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <FileTextOutlined /> Print Templates & Mappings
           </h2>
-          <Text type="secondary" style={{ fontSize: '12px' }}>
+          <Text type="secondary" style={{ fontSize: '14px' }}>
             Quản lý danh sách mẫu in (A4/A5) và ánh xạ tới máy/dịch vụ.
           </Text>
         </div>
@@ -199,7 +199,7 @@ export function TemplatesAntd() {
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <div style={{ border: '1px solid #434343', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-             <Typography.Title level={5} style={{ marginTop: 0, marginBottom: '16px', fontSize: '12px', color: 'gray' }}>THÔNG TIN CƠ BẢN</Typography.Title>
+             <Typography.Title level={5} style={{ marginTop: 0, marginBottom: '16px', fontSize: '14px', color: 'gray' }}>THÔNG TIN CƠ BẢN</Typography.Title>
              <Row gutter={16}>
                <Col span={12}>
                   <Form.Item name="code" label="Mã (Code)">
@@ -220,7 +220,7 @@ export function TemplatesAntd() {
           </div>
 
           <div style={{ border: '1px solid #434343', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-             <Typography.Title level={5} style={{ marginTop: 0, marginBottom: '16px', fontSize: '12px', color: 'gray' }}>CẤU HÌNH BẢN IN</Typography.Title>
+             <Typography.Title level={5} style={{ marginTop: 0, marginBottom: '16px', fontSize: '14px', color: 'gray' }}>CẤU HÌNH BẢN IN</Typography.Title>
              <Row gutter={16}>
                <Col span={8}>
                   <Form.Item name="paperSize" label="Khổ giấy">
@@ -246,7 +246,7 @@ export function TemplatesAntd() {
           </div>
 
           <div style={{ border: '1px solid #434343', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-             <Typography.Title level={5} style={{ marginTop: 0, marginBottom: '16px', fontSize: '12px', color: 'gray' }}>PHẠM VI & GÁN TỰ ĐỘNG</Typography.Title>
+             <Typography.Title level={5} style={{ marginTop: 0, marginBottom: '16px', fontSize: '14px', color: 'gray' }}>PHẠM VI & GÁN TỰ ĐỘNG</Typography.Title>
              <Row gutter={16}>
                <Col span={12}>
                   <Form.Item name="facilityId" label="Gán Cơ sở (Facility)">
@@ -272,9 +272,9 @@ export function TemplatesAntd() {
           </div>
 
           <div style={{ border: '1px solid #434343', padding: '16px', borderRadius: '8px' }}>
-             <Typography.Title level={5} style={{ marginTop: 0, marginBottom: '16px', fontSize: '12px', color: 'gray' }}>HTML / JS NÂNG CAO</Typography.Title>
+             <Typography.Title level={5} style={{ marginTop: 0, marginBottom: '16px', fontSize: '14px', color: 'gray' }}>HTML / JS NÂNG CAO</Typography.Title>
              <Form.Item name="htmlContent" style={{ marginBottom: 0 }}>
-               <Input.TextArea rows={8} style={{ fontFamily: 'monospace', fontSize: '12px' }} placeholder="<html><body><h1>Report</h1></body></html>" />
+               <Input.TextArea rows={8} style={{ fontFamily: 'monospace', fontSize: '14px' }} placeholder="<html><body><h1>Report</h1></body></html>" />
              </Form.Item>
           </div>
         </Form>

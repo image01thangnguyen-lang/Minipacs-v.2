@@ -318,12 +318,12 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
                   ) : item.type === "VIDEO" ? (
                     <div className="flex flex-col items-center text-vin-muted">
                       <Video className="h-8 w-8 mb-2" />
-                      <span className="text-xs">Video</span>
+                      <span className="text-sm">Video</span>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center text-vin-muted">
                       <ImageIcon className="h-8 w-8 mb-2" />
-                      <span className="text-xs">Tài liệu</span>
+                      <span className="text-sm">Tài liệu</span>
                     </div>
                   )}
 
@@ -336,11 +336,11 @@ export default function NonDicomCaptureApp({ examId, isCompleted, canCapture = t
                     </button>
                   )}
                 </div>
-                <div className="p-2 text-xs">
+                <div className="p-2 text-sm">
                   <div className="truncate font-medium text-white" title={item.originalFilename}>
                     {item.originalFilename}
                   </div>
-                  <div className="mt-1 text-[10px] text-vin-muted">
+                  <div className="mt-1 text-sm text-vin-muted">
                     {new Date(item.createdAt).toLocaleString("vi-VN", { dateStyle: "short", timeStyle: "short" })}
                   </div>
                 </div>

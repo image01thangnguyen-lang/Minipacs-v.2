@@ -91,7 +91,7 @@ export function ClinicalInfoModal({
         </div>
 
         {error && (
-          <div className="mb-4 rounded-md bg-red-500/10 p-3 text-[13px] text-red-400">
+          <div className="mb-4 rounded-md bg-red-500/10 p-3 text-sm text-red-400">
             {error}
           </div>
         )}
@@ -100,16 +100,16 @@ export function ClinicalInfoModal({
           {mode === "CLINICAL_INFO" && (
             <>
               <div>
-                <label className="mb-1.5 block text-[13px] font-semibold text-vin-text2">Thông tin lâm sàng</label>
+                <label className="mb-1.5 block text-sm font-semibold text-vin-text2">Thông tin lâm sàng</label>
                 <textarea
                   value={clinicalInfo}
                   onChange={e => setClinicalInfo(e.target.value)}
-                  className="h-24 w-full rounded-md border border-white/10 bg-vin-root/50 px-3 py-2 text-[13px] text-vin-text outline-none transition focus:border-vin-accent"
+                  className="h-24 w-full rounded-md border border-white/10 bg-vin-root/50 px-3 py-2 text-sm text-vin-text outline-none transition focus:border-vin-accent"
                   placeholder="Nhập triệu chứng, chẩn đoán sơ bộ..."
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-[13px] font-semibold text-vin-text2">Kỹ thuật viên chụp</label>
+                <label className="mb-1.5 block text-sm font-semibold text-vin-text2">Kỹ thuật viên chụp</label>
                 <CustomSelect
                   options={[{ value: "", label: "-- Không chọn --" }, ...techOptions]}
                   value={technologistId}
@@ -118,12 +118,12 @@ export function ClinicalInfoModal({
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-[13px] font-semibold text-vin-text2">Bộ phận chụp (Body Part)</label>
+                <label className="mb-1.5 block text-sm font-semibold text-vin-text2">Bộ phận chụp (Body Part)</label>
                 <input
                   type="text"
                   value={bodyPart}
                   onChange={e => setBodyPart(e.target.value)}
-                  className="w-full rounded-md border border-white/10 bg-vin-root/50 px-3 py-2 text-[13px] text-vin-text outline-none transition focus:border-vin-accent"
+                  className="w-full rounded-md border border-white/10 bg-vin-root/50 px-3 py-2 text-sm text-vin-text outline-none transition focus:border-vin-accent"
                 />
               </div>
             </>
@@ -132,22 +132,22 @@ export function ClinicalInfoModal({
           {mode === "INDICATION" && (
             <>
               <div>
-                <label className="mb-1.5 block text-[13px] font-semibold text-vin-text2">Mã dịch vụ</label>
+                <label className="mb-1.5 block text-sm font-semibold text-vin-text2">Mã dịch vụ</label>
                 <input
                   type="text"
                   value={procedureCode}
                   onChange={e => setProcedureCode(e.target.value)}
-                  className="w-full rounded-md border border-white/10 bg-vin-root/50 px-3 py-2 text-[13px] text-vin-text outline-none transition focus:border-vin-accent"
+                  className="w-full rounded-md border border-white/10 bg-vin-root/50 px-3 py-2 text-sm text-vin-text outline-none transition focus:border-vin-accent"
                   placeholder="VD: C01.01"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-[13px] font-semibold text-vin-text2">Tên dịch vụ chỉ định</label>
+                <label className="mb-1.5 block text-sm font-semibold text-vin-text2">Tên dịch vụ chỉ định</label>
                 <input
                   type="text"
                   value={procedureDescription}
                   onChange={e => setProcedureDescription(e.target.value)}
-                  className="w-full rounded-md border border-white/10 bg-vin-root/50 px-3 py-2 text-[13px] text-vin-text outline-none transition focus:border-vin-accent"
+                  className="w-full rounded-md border border-white/10 bg-vin-root/50 px-3 py-2 text-sm text-vin-text outline-none transition focus:border-vin-accent"
                   placeholder="VD: Chụp X-Quang ngực thẳng"
                 />
               </div>
@@ -159,14 +159,14 @@ export function ClinicalInfoModal({
           <button
             onClick={onClose}
             disabled={isSaving}
-            className="rounded-lg px-4 py-2 text-[13px] font-semibold text-vin-text2 hover:text-white"
+            className="rounded-lg px-4 py-2 text-sm font-semibold text-vin-text2 hover:text-white"
           >
             Hủy
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 rounded-lg bg-vin-accent px-4 py-2 text-[13px] font-semibold text-white hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg bg-vin-accent px-4 py-2 text-sm font-semibold text-white hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSaving && <Loader2 className="size-4 animate-spin" />}
             Lưu thay đổi

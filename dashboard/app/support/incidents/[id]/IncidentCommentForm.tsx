@@ -34,7 +34,7 @@ export default function IncidentCommentForm({ ticketId }: { ticketId: string }) 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <div className="flex items-start gap-2 text-xs text-orange-800 bg-orange-50 p-2 rounded border border-orange-200">
+      <div className="flex items-start gap-2 text-sm text-orange-800 bg-orange-50 p-2 rounded border border-orange-200">
         <ShieldAlert className="w-4 h-4 shrink-0 text-orange-600 mt-0.5" />
         <p>Ensure this comment contains <strong>NO PHI</strong> (Patient Names, MRN, Accession IDs).</p>
       </div>
@@ -48,7 +48,7 @@ export default function IncidentCommentForm({ ticketId }: { ticketId: string }) 
       />
 
       <div className="flex justify-between items-center pt-1">
-        <label className="flex items-center space-x-2 text-xs">
+        <label className="flex items-center space-x-2 text-sm">
           <input
             type="checkbox"
             checked={isScrubbed}

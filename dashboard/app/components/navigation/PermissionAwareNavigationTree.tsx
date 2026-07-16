@@ -50,7 +50,7 @@ export function PermissionAwareNavigationTree({
   return (
     <nav aria-label="Điều hướng chính" className="space-y-1">
       {displayNodes.length === 0 ? (
-        <div className="text-xs text-vin-muted text-center py-4">Không tìm thấy kết quả.</div>
+        <div className="text-sm text-vin-muted text-center py-4">Không tìm thấy kết quả.</div>
       ) : displayNodes.map((node, index) => (
         <NavigationNodeRenderer
           key={node.id}
@@ -143,7 +143,7 @@ function NavigationNodeRenderer({
         onClick={onNavigate}
         aria-current={isActive ? "page" : undefined}
         title={collapsedSidebar ? node.label : undefined}
-        className={`flex items-center gap-2 rounded py-2 text-[12px] font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-vin-accent ${
+        className={`flex items-center gap-2 rounded py-2 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-vin-accent ${
           isActive
             ? "bg-vin-tableSelected text-white"
             : "text-vin-text2 hover:bg-vin-panel hover:text-white"
@@ -188,7 +188,7 @@ function NavigationNodeRenderer({
           onClick={toggleExpand}
           aria-expanded={forceExpanded || isExpanded}
           aria-controls={`group-${node.id}`}
-          className="group flex w-full items-center justify-between rounded px-3 py-1.5 text-left text-[10px] font-bold uppercase tracking-wider text-vin-faint transition-colors hover:bg-vin-panel hover:text-white focus:outline-none focus:ring-2 focus:ring-vin-accent"
+          className="group flex w-full items-center justify-between rounded px-3 py-1.5 text-left text-sm font-bold uppercase tracking-wider text-vin-faint transition-colors hover:bg-vin-panel hover:text-white focus:outline-none focus:ring-2 focus:ring-vin-accent"
           style={level > 0 ? { paddingLeft: `${0.75 + level * 1.0}rem` } : undefined}
         >
           <div className="flex items-center gap-2 overflow-hidden">

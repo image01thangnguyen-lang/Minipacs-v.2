@@ -61,7 +61,7 @@ export function SecondReadContextAntd({ studyInstanceUid, canRequest }: SecondRe
   return (
     <section aria-label="Second Read" className="mt-4 border border-[#303030] rounded-md bg-[#1F1F1F]">
       <div className="flex items-center justify-between border-b border-[#303030] bg-[#141414] px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#13C2C2] flex items-center gap-1.5">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-[#13C2C2] flex items-center gap-1.5">
           <SafetyCertificateOutlined /> Second Read
         </h3>
         {canRequest && (
@@ -72,7 +72,7 @@ export function SecondReadContextAntd({ studyInstanceUid, canRequest }: SecondRe
             onClick={handleRequest}
             loading={isRequesting}
             disabled={loading}
-            className="text-[10px] font-medium text-cyan-400 p-0 h-auto"
+            className="text-sm font-medium text-cyan-400 p-0 h-auto"
             title="Yêu cầu Second Read"
           >
             Yêu cầu
@@ -82,21 +82,21 @@ export function SecondReadContextAntd({ studyInstanceUid, canRequest }: SecondRe
 
       <div className="p-3 flex flex-col gap-2">
         {loading ? (
-          <div className="text-[11px] text-gray-500 text-center py-2"><Spin /></div>
+          <div className="text-sm text-gray-500 text-center py-2"><Spin /></div>
         ) : secondReads.length === 0 ? (
-          <div className="text-[11px] text-gray-500 text-center py-2">Chưa có yêu cầu</div>
+          <div className="text-sm text-gray-500 text-center py-2">Chưa có yêu cầu</div>
         ) : (
           secondReads.map(sr => (
-            <div key={sr.id} className="text-[11px] bg-[#141414] border border-[#303030] p-2 rounded">
+            <div key={sr.id} className="text-sm bg-[#141414] border border-[#303030] p-2 rounded">
               <div className="flex justify-between items-start mb-1">
                 <Text className="font-semibold text-gray-300 truncate" style={{ maxWidth: '140px' }}>
                   Yêu cầu bởi {sr.requestedByUser?.fullName || sr.requestedByUser?.username || "Ẩn danh"}
                 </Text>
-                <Tag color={sr.status === "COMPLETED" ? "success" : "processing"} className="text-[9px] m-0 border-0 bg-opacity-20 font-medium">
+                <Tag color={sr.status === "COMPLETED" ? "success" : "processing"} className="text-sm m-0 border-0 bg-opacity-20 font-medium">
                   {sr.status}
                 </Tag>
               </div>
-              <div className="text-gray-500 text-[10px] flex items-center gap-1 mt-1.5">
+              <div className="text-gray-500 text-sm flex items-center gap-1 mt-1.5">
                 <CheckCircleOutlined />
                 {sr.assignedToUser ? `Gán cho: ${sr.assignedToUser.fullName}` : "Chưa phân công"}
               </div>

@@ -75,7 +75,7 @@ export function NativeConfigClient({ initialConfig }: { initialConfig: any }) {
 
       <div className="mb-6">
         <label className="block text-sm font-medium text-vin-text2 mb-1">Local Bridge Base URL</label>
-        <p className="text-xs text-vin-muted mb-2">Must be localhost or 127.0.0.1 to prevent SSRF vulnerabilities. Do NOT use remote IPs.</p>
+        <p className="text-sm text-vin-muted mb-2">Must be localhost or 127.0.0.1 to prevent SSRF vulnerabilities. Do NOT use remote IPs.</p>
         <input
           type="text"
           value={baseUrl}

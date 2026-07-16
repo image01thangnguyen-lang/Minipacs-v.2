@@ -77,7 +77,7 @@ export default async function ChangeDetailPage({ params }: { params: { id: strin
 
           <section className="rounded-md border border-slate-700 bg-slate-900/40 p-4">
             <h2 className="mb-3 text-sm font-semibold">Review ({approvedCount} duyệt / {rejectedCount} từ chối)</h2>
-            <div className="space-y-2">{change.approvals.map((approval) => <div key={approval.id} className="rounded border border-slate-700 p-3 text-sm"><div className="flex justify-between gap-2"><strong>{approval.reviewerUser.fullName}</strong><span className={approval.status === "APPROVED" ? "text-emerald-400" : "text-red-400"}>{approval.status}</span></div>{approval.notes && <p className="mt-1 whitespace-pre-wrap text-xs text-slate-400">{approval.notes}</p>}</div>)}{change.approvals.length === 0 && <p className="text-sm text-slate-500">Chưa có review.</p>}</div>
+            <div className="space-y-2">{change.approvals.map((approval) => <div key={approval.id} className="rounded border border-slate-700 p-3 text-sm"><div className="flex justify-between gap-2"><strong>{approval.reviewerUser.fullName}</strong><span className={approval.status === "APPROVED" ? "text-emerald-400" : "text-red-400"}>{approval.status}</span></div>{approval.notes && <p className="mt-1 whitespace-pre-wrap text-sm text-slate-400">{approval.notes}</p>}</div>)}{change.approvals.length === 0 && <p className="text-sm text-slate-500">Chưa có review.</p>}</div>
           </section>
 
           {canManage && nextStatuses.length > 0 && (

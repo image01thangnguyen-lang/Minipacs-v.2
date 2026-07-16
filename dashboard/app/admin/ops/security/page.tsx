@@ -33,14 +33,14 @@ export default async function SecurityCenterPage() {
                   <li key={finding.id} className="border border-vin-border p-4 rounded bg-vin-panel2">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-semibold">{finding.title}</h3>
-                      <span className={`px-2 py-1 rounded text-xs font-bold ${finding.severity === 'P0' || finding.severity === 'P1' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                      <span className={`px-2 py-1 rounded text-sm font-bold ${finding.severity === 'P0' || finding.severity === 'P1' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
                         {finding.severity}
                       </span>
                     </div>
                     <p className="text-sm text-vin-text2 mb-2">{finding.description}</p>
                     <p className="text-sm text-vin-muted mb-4"><strong>Recommendation:</strong> {finding.recommendation}</p>
                     <div className="flex justify-between items-center border-t border-vin-border pt-3">
-                      <span className="text-xs text-vin-muted">Status: {finding.status}</span>
+                      <span className="text-sm text-vin-muted">Status: {finding.status}</span>
                       <SecurityResolveClient findingId={finding.id} currentStatus={finding.status} />
                     </div>
                   </li>
@@ -71,7 +71,7 @@ export default async function SecurityCenterPage() {
                     <tr key={log.id} className="border-b border-vin-border">
                       <td className="py-2 text-vin-muted">{new Date(log.createdAt).toLocaleString()}</td>
                       <td className="py-2">{log.user?.username || 'Unknown'}</td>
-                      <td className="py-2 font-mono text-xs bg-vin-shell p-1 rounded">{log.action}</td>
+                      <td className="py-2 font-mono text-sm bg-vin-shell p-1 rounded">{log.action}</td>
                     </tr>
                   ))}
                 </tbody>

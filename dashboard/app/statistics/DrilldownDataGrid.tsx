@@ -23,7 +23,7 @@ export function DrilldownDataGrid({ rows, isLoading }: { rows: StatisticsDrilldo
       cell: (row) => (
         <a href={row.href} className="block min-w-0 hover:underline">
           <div className="truncate font-bold text-white">{row.patientName}</div>
-          <div className="mt-0.5 truncate font-mono text-[9px] text-vin-muted">{row.patientId} · {row.accessionNumber}</div>
+          <div className="mt-0.5 truncate font-mono text-sm text-vin-muted">{row.patientId} · {row.accessionNumber}</div>
         </a>
       ),
     },
@@ -32,7 +32,7 @@ export function DrilldownDataGrid({ rows, isLoading }: { rows: StatisticsDrilldo
       header: "Modality",
       width: 100,
       cell: (row) => (
-        <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[9px] font-bold text-vin-text2">
+        <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-sm font-bold text-vin-text2">
           {row.modality}
         </span>
       ),
@@ -44,7 +44,7 @@ export function DrilldownDataGrid({ rows, isLoading }: { rows: StatisticsDrilldo
       cell: (row) => (
         <>
           <div className="font-bold text-vin-text2">{row.statusLabel}</div>
-          <div className="mt-0.5 text-[9px] text-vin-muted">{row.priority} · {row.stationAeTitle}</div>
+          <div className="mt-0.5 text-sm text-vin-muted">{row.priority} · {row.stationAeTitle}</div>
         </>
       ),
     },
@@ -63,7 +63,7 @@ export function DrilldownDataGrid({ rows, isLoading }: { rows: StatisticsDrilldo
           <div className="truncate text-vin-text2" title={row.procedureDescription || ""}>
             {row.procedureDescription}
           </div>
-          <div className="mt-0.5 font-mono text-[9px] text-vin-muted">{row.procedureCode}</div>
+          <div className="mt-0.5 font-mono text-sm text-vin-muted">{row.procedureCode}</div>
         </>
       ),
     },
@@ -87,7 +87,7 @@ export function DrilldownDataGrid({ rows, isLoading }: { rows: StatisticsDrilldo
       getRowId={(row) => row.id}
       isLoading={isLoading}
       renderLimit={150}
-      emptyState={<div className="px-3 py-10 text-center text-[11px] text-vin-muted">Không có ca phù hợp bộ lọc hiện tại.</div>}
+      emptyState={<div className="px-3 py-10 text-center text-sm text-vin-muted">Không có ca phù hợp bộ lọc hiện tại.</div>}
       ariaLabel="Danh sách drilldown thống kê"
     />
   );

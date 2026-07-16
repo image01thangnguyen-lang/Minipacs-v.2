@@ -46,7 +46,7 @@ export default async function TrainingCenterPage() {
           <h2 className="font-semibold text-lg flex items-center">
             My Training Requirements
             {pendingCount > 0 && (
-              <span className="ml-3 px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-bold">
+              <span className="ml-3 px-2 py-0.5 bg-orange-100 text-orange-700 text-sm rounded-full font-bold">
                 {pendingCount} Pending
               </span>
             )}
@@ -69,7 +69,7 @@ export default async function TrainingCenterPage() {
                     <h4 className="font-semibold flex items-center gap-2">
                       {assignment.material.title}
                       {assignment.material.isRequired && (
-                        <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 bg-red-100 text-red-700 rounded-sm">Required</span>
+                        <span className="text-sm font-bold uppercase px-1.5 py-0.5 bg-red-100 text-red-700 rounded-sm">Required</span>
                       )}
                     </h4>
                     <p className="text-sm text-muted-foreground mt-1 max-w-2xl">{assignment.material.description}</p>

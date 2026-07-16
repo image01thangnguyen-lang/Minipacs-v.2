@@ -12,7 +12,7 @@ export function FacilityScopeTreeAntd({ facilities, value, onChange }: { facilit
       title: (
         <div className="flex justify-between items-center w-full pr-2">
           <span>Tất cả cơ sở được phép</span>
-          <span className="font-mono text-[10px] ml-2 text-gray-400">{totalCount}</span>
+          <span className="font-mono text-sm ml-2 text-gray-400">{totalCount}</span>
         </div>
       ),
       key: "ALL",
@@ -20,7 +20,7 @@ export function FacilityScopeTreeAntd({ facilities, value, onChange }: { facilit
         title: (
           <div className="flex justify-between items-center w-full pr-2">
             <span className="truncate">{f.name}</span>
-            <span className="font-mono text-[10px] ml-2 text-gray-400">{f.count}</span>
+            <span className="font-mono text-sm ml-2 text-gray-400">{f.count}</span>
           </div>
         ),
         key: f.id,
@@ -30,7 +30,7 @@ export function FacilityScopeTreeAntd({ facilities, value, onChange }: { facilit
 
   return (
     <section className="flex-1 overflow-auto p-3" aria-labelledby="facility-scope-heading">
-      <h3 id="facility-scope-heading" className="mb-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">Phạm vi cơ sở</h3>
+      <h3 id="facility-scope-heading" className="mb-2 text-sm font-bold uppercase tracking-wider text-gray-400">Phạm vi cơ sở</h3>
       
       {facilities.length > 0 ? (
         <Tree
@@ -43,11 +43,11 @@ export function FacilityScopeTreeAntd({ facilities, value, onChange }: { facilit
           }}
           defaultExpandAll
           switcherIcon={<DownOutlined />}
-          className="text-[11px] bg-transparent"
+          className="text-sm bg-transparent"
           blockNode
         />
       ) : (
-        <p className="px-2 py-3 text-[10px] italic text-gray-500">Không có dữ liệu cơ sở trong danh sách hiện tại.</p>
+        <p className="px-2 py-3 text-sm italic text-gray-500">Không có dữ liệu cơ sở trong danh sách hiện tại.</p>
       )}
     </section>
   );

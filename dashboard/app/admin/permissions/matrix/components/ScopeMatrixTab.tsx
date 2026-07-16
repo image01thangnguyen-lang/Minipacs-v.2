@@ -171,7 +171,7 @@ export function ScopeMatrixTab() {
     };
 
     return (
-      <td key={cap} className="cursor-pointer border border-vin-border p-2 text-center text-xs transition hover:bg-vin-tableHover" onClick={() => handleCellClick(nodeId, cap)}>
+      <td key={cap} className="cursor-pointer border border-vin-border p-2 text-center text-sm transition hover:bg-vin-tableHover" onClick={() => handleCellClick(nodeId, cap)}>
         <span className={`inline-flex rounded border px-2 py-1 ${colors[display as keyof typeof colors]} ${isDirect ? 'font-bold' : 'opacity-80'}`}>
           {display}
         </span>
@@ -227,7 +227,7 @@ export function ScopeMatrixTab() {
         <div className="py-10 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-vin-muted" /></div>
       ) : snapshot ? (
         <>
-        <div className="rounded border border-vin-border bg-vin-shell p-3 text-xs text-vin-text2">
+        <div className="rounded border border-vin-border bg-vin-shell p-3 text-sm text-vin-text2">
           <strong>Quyền global (chỉ đọc):</strong> {snapshot.globalPermissions.length ? snapshot.globalPermissions.join(", ") : "Không có"}.
           <span className="ml-2">Ô bị thiếu quyền global sẽ luôn hiển thị DENY. “Chưa cấp” không phải là cho phép mặc định.</span>
         </div>
@@ -237,7 +237,7 @@ export function ScopeMatrixTab() {
               <tr>
                 <th className="sticky left-0 z-20 w-64 border-b border-vin-border bg-vin-shell p-4 font-semibold">Cơ sở / Thiết bị</th>
                 {SCOPE_CAPABILITIES.map(cap => (
-                  <th key={cap} className="border-b border-l p-2 font-semibold text-center text-xs">
+                  <th key={cap} className="border-b border-l p-2 font-semibold text-center text-sm">
                     <div className="writing-mode-vertical truncate max-h-24" title={`Global: ${CAPABILITY_TO_GLOBAL_PERMISSION[cap]}`}>
                       {ACTION_LABELS[cap] || cap}
                     </div>

@@ -101,25 +101,25 @@ export function ReportActionsBarAntd({
           Tác vụ
         </h3>
         {autosaveStatus === "SAVING" && (
-          <span className="flex items-center gap-1 text-[10px] font-medium text-gray-400">
+          <span className="flex items-center gap-1 text-sm font-medium text-gray-400">
             <SyncOutlined spin /> Đang lưu...
           </span>
         )}
         {autosaveStatus === "SAVED" && (
-          <span className="flex items-center gap-1 text-[10px] font-medium text-[#13C2C2]">
+          <span className="flex items-center gap-1 text-sm font-medium text-[#13C2C2]">
             <CheckCircleOutlined /> Đã lưu
           </span>
         )}
         {autosaveStatus === "ERROR" && (
           <Tooltip title={autosaveError || "Lỗi lưu nháp"}>
-            <span className="flex items-center gap-1 text-[10px] font-medium text-red-400">
+            <span className="flex items-center gap-1 text-sm font-medium text-red-400">
               <CloseCircleOutlined /> Lỗi lưu
             </span>
           </Tooltip>
         )}
         {autosaveStatus === "STALE" && (
           <Tooltip title={autosaveError || "Phiên bản cũ. Hãy tải lại trang."}>
-            <span className="flex items-center gap-1 text-[10px] font-medium text-orange-400">
+            <span className="flex items-center gap-1 text-sm font-medium text-orange-400">
               <WarningOutlined /> Xung đột
             </span>
           </Tooltip>
@@ -129,7 +129,7 @@ export function ReportActionsBarAntd({
       <div className="space-y-2">
         {printTemplates.length > 0 ? (
           <div className="mb-4 flex flex-col gap-1">
-            <Text className="text-xs font-semibold text-gray-400">Mẫu in</Text>
+            <Text className="text-sm font-semibold text-gray-400">Mẫu in</Text>
             <Select
               size="middle"
               value={selectedPrintTemplateId}
@@ -140,7 +140,7 @@ export function ReportActionsBarAntd({
           </div>
         ) : (
           <div className="mb-4 flex flex-col gap-1">
-            <Text className="text-xs font-semibold text-gray-400">Mẫu in</Text>
+            <Text className="text-sm font-semibold text-gray-400">Mẫu in</Text>
             <Select
               size="middle"
               disabled
@@ -252,7 +252,7 @@ export function ReportActionsBarAntd({
           <Alert
             message="Chế độ chỉ đọc — Bạn không có quyền chỉnh sửa báo cáo này"
             type="info"
-            className="mt-2 text-center text-xs py-1 px-2 border-[#303030] bg-[#1F1F1F] text-gray-400"
+            className="mt-2 text-center text-sm py-1 px-2 border-[#303030] bg-[#1F1F1F] text-gray-400"
           />
         )}
       </div>

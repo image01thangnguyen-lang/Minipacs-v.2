@@ -50,7 +50,7 @@ export function DataQualityPanelAntd() {
                 {metrics.unmappedNodesCount > 0 ? <AlertTriangle className="h-5 w-5" /> : <Info className="h-5 w-5" />}
               </div>
               <div>
-                <Text type="secondary" className="block text-xs uppercase tracking-wide font-bold">Máy chưa ánh xạ</Text>
+                <Text type="secondary" className="block text-sm uppercase tracking-wide font-bold">Máy chưa ánh xạ</Text>
                 <Title level={3} style={{ margin: 0, color: metrics.unmappedNodesCount > 0 ? token.colorWarning : token.colorText }}>
                   {metrics.unmappedNodesCount}
                 </Title>
@@ -72,7 +72,7 @@ export function DataQualityPanelAntd() {
                 {metrics.duplicateAeTitlesCount > 0 ? <AlertCircle className="h-5 w-5" /> : <Info className="h-5 w-5" />}
               </div>
               <div>
-                <Text type="secondary" className="block text-xs uppercase tracking-wide font-bold">Trùng AE Title</Text>
+                <Text type="secondary" className="block text-sm uppercase tracking-wide font-bold">Trùng AE Title</Text>
                 <Title level={3} style={{ margin: 0, color: metrics.duplicateAeTitlesCount > 0 ? token.colorError : token.colorText }}>
                   {metrics.duplicateAeTitlesCount}
                 </Title>
@@ -94,7 +94,7 @@ export function DataQualityPanelAntd() {
                 {metrics.missingAeTitleNodesCount > 0 ? <AlertTriangle className="h-5 w-5" /> : <Info className="h-5 w-5" />}
               </div>
               <div>
-                <Text type="secondary" className="block text-xs uppercase tracking-wide font-bold">Thiếu AE Title</Text>
+                <Text type="secondary" className="block text-sm uppercase tracking-wide font-bold">Thiếu AE Title</Text>
                 <Title level={3} style={{ margin: 0, color: metrics.missingAeTitleNodesCount > 0 ? token.colorWarning : token.colorText }}>
                   {metrics.missingAeTitleNodesCount}
                 </Title>
@@ -111,7 +111,7 @@ export function DataQualityPanelAntd() {
                 <Info className="h-5 w-5" />
               </div>
               <div>
-                <Text type="secondary" className="block text-xs uppercase tracking-wide font-bold">CĐ chưa phân loại</Text>
+                <Text type="secondary" className="block text-sm uppercase tracking-wide font-bold">CĐ chưa phân loại</Text>
                 <Title level={3} style={{ margin: 0 }}>
                   {metrics.unclassifiedOrdersCount}
                 </Title>

@@ -62,7 +62,7 @@ export function DownloadManager() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
         </svg>
         {activeCount > 0 && (
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-sm font-bold rounded-full w-5 h-5 flex items-center justify-center">
             {activeCount}
           </span>
         )}
@@ -89,7 +89,7 @@ export function DownloadManager() {
                   <h3 className="text-sm font-medium text-white truncate pr-2" title={job.jobType}>
                     {job.jobType.replace('_', ' ')}
                   </h3>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  <span className={`text-sm px-2 py-0.5 rounded-full ${
                     job.status === 'SUCCESS' ? 'bg-green-500/20 text-green-400' :
                     job.status === 'FAILED' ? 'bg-red-500/20 text-red-400' :
                     job.status === 'CANCELLED' ? 'bg-gray-500/20 text-gray-400' :
@@ -100,9 +100,9 @@ export function DownloadManager() {
                   </span>
                 </div>
 
-                <p className="text-xs text-vin-muted mb-2">Scope: {job.scope}</p>
+                <p className="text-sm text-vin-muted mb-2">Scope: {job.scope}</p>
                 {job.anonymize && (
-                  <p className="text-xs text-blue-400 mb-2 font-medium">Ẩn thông tin cơ bản / PHI-safe</p>
+                  <p className="text-sm text-blue-400 mb-2 font-medium">Ẩn thông tin cơ bản / PHI-safe</p>
                 )}
 
                 {job.status === 'RUNNING' && (
@@ -115,7 +115,7 @@ export function DownloadManager() {
                   {(job.status === 'PENDING' || job.status === 'RUNNING') && (
                     <button
                       onClick={() => handleCancel(job.id)}
-                      className="text-xs text-red-400 hover:text-red-300"
+                      className="text-sm text-red-400 hover:text-red-300"
                     >
                       Huỷ
                     </button>
@@ -123,7 +123,7 @@ export function DownloadManager() {
                   {job.status === 'SUCCESS' && job.downloadTokenHash && (
                     <button
                       onClick={() => handleDownload(job.downloadTokenHash)}
-                      className="text-xs text-vin-primary hover:text-vin-primary-hover font-medium"
+                      className="text-sm text-vin-primary hover:text-vin-primary-hover font-medium"
                     >
                       Tải xuống
                     </button>

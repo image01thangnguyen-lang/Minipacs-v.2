@@ -22,8 +22,8 @@ type PanelState =
 function InfoRow({ label, value, mono }: { label: string; value?: string | null; mono?: boolean }) {
   return (
     <div className="flex items-baseline gap-2 py-1">
-      <span className="min-w-[90px] text-[10px] font-bold uppercase tracking-wide text-vin-muted">{label}</span>
-      <span className={`truncate text-[12px] text-vin-text2 ${mono ? "font-mono" : ""}`}>{value || "-"}</span>
+      <span className="min-w-[90px] text-sm font-bold uppercase tracking-wide text-vin-muted">{label}</span>
+      <span className={`truncate text-sm text-vin-text2 ${mono ? "font-mono" : ""}`}>{value || "-"}</span>
     </div>
   );
 }
@@ -62,20 +62,20 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
 
       {state.kind === "idle" && (
         <div className="flex flex-1 flex-col items-center justify-center p-4 text-center">
-          <p className="text-[12px] text-vin-muted">Chọn một ca chụp để xem chi tiết</p>
+          <p className="text-sm text-vin-muted">Chọn một ca chụp để xem chi tiết</p>
         </div>
       )}
 
       {state.kind === "loading" && (
         <div className="flex flex-1 flex-col items-center justify-center p-4 text-center">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-vin-muted border-t-vin-accent" />
-          <p className="mt-2 text-[11px] text-vin-muted">Đang tải...</p>
+          <p className="mt-2 text-sm text-vin-muted">Đang tải...</p>
         </div>
       )}
 
       {state.kind === "error" && (
         <div className="flex flex-1 flex-col items-center justify-center p-4 text-center" role="alert">
-          <p className="text-[12px] font-semibold text-red-400">
+          <p className="text-sm font-semibold text-red-400">
             {state.error === "NOT_FOUND" && "Không tìm thấy ca chụp"}
             {state.error === "DENIED" && "Bạn không có quyền xem ca chụp này"}
             {state.error === "UNAUTHORIZED" && "Phiên đăng nhập hết hạn"}
@@ -88,7 +88,7 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
         <div className="flex flex-1 flex-col overflow-y-auto p-4">
           {/* Patient header */}
           <section aria-label="Patient information">
-            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Bệnh nhân</h3>
+            <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-vin-accent">Bệnh nhân</h3>
             <InfoRow label="Họ tên" value={fmtName(state.data.patientName || undefined)} />
             <InfoRow label="Mã BN" value={state.data.patientId} mono />
             <InfoRow label="Mã LK" value={state.data.hisVisitId} mono />
@@ -100,7 +100,7 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
 
           {/* Clinical info / Indications */}
           <section aria-label="Clinical information">
-            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Chỉ định</h3>
+            <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-vin-accent">Chỉ định</h3>
             <InfoRow label="Accession" value={state.data.accessionNumber} mono />
             <InfoRow label="Chỉ định" value={state.data.procedureDescription || state.data.studyDescription} />
             <InfoRow label="Bộ phận" value={state.data.bodyPart} />
@@ -112,7 +112,7 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
 
           {/* Execution metadata */}
           <section aria-label="Execution information">
-            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Thực hiện</h3>
+            <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-vin-accent">Thực hiện</h3>
             <InfoRow label="Ngày chụp" value={fmtDateTime(state.data.studyDate || undefined)} />
             <InfoRow label="Modality" value={state.data.modality} />
             <InfoRow label="Máy chụp" value={state.data.machineName} />
@@ -124,13 +124,13 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
 
           {/* Report & Status */}
           <section aria-label="Study status">
-            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Báo cáo</h3>
+            <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-vin-accent">Báo cáo</h3>
             <InfoRow label="BS Đọc" value={state.data.assignedDoctorName} />
             <InfoRow label="BS Duyệt" value={state.data.reviewerName} />
             <div className="flex flex-wrap gap-2 py-1">
               <RisStatusBadge status={state.data.status} />
               {state.data.reportStatus && (
-                <span className="rounded-full bg-vin-sidebar px-2 py-0.5 text-[10px] font-semibold text-vin-text2">
+                <span className="rounded-full bg-vin-sidebar px-2 py-0.5 text-sm font-semibold text-vin-text2">
                   Report: {state.data.reportStatus}
                 </span>
               )}
@@ -141,7 +141,7 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
 
             {/* Conclusion if authorized */}
             {state.data.reportConclusion && (
-              <div className="mt-2 text-[11px]">
+              <div className="mt-2 text-sm">
                 <span className="font-medium text-vin-muted mr-1">Kết luận:</span>
                 <span className="text-vin-text2">{state.data.reportConclusion}</span>
               </div>
@@ -152,16 +152,16 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
 
           {/* AI Analysis */}
           <section aria-label="AI Analysis">
-            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Phân tích AI</h3>
+            <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-vin-accent">Phân tích AI</h3>
             {(!state.data.aiStatus || state.data.aiStatus === "NOT_RUN") ? (
-              <div className="text-[11px] text-vin-muted italic">Chưa chạy AI</div>
+              <div className="text-sm text-vin-muted italic">Chưa chạy AI</div>
             ) : (
               <>
                 <div className="flex flex-wrap gap-2 py-1">
-                  {state.data.aiStatus === "RUNNING" && <span className="text-[10px] text-blue-400">Đang chạy</span>}
-                  {state.data.aiStatus === "NORMAL" && <span className="rounded bg-emerald-900/40 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-400">Bình thường</span>}
-                  {state.data.aiStatus === "ABNORMAL" && <span className="rounded bg-red-900/40 px-1.5 py-0.5 text-[10px] font-bold text-red-400">Bất thường</span>}
-                  {state.data.aiStatus === "FAILED" && <span className="text-[10px] text-red-500">Lỗi</span>}
+                  {state.data.aiStatus === "RUNNING" && <span className="text-sm text-blue-400">Đang chạy</span>}
+                  {state.data.aiStatus === "NORMAL" && <span className="rounded bg-emerald-900/40 px-1.5 py-0.5 text-sm font-semibold text-emerald-400">Bình thường</span>}
+                  {state.data.aiStatus === "ABNORMAL" && <span className="rounded bg-red-900/40 px-1.5 py-0.5 text-sm font-bold text-red-400">Bất thường</span>}
+                  {state.data.aiStatus === "FAILED" && <span className="text-sm text-red-500">Lỗi</span>}
                 </div>
                 {state.data.aiStatus === "ABNORMAL" && state.data.aiFindingCount != null && (
                   <InfoRow label="Số lượng" value={`${state.data.aiFindingCount} điểm`} />
@@ -175,7 +175,7 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
                 {state.data.aiUpdatedAt && (
                   <InfoRow label="Cập nhật" value={fmtDateTimeIso(state.data.aiUpdatedAt)} />
                 )}
-                <div className="mt-1 text-[10px] italic text-vin-muted">Thông tin hỗ trợ, không thay thế kết luận của bác sĩ.</div>
+                <div className="mt-1 text-sm italic text-vin-muted">Thông tin hỗ trợ, không thay thế kết luận của bác sĩ.</div>
               </>
             )}
           </section>
@@ -184,7 +184,7 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
 
           {/* Allowed actions summary (read-only affordance, no mutations) */}
           <section aria-label="Available actions">
-            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-vin-accent">Tác vụ khả dụng</h3>
+            <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-vin-accent">Tác vụ khả dụng</h3>
             <div className="flex flex-wrap gap-1.5 py-1">
               {state.data.allowedActions.readReport && <ActionTag label="Đọc báo cáo" />}
               {state.data.allowedActions.draftReport && <ActionTag label="Soạn báo cáo" />}
@@ -221,7 +221,7 @@ export function PatientStudyContextPanel({ studyUid }: PatientStudyContextPanelP
 
 function ActionTag({ label }: { label: string }) {
   return (
-    <span className="rounded bg-vin-accent/10 px-2 py-0.5 text-[10px] font-medium text-vin-accent">
+    <span className="rounded bg-vin-accent/10 px-2 py-0.5 text-sm font-medium text-vin-accent">
       {label}
     </span>
   );

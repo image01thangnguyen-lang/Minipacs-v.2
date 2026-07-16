@@ -59,10 +59,10 @@ export function StudyDataGridAntd({
           const patient = study.PatientMainDicomTags || {};
           return (
             <div className="flex flex-col">
-              <span className="truncate font-semibold uppercase tracking-[0.01em] text-white text-[12px]">
+              <span className="truncate font-semibold uppercase tracking-[0.01em] text-white text-sm">
                 {fmtName(patient.PatientName)}
               </span>
-              <span className="truncate font-mono text-[10px] text-gray-400">
+              <span className="truncate font-mono text-sm text-gray-400">
                 {fmtText(patient.PatientID)} &bull; {fmtSex(patient.PatientSex)} &bull; {fmtAge(patient.PatientAge)}T
               </span>
             </div>
@@ -80,10 +80,10 @@ export function StudyDataGridAntd({
           const main = study.MainDicomTags || {};
           return (
             <div className="flex flex-col">
-              <span className="truncate font-medium text-[12px] text-gray-300" title={study.procedureDescription || main.StudyDescription || ""}>
+              <span className="truncate font-medium text-sm text-gray-300" title={study.procedureDescription || main.StudyDescription || ""}>
                 {fmtText(study.procedureName || study.procedureDescription || main.StudyDescription)}
               </span>
-              <span className="truncate font-mono text-[10px] text-gray-500">
+              <span className="truncate font-mono text-sm text-gray-500">
                 {fmtText(study.procedureCode || main.AccessionNumber)}{study.serviceTypeName ? ` · ${study.serviceTypeName}` : ""}
               </span>
             </div>
@@ -116,7 +116,7 @@ export function StudyDataGridAntd({
             <div className="flex flex-col items-center">
               <RisStatusBadge status={study.WorkflowStatus} />
               {(study.hisSyncStatus || study.hisResultStatus) && (
-                <div className="mt-1 flex flex-col items-center gap-0.5 text-[9px] font-semibold">
+                <div className="mt-1 flex flex-col items-center gap-0.5 text-sm font-semibold">
                   {study.hisSyncStatus && (
                     <span className={study.hisSyncStatus === 'FAILED' ? 'text-red-400' : 'text-emerald-400'}>
                       HIS Sync: {study.hisSyncStatus}
@@ -143,10 +143,10 @@ export function StudyDataGridAntd({
         render: (_: any, study: any) => {
           return (
             <div className="flex flex-col">
-              <span className={`truncate font-semibold text-[11px] ${study.AssignedDoctorName ? "text-gray-300" : "text-amber-200"}`}>
+              <span className={`truncate font-semibold text-sm ${study.AssignedDoctorName ? "text-gray-300" : "text-amber-200"}`}>
                 {study.AssignedDoctorName || "Chưa gán bác sĩ"}
               </span>
-              <span className="truncate text-[10px] text-gray-500">
+              <span className="truncate text-sm text-gray-500">
                 {study.ReportDoctorName ? `Report: ${study.ReportDoctorName}` : `SLA: ${fmtDuration(study.waitingMinutes)}`}
               </span>
             </div>
@@ -164,10 +164,10 @@ export function StudyDataGridAntd({
           const main = study.MainDicomTags || {};
           return (
             <div className="flex flex-col whitespace-nowrap">
-              <span className="font-mono text-[11px] text-gray-300">
+              <span className="font-mono text-sm text-gray-300">
                 {fmtDateTime(main.StudyDate, main.StudyTime)}
               </span>
-              <span className="truncate font-sans text-[10px] text-gray-500">
+              <span className="truncate font-sans text-sm text-gray-500">
                 {study.machineName || study.stationAeTitle || "-"}{study.facilityName ? ` · ${study.facilityName}` : ""}
               </span>
             </div>
@@ -183,7 +183,7 @@ export function StudyDataGridAntd({
         align: "center",
         width: 60,
         render: (_: any, study: any) => (
-          <span className="font-mono text-[11px] text-gray-500">{study.EnrichedInstancesCount ?? study.Instances?.length ?? "-"}</span>
+          <span className="font-mono text-sm text-gray-500">{study.EnrichedInstancesCount ?? study.Instances?.length ?? "-"}</span>
         ),
       });
     }

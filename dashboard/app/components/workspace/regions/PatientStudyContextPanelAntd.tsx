@@ -25,8 +25,8 @@ type PanelState =
 function InfoRow({ label, value, mono }: { label: string; value?: string | null; mono?: boolean }) {
   return (
     <div className="flex items-baseline gap-2 py-1">
-      <Text type="secondary" className="min-w-[90px] text-[10px] font-bold uppercase tracking-wide">{label}</Text>
-      <span className={`truncate text-[12px] text-gray-300 ${mono ? "font-mono" : ""}`}>{value || "-"}</span>
+      <Text type="secondary" className="min-w-[90px] text-sm font-bold uppercase tracking-wide">{label}</Text>
+      <span className={`truncate text-sm text-gray-300 ${mono ? "font-mono" : ""}`}>{value || "-"}</span>
     </div>
   );
 }
@@ -65,14 +65,14 @@ export function PatientStudyContextPanelAntd({ studyUid }: PatientStudyContextPa
 
       {state.kind === "idle" && (
         <div className="flex flex-1 flex-col items-center justify-center p-4 text-center">
-          <Text type="secondary" className="text-[12px]">Chọn một ca chụp để xem chi tiết</Text>
+          <Text type="secondary" className="text-sm">Chọn một ca chụp để xem chi tiết</Text>
         </div>
       )}
 
       {state.kind === "loading" && (
         <div className="flex flex-1 flex-col items-center justify-center p-4 text-center">
           <Spin />
-          <Text type="secondary" className="mt-2 text-[11px]">Đang tải...</Text>
+          <Text type="secondary" className="mt-2 text-sm">Đang tải...</Text>
         </div>
       )}
 
@@ -94,7 +94,7 @@ export function PatientStudyContextPanelAntd({ studyUid }: PatientStudyContextPa
       {state.kind === "loaded" && (
         <div className="flex flex-1 flex-col overflow-y-auto p-4">
           <section aria-label="Patient information">
-            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-[#13C2C2]">Bệnh nhân</h3>
+            <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-[#13C2C2]">Bệnh nhân</h3>
             <InfoRow label="Họ tên" value={fmtName(state.data.patientName || undefined)} />
             <InfoRow label="Mã BN" value={state.data.patientId} mono />
             <InfoRow label="Giới tính" value={fmtSex(state.data.patientSex || undefined)} />
@@ -104,7 +104,7 @@ export function PatientStudyContextPanelAntd({ studyUid }: PatientStudyContextPa
           <Divider className="my-3 border-[#303030]" />
 
           <section aria-label="Study information">
-            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-[#13C2C2]">Ca chụp</h3>
+            <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-[#13C2C2]">Ca chụp</h3>
             <InfoRow label="Ngày chụp" value={fmtDateTime(state.data.studyDate || undefined)} />
             <InfoRow label="Mô tả" value={state.data.studyDescription} />
             <InfoRow label="Modality" value={state.data.modality} />
@@ -116,11 +116,11 @@ export function PatientStudyContextPanelAntd({ studyUid }: PatientStudyContextPa
           <Divider className="my-3 border-[#303030]" />
 
           <section aria-label="Study status">
-            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-[#13C2C2]">Trạng thái</h3>
+            <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-[#13C2C2]">Trạng thái</h3>
             <div className="flex flex-wrap gap-2 py-1">
               <RisStatusBadge status={state.data.status} />
               {state.data.reportStatus && (
-                <Tag className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-[#1F1F1F] border-[#303030] text-gray-300">
+                <Tag className="rounded-full px-2 py-0.5 text-sm font-semibold bg-[#1F1F1F] border-[#303030] text-gray-300">
                   Report: {state.data.reportStatus}
                 </Tag>
               )}
@@ -133,7 +133,7 @@ export function PatientStudyContextPanelAntd({ studyUid }: PatientStudyContextPa
           <Divider className="my-3 border-[#303030]" />
 
           <section aria-label="Available actions">
-            <h3 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-[#13C2C2]">Tác vụ khả dụng</h3>
+            <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-[#13C2C2]">Tác vụ khả dụng</h3>
             <div className="flex flex-wrap gap-1.5 py-1">
               {state.data.allowedActions.readReport && <ActionTag label="Đọc báo cáo" />}
               {state.data.allowedActions.draftReport && <ActionTag label="Soạn báo cáo" />}
@@ -169,7 +169,7 @@ export function PatientStudyContextPanelAntd({ studyUid }: PatientStudyContextPa
 
 function ActionTag({ label }: { label: string }) {
   return (
-    <Tag color="cyan" className="rounded px-2 py-0.5 text-[10px] font-medium border-0 bg-[#13C2C2]/10 text-[#13C2C2]">
+    <Tag color="cyan" className="rounded px-2 py-0.5 text-sm font-medium border-0 bg-[#13C2C2]/10 text-[#13C2C2]">
       {label}
     </Tag>
   );

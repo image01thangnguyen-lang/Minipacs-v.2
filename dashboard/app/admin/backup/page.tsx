@@ -75,14 +75,14 @@ export default function AdminBackupPage() {
                 <div key={job.id} className="bg-vin-surface border border-vin-border p-4 rounded-lg flex items-center justify-between">
                   <div>
                     <h3 className="font-semibold text-white">{job.jobType}</h3>
-                    <p className="text-xs text-vin-muted mt-1">
+                    <p className="text-sm text-vin-muted mt-1">
                       Ngày tạo: {new Date(job.createdAt).toLocaleString('vi-VN')}
                     </p>
                     {job.errorMessage && (
-                      <p className="text-xs text-red-400 mt-1">Lỗi: {job.errorMessage}</p>
+                      <p className="text-sm text-red-400 mt-1">Lỗi: {job.errorMessage}</p>
                     )}
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                  <span className={`text-sm px-2 py-0.5 rounded-full font-medium ${
                     job.status === 'SUCCESS' ? 'bg-green-500/20 text-green-400' :
                     job.status === 'FAILED' ? 'bg-red-500/20 text-red-400' :
                     'bg-blue-500/20 text-blue-400'

@@ -59,7 +59,7 @@ export default function PublicSharePage({ params }: { params: { token: string } 
               <Lock className="h-6 w-6 text-vin-accent" />
             </div>
             <h1 className="text-lg font-bold text-white">Liên kết được bảo vệ</h1>
-            <p className="mt-2 text-xs text-vin-text2">
+            <p className="mt-2 text-sm text-vin-text2">
               Vui lòng nhập mật khẩu để xem nội dung chia sẻ.
             </p>
           </div>
@@ -80,7 +80,7 @@ export default function PublicSharePage({ params }: { params: { token: string } 
                 autoFocus
               />
             </div>
-            {error && <div className="text-center text-xs font-semibold text-red-400">{error}</div>}
+            {error && <div className="text-center text-sm font-semibold text-red-400">{error}</div>}
             <button
               type="submit"
               className="flex w-full items-center justify-center rounded-xl bg-vin-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-vin-accentHover"
@@ -114,7 +114,7 @@ export default function PublicSharePage({ params }: { params: { token: string } 
           <ImageIcon className="h-5 w-5 text-vin-accent" />
           MiniPACS Share Viewer
         </div>
-        <div className="text-xs text-vin-muted">Bản xem trước công khai</div>
+        <div className="text-sm text-vin-muted">Bản xem trước công khai</div>
       </header>
 
       <main className="flex-1 p-6 sm:p-10">
@@ -128,12 +128,12 @@ export default function PublicSharePage({ params }: { params: { token: string } 
             {patientName ? (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <div className="text-xs font-bold uppercase tracking-wide text-vin-muted">Bệnh nhân</div>
+                  <div className="text-sm font-bold uppercase tracking-wide text-vin-muted">Bệnh nhân</div>
                   <div className="mt-1 text-base font-semibold text-white">{patientName}</div>
                   <div className="text-sm font-mono text-vin-text2">{patientId}</div>
                 </div>
                 <div>
-                  <div className="text-xs font-bold uppercase tracking-wide text-vin-muted">Ngày chụp</div>
+                  <div className="text-sm font-bold uppercase tracking-wide text-vin-muted">Ngày chụp</div>
                   <div className="mt-1 flex items-center gap-1.5 text-sm text-vin-text2">
                     <Calendar className="h-4 w-4" />
                     {studyDate ? new Date(studyDate.replace(/(\d{4})(\d{2})(\d{2})/, "$1-$2-$3")).toLocaleDateString("vi-VN") : "-"}
@@ -156,7 +156,7 @@ export default function PublicSharePage({ params }: { params: { token: string } 
                     <FileImage className="h-5 w-5 text-indigo-400" />
                     Hình ảnh DICOM
                   </h3>
-                  <p className="mt-2 text-xs leading-relaxed text-vin-text2">
+                  <p className="mt-2 text-sm leading-relaxed text-vin-text2">
                     Xem toàn bộ hình ảnh DICOM của ca chụp bằng trình xem chuẩn y tế.
                   </p>
                 </div>
@@ -179,7 +179,7 @@ export default function PublicSharePage({ params }: { params: { token: string } 
                     <FileText className="h-5 w-5 text-emerald-400" />
                     Kết quả chẩn đoán
                   </h3>
-                  <p className="mt-2 text-xs leading-relaxed text-vin-text2">
+                  <p className="mt-2 text-sm leading-relaxed text-vin-text2">
                     Báo cáo kết quả và kết luận chẩn đoán hình ảnh từ bác sĩ.
                   </p>
                 </div>
@@ -187,16 +187,16 @@ export default function PublicSharePage({ params }: { params: { token: string } 
                 {reportData ? (
                   <div className="mt-6 space-y-4 rounded-xl border border-vin-border bg-black/20 p-4 text-sm text-vin-text2">
                     <div>
-                      <div className="font-bold uppercase text-vin-muted mb-1 text-xs">Mô tả</div>
+                      <div className="font-bold uppercase text-vin-muted mb-1 text-sm">Mô tả</div>
                       <div className="whitespace-pre-wrap">{reportData.findings || "-"}</div>
                     </div>
                     <div>
-                      <div className="font-bold uppercase text-vin-muted mb-1 text-xs">Kết luận</div>
+                      <div className="font-bold uppercase text-vin-muted mb-1 text-sm">Kết luận</div>
                       <div className="whitespace-pre-wrap">{reportData.conclusion || "-"}</div>
                     </div>
                     {reportData.recommendation && (
                       <div>
-                        <div className="font-bold uppercase text-vin-muted mb-1 text-xs">Đề nghị</div>
+                        <div className="font-bold uppercase text-vin-muted mb-1 text-sm">Đề nghị</div>
                         <div className="whitespace-pre-wrap">{reportData.recommendation}</div>
                       </div>
                     )}

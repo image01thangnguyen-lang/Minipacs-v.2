@@ -45,7 +45,7 @@ export default async function ChangeRequestsPage() {
             <div key={column} className="min-h-52 rounded-md border border-slate-700 bg-slate-900/40 p-4">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="text-sm font-semibold text-slate-300">{column}</h2>
-                <span className="rounded bg-slate-800 px-2 py-0.5 text-xs">{items.length}</span>
+                <span className="rounded bg-slate-800 px-2 py-0.5 text-sm">{items.length}</span>
               </div>
               <div className="space-y-3">
                 {items.map((change) => {
@@ -55,16 +55,16 @@ export default async function ChangeRequestsPage() {
                     <Link key={change.id} href={`/admin/changes/${change.id}`} className="block rounded-md border border-slate-700 bg-slate-950 p-3 hover:border-cyan-500">
                       <div className="flex items-start justify-between gap-2">
                         <h3 className="line-clamp-2 text-sm font-semibold">{change.title}</h3>
-                        <span className={`rounded px-1.5 py-0.5 text-xs font-bold ${change.riskLevel === "HIGH" ? "bg-red-950 text-red-300" : change.riskLevel === "MEDIUM" ? "bg-amber-950 text-amber-300" : "bg-emerald-950 text-emerald-300"}`}>
+                        <span className={`rounded px-1.5 py-0.5 text-sm font-bold ${change.riskLevel === "HIGH" ? "bg-red-950 text-red-300" : change.riskLevel === "MEDIUM" ? "bg-amber-950 text-amber-300" : "bg-emerald-950 text-emerald-300"}`}>
                           {change.riskLevel}
                         </span>
                       </div>
-                      <p className="mt-2 line-clamp-2 text-xs text-slate-400">{change.impactSummary || change.description}</p>
-                      <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+                      <p className="mt-2 line-clamp-2 text-sm text-slate-400">{change.impactSummary || change.description}</p>
+                      <div className="mt-3 flex items-center justify-between text-sm text-slate-500">
                         <span className="truncate">{change.requestedByUser?.fullName || "System"}</span>
                         <span>{approved} duyệt / {rejected} từ chối</span>
                       </div>
-                      <div className="mt-2 flex flex-wrap gap-1 text-xs">
+                      <div className="mt-2 flex flex-wrap gap-1 text-sm">
                         <span className="rounded bg-slate-800 px-1.5 py-0.5">{change.module}</span>
                         {change.release && <span className="rounded bg-blue-950 px-1.5 py-0.5 text-blue-300">{change.release.version}</span>}
                         {change.uatRequired && <span className="rounded bg-violet-950 px-1.5 py-0.5 text-violet-300">UAT</span>}
@@ -72,7 +72,7 @@ export default async function ChangeRequestsPage() {
                     </Link>
                   );
                 })}
-                {items.length === 0 && <p className="py-8 text-center text-xs text-slate-500">Chưa có yêu cầu</p>}
+                {items.length === 0 && <p className="py-8 text-center text-sm text-slate-500">Chưa có yêu cầu</p>}
               </div>
             </div>
           );

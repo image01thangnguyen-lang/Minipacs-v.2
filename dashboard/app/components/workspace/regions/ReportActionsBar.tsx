@@ -124,18 +124,18 @@ export function ReportActionsBar({
           Tác vụ
         </h3>
         {autosaveStatus === "SAVING" && (
-          <span className="flex items-center gap-1 text-[10px] font-medium text-vin-muted">
+          <span className="flex items-center gap-1 text-sm font-medium text-vin-muted">
             <Loader2 className="h-3 w-3 animate-spin" /> Đang lưu...
           </span>
         )}
         {autosaveStatus === "SAVED" && (
-          <span className="flex items-center gap-1 text-[10px] font-medium text-vin-accent">
+          <span className="flex items-center gap-1 text-sm font-medium text-vin-accent">
             <CheckCircle className="h-3 w-3" /> Đã lưu
           </span>
         )}
         {autosaveStatus === "ERROR" && (
           <span
-            className="flex items-center gap-1 text-[10px] font-medium text-red-400"
+            className="flex items-center gap-1 text-sm font-medium text-red-400"
             title={autosaveError || "Lỗi lưu nháp"}
           >
             <XCircle className="h-3 w-3" /> Lỗi lưu
@@ -143,7 +143,7 @@ export function ReportActionsBar({
         )}
         {autosaveStatus === "STALE" && (
           <span
-            className="flex items-center gap-1 text-[10px] font-medium text-orange-400"
+            className="flex items-center gap-1 text-sm font-medium text-orange-400"
             title={autosaveError || "Phiên bản cũ. Hãy tải lại trang."}
           >
             <ShieldAlert className="h-3 w-3" /> Xung đột
@@ -156,7 +156,7 @@ export function ReportActionsBar({
           <div className="mb-4">
             <label
               htmlFor="report-print-template"
-              className="mb-1 block text-xs font-semibold text-vin-text2"
+              className="mb-1 block text-sm font-semibold text-vin-text2"
             >
               Mẫu in
             </label>
@@ -164,7 +164,7 @@ export function ReportActionsBar({
               id="report-print-template"
               value={selectedPrintTemplateId}
               onChange={(e) => onPrintTemplateChange(e.target.value)}
-              className="w-full rounded-md border border-vin-border bg-vin-shell px-2 py-1.5 text-xs text-vin-text outline-none transition focus:border-vin-accent"
+              className="w-full rounded-md border border-vin-border bg-vin-shell px-2 py-1.5 text-sm text-vin-text outline-none transition focus:border-vin-accent"
             >
               {printTemplates.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -176,12 +176,12 @@ export function ReportActionsBar({
         )}
         {printTemplates.length === 0 && (
           <div className="mb-4">
-            <label className="mb-1 block text-xs font-semibold text-vin-text2">
+            <label className="mb-1 block text-sm font-semibold text-vin-text2">
               Mẫu in
             </label>
             <select
               disabled
-              className="w-full rounded-md border border-vin-border bg-vin-shell px-2 py-1.5 text-xs text-vin-text outline-none opacity-60"
+              className="w-full rounded-md border border-vin-border bg-vin-shell px-2 py-1.5 text-sm text-vin-text outline-none opacity-60"
             >
               <option value="">Mặc định (System)</option>
             </select>
@@ -301,7 +301,7 @@ export function ReportActionsBar({
         {/* Read-only notice */}
         {!allowedActions.draftReport && !allowedActions.signReport && (
           <div
-            className="mt-2 rounded-lg border border-vin-border bg-vin-shell px-3 py-2 text-center text-xs text-vin-muted"
+            className="mt-2 rounded-lg border border-vin-border bg-vin-shell px-3 py-2 text-center text-sm text-vin-muted"
             role="status"
           >
             Chế độ chỉ đọc — Bạn không có quyền chỉnh sửa báo cáo này

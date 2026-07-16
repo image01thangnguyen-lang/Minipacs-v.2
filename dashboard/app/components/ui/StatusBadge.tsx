@@ -16,7 +16,7 @@ export function StatusBadge({ domain, status, label, size = "md", className = ""
   const mapping = resolveStatusBadge(domain, status);
   const displayLabel = label ?? mapping.label;
   const baseClasses = "inline-flex items-center justify-center rounded-full border font-bold leading-none truncate m-0";
-  const sizeClasses = size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-[11px] max-w-[120px]";
+  const sizeClasses = size === "sm" ? "px-2 py-0.5 text-sm" : "px-2.5 py-1 text-sm max-w-[120px]";
 
   return (
     <Tag className={`${baseClasses} ${sizeClasses} ${mapping.className} ${className}`} title={displayLabel} data-domain={domain} data-status={status}>

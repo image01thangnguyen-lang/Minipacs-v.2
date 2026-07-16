@@ -175,7 +175,7 @@ export function CommandCenterClient() {
         {['queue', 'sla', 'stuck', 'backlog', 'alerts'].map(tab => (
           <button
             key={tab}
-            className={`whitespace-nowrap border-b-2 px-4 py-2 text-xs font-semibold uppercase tracking-wider ${activeTab === tab ? 'border-vin-accent text-vin-accent' : 'border-transparent text-vin-muted hover:text-vin-text'}`}
+            className={`whitespace-nowrap border-b-2 px-4 py-2 text-sm font-semibold uppercase tracking-wider ${activeTab === tab ? 'border-vin-accent text-vin-accent' : 'border-transparent text-vin-muted hover:text-vin-text'}`}
             onClick={() => setActiveTab(tab)}
             role="tab" aria-selected={activeTab === tab}
           >
@@ -227,7 +227,7 @@ export function CommandCenterClient() {
                           )}
                         </td>
                         <td className="px-2">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${study.source === 'HIS' ? 'bg-purple-100 text-purple-800' : 'bg-vin-accent/15 text-vin-accent'}`}>
+                          <span className={`px-2 py-1 rounded text-sm font-medium ${study.source === 'HIS' ? 'bg-purple-100 text-purple-800' : 'bg-vin-accent/15 text-vin-accent'}`}>
                             {study.source}
                           </span>
                         </td>
@@ -281,7 +281,7 @@ export function CommandCenterClient() {
                         <td className="px-2">{breach.stage}</td>
                         <td className="px-2 text-red-500 font-medium">{Math.round(breach.durationMinutes)}</td>
                         <td className="px-2">{breach.thresholdMinutes}</td>
-                        <td className="px-2">{breach.policyCode} <span className="text-xs text-vin-faint">({breach.source})</span></td>
+                        <td className="px-2">{breach.policyCode} <span className="text-sm text-vin-faint">({breach.source})</span></td>
                       </tr>
                     ))}
                     {(!breaches?.data || breaches.data.length === 0) && (
@@ -417,10 +417,10 @@ export function CommandCenterClient() {
                       <tr key={alert.id} className="border-b hover:bg-vin-panel2">
                         <td className="py-2 px-2">
                           <div className="font-semibold">{alert.title}</div>
-                          <div className="text-xs text-vin-muted truncate max-w-md">{alert.message}</div>
+                          <div className="text-sm text-vin-muted truncate max-w-md">{alert.message}</div>
                         </td>
                         <td className="px-2">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${alert.severity === 'CRITICAL' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                          <span className={`px-2 py-1 rounded text-sm font-semibold ${alert.severity === 'CRITICAL' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
                             {alert.severity}
                           </span>
                         </td>

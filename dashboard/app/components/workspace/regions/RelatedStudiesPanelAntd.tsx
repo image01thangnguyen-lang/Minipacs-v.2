@@ -137,7 +137,7 @@ export function RelatedStudiesPanelAntd({
                 onClick={() => {
                   if (canReadStudy) onDoubleClick?.(legacyHistoryObject);
                 }}
-                className={`text-[10px] h-6 w-6 p-0 ${canReadStudy ? 'text-gray-400 hover:text-white' : 'text-gray-600'}`}
+                className={`text-sm h-6 w-6 p-0 ${canReadStudy ? 'text-gray-400 hover:text-white' : 'text-gray-600'}`}
               />
             </Tooltip>
             <Tooltip title={!canReadStudy ? "Bạn không có quyền xem ca này" : onCompare ? "So sánh ca này" : "Chức năng so sánh chưa khả dụng"}>
@@ -149,7 +149,7 @@ export function RelatedStudiesPanelAntd({
                 onClick={() => {
                   if (canReadStudy) onCompare?.(legacyHistoryObject);
                 }}
-                className={`text-[10px] h-6 w-6 p-0 ${canReadStudy && onCompare ? 'text-gray-400 hover:text-white' : 'text-gray-600'}`}
+                className={`text-sm h-6 w-6 p-0 ${canReadStudy && onCompare ? 'text-gray-400 hover:text-white' : 'text-gray-600'}`}
               />
             </Tooltip>
           </div>
@@ -163,9 +163,9 @@ export function RelatedStudiesPanelAntd({
       <div className="flex items-center justify-between border-b border-[#303030] px-3 py-1.5 bg-[#1F1F1F]">
         <div className="flex items-center gap-2">
           <ClockCircleOutlined className="text-[#13C2C2]" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Lịch sử chụp</span>
+          <span className="text-sm font-bold uppercase tracking-wider text-gray-400">Lịch sử chụp</span>
           {history.length > 0 && (
-            <span className="font-mono text-[10px] text-gray-500">
+            <span className="font-mono text-sm text-gray-500">
               · {history.length} ca liên quan
             </span>
           )}
@@ -179,25 +179,25 @@ export function RelatedStudiesPanelAntd({
             className="flex"
             buttonStyle="solid"
           >
-            <Radio.Button value="ENCOUNTER" className="text-[9px] px-2 leading-[20px] h-[22px]">Đợt khám</Radio.Button>
-            <Radio.Button value="30D" className="text-[9px] px-2 leading-[20px] h-[22px]">30 Ngày</Radio.Button>
-            <Radio.Button value="1Y" className="text-[9px] px-2 leading-[20px] h-[22px]">1 Năm</Radio.Button>
-            <Radio.Button value="ALL" className="text-[9px] px-2 leading-[20px] h-[22px]">Tất cả</Radio.Button>
+            <Radio.Button value="ENCOUNTER" className="text-sm px-2 leading-[20px] h-[22px]">Đợt khám</Radio.Button>
+            <Radio.Button value="30D" className="text-sm px-2 leading-[20px] h-[22px]">30 Ngày</Radio.Button>
+            <Radio.Button value="1Y" className="text-sm px-2 leading-[20px] h-[22px]">1 Năm</Radio.Button>
+            <Radio.Button value="ALL" className="text-sm px-2 leading-[20px] h-[22px]">Tất cả</Radio.Button>
           </Radio.Group>
         )}
       </div>
 
       <div className="h-[calc(100%-34px)] relative overflow-hidden flex flex-col">
         {!anchorStudyUid ? (
-          <div className="flex h-full items-center justify-center text-[11px] text-gray-500">
+          <div className="flex h-full items-center justify-center text-sm text-gray-500">
             Chọn một bệnh nhân để xem lịch sử chụp
           </div>
         ) : error ? (
-          <div className="flex h-full items-center justify-center text-[11px] text-red-400">
+          <div className="flex h-full items-center justify-center text-sm text-red-400">
             {error}
           </div>
         ) : history.length === 0 && !isLoading ? (
-          <div className="flex h-full items-center justify-center text-[11px] text-gray-500">
+          <div className="flex h-full items-center justify-center text-sm text-gray-500">
             Không có lịch sử trong khoảng thời gian này
           </div>
         ) : (

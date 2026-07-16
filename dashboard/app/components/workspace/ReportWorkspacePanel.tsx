@@ -366,7 +366,7 @@ export function ReportWorkspacePanel({
   if (panelState.kind === "idle") {
     return (
       <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-        <p className="text-[12px] text-vin-muted">
+        <p className="text-sm text-vin-muted">
           Chọn một ca chụp để xem/soạn báo cáo
         </p>
       </div>
@@ -377,7 +377,7 @@ export function ReportWorkspacePanel({
     return (
       <div className="flex h-full flex-col items-center justify-center p-6 text-center">
         <Loader2 className="mb-2 h-5 w-5 animate-spin text-vin-accent" />
-        <p className="text-[11px] text-vin-muted">Đang tải báo cáo...</p>
+        <p className="text-sm text-vin-muted">Đang tải báo cáo...</p>
       </div>
     );
   }
@@ -388,7 +388,7 @@ export function ReportWorkspacePanel({
         className="flex h-full flex-col items-center justify-center p-6 text-center"
         role="alert"
       >
-        <p className="text-[12px] font-semibold text-red-400">
+        <p className="text-sm font-semibold text-red-400">
           {panelState.error === "NOT_FOUND" && "Không tìm thấy báo cáo"}
           {panelState.error === "DENIED" &&
             "Bạn không có quyền xem báo cáo này"}
@@ -414,7 +414,7 @@ export function ReportWorkspacePanel({
           {readOnly ? "Báo cáo (Chỉ đọc)" : "Soạn báo cáo"}
         </h2>
         {data.reportStatus && (
-          <span className="rounded-full bg-vin-sidebar px-2 py-0.5 text-[10px] font-semibold text-vin-text2">
+          <span className="rounded-full bg-vin-sidebar px-2 py-0.5 text-sm font-semibold text-vin-text2">
             {data.reportStatus}
           </span>
         )}

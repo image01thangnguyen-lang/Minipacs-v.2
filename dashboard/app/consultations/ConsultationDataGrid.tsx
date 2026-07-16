@@ -32,7 +32,7 @@ export function ConsultationDataGrid({
         cell: (c) => (
           <>
             <h3 className="font-bold text-white line-clamp-1">{c.title || "Hội chẩn ca chụp"}</h3>
-            <p className="mt-1 line-clamp-2 text-[11px] text-vin-text2">
+            <p className="mt-1 line-clamp-2 text-sm text-vin-text2">
               {c.description || "Không có mô tả"}
             </p>
           </>
@@ -44,7 +44,7 @@ export function ConsultationDataGrid({
         align: "center",
         width: 140,
         cell: (c) => (
-          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold ${statusClasses[c.status] || "bg-vin-shell text-vin-text2"}`}>
+          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-sm font-bold ${statusClasses[c.status] || "bg-vin-shell text-vin-text2"}`}>
             {statusLabels[c.status] || c.status}
           </span>
         ),
@@ -64,7 +64,7 @@ export function ConsultationDataGrid({
         header: "Ngày tạo",
         width: 160,
         cell: (c) => (
-          <div className="flex items-center gap-1.5 text-[11px] text-vin-text2">
+          <div className="flex items-center gap-1.5 text-sm text-vin-text2">
             <Calendar className="h-3 w-3" />
             {new Date(c.createdAt).toLocaleString("vi-VN")}
           </div>
@@ -76,7 +76,7 @@ export function ConsultationDataGrid({
         align: "center",
         width: 120,
         cell: (c) => (
-          <div className="flex items-center justify-center gap-1 text-[11px] text-vin-text2">
+          <div className="flex items-center justify-center gap-1 text-sm text-vin-text2">
             <Users className="h-3 w-3 text-vin-muted" />
             <span>{c.participants.length}</span>
           </div>
@@ -92,7 +92,7 @@ export function ConsultationDataGrid({
           <Link
             href={`/consultations/${c.id}`}
             onClick={(e) => e.stopPropagation()}
-            className="flex w-fit ml-auto items-center justify-center gap-1.5 rounded-lg bg-vin-accent/20 px-3 py-1.5 text-[11px] font-semibold text-vin-accent transition hover:bg-vin-accent hover:text-white"
+            className="flex w-fit ml-auto items-center justify-center gap-1.5 rounded-lg bg-vin-accent/20 px-3 py-1.5 text-sm font-semibold text-vin-accent transition hover:bg-vin-accent hover:text-white"
           >
             <Video className="h-3.5 w-3.5" />
             Vào phòng

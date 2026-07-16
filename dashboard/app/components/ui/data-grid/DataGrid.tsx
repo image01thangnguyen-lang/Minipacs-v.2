@@ -243,7 +243,7 @@ export function SharedDataGrid<T>({
             })}
             {data.length > safeRenderLimit && (
               <tr>
-                <td colSpan={columns.length} className="py-4 text-center text-xs text-vin-muted font-medium bg-vin-panel2/50">
+                <td colSpan={columns.length} className="py-4 text-center text-sm text-vin-muted font-medium bg-vin-panel2/50">
                   Hiển thị giới hạn {safeRenderLimit}/{data.length} dòng để tối ưu. Vui lòng dùng bộ lọc để thu hẹp kết quả.
                 </td>
               </tr>

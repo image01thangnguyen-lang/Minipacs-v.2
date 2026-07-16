@@ -7,7 +7,7 @@ import { type SystemRole, roleLabels as systemRoleLabels } from "@/lib/permissio
 
 export function StatusBadge({ active }: { active: boolean }) {
   return (
-    <span className={`inline-flex max-w-[92px] justify-center truncate rounded px-2 py-0.5 text-[9px] font-bold ${
+    <span className={`inline-flex max-w-[92px] justify-center truncate rounded px-2 py-0.5 text-sm font-bold ${
       active ? "bg-vin-status-approved-bg text-white" : "bg-vin-status-danger-bg text-white"
     }`}>
       {active ? "Đang dùng" : "Đã khóa"}
@@ -26,7 +26,7 @@ export function RoleBadge({ roleProfile, fallbackRole }: { roleProfile?: RolePro
         ? "bg-cyan-900/30 text-cyan-200 border-cyan-500/30"
         : "bg-emerald-900/25 text-emerald-200 border-emerald-500/30";
 
-  return <span className={`inline-flex max-w-[150px] justify-center truncate rounded border px-1.5 py-px text-[10px] font-bold ${classes}`}>{label}</span>;
+  return <span className={`inline-flex max-w-[150px] justify-center truncate rounded border px-1.5 py-px text-sm font-bold ${classes}`}>{label}</span>;
 }
 
 export function UsersDataGrid({

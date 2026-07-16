@@ -74,8 +74,8 @@ const hisStatusLabel = (status?: string | null) => {
 function MiniInfo({ label, mono, value }: { label: string; mono?: boolean; value?: string | number | null }) {
   return (
     <div className="min-w-0">
-      <div className="text-[10px] font-bold uppercase tracking-wide text-vin-muted">{label}</div>
-      <div className={`mt-0.5 truncate text-xs text-vin-text2 ${mono ? "font-mono" : ""}`}>{value || "-"}</div>
+      <div className="text-sm font-bold uppercase tracking-wide text-vin-muted">{label}</div>
+      <div className={`mt-0.5 truncate text-sm text-vin-text2 ${mono ? "font-mono" : ""}`}>{value || "-"}</div>
     </div>
   );
 }
@@ -112,7 +112,7 @@ function RisStatusBadge({ status }: { status?: string }) {
             ? "bg-vin-accentSoft text-white"
             : "bg-vin-status-new-bg text-white";
 
-  return <span className={`inline-flex max-w-[120px] justify-center truncate rounded px-2 py-0.5 text-[10px] font-bold ${classes}`}>{label}</span>;
+  return <span className={`inline-flex max-w-[120px] justify-center truncate rounded px-2 py-0.5 text-sm font-bold ${classes}`}>{label}</span>;
 }
 
 export default function ReportPage({ params }: { params: { studyInstanceUid: string } }) {
@@ -363,7 +363,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
 
           <div className="min-w-0 flex-1">
             <ScreenHeader />
-            <p className="mt-0.5 truncate font-mono text-[11px] text-vin-muted">{studyInstanceUid}</p>
+            <p className="mt-0.5 truncate font-mono text-sm text-vin-muted">{studyInstanceUid}</p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -408,11 +408,11 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-base font-bold uppercase text-white">{patientName}</h2>
-                  <p className="mt-1 text-xs text-vin-muted">PID: {patientId}</p>
+                  <p className="mt-1 text-sm text-vin-muted">PID: {patientId}</p>
                 </div>
                 <RisStatusBadge status={studyStatus} />
               </div>
-              <div className="grid grid-cols-1 gap-3 text-xs text-vin-text2 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 text-sm text-vin-text2 sm:grid-cols-2">
                 <div>
                   <span className="text-vin-muted">Ngày chụp:</span> {studyDate}
                 </div>
@@ -435,7 +435,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
                 <MiniInfo label="Tra ket qua" value={formatIsoDateTime(patientDetails?.deliveredAt)} />
               </div>
               {clinicalDisplay && (
-                <div className="mt-3 rounded border border-vin-border bg-vin-shell px-3 py-2 text-xs leading-relaxed text-vin-text2">
+                <div className="mt-3 rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm leading-relaxed text-vin-text2">
                   <span className="font-bold uppercase tracking-wide text-vin-muted">Lam sang: </span>
                   {clinicalDisplay}
                 </div>
@@ -482,7 +482,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
             <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-vin-text2">Tác vụ</h3>
             <div className="space-y-2">
               <div className="mb-4">
-                <label className="mb-1 block text-xs font-semibold text-vin-text2">Mẫu in</label>
+                <label className="mb-1 block text-sm font-semibold text-vin-text2">Mẫu in</label>
                 <select
                   value={selectedPrintTemplateId}
                   onChange={(e) => {
@@ -491,7 +491,7 @@ export default function ReportPage({ params }: { params: { studyInstanceUid: str
                     const tpl = printTemplates.find(t => t.id === id);
                     if (tpl?.htmlContent) setTemplateHtml(tpl.htmlContent);
                   }}
-                  className="w-full rounded-md border border-vin-border bg-vin-shell px-2 py-1.5 text-xs text-vin-text outline-none transition focus:border-vin-accent"
+                  className="w-full rounded-md border border-vin-border bg-vin-shell px-2 py-1.5 text-sm text-vin-text outline-none transition focus:border-vin-accent"
                 >
                   {printTemplates.map(t => (
                     <option key={t.id} value={t.id}>{t.name}</option>

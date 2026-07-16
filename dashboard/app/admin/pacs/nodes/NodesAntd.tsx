@@ -258,7 +258,7 @@ export function NodesAntd() {
           <h2 style={{ margin: 0, color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <DesktopOutlined /> Quản lý Máy Chụp (DICOM Nodes)
           </h2>
-          <Text type="secondary" style={{ fontSize: '12px' }}>
+          <Text type="secondary" style={{ fontSize: '14px' }}>
             Khai báo danh sách thiết bị để nhận/gửi ảnh DICOM tới Orthanc PACS.
           </Text>
         </div>

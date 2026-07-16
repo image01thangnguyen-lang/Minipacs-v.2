@@ -475,7 +475,7 @@ export default function TiptapEditor({
                     event.preventDefault();
                     applyShortcutSuggestion(template, shortcutSuggestion.range);
                   }}
-                  className={`flex min-w-[190px] max-w-full items-center justify-between gap-2 rounded border px-2.5 py-1.5 text-left text-[11px] transition ${
+                  className={`flex min-w-[190px] max-w-full items-center justify-between gap-2 rounded border px-2.5 py-1.5 text-left text-sm transition ${
                     isActive
                       ? 'border-vin-accent bg-vin-accent text-white'
                       : 'border-vin-border bg-vin-shell text-vin-text2 hover:border-vin-accent hover:text-white'
@@ -483,13 +483,13 @@ export default function TiptapEditor({
                 >
                   <span className="min-w-0">
                     <span className="block truncate font-semibold">{template.name}</span>
-                    <span className={`block truncate font-mono text-[10px] ${isActive ? 'text-white/80' : 'text-vin-muted'}`}>
+                    <span className={`block truncate font-mono text-sm ${isActive ? 'text-white/80' : 'text-vin-muted'}`}>
                       {normalizeShortcut(template.shortcut)} · {template.modality}
                       {template.bodyPart ? ` · ${template.bodyPart}` : ''}
                     </span>
                   </span>
                   {template.isNormal && (
-                    <span className={`flex-shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold ${isActive ? 'bg-white/20 text-white' : 'bg-emerald-900/25 text-emerald-200'}`}>
+                    <span className={`flex-shrink-0 rounded px-1.5 py-0.5 text-sm font-bold ${isActive ? 'bg-white/20 text-white' : 'bg-emerald-900/25 text-emerald-200'}`}>
                       BT
                     </span>
                   )}

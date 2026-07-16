@@ -172,7 +172,7 @@ export function TemplatesClient() {
             <div className="flex items-center gap-3">
               <div>
                 <ScreenHeader />
-                <p className="mt-0.5 text-[10px] text-vin-muted">Print Templates & Mappings</p>
+                <p className="mt-0.5 text-sm text-vin-muted">Print Templates & Mappings</p>
               </div>
             </div>
             <button
@@ -181,7 +181,7 @@ export function TemplatesClient() {
                 setMode("create");
                 setSelectedId(null);
               }}
-              className="flex items-center gap-1.5 rounded border-0 bg-vin-accent px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-vin-accentHover"
+              className="flex items-center gap-1.5 rounded border-0 bg-vin-accent px-2.5 py-1 text-sm font-semibold text-white transition hover:bg-vin-accentHover"
             >
               <FilePlus2 className="h-3.5 w-3.5" />
               Tạo mới
@@ -193,7 +193,7 @@ export function TemplatesClient() {
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded border border-vin-border bg-vin-panel py-1.5 pl-7 pr-7 text-[11px] text-vin-text placeholder:text-vin-faint outline-none transition focus:border-vin-accent"
+              className="w-full rounded border border-vin-border bg-vin-panel py-1.5 pl-7 pr-7 text-sm text-vin-text placeholder:text-vin-faint outline-none transition focus:border-vin-accent"
               placeholder="Tìm kiếm theo mã, tên..."
             />
             {searchQuery && (
@@ -212,7 +212,7 @@ export function TemplatesClient() {
             </div>
           ) : (
             <table className="w-full text-left">
-              <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-[10px] font-semibold uppercase tracking-wider text-vin-text2">
+              <thead className="sticky top-0 z-10 border-b border-vin-border bg-vin-panel2 text-sm font-semibold uppercase tracking-wider text-vin-text2">
                 <tr>
                   <th className="w-9 py-2 pl-2 pr-1 text-center">TT</th>
                   <th className="px-2 py-2">Mã & Tên</th>
@@ -221,7 +221,7 @@ export function TemplatesClient() {
                   <th className="px-2 py-2 text-center">Trạng thái</th>
                 </tr>
               </thead>
-              <tbody className="text-[11px]">
+              <tbody className="text-sm">
                 {filteredItems.map((item, idx) => (
                   <tr
                     key={item.id}
@@ -240,20 +240,20 @@ export function TemplatesClient() {
                       <div className="truncate text-vin-muted">{item.name}</div>
                     </td>
                     <td className="px-2 py-2 text-center">
-                      <span className="rounded bg-vin-panel2 px-1.5 py-0.5 text-[9px] font-mono text-vin-muted">{item.modality || "ALL"}</span>
+                      <span className="rounded bg-vin-panel2 px-1.5 py-0.5 text-sm font-mono text-vin-muted">{item.modality || "ALL"}</span>
                     </td>
                     <td className="px-2 py-2 text-center">
                       {item.isDefault ? (
-                        <span className="rounded bg-vin-accent/20 px-1.5 py-0.5 text-[9px] font-bold text-vin-accent">CÓ</span>
+                        <span className="rounded bg-vin-accent/20 px-1.5 py-0.5 text-sm font-bold text-vin-accent">CÓ</span>
                       ) : (
                         <span className="text-vin-faint">-</span>
                       )}
                     </td>
                     <td className="px-2 py-2 text-center">
                       {item.isActive ? (
-                        <span className="rounded bg-emerald-900/20 px-1.5 py-0.5 text-[9px] font-bold text-emerald-400">ACTIVE</span>
+                        <span className="rounded bg-emerald-900/20 px-1.5 py-0.5 text-sm font-bold text-emerald-400">ACTIVE</span>
                       ) : (
-                        <span className="rounded bg-red-900/20 px-1.5 py-0.5 text-[9px] font-bold text-red-400">HIDDEN</span>
+                        <span className="rounded bg-red-900/20 px-1.5 py-0.5 text-sm font-bold text-red-400">HIDDEN</span>
                       )}
                     </td>
                   </tr>
@@ -274,7 +274,7 @@ export function TemplatesClient() {
       {/* Right Form Panel */}
       <section className="flex flex-1 flex-col overflow-hidden bg-vin-root">
         {error && (
-          <div className="m-4 flex items-center justify-between rounded border border-vin-status-danger-border bg-vin-status-danger-bg/20 px-3 py-2 text-xs text-vin-status-danger-text">
+          <div className="m-4 flex items-center justify-between rounded border border-vin-status-danger-border bg-vin-status-danger-bg/20 px-3 py-2 text-sm text-vin-status-danger-text">
             <span>{error}</span>
             <button onClick={() => setError("")} className="hover:opacity-75">
               <X className="h-3.5 w-3.5" />
@@ -315,18 +315,18 @@ export function TemplatesClient() {
                   <>
                     {/* Basic Info */}
                     <div className="rounded border border-vin-border/50 bg-vin-panel p-3">
-                      <h3 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-vin-muted">Thông tin cơ bản</h3>
+                      <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-vin-muted">Thông tin cơ bản</h3>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Mã (Code)</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Mã (Code)</label>
                           <input name="code" defaultValue={item?.code} className="h-8 w-full rounded border border-vin-border bg-vin-shell px-2 text-sm text-vin-text outline-none focus:border-vin-accent" placeholder="VD: IN_CT01" />
                         </div>
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Tên / Tiêu đề</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Tên / Tiêu đề</label>
                           <input name="name" defaultValue={item?.name} required className="h-8 w-full rounded border border-vin-border bg-vin-shell px-2 text-sm text-vin-text outline-none focus:border-vin-accent" placeholder="Tên mẫu in" />
                         </div>
                         <div className="col-span-2">
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Mô tả</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Mô tả</label>
                           <input name="description" defaultValue={item?.description} className="h-8 w-full rounded border border-vin-border bg-vin-shell px-2 text-sm text-vin-text outline-none focus:border-vin-accent" placeholder="Ghi chú thêm..." />
                         </div>
                       </div>
@@ -334,12 +334,12 @@ export function TemplatesClient() {
 
                     {/* Printer Settings */}
                     <div className="rounded border border-vin-border/50 bg-vin-panel p-3">
-                      <h3 className="mb-3 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-vin-muted">
+                      <h3 className="mb-3 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-vin-muted">
                         <Printer className="h-3 w-3" /> Cấu hình bản in
                       </h3>
                       <div className="grid grid-cols-3 gap-3">
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Khổ giấy</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Khổ giấy</label>
                           <FormSelect
                             options={[{value: "A4", label: "A4"}, {value: "A5", label: "A5"}]}
                             value={item?.paperSize || "A4"}
@@ -349,7 +349,7 @@ export function TemplatesClient() {
                           />
                         </div>
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Hướng giấy</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Hướng giấy</label>
                           <FormSelect
                             options={[{value: "PORTRAIT", label: "Dọc (Portrait)"}, {value: "LANDSCAPE", label: "Ngang (Landscape)"}]}
                             value={item?.orientation || "PORTRAIT"}
@@ -373,12 +373,12 @@ export function TemplatesClient() {
 
                     {/* Mappings */}
                     <div className="rounded border border-vin-border/50 bg-vin-panel p-3">
-                      <h3 className="mb-3 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-vin-muted">
+                      <h3 className="mb-3 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-vin-muted">
                         <Building className="h-3 w-3" /> Phạm vi & Gán tự động
                       </h3>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Gán Cơ sở (Facility)</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Gán Cơ sở (Facility)</label>
                           <FormSelect
                             options={[{value: "", label: "-- Không gán --"}, ...references.facilities.map((f: any) => ({value: f.id, label: f.name}))]}
                             value={item?.facilityId || ""}
@@ -388,7 +388,7 @@ export function TemplatesClient() {
                           />
                         </div>
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Gán Máy (DICOM Node)</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Gán Máy (DICOM Node)</label>
                           <FormSelect
                             options={[{value: "", label: "-- Không gán --"}, ...references.nodes.map((n: any) => ({value: n.id, label: n.aeTitle}))]}
                             value={item?.dicomNodeId || ""}
@@ -398,11 +398,11 @@ export function TemplatesClient() {
                           />
                         </div>
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Gán Nhóm dịch vụ (Modality)</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Gán Nhóm dịch vụ (Modality)</label>
                           <input name="modality" defaultValue={item?.modality} className="h-8 w-full rounded border border-vin-border bg-vin-shell px-2 text-sm text-vin-text outline-none focus:border-vin-accent" placeholder="ALL, CR, CT..." />
                         </div>
                         <div>
-                          <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">Gán Dịch vụ (Procedure)</label>
+                          <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">Gán Dịch vụ (Procedure)</label>
                           <FormSelect
                             options={[{value: "", label: "-- Không gán --"}, ...references.procedures.map((p: any) => ({value: p.id, label: p.name}))]}
                             value={item?.procedureCatalogId || ""}
@@ -416,13 +416,13 @@ export function TemplatesClient() {
 
                     {/* HTML Content (Advanced) */}
                     <div className="flex flex-col rounded border border-vin-border/50 bg-vin-panel p-3">
-                      <h3 className="mb-3 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-vin-muted">
+                      <h3 className="mb-3 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-vin-muted">
                         <FileCode2 className="h-3 w-3" /> HTML / JS Nâng cao
                       </h3>
                       <textarea
                         name="htmlContent"
                         defaultValue={item?.htmlContent}
-                        className="h-64 w-full resize-y rounded border border-vin-border bg-vin-shell px-3 py-2 font-mono text-[11px] text-vin-text outline-none focus:border-vin-accent"
+                        className="h-64 w-full resize-y rounded border border-vin-border bg-vin-shell px-3 py-2 font-mono text-sm text-vin-text outline-none focus:border-vin-accent"
                         placeholder="<html><body><h1>Report</h1></body></html>"
                       />
                     </div>
@@ -433,7 +433,7 @@ export function TemplatesClient() {
                           type="button"
                           disabled={isSaving}
                           onClick={handleDelete}
-                          className="mr-auto flex items-center gap-1.5 rounded border border-vin-status-danger-border bg-vin-panel px-3 py-1.5 text-xs font-semibold text-vin-status-danger-text transition hover:bg-vin-status-danger-bg/20"
+                          className="mr-auto flex items-center gap-1.5 rounded border border-vin-status-danger-border bg-vin-panel px-3 py-1.5 text-sm font-semibold text-vin-status-danger-text transition hover:bg-vin-status-danger-bg/20"
                         >
                           <Trash2 className="h-4 w-4" />
                           Xóa mẫu này
@@ -443,7 +443,7 @@ export function TemplatesClient() {
                       <button
                         type="button"
                         onClick={() => { setMode("view"); setSelectedId(null); }}
-                        className="rounded px-4 py-1.5 text-xs font-semibold text-vin-muted transition hover:text-white"
+                        className="rounded px-4 py-1.5 text-sm font-semibold text-vin-muted transition hover:text-white"
                       >
                         Hủy
                       </button>
@@ -451,7 +451,7 @@ export function TemplatesClient() {
                       <button
                         type="submit"
                         disabled={isSaving}
-                        className="flex items-center gap-2 rounded bg-vin-accent px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-vin-accentHover disabled:opacity-50"
+                        className="flex items-center gap-2 rounded bg-vin-accent px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-vin-accentHover disabled:opacity-50"
                       >
                         {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                         {mode === "create" ? "Lưu tạo mới" : "Lưu thay đổi"}

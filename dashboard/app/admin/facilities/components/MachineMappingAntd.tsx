@@ -113,7 +113,7 @@ export function MachineMappingAntd() {
       key: "modalityAndAeTitle",
       width: 250,
       render: (_, record) => (
-        <Text type="secondary" style={{ fontFamily: "monospace", fontSize: "11px" }}>
+        <Text type="secondary" style={{ fontFamily: "monospace", fontSize: "14px" }}>
           {record.modality} / {record.aeTitle || <Text type="secondary" italic>Chưa cấu hình</Text>}
         </Text>
       )
@@ -150,7 +150,7 @@ export function MachineMappingAntd() {
               type="link"
               size="middle"
               onClick={() => handleReactivate(record.id)}
-              style={{ color: "#52c41a", fontSize: "10px", padding: 0 }}
+              style={{ color: "#52c41a", fontSize: "14px", padding: 0 }}
             >
               Khôi phục
             </Button>

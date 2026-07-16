@@ -323,7 +323,7 @@ export function StatisticsClient() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <ScreenHeader />
-              <div className="mt-1 text-[11px] text-vin-muted">
+              <div className="mt-1 text-sm text-vin-muted">
                 {data ? `Cập nhật ${formatDateTime(data.generatedAt)}` : "Đang tải dữ liệu"}
                 {isRefreshing && <span className="ml-2 text-vin-accent">Đang làm mới...</span>}
               </div>
@@ -349,7 +349,7 @@ export function StatisticsClient() {
               <button
                 type="submit"
                 disabled={isLoading || isRefreshing}
-                className="flex h-9 items-center gap-1.5 rounded border-0 bg-vin-accent px-3 text-[11px] font-bold text-white transition hover:bg-vin-accentHover disabled:opacity-40"
+                className="flex h-9 items-center gap-1.5 rounded border-0 bg-vin-accent px-3 text-sm font-bold text-white transition hover:bg-vin-accentHover disabled:opacity-40"
               >
                 <RefreshCcw className={`h-3.5 w-3.5 ${isLoading || isRefreshing ? "animate-spin" : ""}`} />
                 Cập nhật
@@ -358,7 +358,7 @@ export function StatisticsClient() {
           </div>
 
           {error && (
-            <div className="mt-3 rounded border border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 px-3 py-2 text-[11px] font-semibold text-red-200">
+            <div className="mt-3 rounded border border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 px-3 py-2 text-sm font-semibold text-red-200">
               {error}
             </div>
           )}
@@ -374,12 +374,12 @@ export function StatisticsClient() {
             <section className="rounded border border-vin-border bg-vin-panel">
               <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
                 <div>
-                  <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Điều hành realtime</h2>
-                  <div className="mt-0.5 text-[10px] text-vin-muted">
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Điều hành realtime</h2>
+                  <div className="mt-0.5 text-sm text-vin-muted">
                     Luồng order, nhận ảnh, đọc phim và các ca cần can thiệp.
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-[10px] text-vin-muted">
+                <div className="flex items-center gap-2 text-sm text-vin-muted">
                   <span className="rounded-full border border-white/10 px-2 py-0.5">
                     Auto {data.operations.autoRefreshSeconds}s
                   </span>
@@ -409,7 +409,7 @@ export function StatisticsClient() {
                       className="border-r border-b border-white/5 px-3 py-2 text-left transition hover:bg-white/[0.03] last:border-r-0 xl:border-b-0"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="truncate text-[10px] font-bold uppercase tracking-wide text-vin-muted">{item.label}</span>
+                        <span className="truncate text-sm font-bold uppercase tracking-wide text-vin-muted">{item.label}</span>
                         <Icon className={`h-3.5 w-3.5 ${item.tone}`} />
                       </div>
                       <div className="mt-1 text-xl font-bold text-white">{item.value}</div>
@@ -466,12 +466,12 @@ export function StatisticsClient() {
             <section className="mt-3 rounded border border-vin-border bg-vin-panel">
               <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
                 <div>
-                  <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">SLA / TAT analytics</h2>
-                  <div className="mt-0.5 text-[10px] text-vin-muted">
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-vin-text2">SLA / TAT analytics</h2>
+                  <div className="mt-0.5 text-sm text-vin-muted">
                     P50, P90, P95 theo từng chặng workflow và outlier vượt SLA.
                   </div>
                 </div>
-                <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-vin-muted">
+                <span className="rounded-full border border-white/10 px-2 py-0.5 text-sm text-vin-muted">
                   {data.performance.outliers.length} outlier
                 </span>
               </div>
@@ -485,8 +485,8 @@ export function StatisticsClient() {
 
                 <div className="rounded border border-white/10 bg-vin-shell px-3 py-3">
                   <div className="mb-3 flex items-center justify-between">
-                    <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">TAT theo ngày</h3>
-                    <span className="text-[10px] text-vin-muted">Avg / P90</span>
+                    <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">TAT theo ngày</h3>
+                    <span className="text-sm text-vin-muted">Avg / P90</span>
                   </div>
                   <DailyTatChart rows={data.performance.dailyTrend} maxMinutes={maxTatMinutes} />
                 </div>
@@ -502,12 +502,12 @@ export function StatisticsClient() {
             <section className="mt-3 rounded border border-vin-border bg-vin-panel">
               <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
                 <div>
-                  <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Utilization phòng / máy</h2>
-                  <div className="mt-0.5 text-[10px] text-vin-muted">
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Utilization phòng / máy</h2>
+                  <div className="mt-0.5 text-sm text-vin-muted">
                     Tải máy theo AE title, khung giờ cao điểm, no-show/cancel và QC reject.
                   </div>
                 </div>
-                <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-vin-muted">
+                <span className="rounded-full border border-white/10 px-2 py-0.5 text-sm text-vin-muted">
                   Peak {data.utilization.kpis.peakHour}
                 </span>
               </div>
@@ -547,7 +547,7 @@ export function StatisticsClient() {
                     className="rounded border border-vin-border bg-vin-panel px-3 py-3 text-left transition hover:border-vin-accent"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="text-[10px] font-bold uppercase tracking-wide text-vin-muted">{item.label}</div>
+                      <div className="text-sm font-bold uppercase tracking-wide text-vin-muted">{item.label}</div>
                       <Icon className={`h-4 w-4 ${item.tone}`} />
                     </div>
                     <div className="mt-2 text-2xl font-bold text-white">{item.value}</div>
@@ -559,8 +559,8 @@ export function StatisticsClient() {
             <div className="mt-3 grid grid-cols-[1fr_360px] gap-3">
               <section className="rounded border border-vin-border bg-vin-panel">
                 <div className="flex items-center justify-between border-b border-vin-border px-3 py-2">
-                  <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Ca theo modality</h2>
-                  <span className="text-[10px] text-vin-muted">{data.dateFrom} → {data.dateTo}</span>
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Ca theo modality</h2>
+                  <span className="text-sm text-vin-muted">{data.dateFrom} → {data.dateTo}</span>
                 </div>
                 <div className="space-y-3 p-3">
                   {data.modalityCounts.length === 0 ? (
@@ -571,7 +571,7 @@ export function StatisticsClient() {
                         type="button"
                         key={item.modality}
                         onClick={() => handleSetDrilldown("modality", item.modality)}
-                        className="grid grid-cols-[4rem_1fr_4rem] items-center gap-3 text-left text-[11px] transition hover:opacity-90"
+                        className="grid grid-cols-[4rem_1fr_4rem] items-center gap-3 text-left text-sm transition hover:opacity-90"
                       >
                         <div className="font-mono font-bold text-vin-accent">{item.modality}</div>
                         <div className="h-5 overflow-hidden rounded bg-vin-shell">
@@ -589,11 +589,11 @@ export function StatisticsClient() {
 
               <section className="rounded border border-vin-border bg-vin-panel">
                 <div className="flex items-center justify-between border-b border-vin-border px-3 py-2">
-                  <h2 className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-vin-text2">
+                  <h2 className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-vin-text2">
                     <Database className="h-3.5 w-3.5 text-vin-accent" />
                     PACS Storage
                   </h2>
-                  <span className={`rounded px-2 py-0.5 text-[9px] font-bold ${
+                  <span className={`rounded px-2 py-0.5 text-sm font-bold ${
                     data.storage.warningLevel === "critical"
                       ? "bg-vin-status-danger-bg text-white"
                       : data.storage.warningLevel === "warning"
@@ -603,7 +603,7 @@ export function StatisticsClient() {
                     {data.storage.available ? data.storage.warningLevel.toUpperCase() : "UNKNOWN"}
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 p-3 text-[11px]">
+                <div className="grid grid-cols-2 gap-2 p-3 text-sm">
                   <StorageMetric label="Patients" value={data.storage.patients} />
                   <StorageMetric label="Studies" value={data.storage.studies} />
                   <StorageMetric label="Series" value={data.storage.series} />
@@ -622,15 +622,15 @@ export function StatisticsClient() {
             <div className="mt-3 grid grid-cols-[1fr_1fr] gap-3">
               <section className="rounded border border-vin-border bg-vin-panel">
                 <div className="flex items-center justify-between border-b border-vin-border px-3 py-2">
-                  <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Trạng thái hiện tại</h2>
-                  <span className="text-[10px] text-vin-muted">{data.statusCounts.reduce((sum, row) => sum + row.count, 0)} ca</span>
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Trạng thái hiện tại</h2>
+                  <span className="text-sm text-vin-muted">{data.statusCounts.reduce((sum, row) => sum + row.count, 0)} ca</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 p-3">
                   {data.statusCounts.length === 0 ? (
                     <div className="col-span-2"><EmptyLine text="Chưa có trạng thái." /></div>
                   ) : (
                     data.statusCounts.map(item => (
-                      <div key={item.status} className="flex items-center justify-between rounded border border-vin-border bg-vin-shell px-3 py-2 text-[11px]">
+                      <div key={item.status} className="flex items-center justify-between rounded border border-vin-border bg-vin-shell px-3 py-2 text-sm">
                         <div className="flex min-w-0 items-center gap-2">
                           <span className={`h-2 w-2 rounded-full ${statusTone[item.status] || "bg-vin-text-muted"}`} />
                           <span className="truncate text-vin-text2">{item.label}</span>
@@ -644,20 +644,20 @@ export function StatisticsClient() {
 
               <section className="rounded border border-vin-border bg-vin-panel">
                 <div className="flex items-center justify-between border-b border-vin-border px-3 py-2">
-                  <h2 className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-vin-text2">
+                  <h2 className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-vin-text2">
                     <Timer className="h-3.5 w-3.5 text-vin-accent" />
                     SLA đọc phim
                   </h2>
                 </div>
                 <div className="grid grid-cols-2 gap-3 p-3">
                   <div className="rounded border border-vin-border bg-vin-shell px-3 py-3">
-                    <div className="text-[10px] font-bold uppercase tracking-wide text-vin-muted">Nhận ảnh → Ký</div>
+                    <div className="text-sm font-bold uppercase tracking-wide text-vin-muted">Nhận ảnh → Ký</div>
                     <div className="mt-2 text-2xl font-bold text-white">
                       {formatDuration(data.kpis.averageReceivedToFinalizedMinutes)}
                     </div>
                   </div>
                   <div className="rounded border border-vin-border bg-vin-shell px-3 py-3">
-                    <div className="text-[10px] font-bold uppercase tracking-wide text-vin-muted">Backlog chờ đọc</div>
+                    <div className="text-sm font-bold uppercase tracking-wide text-vin-muted">Backlog chờ đọc</div>
                     <div className="mt-2 text-2xl font-bold text-white">{data.kpis.readyToRead}</div>
                   </div>
                 </div>
@@ -667,11 +667,11 @@ export function StatisticsClient() {
             <div className="mt-3 grid grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)] gap-3">
               <section className="rounded border border-vin-border bg-vin-panel">
                 <div className="flex items-center justify-between border-b border-vin-border px-3 py-2">
-                  <h2 className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-vin-text2">
+                  <h2 className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-vin-text2">
                     <UserRoundCheck className="h-3.5 w-3.5 text-vin-accent" />
                     Số ca theo bác sĩ
                   </h2>
-                  <span className="text-[10px] text-vin-muted">{data.canViewDoctorStats ? "Final trong kỳ / tháng" : "Ẩn theo phân quyền"}</span>
+                  <span className="text-sm text-vin-muted">{data.canViewDoctorStats ? "Final trong kỳ / tháng" : "Ẩn theo phân quyền"}</span>
                 </div>
                 <div className="min-h-[180px] p-3">
                   {!data.canViewDoctorStats ? (
@@ -679,8 +679,8 @@ export function StatisticsClient() {
                   ) : data.doctorRows.length === 0 ? (
                     <EmptyLine text="Chưa có báo cáo final trong kỳ." />
                   ) : (
-                    <table className="w-full text-left text-[11px]">
-                      <thead className="border-b border-vin-border text-[10px] uppercase tracking-wide text-vin-muted">
+                    <table className="w-full text-left text-sm">
+                      <thead className="border-b border-vin-border text-sm uppercase tracking-wide text-vin-muted">
                         <tr>
                           <th className="pb-2">Bác sĩ</th>
                           <th className="pb-2 text-right">Trong kỳ</th>
@@ -705,8 +705,8 @@ export function StatisticsClient() {
 
               <section className="rounded border border-vin-border bg-vin-panel">
                 <div className="flex items-center justify-between border-b border-vin-border px-3 py-2">
-                  <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Queue chờ đọc</h2>
-                  <span className="text-[10px] text-vin-muted">{data.pendingQueue.length} ca</span>
+                  <h2 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Queue chờ đọc</h2>
+                  <span className="text-sm text-vin-muted">{data.pendingQueue.length} ca</span>
                 </div>
                 <div className="max-h-[340px] overflow-auto p-3 scr-dark">
                   {data.pendingQueue.length === 0 ? (
@@ -721,16 +721,16 @@ export function StatisticsClient() {
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div className="min-w-0">
-                              <div className="truncate text-[12px] font-bold text-white">{row.patientName}</div>
-                              <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
+                              <div className="truncate text-sm font-bold text-white">{row.patientName}</div>
+                              <div className="mt-0.5 truncate font-mono text-sm text-vin-muted">
                                 {row.patientId} · {row.accessionNumber}
                               </div>
                             </div>
-                            <span className={`shrink-0 rounded px-1.5 py-px text-[9px] font-bold ${priorityTone[row.priority] || priorityTone.ROUTINE}`}>
+                            <span className={`shrink-0 rounded px-1.5 py-px text-sm font-bold ${priorityTone[row.priority] || priorityTone.ROUTINE}`}>
                               {row.priority}
                             </span>
                           </div>
-                          <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-vin-muted">
+                          <div className="mt-2 flex items-center justify-between gap-2 text-sm text-vin-muted">
                             <span className="truncate">{row.modality} · {row.studyDescription}</span>
                             <span className="whitespace-nowrap">{formatDuration(row.waitingMinutes)}</span>
                           </div>
@@ -770,7 +770,7 @@ export function StatisticsClient() {
 
 function EmptyLine({ text }: { text: string }) {
   return (
-    <div className="rounded border border-vin-border bg-vin-shell px-3 py-6 text-center text-[11px] text-vin-muted">
+    <div className="rounded border border-vin-border bg-vin-shell px-3 py-6 text-center text-sm text-vin-muted">
       {text}
     </div>
   );
@@ -779,7 +779,7 @@ function EmptyLine({ text }: { text: string }) {
 function StorageMetric({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="rounded border border-vin-border bg-vin-shell px-3 py-2">
-      <div className="text-[10px] font-bold uppercase tracking-wide text-vin-muted">{label}</div>
+      <div className="text-sm font-bold uppercase tracking-wide text-vin-muted">{label}</div>
       <div className="mt-1 font-mono text-sm font-bold text-white">{value}</div>
     </div>
   );
@@ -788,7 +788,7 @@ function StorageMetric({ label, value }: { label: string; value: number | string
 function MiniMetric({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="border-r border-b border-white/5 px-3 py-2 last:border-r-0 xl:border-b-0">
-      <div className="truncate text-[10px] font-bold uppercase tracking-wide text-vin-muted">{label}</div>
+      <div className="truncate text-sm font-bold uppercase tracking-wide text-vin-muted">{label}</div>
       <div className="mt-1 truncate text-xl font-bold text-white">{value}</div>
     </div>
   );
@@ -799,21 +799,21 @@ function TatSegmentCard({ segment }: { segment: StatisticsDurationSummary }) {
     <div className="rounded border border-white/10 bg-vin-shell px-3 py-2.5">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="truncate text-[11px] font-bold uppercase tracking-wide text-vin-text2">{segment.label}</div>
-          <div className="mt-0.5 text-[10px] text-vin-muted">{segment.count} ca</div>
+          <div className="truncate text-sm font-bold uppercase tracking-wide text-vin-text2">{segment.label}</div>
+          <div className="mt-0.5 text-sm text-vin-muted">{segment.count} ca</div>
         </div>
-        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
+        <span className={`rounded-full px-2 py-0.5 text-sm font-bold ${
           segment.breachRate > 20 ? "bg-vin-status-danger-bg text-white" : "border border-white/10 text-vin-muted"
         }`}>
           {formatPercent(segment.breachRate)}
         </span>
       </div>
-      <div className="mt-3 grid grid-cols-3 gap-2 text-[10px]">
+      <div className="mt-3 grid grid-cols-3 gap-2 text-sm">
         <StatCell label="Avg" value={formatDuration(segment.averageMinutes)} />
         <StatCell label="P90" value={formatDuration(segment.p90Minutes)} />
         <StatCell label="P95" value={formatDuration(segment.p95Minutes)} />
       </div>
-      <div className="mt-2 flex items-center justify-between text-[10px] text-vin-muted">
+      <div className="mt-2 flex items-center justify-between text-sm text-vin-muted">
         <span>Target {segment.targetMinutes === null ? "theo priority" : formatDuration(segment.targetMinutes)}</span>
         <span>{segment.breachCount} breach</span>
       </div>
@@ -832,7 +832,7 @@ function StatCell({ label, value }: { label: string; value: string }) {
 
 function DailyTatChart({ rows, maxMinutes }: { rows: Array<{ date: string; count: number; averageTatMinutes: number | null; p90TatMinutes: number | null; breachRate: number }>; maxMinutes: number }) {
   if (rows.every(row => row.count === 0)) {
-    return <div className="py-8 text-center text-[11px] text-vin-muted">Chưa có ca final trong kỳ.</div>;
+    return <div className="py-8 text-center text-sm text-vin-muted">Chưa có ca final trong kỳ.</div>;
   }
 
   return (
@@ -841,7 +841,7 @@ function DailyTatChart({ rows, maxMinutes }: { rows: Array<{ date: string; count
         const avgWidth = Math.max(2, ((row.averageTatMinutes || 0) / maxMinutes) * 100);
         const p90Width = Math.max(2, ((row.p90TatMinutes || 0) / maxMinutes) * 100);
         return (
-          <div key={row.date} className="grid grid-cols-[5.5rem_1fr_4.5rem] items-center gap-2 text-[10px]">
+          <div key={row.date} className="grid grid-cols-[5.5rem_1fr_4.5rem] items-center gap-2 text-sm">
             <div className="font-mono text-vin-muted">{row.date.slice(5)}</div>
             <div className="space-y-1">
               <div className="h-2 overflow-hidden rounded-full bg-vin-panel">
@@ -863,13 +863,13 @@ function BreakdownTable({ title, rows }: { title: string; rows: StatisticsBreakd
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
-        <span className="text-[10px] text-vin-muted">{rows.length} nhóm</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
+        <span className="text-sm text-vin-muted">{rows.length} nhóm</span>
       </div>
       {rows.length === 0 ? (
-        <div className="px-3 py-8 text-center text-[11px] text-vin-muted">Chưa có dữ liệu.</div>
+        <div className="px-3 py-8 text-center text-sm text-vin-muted">Chưa có dữ liệu.</div>
       ) : (
-        <table className="w-full text-left text-[10px]">
+        <table className="w-full text-left text-sm">
           <thead className="border-b border-white/5 text-vin-muted">
             <tr>
               <th className="px-3 py-2">Nhóm</th>
@@ -900,25 +900,25 @@ function PerformanceOutlierList({ rows }: { rows: StatisticsPerformanceOutlier[]
   return (
     <section className="overflow-hidden rounded border border-red-400/20 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Outlier vượt SLA</h3>
-        <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[10px] font-bold text-white">{rows.length}</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Outlier vượt SLA</h3>
+        <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-sm font-bold text-white">{rows.length}</span>
       </div>
       <div className="max-h-[280px] overflow-auto scr-dark">
         {rows.length === 0 ? (
-          <div className="px-3 py-8 text-center text-[11px] text-vin-muted">Không có outlier trong kỳ.</div>
+          <div className="px-3 py-8 text-center text-sm text-vin-muted">Không có outlier trong kỳ.</div>
         ) : (
           rows.map(row => (
             <a key={row.id} href={row.href} className="block border-b border-white/5 px-3 py-2 transition hover:bg-white/[0.03] last:border-b-0">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <div className="truncate text-[12px] font-bold uppercase text-white">{row.patientName}</div>
-                  <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">{row.patientId} · {row.accessionNumber}</div>
+                  <div className="truncate text-sm font-bold uppercase text-white">{row.patientName}</div>
+                  <div className="mt-0.5 truncate font-mono text-sm text-vin-muted">{row.patientId} · {row.accessionNumber}</div>
                 </div>
-                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${priorityTone[row.priority] || priorityTone.ROUTINE}`}>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-sm font-bold ${priorityTone[row.priority] || priorityTone.ROUTINE}`}>
                   {row.priority}
                 </span>
               </div>
-              <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-vin-muted">
+              <div className="mt-2 flex items-center justify-between gap-2 text-sm text-vin-muted">
                 <span className="truncate">{row.modality} · {row.stationAeTitle}</span>
                 <span className="whitespace-nowrap text-red-200">
                   {formatDuration(row.turnaroundMinutes)} / {formatDuration(row.thresholdMinutes)}
@@ -936,8 +936,8 @@ function HourlyUtilizationChart({ rows, maxBusyMinutes }: { rows: StatisticsHour
   return (
     <section className="rounded border border-white/10 bg-vin-shell px-3 py-3">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Theo giờ</h3>
-        <span className="text-[10px] text-vin-muted">Busy minutes</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Theo giờ</h3>
+        <span className="text-sm text-vin-muted">Busy minutes</span>
       </div>
       <div className="grid h-44 grid-cols-[repeat(24,minmax(0,1fr))] items-end gap-1">
         {rows.map(row => {
@@ -951,7 +951,7 @@ function HourlyUtilizationChart({ rows, maxBusyMinutes }: { rows: StatisticsHour
                   title={`${row.label}: ${formatDuration(row.busyMinutes)} · ${row.studyCount} ca`}
                 />
               </div>
-              <div className="text-center font-mono text-[8px] text-vin-muted">{row.hour % 3 === 0 ? row.hour : ""}</div>
+              <div className="text-center font-mono text-sm text-vin-muted">{row.hour % 3 === 0 ? row.hour : ""}</div>
             </div>
           );
         })}
@@ -964,14 +964,14 @@ function RoomUtilizationTable({ rows }: { rows: StatisticsRoomUtilizationRow[] }
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Ranking phòng / máy</h3>
-        <span className="text-[10px] text-vin-muted">{rows.length} phòng</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Ranking phòng / máy</h3>
+        <span className="text-sm text-vin-muted">{rows.length} phòng</span>
       </div>
       {rows.length === 0 ? (
-        <div className="px-3 py-8 text-center text-[11px] text-vin-muted">Chưa có dữ liệu phòng máy.</div>
+        <div className="px-3 py-8 text-center text-sm text-vin-muted">Chưa có dữ liệu phòng máy.</div>
       ) : (
         <div className="max-h-[320px] overflow-auto scr-dark">
-          <table className="w-full text-left text-[10px]">
+          <table className="w-full text-left text-sm">
             <thead className="sticky top-0 border-b border-white/5 bg-vin-shell text-vin-muted">
               <tr>
                 <th className="px-3 py-2">Phòng / AE</th>
@@ -987,7 +987,7 @@ function RoomUtilizationTable({ rows }: { rows: StatisticsRoomUtilizationRow[] }
                 <tr key={row.stationAeTitle} className="border-b border-white/5 last:border-b-0">
                   <td className="px-3 py-2">
                     <div className="truncate font-bold text-white">{row.roomName}</div>
-                    <div className="mt-0.5 font-mono text-[9px] text-vin-muted">{row.stationAeTitle} · {row.modality}</div>
+                    <div className="mt-0.5 font-mono text-sm text-vin-muted">{row.stationAeTitle} · {row.modality}</div>
                   </td>
                   <td className="px-2 py-2 text-right text-white">{row.studyCount}</td>
                   <td className="px-2 py-2 text-right text-vin-text2">{row.finalizedCount}</td>
@@ -1015,10 +1015,10 @@ function BusinessAnalyticsPanel({
     <section className="mt-3 overflow-hidden rounded border border-vin-border bg-vin-panel">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
         <div>
-          <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Business / referral analytics</h2>
-          <div className="mt-0.5 text-[10px] text-vin-muted">Nguồn gửi, khoa/phòng, facility, modality/procedure mix và doanh thu ước tính.</div>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Business / referral analytics</h2>
+          <div className="mt-0.5 text-sm text-vin-muted">Nguồn gửi, khoa/phòng, facility, modality/procedure mix và doanh thu ước tính.</div>
         </div>
-        <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-vin-muted">
+        <span className="rounded-full border border-white/10 px-2 py-0.5 text-sm text-vin-muted">
           Revenue {formatMoney(business.kpis.estimatedRevenue)}
         </span>
       </div>
@@ -1059,19 +1059,19 @@ function BusinessBreakdownTable({
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
-        <span className="text-[10px] text-vin-muted">{rows.length}</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
+        <span className="text-sm text-vin-muted">{rows.length}</span>
       </div>
       <div className="max-h-[230px] overflow-auto scr-dark">
         {rows.length === 0 ? (
-          <div className="px-3 py-7 text-center text-[11px] text-vin-muted">Chưa có dữ liệu.</div>
+          <div className="px-3 py-7 text-center text-sm text-vin-muted">Chưa có dữ liệu.</div>
         ) : (
           rows.map(row => (
             <button
               type="button"
               key={row.key}
               onClick={() => onSetDrilldown(drilldown, row.label)}
-              className="grid w-full grid-cols-[minmax(0,1fr)_3rem_4rem] items-center gap-2 border-b border-white/5 px-3 py-2 text-left text-[10px] transition hover:bg-white/[0.03] last:border-b-0"
+              className="grid w-full grid-cols-[minmax(0,1fr)_3rem_4rem] items-center gap-2 border-b border-white/5 px-3 py-2 text-left text-sm transition hover:bg-white/[0.03] last:border-b-0"
             >
               <div className="min-w-0">
                 <div className="truncate font-bold text-white">{row.label}</div>
@@ -1091,23 +1091,23 @@ function ProcedureMixTable({ rows, onSetDrilldown }: { rows: StatisticsProcedure
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Procedure mix</h3>
-        <span className="text-[10px] text-vin-muted">{rows.length}</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Procedure mix</h3>
+        <span className="text-sm text-vin-muted">{rows.length}</span>
       </div>
       <div className="max-h-[230px] overflow-auto scr-dark">
         {rows.length === 0 ? (
-          <div className="px-3 py-7 text-center text-[11px] text-vin-muted">Chưa có procedure code.</div>
+          <div className="px-3 py-7 text-center text-sm text-vin-muted">Chưa có procedure code.</div>
         ) : (
           rows.map(row => (
             <button
               type="button"
               key={`${row.code}-${row.label}`}
               onClick={() => onSetDrilldown("procedure", row.code !== "-" ? row.code : row.label)}
-              className="flex w-full items-center justify-between gap-2 border-b border-white/5 px-3 py-2 text-left text-[10px] transition hover:bg-white/[0.03] last:border-b-0"
+              className="flex w-full items-center justify-between gap-2 border-b border-white/5 px-3 py-2 text-left text-sm transition hover:bg-white/[0.03] last:border-b-0"
             >
               <div className="min-w-0">
                 <div className="truncate font-bold text-white">{row.label}</div>
-                <div className="mt-0.5 font-mono text-[9px] text-vin-muted">{row.code} · {row.modality}</div>
+                <div className="mt-0.5 font-mono text-sm text-vin-muted">{row.code} · {row.modality}</div>
               </div>
               <div className="shrink-0 text-right">
                 <div className="font-mono font-bold text-vin-text2">{row.count}</div>
@@ -1126,15 +1126,15 @@ function BusinessTrend({ rows }: { rows: StatisticsBusinessAnalytics["dailyTrend
   return (
     <section className="rounded border border-white/10 bg-vin-shell px-3 py-3">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Trend ngày</h3>
-        <span className="text-[10px] text-vin-muted">Orders / Studies</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Trend ngày</h3>
+        <span className="text-sm text-vin-muted">Orders / Studies</span>
       </div>
       <div className="space-y-2">
         {rows.length === 0 ? (
-          <div className="py-6 text-center text-[11px] text-vin-muted">Chưa có trend.</div>
+          <div className="py-6 text-center text-sm text-vin-muted">Chưa có trend.</div>
         ) : (
           rows.map(row => (
-            <div key={row.date} className="grid grid-cols-[5rem_1fr_3rem] items-center gap-2 text-[10px]">
+            <div key={row.date} className="grid grid-cols-[5rem_1fr_3rem] items-center gap-2 text-sm">
               <div className="font-mono text-vin-muted">{row.date.slice(5)}</div>
               <div className="h-2 overflow-hidden rounded bg-vin-panel">
                 <div className="h-full rounded bg-vin-accent" style={{ width: `${Math.max(4, (row.orderCount / maxCount) * 100)}%` }} />
@@ -1159,15 +1159,15 @@ function PacsHealthPanel({ pacsHealth, storage }: { pacsHealth: StatisticsPacsHe
     <section className="overflow-hidden rounded border border-vin-border bg-vin-panel">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
         <div>
-          <h2 className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-vin-text2">
+          <h2 className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-vin-text2">
             <Database className="h-3.5 w-3.5 text-vin-accent" />
             PACS / DICOM health
           </h2>
-          <div className="mt-0.5 text-[10px] text-vin-muted">
+          <div className="mt-0.5 text-sm text-vin-muted">
             Orthanc system, C-ECHO node, last received, metadata issue và storage forecast.
           </div>
         </div>
-        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${pacsHealth.system.orthancOnline ? "bg-vin-status-approved-bg text-white" : "bg-vin-status-danger-bg text-white"}`}>
+        <span className={`rounded-full px-2 py-0.5 text-sm font-bold ${pacsHealth.system.orthancOnline ? "bg-vin-status-approved-bg text-white" : "bg-vin-status-danger-bg text-white"}`}>
           {pacsHealth.system.orthancOnline ? "ONLINE" : "OFFLINE"}
         </span>
       </div>
@@ -1198,14 +1198,14 @@ function PacsNodeTable({ rows }: { rows: StatisticsPacsNodeHealthRow[] }) {
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">C-ECHO node</h3>
-        <span className="text-[10px] text-vin-muted">{rows.length} node</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">C-ECHO node</h3>
+        <span className="text-sm text-vin-muted">{rows.length} node</span>
       </div>
       {rows.length === 0 ? (
-        <div className="px-3 py-8 text-center text-[11px] text-vin-muted">Chưa cấu hình DICOM node active.</div>
+        <div className="px-3 py-8 text-center text-sm text-vin-muted">Chưa cấu hình DICOM node active.</div>
       ) : (
         <div className="max-h-[320px] overflow-auto scr-dark">
-          <table className="w-full text-left text-[10px]">
+          <table className="w-full text-left text-sm">
             <thead className="sticky top-0 border-b border-white/5 bg-vin-shell text-vin-muted">
               <tr>
                 <th className="px-3 py-2">Node</th>
@@ -1219,17 +1219,17 @@ function PacsNodeTable({ rows }: { rows: StatisticsPacsNodeHealthRow[] }) {
                 <tr key={row.id} className="border-b border-white/5 last:border-b-0">
                   <td className="px-3 py-2">
                     <div className="truncate font-bold text-white">{row.name}</div>
-                    <div className="mt-0.5 font-mono text-[9px] text-vin-muted">{row.aeTitle} · {row.modality} · {row.room}</div>
+                    <div className="mt-0.5 font-mono text-sm text-vin-muted">{row.aeTitle} · {row.modality} · {row.room}</div>
                   </td>
                   <td className="px-2 py-2">
                     <div className="font-bold text-vin-text2">{row.echoStatus}</div>
-                    <div className="mt-0.5 max-w-[160px] truncate text-[9px] text-vin-muted">{row.echoMessage}</div>
+                    <div className="mt-0.5 max-w-[160px] truncate text-sm text-vin-muted">{row.echoMessage}</div>
                   </td>
                   <td className="px-2 py-2 text-vin-muted">
                     {row.lastStudyReceivedAt ? formatDateTime(row.lastStudyReceivedAt) : "-"}
                   </td>
                   <td className="px-3 py-2 text-right">
-                    <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${healthBadgeClass(row.warningLevel)}`}>
+                    <span className={`rounded-full px-2 py-0.5 text-sm font-bold ${healthBadgeClass(row.warningLevel)}`}>
                       {row.warningLevel.toUpperCase()}
                     </span>
                   </td>
@@ -1247,20 +1247,20 @@ function PacsLastReceivedList({ rows }: { rows: StatisticsPacsLastReceivedRow[] 
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Last received</h3>
-        <span className="text-[10px] text-vin-muted">{rows.length} nguồn</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Last received</h3>
+        <span className="text-sm text-vin-muted">{rows.length} nguồn</span>
       </div>
       <div className="max-h-[150px] overflow-auto scr-dark">
         {rows.length === 0 ? (
-          <div className="px-3 py-6 text-center text-[11px] text-vin-muted">Chưa có study nhận từ PACS.</div>
+          <div className="px-3 py-6 text-center text-sm text-vin-muted">Chưa có study nhận từ PACS.</div>
         ) : (
           rows.map(row => (
             <div key={`${row.modality}-${row.stationAeTitle}`} className="flex items-center justify-between gap-2 border-b border-white/5 px-3 py-2 last:border-b-0">
               <div className="min-w-0">
-                <div className="font-mono text-[10px] font-bold text-vin-accent">{row.modality} · {row.stationAeTitle}</div>
-                <div className="mt-0.5 truncate text-[9px] text-vin-muted">{row.lastReceivedAt ? formatDateTime(row.lastReceivedAt) : "-"}</div>
+                <div className="font-mono text-sm font-bold text-vin-accent">{row.modality} · {row.stationAeTitle}</div>
+                <div className="mt-0.5 truncate text-sm text-vin-muted">{row.lastReceivedAt ? formatDateTime(row.lastReceivedAt) : "-"}</div>
               </div>
-              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${healthBadgeClass(row.warningLevel)}`}>
+              <span className={`shrink-0 rounded-full px-2 py-0.5 text-sm font-bold ${healthBadgeClass(row.warningLevel)}`}>
                 {row.studyCount} ca
               </span>
             </div>
@@ -1283,24 +1283,24 @@ function MetadataIssueList({
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Metadata issue</h3>
-        <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${total ? "bg-vin-status-warning-bg text-white" : "border border-white/10 text-vin-muted"}`}>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Metadata issue</h3>
+        <span className={`rounded-full px-2 py-0.5 text-sm font-bold ${total ? "bg-vin-status-warning-bg text-white" : "border border-white/10 text-vin-muted"}`}>
           {total}
         </span>
       </div>
       <div className="max-h-[150px] overflow-auto scr-dark">
         {rows.length === 0 && duplicateRows.length === 0 ? (
-          <div className="px-3 py-6 text-center text-[11px] text-vin-muted">Chưa phát hiện thiếu PID/accession/modality hoặc trùng accession.</div>
+          <div className="px-3 py-6 text-center text-sm text-vin-muted">Chưa phát hiện thiếu PID/accession/modality hoặc trùng accession.</div>
         ) : (
           <>
             {rows.slice(0, 6).map(row => (
-              <a key={`${row.id}-${row.issue}`} href={row.href} className="block border-b border-white/5 px-3 py-2 text-[10px] transition hover:bg-white/[0.03]">
+              <a key={`${row.id}-${row.issue}`} href={row.href} className="block border-b border-white/5 px-3 py-2 text-sm transition hover:bg-white/[0.03]">
                 <div className="truncate font-bold text-white">{row.patientName}</div>
                 <div className="mt-0.5 truncate text-vin-muted">{row.issue} · {row.modality} · {row.stationAeTitle}</div>
               </a>
             ))}
             {duplicateRows.slice(0, 4).map(row => (
-              <div key={row.accessionNumber} className="border-b border-white/5 px-3 py-2 text-[10px] last:border-b-0">
+              <div key={row.accessionNumber} className="border-b border-white/5 px-3 py-2 text-sm last:border-b-0">
                 <div className="font-mono font-bold text-amber-200">{row.accessionNumber}</div>
                 <div className="mt-0.5 truncate text-vin-muted">{row.count} study · {row.patientNames}</div>
               </div>
@@ -1317,15 +1317,15 @@ function QualitySafetyPanel({ quality }: { quality: StatisticsQualitySafety }) {
     <section className="overflow-hidden rounded border border-vin-border bg-vin-panel">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
         <div>
-          <h2 className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide text-vin-text2">
+          <h2 className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-vin-text2">
             <AlertTriangle className="h-3.5 w-3.5 text-vin-accent" />
             Quality & safety
           </h2>
-          <div className="mt-0.5 text-[10px] text-vin-muted">
+          <div className="mt-0.5 text-sm text-vin-muted">
             QC reject, missing critical data, critical result communication và addendum.
           </div>
         </div>
-        <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-vin-muted">
+        <span className="rounded-full border border-white/10 px-2 py-0.5 text-sm text-vin-muted">
           Dose {quality.kpis.doseOutliers === null ? "N/A" : quality.kpis.doseOutliers}
         </span>
       </div>
@@ -1355,15 +1355,15 @@ function QcReasonList({ rows }: { rows: StatisticsQualityReasonRow[] }) {
   return (
     <section className="rounded border border-white/10 bg-vin-shell px-3 py-3">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Lý do QC reject</h3>
-        <span className="text-[10px] text-vin-muted">{rows.length} lý do</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Lý do QC reject</h3>
+        <span className="text-sm text-vin-muted">{rows.length} lý do</span>
       </div>
       {rows.length === 0 ? (
-        <div className="py-5 text-center text-[11px] text-vin-muted">Chưa có lý do reject.</div>
+        <div className="py-5 text-center text-sm text-vin-muted">Chưa có lý do reject.</div>
       ) : (
         <div className="space-y-2">
           {rows.slice(0, 6).map(row => (
-            <div key={row.key} className="grid grid-cols-[minmax(0,1fr)_3rem] items-center gap-2 text-[10px]">
+            <div key={row.key} className="grid grid-cols-[minmax(0,1fr)_3rem] items-center gap-2 text-sm">
               <div className="min-w-0">
                 <div className="mb-1 flex items-center justify-between gap-2">
                   <span className="truncate font-bold text-white">{row.label}</span>
@@ -1386,22 +1386,22 @@ function CriticalResultList({ rows }: { rows: StatisticsCriticalResultRow[] }) {
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Critical result</h3>
-        <span className="text-[10px] text-vin-muted">{rows.length} dòng</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Critical result</h3>
+        <span className="text-sm text-vin-muted">{rows.length} dòng</span>
       </div>
       <div className="max-h-[190px] overflow-auto scr-dark">
         {rows.length === 0 ? (
-          <div className="px-3 py-6 text-center text-[11px] text-vin-muted">Không có critical result đang theo dõi.</div>
+          <div className="px-3 py-6 text-center text-sm text-vin-muted">Không có critical result đang theo dõi.</div>
         ) : (
           rows.slice(0, 8).map(row => (
             <a key={row.id} href={row.href} className="block border-b border-white/5 px-3 py-2 transition hover:bg-white/[0.03] last:border-b-0">
               <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0 truncate text-[11px] font-bold text-white">{row.patientName}</div>
-                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${row.communicationStatus === "COMMUNICATED" ? "bg-vin-status-approved-bg text-white" : "bg-vin-status-danger-bg text-white"}`}>
+                <div className="min-w-0 truncate text-sm font-bold text-white">{row.patientName}</div>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-sm font-bold ${row.communicationStatus === "COMMUNICATED" ? "bg-vin-status-approved-bg text-white" : "bg-vin-status-danger-bg text-white"}`}>
                   {row.communicationStatus}
                 </span>
               </div>
-              <div className="mt-1 line-clamp-2 text-[10px] text-vin-muted">{row.finding}</div>
+              <div className="mt-1 line-clamp-2 text-sm text-vin-muted">{row.finding}</div>
             </a>
           ))
         )}
@@ -1422,23 +1422,23 @@ function QualityStudyList({
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
-        <span className="text-[10px] text-vin-muted">{rows.length}</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
+        <span className="text-sm text-vin-muted">{rows.length}</span>
       </div>
       <div className="max-h-[190px] overflow-auto scr-dark">
         {rows.length === 0 ? (
-          <div className="px-3 py-6 text-center text-[11px] text-vin-muted">{emptyText}</div>
+          <div className="px-3 py-6 text-center text-sm text-vin-muted">{emptyText}</div>
         ) : (
           rows.slice(0, 8).map(row => (
             <a key={`${row.id}-${row.reason}`} href={row.href} className="block border-b border-white/5 px-3 py-2 transition hover:bg-white/[0.03] last:border-b-0">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <div className="truncate text-[11px] font-bold text-white">{row.patientName}</div>
-                  <div className="mt-0.5 truncate font-mono text-[9px] text-vin-muted">{row.patientId} · {row.accessionNumber}</div>
+                  <div className="truncate text-sm font-bold text-white">{row.patientName}</div>
+                  <div className="mt-0.5 truncate font-mono text-sm text-vin-muted">{row.patientId} · {row.accessionNumber}</div>
                 </div>
-                <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 text-[9px] font-bold text-vin-muted">{row.modality}</span>
+                <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 text-sm font-bold text-vin-muted">{row.modality}</span>
               </div>
-              <div className="mt-1 truncate text-[10px] text-vin-muted">{row.reason}</div>
+              <div className="mt-1 truncate text-sm text-vin-muted">{row.reason}</div>
             </a>
           ))
         )}
@@ -1451,25 +1451,25 @@ function DoseOutlierList({ rows }: { rows: StatisticsDoseOutlierRow[] }) {
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Dose outlier</h3>
-        <span className="text-[10px] text-vin-muted">{rows.length}</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Dose outlier</h3>
+        <span className="text-sm text-vin-muted">{rows.length}</span>
       </div>
       <div className="max-h-[190px] overflow-auto scr-dark">
         {rows.length === 0 ? (
-          <div className="px-3 py-6 text-center text-[11px] text-vin-muted">Chưa có dose observation vượt ngưỡng.</div>
+          <div className="px-3 py-6 text-center text-sm text-vin-muted">Chưa có dose observation vượt ngưỡng.</div>
         ) : (
           rows.map(row => (
             <a key={row.id} href={row.href} className="block border-b border-white/5 px-3 py-2 transition hover:bg-white/[0.03] last:border-b-0">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <div className="truncate text-[11px] font-bold text-white">{row.patientName}</div>
-                  <div className="mt-0.5 truncate font-mono text-[9px] text-vin-muted">{row.accessionNumber} · {row.modality}</div>
+                  <div className="truncate text-sm font-bold text-white">{row.patientName}</div>
+                  <div className="mt-0.5 truncate font-mono text-sm text-vin-muted">{row.accessionNumber} · {row.modality}</div>
                 </div>
-                <span className="shrink-0 rounded-full bg-vin-status-danger-bg px-2 py-0.5 text-[9px] font-bold text-white">
+                <span className="shrink-0 rounded-full bg-vin-status-danger-bg px-2 py-0.5 text-sm font-bold text-white">
                   {row.metricType}
                 </span>
               </div>
-              <div className="mt-1 text-[10px] text-vin-muted">
+              <div className="mt-1 text-sm text-vin-muted">
                 {row.value} {row.unit} / ngưỡng {row.threshold ?? "-"}
               </div>
             </a>
@@ -1484,15 +1484,15 @@ function QualityBreakdown({ title, rows }: { title: string; rows: StatisticsQual
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
-        <span className="text-[10px] text-vin-muted">{rows.length}</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
+        <span className="text-sm text-vin-muted">{rows.length}</span>
       </div>
       <div className="max-h-[160px] overflow-auto scr-dark">
         {rows.length === 0 ? (
-          <div className="px-3 py-6 text-center text-[11px] text-vin-muted">Chưa có addendum trong kỳ.</div>
+          <div className="px-3 py-6 text-center text-sm text-vin-muted">Chưa có addendum trong kỳ.</div>
         ) : (
           rows.map(row => (
-            <div key={row.key} className="flex items-center justify-between gap-2 border-b border-white/5 px-3 py-2 text-[10px] last:border-b-0">
+            <div key={row.key} className="flex items-center justify-between gap-2 border-b border-white/5 px-3 py-2 text-sm last:border-b-0">
               <span className="min-w-0 truncate font-bold text-white">{row.label}</span>
               <span className="shrink-0 font-mono text-vin-muted">{row.count} · {row.rate}%</span>
             </div>
@@ -1526,8 +1526,8 @@ function DrilldownPanel({
     <section className="mt-3 overflow-hidden rounded border border-vin-border bg-vin-panel">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 px-3 py-2">
         <div>
-          <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Drilldown</h2>
-          <div className="mt-0.5 text-[10px] text-vin-muted">{drilldown.title} · {drilldown.total} ca</div>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Drilldown</h2>
+          <div className="mt-0.5 text-sm text-vin-muted">{drilldown.title} · {drilldown.total} ca</div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <CustomSelect
@@ -1547,13 +1547,13 @@ function DrilldownPanel({
             value={presetName}
             onChange={event => onPresetNameChange(event.target.value)}
             placeholder="Tên preset"
-            className="h-8 w-36 rounded border border-vin-border bg-vin-shell px-2 text-[11px] text-white outline-none focus:border-vin-accent"
+            className="h-8 w-36 rounded border border-vin-border bg-vin-shell px-2 text-sm text-white outline-none focus:border-vin-accent"
           />
           <button
             type="button"
             onClick={onSavePreset}
             disabled={busyActionId === "savePreset"}
-            className="inline-flex h-8 items-center gap-1 rounded border border-white/10 px-2 text-[10px] font-bold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
+            className="inline-flex h-8 items-center gap-1 rounded border border-white/10 px-2 text-sm font-bold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
           >
             {busyActionId === "savePreset" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
             Save
@@ -1562,7 +1562,7 @@ function DrilldownPanel({
             type="button"
             onClick={() => onExport("csv")}
             disabled={busyActionId === "export:csv"}
-            className="inline-flex h-8 items-center gap-1 rounded border border-white/10 px-2 text-[10px] font-bold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
+            className="inline-flex h-8 items-center gap-1 rounded border border-white/10 px-2 text-sm font-bold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
           >
             {busyActionId === "export:csv" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
             CSV
@@ -1571,7 +1571,7 @@ function DrilldownPanel({
             type="button"
             onClick={() => onExport("xlsx")}
             disabled={busyActionId === "export:xlsx"}
-            className="inline-flex h-8 items-center gap-1 rounded border border-emerald-400/30 px-2 text-[10px] font-bold text-emerald-200 transition hover:border-emerald-300 disabled:opacity-40"
+            className="inline-flex h-8 items-center gap-1 rounded border border-emerald-400/30 px-2 text-sm font-bold text-emerald-200 transition hover:border-emerald-300 disabled:opacity-40"
           >
             {busyActionId === "export:xlsx" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
             XLSX
@@ -1582,10 +1582,10 @@ function DrilldownPanel({
       {process.env.NEXT_PUBLIC_ENABLE_STATISTICS_SHARED_UI === "true" ? (
         <DrilldownDataGrid rows={drilldown.rows} />
       ) : drilldown.rows.length === 0 ? (
-        <div className="px-3 py-10 text-center text-[11px] text-vin-muted">Không có ca phù hợp bộ lọc hiện tại.</div>
+        <div className="px-3 py-10 text-center text-sm text-vin-muted">Không có ca phù hợp bộ lọc hiện tại.</div>
       ) : (
         <div className="max-h-[380px] overflow-auto scr-dark">
-          <table className="w-full text-left text-[10px]">
+          <table className="w-full text-left text-sm">
             <thead className="sticky top-0 border-b border-white/5 bg-vin-panel text-vin-muted">
               <tr>
                 <th className="px-3 py-2">Bệnh nhân</th>
@@ -1612,20 +1612,20 @@ function DrilldownRowItem({ row }: { row: StatisticsDrilldownRow }) {
       <td className="px-3 py-2">
         <a href={row.href} className="block min-w-0">
           <div className="truncate font-bold text-white">{row.patientName}</div>
-          <div className="mt-0.5 truncate font-mono text-[9px] text-vin-muted">{row.patientId} · {row.accessionNumber}</div>
+          <div className="mt-0.5 truncate font-mono text-sm text-vin-muted">{row.patientId} · {row.accessionNumber}</div>
         </a>
       </td>
       <td className="px-2 py-2">
-        <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[9px] font-bold text-vin-text2">{row.modality}</span>
+        <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-sm font-bold text-vin-text2">{row.modality}</span>
       </td>
       <td className="px-2 py-2">
         <div className="font-bold text-vin-text2">{row.statusLabel}</div>
-        <div className="mt-0.5 text-[9px] text-vin-muted">{row.priority} · {row.stationAeTitle}</div>
+        <div className="mt-0.5 text-sm text-vin-muted">{row.priority} · {row.stationAeTitle}</div>
       </td>
       <td className="px-2 py-2 text-vin-muted">{row.referringPhysician}</td>
       <td className="px-2 py-2">
         <div className="truncate text-vin-text2">{row.procedureDescription}</div>
-        <div className="mt-0.5 font-mono text-[9px] text-vin-muted">{row.procedureCode}</div>
+        <div className="mt-0.5 font-mono text-sm text-vin-muted">{row.procedureCode}</div>
       </td>
       <td className="px-3 py-2 text-right text-vin-muted">{formatDateTime(row.receivedAt || row.scheduledAt || row.finalizedAt)}</td>
     </tr>
@@ -1647,10 +1647,10 @@ function AlertEscalationPanel({
     <section className="overflow-hidden rounded border border-vin-border bg-vin-panel">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
         <div>
-          <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Alert & escalation</h2>
-          <div className="mt-0.5 text-[10px] text-vin-muted">Alert đang mở từ rule SLA, workflow, assign và DICOM node.</div>
+          <h2 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Alert & escalation</h2>
+          <div className="mt-0.5 text-sm text-vin-muted">Alert đang mở từ rule SLA, workflow, assign và DICOM node.</div>
         </div>
-        <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-vin-muted">
+        <span className="rounded-full border border-white/10 px-2 py-0.5 text-sm text-vin-muted">
           {alerts.canManageAlerts ? "Có quyền xử lý" : "Chỉ xem"}
         </span>
       </div>
@@ -1663,7 +1663,7 @@ function AlertEscalationPanel({
 
       <div className="max-h-[420px] overflow-auto scr-dark">
         {alerts.rows.length === 0 ? (
-          <div className="px-3 py-10 text-center text-[11px] text-vin-muted">Không có alert đang mở.</div>
+          <div className="px-3 py-10 text-center text-sm text-vin-muted">Không có alert đang mở.</div>
         ) : (
           alerts.rows.map(alert => (
             <AlertRowItem
@@ -1708,19 +1708,19 @@ function AlertRowItem({
       <div className="flex items-start justify-between gap-2">
         <a href={alert.href} className="min-w-0">
           <div className="flex min-w-0 items-center gap-2">
-            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${severityClass}`}>
+            <span className={`shrink-0 rounded-full px-2 py-0.5 text-sm font-bold ${severityClass}`}>
               {alert.severity.toUpperCase()}
             </span>
-            <span className="truncate text-[12px] font-bold text-white">{alert.title}</span>
+            <span className="truncate text-sm font-bold text-white">{alert.title}</span>
           </div>
-          <div className="mt-1 line-clamp-2 text-[10px] text-vin-muted">{alert.message}</div>
+          <div className="mt-1 line-clamp-2 text-sm text-vin-muted">{alert.message}</div>
         </a>
-        <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 font-mono text-[9px] text-vin-muted">
+        <span className="shrink-0 rounded-full border border-white/10 px-2 py-0.5 font-mono text-sm text-vin-muted">
           {alert.status}
         </span>
       </div>
 
-      <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-vin-muted">
+      <div className="mt-2 flex items-center justify-between gap-2 text-sm text-vin-muted">
         <span className="truncate">
           {alert.patientName || alert.entityType}
           {alert.priority ? ` · ${alert.priority}` : ""}
@@ -1734,7 +1734,7 @@ function AlertRowItem({
             type="button"
             disabled={ackBusy || resolveBusy || alert.status === "ACKNOWLEDGED"}
             onClick={() => onAcknowledge(alert.id)}
-            className="inline-flex h-7 items-center gap-1 rounded border border-white/10 px-2 text-[10px] font-bold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
+            className="inline-flex h-7 items-center gap-1 rounded border border-white/10 px-2 text-sm font-bold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
           >
             {ackBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <UserRoundCheck className="h-3 w-3" />}
             Ack
@@ -1743,12 +1743,12 @@ function AlertRowItem({
             type="button"
             disabled={ackBusy || resolveBusy}
             onClick={() => onResolve(alert.id)}
-            className="inline-flex h-7 items-center gap-1 rounded border border-emerald-400/30 px-2 text-[10px] font-bold text-emerald-200 transition hover:border-emerald-300 disabled:opacity-40"
+            className="inline-flex h-7 items-center gap-1 rounded border border-emerald-400/30 px-2 text-sm font-bold text-emerald-200 transition hover:border-emerald-300 disabled:opacity-40"
           >
             {resolveBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
             Resolve
           </button>
-          <a href={alert.href} className="ml-auto text-[10px] font-semibold text-vin-accent hover:text-white">
+          <a href={alert.href} className="ml-auto text-sm font-semibold text-vin-accent hover:text-white">
             Mở
           </a>
         </div>
@@ -1770,12 +1770,12 @@ function WorkloadCenter({
     <section className="overflow-hidden rounded border border-vin-border bg-vin-panel">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
         <div>
-          <h2 className="text-[12px] font-bold uppercase tracking-wide text-vin-text2">Radiologist workload</h2>
-          <div className="mt-0.5 text-[10px] text-vin-muted">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Radiologist workload</h2>
+          <div className="mt-0.5 text-sm text-vin-muted">
             Backlog theo bác sĩ, ca chưa assign và TAT theo người đọc.
           </div>
         </div>
-        <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-vin-muted">
+        <span className="rounded-full border border-white/10 px-2 py-0.5 text-sm text-vin-muted">
           {workload.currentDoctorOnly ? "Queue của tôi" : "Điều phối chung"}
         </span>
       </div>
@@ -1804,14 +1804,14 @@ function WorkloadDoctorTable({ rows }: { rows: StatisticsWorkloadDoctorRow[] }) 
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Theo bác sĩ</h3>
-        <span className="text-[10px] text-vin-muted">{rows.length} dòng</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Theo bác sĩ</h3>
+        <span className="text-sm text-vin-muted">{rows.length} dòng</span>
       </div>
       {rows.length === 0 ? (
-        <div className="px-3 py-8 text-center text-[11px] text-vin-muted">Chưa có dữ liệu workload.</div>
+        <div className="px-3 py-8 text-center text-sm text-vin-muted">Chưa có dữ liệu workload.</div>
       ) : (
         <div className="max-h-[320px] overflow-auto scr-dark">
-          <table className="w-full text-left text-[10px]">
+          <table className="w-full text-left text-sm">
             <thead className="sticky top-0 border-b border-white/5 bg-vin-shell text-vin-muted">
               <tr>
                 <th className="px-3 py-2">Bác sĩ</th>
@@ -1826,7 +1826,7 @@ function WorkloadDoctorTable({ rows }: { rows: StatisticsWorkloadDoctorRow[] }) 
                 <tr key={row.doctorId} className="border-b border-white/5 last:border-b-0">
                   <td className="px-3 py-2">
                     <div className="truncate font-bold text-white">{row.doctorName}</div>
-                    <div className="mt-0.5 text-[9px] text-vin-muted">{row.slaBreaches} breach SLA</div>
+                    <div className="mt-0.5 text-sm text-vin-muted">{row.slaBreaches} breach SLA</div>
                   </td>
                   <td className="px-2 py-2 text-right text-vin-text2">{row.readyToRead + row.reading}</td>
                   <td className="px-2 py-2 text-right text-vin-text2">{row.draftReports}</td>
@@ -1863,12 +1863,12 @@ function WorkloadQueueList({
   return (
     <section className="overflow-hidden rounded border border-white/10 bg-vin-shell">
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">Queue assign</h3>
-        <span className="text-[10px] text-vin-muted">{canManage ? "Có thể assign" : "Chỉ xem"}</span>
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">Queue assign</h3>
+        <span className="text-sm text-vin-muted">{canManage ? "Có thể assign" : "Chỉ xem"}</span>
       </div>
       <div className="max-h-[320px] overflow-auto scr-dark">
         {rows.length === 0 ? (
-          <div className="px-3 py-8 text-center text-[11px] text-vin-muted">Không có ca trong queue.</div>
+          <div className="px-3 py-8 text-center text-sm text-vin-muted">Không có ca trong queue.</div>
         ) : (
           rows.map(row => {
             const busy = busyActionId === `assign:${row.id}`;
@@ -1876,16 +1876,16 @@ function WorkloadQueueList({
               <div key={row.id} className="border-b border-white/5 px-3 py-2.5 last:border-b-0">
                 <div className="flex items-start justify-between gap-2">
                   <a href={row.href} className="min-w-0">
-                    <div className="truncate text-[12px] font-bold uppercase text-white">{row.patientName}</div>
-                    <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
+                    <div className="truncate text-sm font-bold uppercase text-white">{row.patientName}</div>
+                    <div className="mt-0.5 truncate font-mono text-sm text-vin-muted">
                       {row.patientId} · {row.accessionNumber}
                     </div>
                   </a>
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${priorityTone[row.priority] || priorityTone.ROUTINE}`}>
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-sm font-bold ${priorityTone[row.priority] || priorityTone.ROUTINE}`}>
                     {row.priority}
                   </span>
                 </div>
-                <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-vin-muted">
+                <div className="mt-2 flex items-center justify-between gap-2 text-sm text-vin-muted">
                   <span className="truncate">{row.modality} · {row.statusLabel} · {formatDuration(row.waitingMinutes)}</span>
                   <a href={row.href} className="shrink-0 font-semibold text-vin-accent hover:text-white">Mở</a>
                 </div>
@@ -1936,14 +1936,14 @@ function OperationList({
   return (
     <section className={`min-h-[260px] overflow-hidden rounded border bg-vin-shell ${toneClass}`}>
       <div className="flex items-center justify-between border-b border-white/5 px-3 py-2">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
-        <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[10px] font-bold text-white">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-vin-text2">{title}</h3>
+        <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-sm font-bold text-white">
           {rows.length}
         </span>
       </div>
       <div className="max-h-[340px] overflow-auto scr-dark">
         {rows.length === 0 ? (
-          <div className="px-3 py-8 text-center text-[11px] text-vin-muted">{emptyText}</div>
+          <div className="px-3 py-8 text-center text-sm text-vin-muted">{emptyText}</div>
         ) : (
           rows.map(row => (
             <OperationRowItem
@@ -1980,17 +1980,17 @@ function OperationRowItem({
     <div className="block border-b border-white/5 px-3 py-2.5 transition hover:bg-white/[0.03] last:border-b-0">
       <div className="flex items-start justify-between gap-2">
         <a href={row.href} className="min-w-0">
-          <div className="truncate text-[12px] font-bold uppercase text-white">{row.patientName}</div>
-          <div className="mt-0.5 truncate font-mono text-[10px] text-vin-muted">
+          <div className="truncate text-sm font-bold uppercase text-white">{row.patientName}</div>
+          <div className="mt-0.5 truncate font-mono text-sm text-vin-muted">
             {row.patientId} · {row.accessionNumber}
           </div>
         </a>
-        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold ${priorityTone[row.priority] || priorityTone.ROUTINE}`}>
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-sm font-bold ${priorityTone[row.priority] || priorityTone.ROUTINE}`}>
           {row.priority}
         </span>
       </div>
 
-      <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-vin-muted">
+      <div className="mt-2 flex items-center justify-between gap-2 text-sm text-vin-muted">
         <span className="flex min-w-0 items-center gap-1.5">
           <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${statusTone[row.status] || "bg-vin-border"}`} />
           <span className="truncate">{row.statusLabel}</span>
@@ -1998,14 +1998,14 @@ function OperationRowItem({
         <span className="whitespace-nowrap font-semibold text-vin-text2">{formatDuration(row.waitingMinutes)}</span>
       </div>
 
-      <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-vin-muted">
-        <span className="rounded-full border border-white/10 px-1.5 py-px font-mono text-[9px] font-bold text-vin-text2">
+      <div className="mt-1.5 flex items-center gap-1.5 text-sm text-vin-muted">
+        <span className="rounded-full border border-white/10 px-1.5 py-px font-mono text-sm font-bold text-vin-text2">
           {row.modality}
         </span>
         <span className="min-w-0 truncate">{row.studyDescription}</span>
       </div>
 
-      <div className="mt-1.5 truncate text-[10px] text-vin-muted">
+      <div className="mt-1.5 truncate text-sm text-vin-muted">
         {row.stationAeTitle !== "-" && <span>{row.stationAeTitle} · </span>}
         {row.reason}
       </div>
@@ -2018,7 +2018,7 @@ function OperationRowItem({
               onClick={() => {
                 onRecordScanStart(row.id);
               }}
-              className="inline-flex h-7 items-center gap-1 rounded border border-white/10 px-2 text-[10px] font-bold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
+              className="inline-flex h-7 items-center gap-1 rounded border border-white/10 px-2 text-sm font-bold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
             >
               {startBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
               Start scan
@@ -2031,7 +2031,7 @@ function OperationRowItem({
               onClick={() => {
                 onRecordScanEnd(row.id);
               }}
-              className="inline-flex h-7 items-center gap-1 rounded border border-emerald-400/30 px-2 text-[10px] font-bold text-emerald-200 transition hover:border-emerald-300 disabled:opacity-40"
+              className="inline-flex h-7 items-center gap-1 rounded border border-emerald-400/30 px-2 text-sm font-bold text-emerald-200 transition hover:border-emerald-300 disabled:opacity-40"
             >
               {endBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Square className="h-3 w-3" />}
               End scan

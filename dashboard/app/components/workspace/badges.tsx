@@ -12,10 +12,10 @@ export function ModBadge({ value, isNonDicom }: { value?: string; isNonDicom?: b
   if (isNonDicom) {
     return (
       <div className="flex flex-col items-center gap-1">
-        <span className="inline-flex min-w-[2.25rem] items-center justify-center rounded-full border border-indigo-400/35 bg-indigo-500/15 px-2 py-0.5 font-mono text-[10px] font-bold leading-none tracking-widest text-indigo-100 shadow-[0_0_8px_rgba(99,102,241,0.15)]">
+        <span className="inline-flex min-w-[2.25rem] items-center justify-center rounded-full border border-indigo-400/35 bg-indigo-500/15 px-2 py-0.5 font-mono text-sm font-bold leading-none tracking-widest text-indigo-100 shadow-[0_0_8px_rgba(99,102,241,0.15)]">
           {value || "NON"}
         </span>
-        <span className="text-[9px] font-semibold text-indigo-300">Non-DICOM</span>
+        <span className="text-sm font-semibold text-indigo-300">Non-DICOM</span>
       </div>
     );
   }
@@ -24,7 +24,7 @@ export function ModBadge({ value, isNonDicom }: { value?: string; isNonDicom?: b
   const classes = modalityClasses[label] || "border-white/10 bg-white/5 text-vin-muted";
 
   return (
-    <span className={`inline-flex min-w-9 items-center justify-center rounded-full border px-2 py-0.5 font-mono text-[10px] font-bold leading-none ${classes}`}>
+    <span className={`inline-flex min-w-9 items-center justify-center rounded-full border px-2 py-0.5 font-mono text-sm font-bold leading-none ${classes}`}>
       {label}
     </span>
   );
@@ -63,5 +63,5 @@ export function RisStatusBadge({ status }: { status?: string }) {
             ? "border-cyan-400/35 bg-cyan-500/15 text-cyan-100"
             : "border-white/10 bg-white/5 text-vin-text2";
 
-  return <span className={`inline-flex max-w-[118px] items-center justify-center truncate rounded-full border px-2.5 py-1 text-[9px] font-bold leading-none ${classes}`}>{label}</span>;
+  return <span className={`inline-flex max-w-[118px] items-center justify-center truncate rounded-full border px-2.5 py-1 text-sm font-bold leading-none ${classes}`}>{label}</span>;
 }

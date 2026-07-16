@@ -117,7 +117,7 @@ export function NewIncidentClient({
 
         <input type="hidden" name="contextUrl" value={defaultContextUrl} />
         {defaultContextUrl && (
-          <div className="rounded border border-vin-border bg-vin-panel px-3 py-2 text-xs text-vin-text2">
+          <div className="rounded border border-vin-border bg-vin-panel px-3 py-2 text-sm text-vin-text2">
             Context link: <span className="font-mono">{defaultContextUrl}</span>
           </div>
         )}
@@ -127,7 +127,7 @@ export function NewIncidentClient({
             <input type="checkbox" name="containsPhiRisk" id="containsPhiRisk" className="rounded border-vin-border w-4 h-4" />
             <span className="font-semibold text-red-700">Warning: This description contains or risks containing PHI.</span>
           </label>
-          <p className="text-xs text-muted-foreground mt-2 ml-7">
+          <p className="text-sm text-muted-foreground mt-2 ml-7">
             If you check this box, the system will block the submission. You MUST scrub the data first and leave this unchecked to attest it is safe.
           </p>
         </div>

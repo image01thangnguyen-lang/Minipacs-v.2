@@ -37,7 +37,7 @@ export function WorkspaceSearchBarAntd({ value, datePreset, pending, onChange, o
               type={isActive ? "primary" : "default"}
               ghost={isActive}
               onClick={() => onDateChange(preset)}
-              className="flex-1 px-1 text-[9px] min-w-0 font-semibold"
+              className="flex-1 px-1 text-sm min-w-0 font-semibold"
             >
               {{ TODAY: "Hôm nay", YESTERDAY: "Hôm qua", "3DAYS": "3 ngày", "7DAYS": "7 ngày", ALL: "Tất cả" }[preset]}
             </Button>

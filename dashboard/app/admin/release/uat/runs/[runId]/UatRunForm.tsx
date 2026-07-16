@@ -90,7 +90,7 @@ export default function UatRunForm({ run, canExecute }: { run: any; canExecute: 
             <h2 className="text-xl font-bold">
               Case {activeCaseIndex + 1} of {total}: {activeCase.title}
             </h2>
-            <span className={`px-2 py-1 text-xs rounded font-medium ${
+            <span className={`px-2 py-1 text-sm rounded font-medium ${
               activeResult.status === 'PASS' ? 'bg-green-100 text-green-700' :
               activeResult.status === 'FAIL' ? 'bg-red-100 text-red-700' :
               activeResult.status === 'BLOCKED' ? 'bg-orange-100 text-orange-700' :
@@ -104,16 +104,16 @@ export default function UatRunForm({ run, canExecute }: { run: any; canExecute: 
           <div className="space-y-4 text-sm">
             {activeCase.description && (
               <div>
-                <h4 className="font-semibold text-muted-foreground uppercase text-xs mb-1">Preconditions</h4>
+                <h4 className="font-semibold text-muted-foreground uppercase text-sm mb-1">Preconditions</h4>
                 <div className="whitespace-pre-wrap">{activeCase.description}</div>
               </div>
             )}
             <div>
-              <h4 className="font-semibold text-muted-foreground uppercase text-xs mb-1">Steps</h4>
+              <h4 className="font-semibold text-muted-foreground uppercase text-sm mb-1">Steps</h4>
               <div className="whitespace-pre-wrap bg-muted p-3 rounded">{activeCase.steps}</div>
             </div>
             <div>
-              <h4 className="font-semibold text-muted-foreground uppercase text-xs mb-1">Expected Result</h4>
+              <h4 className="font-semibold text-muted-foreground uppercase text-sm mb-1">Expected Result</h4>
               <div className="whitespace-pre-wrap bg-primary/5 p-3 rounded border border-primary/20">{activeCase.expected}</div>
             </div>
           </div>
@@ -137,7 +137,7 @@ export default function UatRunForm({ run, canExecute }: { run: any; canExecute: 
                     <AlertTriangle className="w-4 h-4 mr-2" />
                     Attach Evidence
                   </h5>
-                  <p className="text-xs text-orange-700">
+                  <p className="text-sm text-orange-700">
                     Ensure all screenshots, logs, or links are strictly scrubbed of Protected Health Information (PHI) before attaching.
                   </p>
                   <input
@@ -219,7 +219,7 @@ export default function UatRunForm({ run, canExecute }: { run: any; canExecute: 
 
           {!canExecute && activeResult.notes && (
             <div className="mt-6 pt-6 border-t">
-              <h4 className="font-semibold text-muted-foreground uppercase text-xs mb-1">Notes</h4>
+              <h4 className="font-semibold text-muted-foreground uppercase text-sm mb-1">Notes</h4>
               <p className="text-sm">{activeResult.notes}</p>
             </div>
           )}
@@ -240,8 +240,8 @@ export default function UatRunForm({ run, canExecute }: { run: any; canExecute: 
               >
                 Approve Run
               </button>
-              {hasFailures && <p className="text-xs text-orange-600 text-center">Cannot approve with failed or blocked cases.</p>}
-              {!allCompleted && <p className="text-xs text-orange-600 text-center">Complete or skip every case before approving.</p>}
+              {hasFailures && <p className="text-sm text-orange-600 text-center">Cannot approve with failed or blocked cases.</p>}
+              {!allCompleted && <p className="text-sm text-orange-600 text-center">Complete or skip every case before approving.</p>}
 
               <button
                 type="button"
@@ -272,7 +272,7 @@ export default function UatRunForm({ run, canExecute }: { run: any; canExecute: 
               <span className="truncate pr-4">
                 {idx + 1}. {r.caseRef.title}
               </span>
-              <span className={`flex-shrink-0 text-xs px-2 py-1 rounded-full ${
+              <span className={`flex-shrink-0 text-sm px-2 py-1 rounded-full ${
                 r.status === 'PASS' ? 'bg-green-100 text-green-700' :
                 r.status === 'FAIL' ? 'bg-red-100 text-red-700' :
                 r.status === 'BLOCKED' ? 'bg-orange-100 text-orange-700' :

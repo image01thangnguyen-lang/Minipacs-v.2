@@ -77,14 +77,14 @@ export default function AdminDestructivePage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-semibold text-white">{req.operationType}</h3>
-                      <p className="text-xs text-vin-muted mt-1 font-mono">
+                      <p className="text-sm text-vin-muted mt-1 font-mono">
                         {req.entityType}: {req.entityId || req.studyInstanceUid || '-'}
                       </p>
                       <p className="text-sm text-red-300 mt-2 bg-red-950/30 p-2 rounded">
                         Lý do: {req.reason}
                       </p>
                       {req.impactSummaryJson && (
-                        <div className="mt-2 text-xs bg-vin-root p-2 rounded border border-vin-border">
+                        <div className="mt-2 text-sm bg-vin-root p-2 rounded border border-vin-border">
                           <strong className={JSON.parse(req.impactSummaryJson).safeToDelete ? 'text-green-400' : 'text-red-400'}>
                             Dry Run Result: {JSON.parse(req.impactSummaryJson).safeToDelete ? 'Safe to delete' : 'UNSAFE'}
                           </strong>
@@ -94,7 +94,7 @@ export default function AdminDestructivePage() {
                         </div>
                       )}
                     </div>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    <span className={`text-sm px-2 py-0.5 rounded-full font-medium ${
                       req.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400' :
                       req.status === 'APPROVED' ? 'bg-blue-500/20 text-blue-400' :
                       req.status === 'DRY_RUN_READY' ? 'bg-cyan-500/20 text-cyan-400' :

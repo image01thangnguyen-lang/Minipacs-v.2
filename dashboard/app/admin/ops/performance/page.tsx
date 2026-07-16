@@ -40,7 +40,7 @@ export default async function PerformanceCenterPage() {
                   <td className="p-4">
                     {new Date(run.createdAt).toLocaleString()}
                     <br />
-                    <span className="text-xs text-vin-muted">by {run.triggeredByUser?.username || 'Unknown'}</span>
+                    <span className="text-sm text-vin-muted">by {run.triggeredByUser?.username || 'Unknown'}</span>
                   </td>
                   <td className="p-4 font-mono text-sm">{run.testKey}</td>
                   <td className="p-4">
@@ -60,7 +60,7 @@ export default async function PerformanceCenterPage() {
                     {run.status === 'FAILED' ? (
                       <span className="text-red-600">{run.errorMessage}</span>
                     ) : (
-                      <pre className="text-xs bg-vin-panel2 p-2 rounded overflow-auto">
+                      <pre className="text-sm bg-vin-panel2 p-2 rounded overflow-auto">
                         {run.resultJson ? JSON.stringify(JSON.parse(run.resultJson), null, 2) : '-'}
                       </pre>
                     )}

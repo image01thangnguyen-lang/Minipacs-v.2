@@ -57,13 +57,13 @@ export function ConsultationsClient() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <ScreenHeader />
-              <div className="mt-1 text-[11px] text-vin-muted">{consultations.length} cuộc hội chẩn</div>
+              <div className="mt-1 text-sm text-vin-muted">{consultations.length} cuộc hội chẩn</div>
             </div>
             <button
               type="button"
               onClick={loadConsultations}
               disabled={isLoading}
-              className="flex items-center gap-1.5 rounded border border-vin-border bg-vin-panel px-3 py-1.5 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
+              className="flex items-center gap-1.5 rounded border border-vin-border bg-vin-panel px-3 py-1.5 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white disabled:opacity-40"
             >
               <RefreshCcw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
               Làm mới
@@ -90,7 +90,7 @@ export function ConsultationsClient() {
 
         <main className="min-h-0 flex-1 overflow-auto p-4 scr-dark">
           {error && (
-            <div role="alert" aria-live="polite" className="mb-4 rounded border border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 px-3 py-2 text-[11px] font-semibold text-red-200">
+            <div role="alert" aria-live="polite" className="mb-4 rounded border border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 px-3 py-2 text-sm font-semibold text-red-200">
               {error}
             </div>
           )}
@@ -114,20 +114,20 @@ export function ConsultationsClient() {
                   <div className="flex items-center justify-between border-b border-white/5 p-4">
                     <div>
                       <h3 className="font-bold text-white">{c.title || "Hội chẩn ca chụp"}</h3>
-                      <div className="mt-1 flex items-center gap-1.5 text-[11px] text-vin-text2">
+                      <div className="mt-1 flex items-center gap-1.5 text-sm text-vin-text2">
                         <Calendar className="h-3 w-3" />
                         {new Date(c.createdAt).toLocaleString("vi-VN")}
                       </div>
                     </div>
-                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-bold ${statusClasses[c.status] || "bg-vin-shell text-vin-text2"}`}>
+                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-sm font-bold ${statusClasses[c.status] || "bg-vin-shell text-vin-text2"}`}>
                       {statusLabels[c.status] || c.status}
                     </span>
                   </div>
 
-                  <div className="flex-1 p-4 text-[12px] text-vin-text2">
+                  <div className="flex-1 p-4 text-sm text-vin-text2">
                     <p className="line-clamp-2">{c.description || "Không có mô tả"}</p>
 
-                    <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-4 text-[11px]">
+                    <div className="mt-4 flex items-center justify-between border-t border-white/5 pt-4 text-sm">
                       <div>
                         <span className="text-vin-muted">Người tạo: </span>
                         <span className="font-semibold text-white">{c.createdByUser?.fullName || c.createdByUser?.username || "Unknown"}</span>
@@ -142,7 +142,7 @@ export function ConsultationsClient() {
                   <div className="border-t border-white/5 p-3">
                     <Link
                       href={`/consultations/${c.id}`}
-                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-vin-accent/20 px-4 py-2 text-[12px] font-semibold text-vin-accent transition hover:bg-vin-accent hover:text-white"
+                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-vin-accent/20 px-4 py-2 text-sm font-semibold text-vin-accent transition hover:bg-vin-accent hover:text-white"
                     >
                       <Video className="h-3.5 w-3.5" />
                       Vào phòng hội chẩn

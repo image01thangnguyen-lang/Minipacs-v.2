@@ -55,10 +55,10 @@ export default async function NonDicomExamCapturePage({ params }: { params: { id
           <div className="h-4 w-[1px] bg-vin-panel/10" />
           <ScreenHeader />
         </div>
-        <div className="flex items-center gap-4 text-xs">
+        <div className="flex items-center gap-4 text-sm">
           <div className="flex flex-col items-end">
             <span className="font-medium text-white">{exam.patientId}</span>
-            <span className="text-[10px] text-vin-muted">
+            <span className="text-sm text-vin-muted">
               ACC: {exam.accessionNumber}
             </span>
           </div>
@@ -67,7 +67,7 @@ export default async function NonDicomExamCapturePage({ params }: { params: { id
             <span className="font-medium text-white">
               {exam.status === "CREATED" ? "Chưa có dữ liệu" : exam.status}
             </span>
-            <span className="text-[10px] text-vin-muted">
+            <span className="text-sm text-vin-muted">
               Bắt đầu: {formatDateTime(exam.createdAt)}
             </span>
           </div>

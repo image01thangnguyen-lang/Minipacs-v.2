@@ -127,7 +127,7 @@ export function StudyRowActionMenu({
       style={menuStyle}
       className="w-48 animate-in fade-in zoom-in-95 rounded-lg border border-vin-border bg-vin-shell py-1 shadow-lg shadow-black/20"
     >
-      <div className="px-3 py-1.5 text-[10px] font-semibold uppercase text-vin-muted">Hành động</div>
+      <div className="px-3 py-1.5 text-sm font-semibold uppercase text-vin-muted">Hành động</div>
 
       <Link
         href={`/viewer/minipacs?StudyInstanceUIDs=${studyInstanceUid}`}

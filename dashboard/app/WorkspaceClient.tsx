@@ -94,8 +94,8 @@ const getDoctorPrintInfo = (report: any) => {
 function MiniInfo({ label, mono, value }: { label: string; mono?: boolean; value?: string | number | null }) {
   return (
     <div className="min-w-0">
-      <div className="text-[9px] font-bold uppercase tracking-wide text-vin-muted">{label}</div>
-      <div className={`mt-0.5 truncate text-[11px] text-vin-text2 ${mono ? "font-mono" : ""}`}>{value || "-"}</div>
+      <div className="text-sm font-bold uppercase tracking-wide text-vin-muted">{label}</div>
+      <div className={`mt-0.5 truncate text-sm text-vin-text2 ${mono ? "font-mono" : ""}`}>{value || "-"}</div>
     </div>
   );
 }
@@ -955,8 +955,8 @@ function DashboardPageContent() {
           grid={<>
             <div className="flex h-10 flex-none items-center justify-between border-b border-vin-border bg-vin-panel2 px-3">
               <div>
-                <h2 className="text-[11px] font-bold uppercase tracking-wider text-vin-text2">Danh sách ca chụp</h2>
-                <p className="text-[9px] text-vin-muted">{filteredStudies.length} ca · Trang {currentPage}/{totalPages}</p>
+                <h2 className="text-sm font-bold uppercase tracking-wider text-vin-text2">Danh sách ca chụp</h2>
+                <p className="text-sm text-vin-muted">{filteredStudies.length} ca · Trang {currentPage}/{totalPages}</p>
               </div>
               <div className="flex items-center gap-1" aria-label="Phân trang">
                 <button type="button" aria-label="Trang trước" onClick={() => setCurrentPage(page => Math.max(1, page - 1))} disabled={currentPage === 1} className="rounded border border-vin-border p-1 text-vin-muted hover:border-vin-accent hover:text-white disabled:opacity-30"><ChevronLeft className="h-3.5 w-3.5" /></button>
@@ -983,7 +983,7 @@ function DashboardPageContent() {
             <ScreenHeader
               extraContent={
                 <div className="flex items-center gap-3">
-                  <p className="text-[10px] text-vin-muted">
+                  <p className="text-sm text-vin-muted">
                     {filteredStudies.length} ca · Trang {currentPage}/{totalPages}
                   </p>
                   <div className="flex items-center gap-1">
@@ -1022,7 +1022,7 @@ function DashboardPageContent() {
                     setLocalSearchQuery(event.target.value);
                     setCurrentPage(1);
                   }}
-                  className="h-[2.25rem] w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-7 text-[11px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent focus:bg-vin-root/20"
+                  className="h-[2.25rem] w-full rounded-md border border-white/10 bg-transparent py-1.5 pl-7 pr-7 text-sm text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent focus:bg-vin-root/20"
                   placeholder="Tìm tên, mã bệnh nhân, accession..."
                 />
                 {localSearchQuery && (
@@ -1125,14 +1125,14 @@ function DashboardPageContent() {
               <ImageIcon className="h-7 w-7 text-vin-faint" />
             </div>
             <h3 className="mb-1 text-sm font-semibold text-vin-text2">Chưa chọn ca chụp</h3>
-            <p className="max-w-[250px] text-[11px] leading-relaxed text-vin-muted">
+            <p className="max-w-[250px] text-sm leading-relaxed text-vin-muted">
               Click vào ca chụp bên trái để viết kết quả. Double-click để mở OHIF Viewer.
             </p>
           </div>
         ) : isReportLoading ? (
           <div className="flex h-full flex-col items-center justify-center bg-vin-panel">
             <Loader2 className="mb-2 h-5 w-5 animate-spin text-vin-accent" />
-            <span className="text-[11px] text-vin-muted">Đang tải thông tin ca chụp...</span>
+            <span className="text-sm text-vin-muted">Đang tải thông tin ca chụp...</span>
           </div>
         ) : (
           <>
@@ -1140,13 +1140,13 @@ function DashboardPageContent() {
               <div className="mb-2 flex items-start justify-between gap-3">
                 <div>
                   <h2 className="truncate text-sm font-bold uppercase tracking-wide text-white">{patientName}</h2>
-                  <p className="mt-1 text-[10px] text-vin-muted">
+                  <p className="mt-1 text-sm text-vin-muted">
                     {patientId} · {fmtSex(selectedPatient.PatientSex)} · {patientAge}T
                   </p>
                 </div>
                 <RisStatusBadge status={studyStatus} />
               </div>
-              <div className="grid grid-cols-3 gap-3 text-[10px]">
+              <div className="grid grid-cols-3 gap-3 text-sm">
                 <div>
                   <span className="text-vin-muted">Ngày:</span> <span className="font-semibold text-vin-text2">{studyDate}</span>
                 </div>
@@ -1172,7 +1172,7 @@ function DashboardPageContent() {
                 <MiniInfo label="Tra ket qua" value={fmtDateTimeIso(selectedStudy?.deliveredAt || patientDetails?.deliveredAt)} />
               </div>
               {clinicalDisplay && (
-                <div className="mt-2 rounded border border-vin-border/70 bg-vin-shell/60 px-3 py-2 text-[11px] leading-relaxed text-vin-text2">
+                <div className="mt-2 rounded border border-vin-border/70 bg-vin-shell/60 px-3 py-2 text-sm leading-relaxed text-vin-text2">
                   <span className="font-bold uppercase tracking-wide text-vin-muted">Lam sang: </span>
                   {clinicalDisplay}
                 </div>
@@ -1182,8 +1182,8 @@ function DashboardPageContent() {
             <div className="min-h-0 flex-1 space-y-4 overflow-auto p-4 scr-dark">
               <div>
                 <div className="mb-2 flex items-center justify-between">
-                  <label className="text-[11px] font-semibold text-vin-text2">Mô tả (Findings)</label>
-                  <span className="rounded bg-vin-shell px-2 py-0.5 font-mono text-[9px] text-vin-muted">Paste/Drop ảnh</span>
+                  <label className="text-sm font-semibold text-vin-text2">Mô tả (Findings)</label>
+                  <span className="rounded bg-vin-shell px-2 py-0.5 font-mono text-sm text-vin-muted">Paste/Drop ảnh</span>
                 </div>
                 <ReportTemplatePicker
                   disabled={isSaving}
@@ -1199,21 +1199,21 @@ function DashboardPageContent() {
               </div>
 
               <div>
-                <label className="mb-2 block text-[11px] font-semibold text-vin-text2">Kết luận (Conclusion)</label>
+                <label className="mb-2 block text-sm font-semibold text-vin-text2">Kết luận (Conclusion)</label>
                 <textarea
                   value={conclusion}
                   onChange={event => setConclusion(event.target.value)}
-                  className="h-24 w-full resize-none rounded-lg border border-vin-border bg-vin-shell p-3 text-[12px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent"
+                  className="h-24 w-full resize-none rounded-lg border border-vin-border bg-vin-shell p-3 text-sm text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent"
                   placeholder="Nhập kết luận..."
                 />
               </div>
 
               <div>
-                <label className="mb-2 block text-[11px] font-semibold text-vin-text2">Đề nghị (Recommendation)</label>
+                <label className="mb-2 block text-sm font-semibold text-vin-text2">Đề nghị (Recommendation)</label>
                 <textarea
                   value={recommendation}
                   onChange={event => setRecommendation(event.target.value)}
-                  className="h-20 w-full resize-none rounded-lg border border-vin-border bg-vin-shell p-3 text-[12px] text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent"
+                  className="h-20 w-full resize-none rounded-lg border border-vin-border bg-vin-shell p-3 text-sm text-vin-text outline-none transition placeholder:text-vin-faint focus:border-vin-accent"
                   placeholder="Nhập đề nghị..."
                 />
               </div>
@@ -1222,7 +1222,7 @@ function DashboardPageContent() {
             <div className="flex flex-none items-center justify-between border-t border-vin-border bg-vin-panel2 px-4 py-3">
               <button
                 onClick={() => handlePrint()}
-                className="flex items-center gap-1.5 rounded-lg border border-vin-border bg-vin-shell px-3 py-1.5 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white"
+                className="flex items-center gap-1.5 rounded-lg border border-vin-border bg-vin-shell px-3 py-1.5 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent hover:text-white"
               >
                 <Printer className="h-3.5 w-3.5" />
                 In phiếu
@@ -1231,7 +1231,7 @@ function DashboardPageContent() {
                 <button
                   onClick={() => handleSave("DRAFT")}
                   disabled={isSaving}
-                  className="flex items-center gap-1.5 rounded-lg border border-vin-border bg-vin-shell px-3 py-1.5 text-[11px] font-semibold text-vin-text2 transition hover:border-vin-accent disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex items-center gap-1.5 rounded-lg border border-vin-border bg-vin-shell px-3 py-1.5 text-sm font-semibold text-vin-text2 transition hover:border-vin-accent disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Save className="h-3.5 w-3.5" />
                   Lưu nháp
@@ -1239,7 +1239,7 @@ function DashboardPageContent() {
                 <button
                   onClick={() => handleSave("FINAL")}
                   disabled={isSaving}
-                  className="flex items-center gap-1.5 rounded-lg border-0 bg-vin-accent px-3 py-1.5 text-[11px] font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex items-center gap-1.5 rounded-lg border-0 bg-vin-accent px-3 py-1.5 text-sm font-semibold text-white shadow-lg shadow-vin-accent/15 transition hover:bg-vin-accentHover disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
                   Hoàn tất

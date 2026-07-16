@@ -100,18 +100,18 @@ export function ClinicProfileClient() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <ScreenHeader />
-              <p className="mt-0.5 text-[10px] text-vin-muted">
+              <p className="mt-0.5 text-sm text-vin-muted">
                 Logo, tên đơn vị, địa chỉ và footer dùng khi in phiếu kết quả.
               </p>
             </div>
             {message && (
-              <span className="rounded bg-vin-status-approved-bg px-2.5 py-1 text-[10px] font-bold text-white">
+              <span className="rounded bg-vin-status-approved-bg px-2.5 py-1 text-sm font-bold text-white">
                 {message}
               </span>
             )}
           </div>
           {error && (
-            <div className="mt-3 rounded border border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 px-3 py-2 text-[11px] font-semibold text-red-200">
+            <div className="mt-3 rounded border border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 px-3 py-2 text-sm font-semibold text-red-200">
               {error}
             </div>
           )}
@@ -183,7 +183,7 @@ export function ClinicProfileClient() {
             </div>
 
             <div className="rounded border border-vin-border bg-vin-panel2 p-3">
-              <label className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-vin-muted">
+              <label className="mb-2 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-vin-muted">
                 <Upload className="h-3.5 w-3.5" />
                 Logo phòng khám
               </label>
@@ -200,15 +200,15 @@ export function ClinicProfileClient() {
                     name="logo"
                     type="file"
                     accept="image/jpeg,image/png,image/webp,image/gif"
-                    className="block w-full text-xs text-vin-muted file:mr-2 file:rounded file:border-0 file:bg-vin-shell file:px-3 file:py-2 file:text-xs file:font-semibold file:text-vin-text2 hover:file:text-white"
+                    className="block w-full text-sm text-vin-muted file:mr-2 file:rounded file:border-0 file:bg-vin-shell file:px-3 file:py-2 file:text-sm file:font-semibold file:text-vin-text2 hover:file:text-white"
                   />
                   <div className="mt-1 flex items-center justify-between">
-                    <p className="text-[10px] text-vin-faint">JPG, PNG, WEBP hoặc GIF. Nếu không chọn file mới, logo hiện tại được giữ nguyên.</p>
+                    <p className="text-sm text-vin-faint">JPG, PNG, WEBP hoặc GIF. Nếu không chọn file mới, logo hiện tại được giữ nguyên.</p>
                     {profile.logoPath && (
                       <button
                         type="button"
                         onClick={() => setProfile({ ...profile, logoPath: null })}
-                        className="text-[10px] font-semibold text-vin-status-danger-text hover:underline"
+                        className="text-sm font-semibold text-vin-status-danger-text hover:underline"
                       >
                         Xóa Logo
                       </button>
@@ -220,7 +220,7 @@ export function ClinicProfileClient() {
             </div>
 
             <div className="rounded border border-vin-border bg-vin-panel2 p-3">
-              <label className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-vin-muted">
+              <label className="mb-2 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-vin-muted">
                 <Upload className="h-3.5 w-3.5" />
                 Favicon trình duyệt
               </label>
@@ -239,15 +239,15 @@ export function ClinicProfileClient() {
                     name="favicon"
                     type="file"
                     accept="image/jpeg,image/png,image/webp,image/gif,image/x-icon,image/vnd.microsoft.icon"
-                    className="block w-full text-xs text-vin-muted file:mr-2 file:rounded file:border-0 file:bg-vin-shell file:px-3 file:py-2 file:text-xs file:font-semibold file:text-vin-text2 hover:file:text-white"
+                    className="block w-full text-sm text-vin-muted file:mr-2 file:rounded file:border-0 file:bg-vin-shell file:px-3 file:py-2 file:text-sm file:font-semibold file:text-vin-text2 hover:file:text-white"
                   />
                   <div className="mt-1 flex items-center justify-between">
-                    <p className="text-[10px] text-vin-faint">Khuyên dùng ICO hoặc PNG vuông. Sẽ dùng Logo nếu để trống.</p>
+                    <p className="text-sm text-vin-faint">Khuyên dùng ICO hoặc PNG vuông. Sẽ dùng Logo nếu để trống.</p>
                     {profile.faviconPath && (
                       <button
                         type="button"
                         onClick={() => setProfile({ ...profile, faviconPath: null })}
-                        className="text-[10px] font-semibold text-vin-status-danger-text hover:underline"
+                        className="text-sm font-semibold text-vin-status-danger-text hover:underline"
                       >
                         Xóa Favicon
                       </button>
@@ -297,7 +297,7 @@ export function ClinicProfileClient() {
             <BadgeCheck className="h-4 w-4 text-vin-accent" />
             Preview header phiếu in
           </h2>
-          <p className="mt-0.5 text-[10px] text-vin-muted">Bố cục này sẽ được dùng trong phiếu kết quả.</p>
+          <p className="mt-0.5 text-sm text-vin-muted">Bố cục này sẽ được dùng trong phiếu kết quả.</p>
         </div>
 
         <div className="min-h-0 flex-1 overflow-auto p-6 scr-dark">
@@ -314,7 +314,7 @@ export function ClinicProfileClient() {
                 <h3 className="text-lg font-bold uppercase text-slate-950">{profile.name}</h3>
                 {profile.legalName && <p className="text-sm font-semibold text-slate-700">{profile.legalName}</p>}
                 {profile.headerText && <p className="mt-1 text-sm text-slate-700">{profile.headerText}</p>}
-                <div className="mt-2 space-y-0.5 text-xs text-slate-600">
+                <div className="mt-2 space-y-0.5 text-sm text-slate-600">
                   {profile.address && <p>{profile.address}</p>}
                   <p>
                     {[profile.phone, profile.email, profile.website].filter(Boolean).join(" · ") || "Chưa cấu hình liên hệ"}
@@ -329,7 +329,7 @@ export function ClinicProfileClient() {
               <p className="mt-2 text-sm text-slate-500">Nội dung phiếu bệnh nhân sẽ hiển thị tại đây.</p>
             </div>
 
-            <div className="border-t border-slate-200 pt-3 text-xs text-slate-500">
+            <div className="border-t border-slate-200 pt-3 text-sm text-slate-500">
               {profile.footerText || "Chưa cấu hình footer phiếu in."}
             </div>
           </div>
@@ -353,7 +353,7 @@ export function ClinicProfileClient() {
 function Field({ children, label }: { children: React.ReactNode; label: string }) {
   return (
     <div>
-      <label className="mb-1 block text-[10px] font-bold uppercase tracking-wide text-vin-muted">{label}</label>
+      <label className="mb-1 block text-sm font-bold uppercase tracking-wide text-vin-muted">{label}</label>
       {children}
     </div>
   );

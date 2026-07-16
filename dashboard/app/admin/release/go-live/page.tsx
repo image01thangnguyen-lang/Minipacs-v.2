@@ -65,10 +65,10 @@ export default async function GoLiveListPage() {
                 <tr key={rc.id} className="hover:bg-muted/50">
                   <td className="p-3">
                     <div className="font-medium text-base">{rc.version}</div>
-                    <div className="text-xs text-muted-foreground line-clamp-1">{rc.title || rc.notes}</div>
+                    <div className="text-sm text-muted-foreground line-clamp-1">{rc.title || rc.notes}</div>
                   </td>
                   <td className="p-3">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                    <span className={`px-2 py-1 rounded text-sm font-medium ${
                       rc.status === 'RELEASED' ? 'bg-green-100 text-green-700' :
                       rc.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
                       rc.status === 'BLOCKED' ? 'bg-red-100 text-red-700' :
@@ -81,15 +81,15 @@ export default async function GoLiveListPage() {
                   <td className="p-3">{rc.targetEnvironment}</td>
                   <td className="p-3">
                     <div className="text-sm">{approvedCount} / 4 roles</div>
-                    <div className="text-xs text-muted-foreground">Handoff: {rc.handoff?.status || "MISSING"}</div>
+                    <div className="text-sm text-muted-foreground">Handoff: {rc.handoff?.status || "MISSING"}</div>
                   </td>
                   <td className="p-3 text-muted-foreground">
                     {new Date(rc.createdAt).toLocaleDateString()}
-                    <div className="text-xs">by {rc.createdByUser?.fullName || "System"}</div>
+                    <div className="text-sm">by {rc.createdByUser?.fullName || "System"}</div>
                   </td>
                   <td className="p-3 text-right">
                     <Link href={`/admin/release/go-live/${rc.id}`}>
-                      <span className="inline-flex items-center rounded px-2 py-1 text-xs font-semibold text-vin-accent hover:bg-vin-panel">
+                      <span className="inline-flex items-center rounded px-2 py-1 text-sm font-semibold text-vin-accent hover:bg-vin-panel">
                         View Command Center <ArrowRight className="ml-2 h-4 w-4" />
                       </span>
                     </Link>

@@ -121,7 +121,7 @@ export function ShareDialog({ isOpen, onClose, scope, resourceId }: ShareDialogP
             <h3 className="mb-3 text-sm font-semibold text-vin-text2">Tạo link chia sẻ mới</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="mb-1 block text-xs font-medium text-vin-muted">Thời hạn (ngày)</label>
+                <label className="mb-1 block text-sm font-medium text-vin-muted">Thời hạn (ngày)</label>
                 <select
                   value={expiresInDays}
                   onChange={e => setExpiresInDays(Number(e.target.value))}
@@ -134,7 +134,7 @@ export function ShareDialog({ isOpen, onClose, scope, resourceId }: ShareDialogP
                 </select>
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-vin-muted">Mật khẩu bảo vệ (tùy chọn)</label>
+                <label className="mb-1 block text-sm font-medium text-vin-muted">Mật khẩu bảo vệ (tùy chọn)</label>
                 <input
                   type="text"
                   value={password}
@@ -180,7 +180,7 @@ export function ShareDialog({ isOpen, onClose, scope, resourceId }: ShareDialogP
               </div>
             ) : (
               <table className="w-full text-left text-sm">
-                <thead className="bg-vin-shell text-xs text-vin-muted">
+                <thead className="bg-vin-shell text-sm text-vin-muted">
                   <tr>
                     <th className="px-4 py-2 font-medium">Trạng thái</th>
                     <th className="px-4 py-2 font-medium">Hết hạn</th>
@@ -192,7 +192,7 @@ export function ShareDialog({ isOpen, onClose, scope, resourceId }: ShareDialogP
                   {links.map((link) => (
                     <tr key={link.id} className="hover:bg-white/5">
                       <td className="px-4 py-2">
-                        <span className={`inline-flex rounded px-2 py-0.5 text-[10px] font-bold ${
+                        <span className={`inline-flex rounded px-2 py-0.5 text-sm font-bold ${
                           link.status === 'ACTIVE' ? 'bg-emerald-500/20 text-emerald-400' :
                           link.status === 'REVOKED' ? 'bg-red-500/20 text-red-400' :
                           link.status === 'EXPIRED' ? 'bg-yellow-500/20 text-yellow-400' :
@@ -206,10 +206,10 @@ export function ShareDialog({ isOpen, onClose, scope, resourceId }: ShareDialogP
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-2 text-xs text-vin-text2">
+                      <td className="px-4 py-2 text-sm text-vin-text2">
                         {new Date(link.expiresAt).toLocaleDateString('vi-VN')}
                       </td>
-                      <td className="px-4 py-2 text-xs text-vin-text2">
+                      <td className="px-4 py-2 text-sm text-vin-text2">
                         {link.accessCount}
                       </td>
                       <td className="px-4 py-2 text-right">

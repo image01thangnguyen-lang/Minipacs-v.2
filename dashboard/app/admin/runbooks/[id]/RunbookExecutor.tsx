@@ -60,7 +60,7 @@ export default function RunbookExecutor({ runbookId, steps, activeExecution }: {
   }
 
   if (executionId && !canControl) {
-    return <section className="rounded-md border border-blue-800 bg-blue-950/30 p-5"><h2 className="font-semibold text-blue-200">Execution đang được giữ bởi {activeExecution?.executorName}</h2><p className="mt-1 text-sm text-blue-300">Bạn có thể theo dõi tiến độ nhưng không thể hoàn thành hoặc kết thúc execution của người khác.</p><div className="mt-3 h-2 overflow-hidden rounded bg-slate-800"><div className="h-full bg-blue-500" style={{ width: `${steps.length ? (completedCount / steps.length) * 100 : 0}%` }} /></div><p className="mt-2 text-xs text-blue-300">{completedCount}/{steps.length} step hoàn thành</p></section>;
+    return <section className="rounded-md border border-blue-800 bg-blue-950/30 p-5"><h2 className="font-semibold text-blue-200">Execution đang được giữ bởi {activeExecution?.executorName}</h2><p className="mt-1 text-sm text-blue-300">Bạn có thể theo dõi tiến độ nhưng không thể hoàn thành hoặc kết thúc execution của người khác.</p><div className="mt-3 h-2 overflow-hidden rounded bg-slate-800"><div className="h-full bg-blue-500" style={{ width: `${steps.length ? (completedCount / steps.length) * 100 : 0}%` }} /></div><p className="mt-2 text-sm text-blue-300">{completedCount}/{steps.length} step hoàn thành</p></section>;
   }
 
   if (!executionId) {
@@ -69,14 +69,14 @@ export default function RunbookExecutor({ runbookId, steps, activeExecution }: {
 
   return (
     <section className="space-y-5 rounded-md border-2 border-cyan-800 bg-slate-900/40 p-5">
-      <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-bold text-cyan-300">Execution đang chạy</h2><span className="rounded bg-blue-950 px-2 py-1 text-xs text-blue-300">{completedCount}/{steps.length}</span></div>
+      <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-bold text-cyan-300">Execution đang chạy</h2><span className="rounded bg-blue-950 px-2 py-1 text-sm text-blue-300">{completedCount}/{steps.length}</span></div>
       <div className="h-2 overflow-hidden rounded bg-slate-800"><div className="h-full bg-cyan-500 transition-all" style={{ width: `${steps.length ? (completedCount / steps.length) * 100 : 0}%` }} /></div>
 
-      {log.length > 0 && <div className="space-y-1">{log.map((entry) => <div key={entry.stepId} className="flex items-center gap-2 text-sm text-emerald-400"><CheckCircle className="h-4 w-4" /><span>Step {entry.stepOrder}: {entry.stepTitle || "Đã hoàn thành"}</span>{entry.isRisky && <span className="rounded bg-amber-950 px-1 text-xs text-amber-300">đã xác nhận rủi ro</span>}</div>)}</div>}
+      {log.length > 0 && <div className="space-y-1">{log.map((entry) => <div key={entry.stepId} className="flex items-center gap-2 text-sm text-emerald-400"><CheckCircle className="h-4 w-4" /><span>Step {entry.stepOrder}: {entry.stepTitle || "Đã hoàn thành"}</span>{entry.isRisky && <span className="rounded bg-amber-950 px-1 text-sm text-amber-300">đã xác nhận rủi ro</span>}</div>)}</div>}
 
       {currentStep && (
         <div className={`rounded-md border-2 p-5 ${currentStep.isRisky ? "border-amber-700 bg-amber-950/20" : "border-slate-700 bg-slate-950"}`}>
-          <div className="flex flex-wrap items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-800 text-xs font-bold">{currentStep.order}</span><h3 className="font-semibold">{currentStep.title}</h3>{currentStep.isRisky && <span className="inline-flex items-center gap-1 rounded bg-amber-900 px-1.5 py-0.5 text-xs text-amber-200"><AlertTriangle className="h-3 w-3" /> Nguy hiểm</span>}</div>
+          <div className="flex flex-wrap items-center gap-2"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-800 text-sm font-bold">{currentStep.order}</span><h3 className="font-semibold">{currentStep.title}</h3>{currentStep.isRisky && <span className="inline-flex items-center gap-1 rounded bg-amber-900 px-1.5 py-0.5 text-sm text-amber-200"><AlertTriangle className="h-3 w-3" /> Nguy hiểm</span>}</div>
           <p className="mt-3 whitespace-pre-wrap text-sm text-slate-300">{currentStep.description}</p>
           {currentStep.actionUrl && <Link href={currentStep.actionUrl} className="mt-3 inline-flex items-center gap-1 text-sm text-cyan-400 hover:text-cyan-300"><ExternalLink className="h-4 w-4" /> Mở tác vụ liên quan</Link>}
           {currentStep.isRisky && <div className="mt-4 flex gap-3 rounded-md border border-amber-700 bg-amber-950/40 p-3 text-sm text-amber-200"><ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" /><label className="flex items-start gap-2"><input type="checkbox" checked={riskyConfirmed} onChange={(event) => setRiskyConfirmed(event.target.checked)} className="mt-1" /><span>Tôi hiểu rủi ro và xác nhận step này đã được thực hiện đúng.</span></label></div>}

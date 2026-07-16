@@ -44,9 +44,9 @@ export default async function NativeCompanionPage() {
                       <tr key={evt.id} className="border-b border-vin-border">
                         <td className="py-2 text-vin-muted">{new Date(evt.createdAt).toLocaleString()}</td>
                         <td className="py-2">{evt.actorUser?.username || 'System'}</td>
-                        <td className="py-2 font-mono text-xs">{evt.actionKey}</td>
+                        <td className="py-2 font-mono text-sm">{evt.actionKey}</td>
                         <td className="py-2">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                          <span className={`px-2 py-1 rounded text-sm font-semibold ${
                             evt.status === 'SUCCESS' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                           }`}>
                             {evt.status}

@@ -251,10 +251,10 @@ export function TreeEditor() {
         >
           <div>
             <div className="font-semibold text-white">
-              {node.name} <span className="text-vin-muted text-xs font-normal ml-2">({node.code})</span>
-              {!node.isActive && <span className="ml-2 text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded">Ngừng hoạt động</span>}
+              {node.name} <span className="text-vin-muted text-sm font-normal ml-2">({node.code})</span>
+              {!node.isActive && <span className="ml-2 text-sm bg-red-500/20 text-red-400 px-2 py-0.5 rounded">Ngừng hoạt động</span>}
             </div>
-            <div className="text-xs text-vin-muted mt-1">{node.type}</div>
+            <div className="text-sm text-vin-muted mt-1">{node.type}</div>
           </div>
           <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
             {node.isActive ? (
@@ -284,7 +284,7 @@ export function TreeEditor() {
   return (
     <div className="space-y-4">
       {error && (
-        <div className="rounded border border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 px-3 py-2 text-[11px] font-semibold text-red-200">
+        <div className="rounded border border-vin-status-danger-bg/60 bg-vin-status-danger-bg/15 px-3 py-2 text-sm font-semibold text-red-200">
           {error}
         </div>
       )}
@@ -347,9 +347,9 @@ export function TreeEditor() {
                 <div>
                   <label className="block text-sm text-vin-muted mb-1">Trạng thái</label>
                   {selectedNodeData.isActive ? (
-                    <span className="inline-block px-2 py-1 bg-green-500/10 text-green-400 text-xs rounded border border-green-500/20">Đang hoạt động</span>
+                    <span className="inline-block px-2 py-1 bg-green-500/10 text-green-400 text-sm rounded border border-green-500/20">Đang hoạt động</span>
                   ) : (
-                    <span className="inline-block px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded border border-red-500/20">Ngừng hoạt động</span>
+                    <span className="inline-block px-2 py-1 bg-red-500/10 text-red-400 text-sm rounded border border-red-500/20">Ngừng hoạt động</span>
                   )}
                 </div>
                 <div>
@@ -471,7 +471,7 @@ export function TreeEditor() {
                           <li><strong>{impact.affectedMachines}</strong> máy chụp</li>
                           <li><strong>{impact.affectedGrants}</strong> phân quyền (Access Grants)</li>
                         </ul>
-                        <p className="mt-2 text-xs opacity-80">Vui lòng kiểm tra lại tính hợp lệ theo cấu trúc Taxonomy.</p>
+                        <p className="mt-2 text-sm opacity-80">Vui lòng kiểm tra lại tính hợp lệ theo cấu trúc Taxonomy.</p>
                       </div>
                     </div>
                   )}

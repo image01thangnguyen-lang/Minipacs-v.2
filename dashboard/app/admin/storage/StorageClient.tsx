@@ -119,11 +119,11 @@ export function StorageClient() {
           <div className="flex items-center justify-between">
             <div>
               <ScreenHeader />
-              <p className="mt-1 text-[11px] text-vin-muted">Quản lý các thư mục lưu trữ ảnh DICOM, báo cáo, và sao lưu.</p>
+              <p className="mt-1 text-sm text-vin-muted">Quản lý các thư mục lưu trữ ảnh DICOM, báo cáo, và sao lưu.</p>
             </div>
             <button
               onClick={() => handleOpenForm()}
-              className="flex items-center gap-1.5 rounded bg-vin-accent px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-vin-accentHover"
+              className="flex items-center gap-1.5 rounded bg-vin-accent px-3 py-1.5 text-sm font-semibold text-white hover:bg-vin-accentHover"
             >
               <Plus className="h-3.5 w-3.5" /> Thêm cấu hình
             </button>
@@ -131,7 +131,7 @@ export function StorageClient() {
         </div>
 
         {errorMessage && (
-          <div className="border-b border-red-400/30 bg-red-950/30 px-4 py-2 text-[11px] font-semibold text-red-100 flex items-center gap-2">
+          <div className="border-b border-red-400/30 bg-red-950/30 px-4 py-2 text-sm font-semibold text-red-100 flex items-center gap-2">
             <ShieldAlert className="h-3.5 w-3.5" />
             {errorMessage}
             <button onClick={() => setErrorMessage("")} className="ml-auto"><X className="h-3.5 w-3.5" /></button>
@@ -151,9 +151,9 @@ export function StorageClient() {
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-white text-sm">{folder.name}</h3>
-                        <span className="text-[9px] font-mono bg-vin-shell px-1.5 py-0.5 rounded text-vin-text2 border border-vin-border">{folder.type}</span>
+                        <span className="text-sm font-mono bg-vin-shell px-1.5 py-0.5 rounded text-vin-text2 border border-vin-border">{folder.type}</span>
                       </div>
-                      <p className="text-[10px] font-mono text-vin-muted mt-1">{folder.code}</p>
+                      <p className="text-sm font-mono text-vin-muted mt-1">{folder.code}</p>
                     </div>
                     <div className="flex gap-1">
                       <button onClick={() => handleCheck(folder.id)} title="Kiểm tra kết nối" className="p-1.5 bg-vin-shell rounded text-vin-muted hover:text-white border border-vin-border">
@@ -168,21 +168,21 @@ export function StorageClient() {
                     </div>
                   </div>
 
-                  <div className="p-3 flex-1 flex flex-col gap-3 text-[11px]">
+                  <div className="p-3 flex-1 flex flex-col gap-3 text-sm">
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-vin-muted block mb-1">Đường dẫn</span>
+                      <span className="text-sm uppercase font-bold text-vin-muted block mb-1">Đường dẫn</span>
                       <code className="bg-vin-root px-1.5 py-1 rounded border border-vin-border text-vin-text2 block truncate" title={folder.path}>{folder.path}</code>
                     </div>
 
                     {folder.facility && (
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-vin-muted block mb-1">Cơ sở</span>
+                        <span className="text-sm uppercase font-bold text-vin-muted block mb-1">Cơ sở</span>
                         <div className="text-vin-text2">{folder.facility.name}</div>
                       </div>
                     )}
 
                     <div className="mt-auto border-t border-vin-border/50 pt-2">
-                      <span className="text-[10px] uppercase font-bold text-vin-muted block mb-1">Trạng thái kết nối</span>
+                      <span className="text-sm uppercase font-bold text-vin-muted block mb-1">Trạng thái kết nối</span>
                       {folder.lastCheckStatus === "OK" ? (
                         <div className="flex items-center gap-1.5 text-emerald-400">
                           <CheckCircle2 className="h-3.5 w-3.5" /> {folder.lastCheckMessage || "OK"}
@@ -199,7 +199,7 @@ export function StorageClient() {
                         <div className="text-vin-muted">Chưa kiểm tra</div>
                       )}
                       {folder.lastCheckAt && (
-                        <div className="text-[9px] text-vin-faint mt-1">Cập nhật: {new Date(folder.lastCheckAt).toLocaleString("vi-VN")}</div>
+                        <div className="text-sm text-vin-faint mt-1">Cập nhật: {new Date(folder.lastCheckAt).toLocaleString("vi-VN")}</div>
                       )}
                     </div>
                   </div>
@@ -230,11 +230,11 @@ export function StorageClient() {
             <form onSubmit={handleSubmit} className="flex-1 overflow-auto p-4 flex flex-col gap-4 text-sm">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-vin-muted mb-1">Mã (Code)</label>
+                  <label className="block text-sm font-bold uppercase text-vin-muted mb-1">Mã (Code)</label>
                   <input name="code" defaultValue={editingFolder?.code} required className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 outline-none focus:border-vin-accent" placeholder="vd: PRIMARY_STORE" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase text-vin-muted mb-1">Loại</label>
+                  <label className="block text-sm font-bold uppercase text-vin-muted mb-1">Loại</label>
                   <CustomSelect
                     name="type"
                     options={[
@@ -250,17 +250,17 @@ export function StorageClient() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase text-vin-muted mb-1">Tên cấu hình</label>
+                <label className="block text-sm font-bold uppercase text-vin-muted mb-1">Tên cấu hình</label>
                 <input name="name" defaultValue={editingFolder?.name} required className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 outline-none focus:border-vin-accent" placeholder="vd: Lưu trữ chính SSD" />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase text-vin-muted mb-1">Đường dẫn (Path)</label>
+                <label className="block text-sm font-bold uppercase text-vin-muted mb-1">Đường dẫn (Path)</label>
                 <input name="path" defaultValue={editingFolder?.path} required className="w-full rounded border border-vin-border bg-vin-shell px-3 py-2 outline-none focus:border-vin-accent" placeholder="vd: /mnt/data/pacs hoặc C:\\PACS_Data" />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase text-vin-muted mb-1">Áp dụng cho cơ sở (Tùy chọn)</label>
+                <label className="block text-sm font-bold uppercase text-vin-muted mb-1">Áp dụng cho cơ sở (Tùy chọn)</label>
                 <CustomSelect
                   name="facilityId"
                   options={[{value: "", label: "-- Tất cả --"}, ...facilities.map(f => ({value: f.id, label: f.name}))]}

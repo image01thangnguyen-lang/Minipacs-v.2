@@ -98,18 +98,18 @@ export default function AdminRetentionPage() {
                   <div key={p.id} className="bg-vin-surface border border-vin-border p-4 rounded-lg">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-semibold text-white">{p.name}</h3>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${p.isActive ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
+                      <span className={`text-sm px-2 py-0.5 rounded-full ${p.isActive ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
                         {p.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </div>
-                    <p className="text-xs text-vin-muted mb-4">
+                    <p className="text-sm text-vin-muted mb-4">
                       Phạm vi: {p.scope} · Cũ hơn: {p.olderThanDays} ngày · Xóa file: {p.deletePhysicalFiles ? 'Có' : 'Không'}
                     </p>
 
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleDryRun(p.id)}
-                        className="text-xs border border-blue-500/50 text-blue-400 px-3 py-1.5 rounded hover:bg-blue-500/10"
+                        className="text-sm border border-blue-500/50 text-blue-400 px-3 py-1.5 rounded hover:bg-blue-500/10"
                       >
                         Chạy mô phỏng (Dry-Run)
                       </button>
@@ -133,15 +133,15 @@ export default function AdminRetentionPage() {
                 {runs.map(r => (
                   <div key={r.id} className="bg-vin-surface border border-vin-border p-4 rounded-lg flex justify-between items-center">
                     <div>
-                      <h3 className="text-xs font-semibold text-white">{r.mode} ({r.status})</h3>
-                      <p className="text-xs text-vin-muted mt-1 font-mono">
+                      <h3 className="text-sm font-semibold text-white">{r.mode} ({r.status})</h3>
+                      <p className="text-sm text-vin-muted mt-1 font-mono">
                         Số lượng ảnh hưởng: {r.candidateCount}
                       </p>
-                      <p className="text-xs text-vin-muted mt-1">
+                      <p className="text-sm text-vin-muted mt-1">
                         Ngày tạo: {new Date(r.createdAt).toLocaleString('vi-VN')}
                       </p>
                       {r.errorMessage && (
-                        <p className="text-xs text-red-400 mt-1 font-semibold">
+                        <p className="text-sm text-red-400 mt-1 font-semibold">
                           {r.errorMessage}
                         </p>
                       )}
@@ -149,7 +149,7 @@ export default function AdminRetentionPage() {
                     {r.mode === 'DRY_RUN' && r.status === 'SUCCESS' && (
                       <button
                         onClick={() => handleExecuteRun(r.id)}
-                        className="bg-red-500/20 border border-red-500/50 text-red-400 hover:bg-red-500/30 px-3 py-1.5 rounded text-xs font-bold"
+                        className="bg-red-500/20 border border-red-500/50 text-red-400 hover:bg-red-500/30 px-3 py-1.5 rounded text-sm font-bold"
                       >
                         Thực thi (Duyệt)
                       </button>

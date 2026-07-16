@@ -34,7 +34,7 @@ export function NonDicomDataGrid({
         width: 140,
         pinned: "left",
         cell: (exam) => (
-          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
+          <span className={`px-2 py-1 rounded-full text-sm font-medium border ${
             exam.status === 'REQUESTED' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
             exam.status === 'CAPTURING' ? 'bg-vin-accent/10 text-vin-accent border-vin-accent/20' :
             exam.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
@@ -51,7 +51,7 @@ export function NonDicomDataGrid({
         cell: (exam) => (
           <>
             <div className="font-medium text-vin-text">{exam.patientName || "Không tên"}</div>
-            <div className="text-xs text-vin-muted">{exam.patientId} • {exam.caseCode}</div>
+            <div className="text-sm text-vin-muted">{exam.patientId} • {exam.caseCode}</div>
           </>
         ),
       },
@@ -62,7 +62,7 @@ export function NonDicomDataGrid({
         cell: (exam) => (
           <>
             <div className="text-vin-text2">{exam.patientSex === 'M' ? 'Nam' : exam.patientSex === 'F' ? 'Nữ' : 'Khác'}</div>
-            <div className="text-xs text-vin-muted">{exam.patientBirthDate ? new Date(exam.patientBirthDate).getFullYear() : '-'}</div>
+            <div className="text-sm text-vin-muted">{exam.patientBirthDate ? new Date(exam.patientBirthDate).getFullYear() : '-'}</div>
           </>
         ),
       },
@@ -107,7 +107,7 @@ export function NonDicomDataGrid({
           <Link
             href={`/non-dicom/${exam.id}`}
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex w-fit ml-auto items-center gap-1.5 px-3 py-1.5 bg-vin-accent/20 text-vin-accent hover:bg-vin-accent/30 hover:text-vin-accent rounded-md transition-colors text-xs font-medium"
+            className="inline-flex w-fit ml-auto items-center gap-1.5 px-3 py-1.5 bg-vin-accent/20 text-vin-accent hover:bg-vin-accent/30 hover:text-vin-accent rounded-md transition-colors text-sm font-medium"
           >
             <Camera className="w-3.5 h-3.5" />
             Capture

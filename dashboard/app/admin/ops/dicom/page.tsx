@@ -41,7 +41,7 @@ export default async function DicomConformancePage() {
                   <td className="p-4 align-top">
                     {new Date(run.createdAt).toLocaleString()}
                     <br />
-                    <span className="text-xs text-vin-muted">by {run.triggeredByUser?.username || 'System'}</span>
+                    <span className="text-sm text-vin-muted">by {run.triggeredByUser?.username || 'System'}</span>
                   </td>
                   <td className="p-4 align-top">
                     {run.dicomNode ? run.dicomNode.name : <span className="italic text-vin-faint">Generic</span>}

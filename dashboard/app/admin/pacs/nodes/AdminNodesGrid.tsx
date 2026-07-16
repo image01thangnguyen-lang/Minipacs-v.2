@@ -44,7 +44,7 @@ export function NodesDataGrid({
       cell: (node) => (
         <div className="py-2">
           <div className="font-semibold text-white">{node.name}</div>
-          <div className="mt-1 flex items-center gap-1.5 font-mono text-[10px] text-vin-muted">
+          <div className="mt-1 flex items-center gap-1.5 font-mono text-sm text-vin-muted">
             <span className="rounded bg-vin-panel px-1.5 py-0.5 border border-vin-border">{node.modality}</span>
             {!node.isNonDicom && <span>{node.orthancAlias}</span>}
             {!node.isActive && (
@@ -55,7 +55,7 @@ export function NodesDataGrid({
             )}
           </div>
           {node.facility && (
-            <div className="mt-1 text-[10px] text-vin-muted flex items-center gap-1">
+            <div className="mt-1 text-sm text-vin-muted flex items-center gap-1">
               <span className="font-semibold">{node.facility.name}</span>
             </div>
           )}
@@ -73,7 +73,7 @@ export function NodesDataGrid({
           ) : (
             <span className="font-mono text-vin-text2">{node.ipAddress}:{node.port}</span>
           )}
-          <div className="mt-0.5 font-sans text-[10px] text-vin-muted">{node.room || "-"}</div>
+          <div className="mt-0.5 font-sans text-sm text-vin-muted">{node.room || "-"}</div>
         </div>
       ),
     },
@@ -84,7 +84,7 @@ export function NodesDataGrid({
       width: 120,
       cell: (node) => (
         node.isNonDicom ? (
-          <span className="text-[10px] italic text-vin-faint">-</span>
+          <span className="text-sm italic text-vin-faint">-</span>
         ) : (
           <span className="font-mono font-bold text-vin-accent">{node.aeTitle}</span>
         )
@@ -97,15 +97,15 @@ export function NodesDataGrid({
       width: 120,
       cell: (node) => {
         if (node.isNonDicom) {
-          return <span className="text-[10px] italic text-vin-faint">-</span>;
+          return <span className="text-sm italic text-vin-faint">-</span>;
         }
         if (node.lastEchoStatus === "OK") {
           return (
             <div className="flex flex-col items-center justify-center">
-              <span className="flex items-center gap-1 rounded bg-vin-status-approved-bg/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+              <span className="flex items-center gap-1 rounded bg-vin-status-approved-bg/20 px-2 py-0.5 text-sm font-bold text-emerald-400">
                 <Wifi className="h-3 w-3" /> OK
               </span>
-              <span className="mt-1 text-[9px] text-vin-faint">
+              <span className="mt-1 text-sm text-vin-faint">
                 {node.lastEchoAt ? new Date(node.lastEchoAt).toLocaleString('vi-VN') : ""}
               </span>
             </div>
@@ -114,13 +114,13 @@ export function NodesDataGrid({
         if (node.lastEchoStatus === "FAILED") {
           return (
             <div className="flex flex-col items-center justify-center">
-              <span className="flex items-center gap-1 rounded bg-vin-status-danger-bg/20 px-2 py-0.5 text-[10px] font-bold text-red-400">
+              <span className="flex items-center gap-1 rounded bg-vin-status-danger-bg/20 px-2 py-0.5 text-sm font-bold text-red-400">
                 <AlertCircle className="h-3 w-3" /> FAILED
               </span>
             </div>
           );
         }
-        return <span className="text-[10px] text-vin-muted">Chưa test</span>;
+        return <span className="text-sm text-vin-muted">Chưa test</span>;
       },
     },
     {

@@ -35,7 +35,7 @@ export function MachineMappingGrid({
       cell: (node) => (
         <div className="font-semibold text-white">
           {node.name}
-          {!node.isActive && <span className="ml-2 text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded">Ngừng hoạt động</span>}
+          {!node.isActive && <span className="ml-2 text-sm bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded">Ngừng hoạt động</span>}
         </div>
       )
     },
@@ -44,7 +44,7 @@ export function MachineMappingGrid({
       header: "Modality / AE Title",
       width: 200,
       cell: (node) => (
-        <span className="text-vin-muted font-mono text-[11px]">
+        <span className="text-vin-muted font-mono text-sm">
           {node.modality} / {node.aeTitle || <span className="italic font-sans">Chưa cấu hình</span>}
         </span>
       )
@@ -57,7 +57,7 @@ export function MachineMappingGrid({
         <div onClick={(e) => e.stopPropagation()}>
           <select
             aria-label={`Đơn vị tổ chức của ${node.name}`}
-            className="w-full rounded border border-vin-border bg-vin-panel2 px-2 py-1 text-white text-[11px] disabled:opacity-50"
+            className="w-full rounded border border-vin-border bg-vin-panel2 px-2 py-1 text-white text-sm disabled:opacity-50"
             value={node.facilityId || ""}
             onChange={(e) => onAssign(node.id, e.target.value || null)}
             disabled={saving === node.id || !node.isActive}
@@ -86,7 +86,7 @@ export function MachineMappingGrid({
               type="button"
               onClick={() => onReactivate(node.id)}
               aria-label={`Khôi phục ${node.name}`}
-              className="text-vin-muted hover:text-green-400 text-[10px] font-semibold flex items-center gap-1"
+              className="text-vin-muted hover:text-green-400 text-sm font-semibold flex items-center gap-1"
             >
               Khôi phục
             </button>

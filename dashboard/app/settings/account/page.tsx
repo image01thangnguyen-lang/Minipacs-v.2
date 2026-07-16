@@ -44,7 +44,7 @@ export default async function AccountSettingsPage() {
             <h2 style={{ margin: 0, color: 'white', display: 'flex', alignItems: 'center', gap: '8px' }}>
               Tài khoản cá nhân
             </h2>
-            <div style={{ color: 'gray', fontSize: '12px' }}>
+            <div style={{ color: 'gray', fontSize: '14px' }}>
               Quản lý cài đặt tài khoản cá nhân của bạn.
             </div>
          </div>

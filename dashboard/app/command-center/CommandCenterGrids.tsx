@@ -69,7 +69,7 @@ export function CommandCenterQueueGrid({ rows, isLoading }: { rows: QueueRow[]; 
       header: "Nguồn",
       width: 100,
       cell: (study) => (
-        <span className={`rounded border px-2 py-1 text-xs font-medium ${study.source === 'HIS' ? 'border-vin-accent/40 bg-vin-accent/15 text-vin-accent' : 'border-cyan-400/40 bg-cyan-500/15 text-cyan-200'}`}>
+        <span className={`rounded border px-2 py-1 text-sm font-medium ${study.source === 'HIS' ? 'border-vin-accent/40 bg-vin-accent/15 text-vin-accent' : 'border-cyan-400/40 bg-cyan-500/15 text-cyan-200'}`}>
           {study.source}
         </span>
       ),
@@ -145,7 +145,7 @@ export function CommandCenterSlaGrid({ rows, isLoading }: { rows: SlaRow[]; isLo
       width: 180,
       cell: (breach) => (
         <>
-          {breach.policyCode} <span className="text-xs text-vin-muted">({breach.source})</span>
+          {breach.policyCode} <span className="text-sm text-vin-muted">({breach.source})</span>
         </>
       ),
     },
@@ -228,7 +228,7 @@ export function CommandCenterAlertsGrid({ rows, isLoading }: { rows: AlertRow[];
       cell: (alert) => (
         <>
           <div className="font-semibold">{alert.title}</div>
-          <div className="max-w-md truncate text-xs text-vin-muted" title={alert.message}>{alert.message}</div>
+          <div className="max-w-md truncate text-sm text-vin-muted" title={alert.message}>{alert.message}</div>
         </>
       ),
     },
@@ -237,7 +237,7 @@ export function CommandCenterAlertsGrid({ rows, isLoading }: { rows: AlertRow[];
       header: "Độ nghiêm trọng",
       width: 140,
       cell: (alert) => (
-        <span className={`rounded border px-2 py-1 text-xs font-semibold ${alert.severity === 'CRITICAL' ? 'border-red-400/40 bg-vin-status-danger-bg/20 text-red-200' : 'border-amber-400/40 bg-vin-status-warning-bg/20 text-amber-100'}`}>
+        <span className={`rounded border px-2 py-1 text-sm font-semibold ${alert.severity === 'CRITICAL' ? 'border-red-400/40 bg-vin-status-danger-bg/20 text-red-200' : 'border-amber-400/40 bg-vin-status-warning-bg/20 text-amber-100'}`}>
           {alert.severity}
         </span>
       ),

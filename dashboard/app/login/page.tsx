@@ -64,7 +64,7 @@ export default function LoginPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-vin-muted uppercase tracking-wider mb-2 ml-1">
+                <label className="block text-sm font-semibold text-vin-muted uppercase tracking-wider mb-2 ml-1">
                   Tên đăng nhập
                 </label>
                 <div className="relative group">
@@ -84,7 +84,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-vin-muted uppercase tracking-wider mb-2 ml-1">
+                <label className="block text-sm font-semibold text-vin-muted uppercase tracking-wider mb-2 ml-1">
                   Mật khẩu
                 </label>
                 <div className="relative group">
